@@ -1,7 +1,7 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine)",
- "version": "1.5",
+ "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–22 (B2): draft, waiting for the independent cross-check and the owner",
+ "version": "1.6",
  "lessons": {
   "lesson.arabic-greetings-address": {
    "seed": [
@@ -6891,6 +6891,1225 @@
      "example_ar": "أَنَا قَادِرٌ عَلَى فَهْمِ الْأَخْبَارِ الْبَسِيطَةِ.",
      "example_meaning_en": "I’m able to understand simple news.",
      "note": "Like أَسْتَطِيعُ, but with عَلَى and a noun."
+    }
+   ]
+  },
+  "lesson.arabic-headlines-leads": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-headlines-leads-1",
+     "form_ar": "اِفْتِتَاح",
+     "meaning_en": "opening, inauguration",
+     "part_of_speech": "noun",
+     "root_ar": "ف-ت-ح",
+     "root_reading": "f-t-ḥ",
+     "example_ar": "حَضَرَ الْوَزِيرُ افْتِتَاحَ الْمَعْرِضِ.",
+     "example_meaning_en": "The minister attended the opening of the exhibition.",
+     "note": "From اِفْتَتَحَ, “to open (formally)”. A headline often starts with it."
+    },
+    {
+     "id": "lexeme.arabic-headlines-leads-2",
+     "form_ar": "خَبَرٌ عَاجِلٌ",
+     "meaning_en": "breaking news",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-ج-ل",
+     "root_reading": "ʿ-j-l",
+     "example_ar": "قَطَعَتِ الْقَنَاةُ الْبَرْنَامَجَ لِخَبَرٍ عَاجِلٍ.",
+     "example_meaning_en": "The channel interrupted the programme for breaking news.",
+     "note": "Plural أَخْبَارٌ عَاجِلَةٌ."
+    },
+    {
+     "id": "lexeme.arabic-headlines-leads-3",
+     "form_ar": "جِهَة",
+     "meaning_en": "party, body (responsible); side",
+     "part_of_speech": "noun",
+     "root_ar": "و-ج-ه",
+     "root_reading": "w-j-h",
+     "example_ar": "لَمْ يَذْكُرِ الْخَبَرُ الْجِهَةَ الْمَسْؤُولَةَ.",
+     "example_meaning_en": "The report didn't name the party responsible.",
+     "note": "Plural جِهَات. Also “side, direction”."
+    },
+    {
+     "id": "lexeme.arabic-headlines-leads-4",
+     "form_ar": "صَحِيفَة",
+     "meaning_en": "newspaper",
+     "part_of_speech": "noun",
+     "root_ar": "ص-ح-ف",
+     "root_reading": "ṣ-ḥ-f",
+     "example_ar": "قَرَأْتُ الْخَبَرَ فِي صَحِيفَةِ الْيَوْمِ.",
+     "example_meaning_en": "I read the story in today's newspaper.",
+     "note": "Plural صُحُف. A journalist is صَحَفِيّ."
+    },
+    {
+     "id": "lexeme.arabic-headlines-leads-5",
+     "form_ar": "مُرَاسِل",
+     "meaning_en": "correspondent, reporter",
+     "part_of_speech": "noun",
+     "root_ar": "ر-س-ل",
+     "root_reading": "r-s-l",
+     "example_ar": "نَقَلَ الْمُرَاسِلُ الْخَبَرَ مِنَ الْمَطَارِ.",
+     "example_meaning_en": "The correspondent reported the news from the airport.",
+     "note": "For a woman: مُرَاسِلَة. Plural مُرَاسِلُونَ."
+    },
+    {
+     "id": "lexeme.arabic-headlines-leads-6",
+     "form_ar": "مُشَارِك",
+     "meaning_en": "participant",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ر-ك",
+     "root_reading": "sh-r-k",
+     "example_ar": "بَلَغَ عَدَدُ الْمُشَارِكِينَ خَمْسِينَ شَخْصًا.",
+     "example_meaning_en": "The number of participants reached fifty people.",
+     "note": "For a woman: مُشَارِكَة. From شَارَكَ, “to take part”."
+    },
+    {
+     "id": "lexeme.arabic-headlines-leads-7",
+     "form_ar": "حَادِث",
+     "meaning_en": "incident, accident",
+     "part_of_speech": "noun",
+     "root_ar": "ح-د-ث",
+     "root_reading": "ḥ-d-th",
+     "example_ar": "وَقَعَ حَادِثٌ عَلَى الطَّرِيقِ السَّرِيعِ.",
+     "example_meaning_en": "An accident happened on the motorway.",
+     "note": "Plural حَوَادِث."
+    }
+   ]
+  },
+  "lesson.arabic-news-language": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-news-language-1",
+     "form_ar": "أَعْلَنَ",
+     "meaning_en": "announced",
+     "part_of_speech": "verb",
+     "root_ar": "ع-ل-ن",
+     "root_reading": "ʿ-l-n",
+     "example_ar": "أَعْلَنَتِ الْجَامِعَةُ مَوْعِدَ الِامْتِحَانَاتِ.",
+     "example_meaning_en": "The university announced the date of the exams.",
+     "note": "Present يُعْلِنُ. The noun إِعْلَان means “announcement” or “advert”."
+    },
+    {
+     "id": "lexeme.arabic-news-language-2",
+     "form_ar": "أَفَادَ",
+     "meaning_en": "stated, reported",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ي-د",
+     "root_reading": "f-y-d",
+     "example_ar": "أَفَادَ الْمُتَحَدِّثُ بِأَنَّ الطَّرِيقَ مُغْلَقٌ.",
+     "example_meaning_en": "The spokesperson stated that the road is closed.",
+     "note": "Present يُفِيدُ, which also means “to be useful”, as in مُفِيد."
+    },
+    {
+     "id": "lexeme.arabic-news-language-3",
+     "form_ar": "بِحَسَبِ",
+     "meaning_en": "according to",
+     "part_of_speech": "preposition",
+     "root_ar": "ح-س-ب",
+     "root_reading": "ḥ-s-b",
+     "example_ar": "بِحَسَبِ الْمَوْقِعِ، يَصِلُ الْقِطَارُ فِي الثَّامِنَةِ.",
+     "example_meaning_en": "According to the website, the train arrives at eight.",
+     "note": "Also حَسَبَ, with the same meaning."
+    },
+    {
+     "id": "lexeme.arabic-news-language-4",
+     "form_ar": "نَفَى",
+     "meaning_en": "denied",
+     "part_of_speech": "verb",
+     "root_ar": "ن-ف-ي",
+     "root_reading": "n-f-y",
+     "example_ar": "نَفَى الْمُدِيرُ الْخَبَرَ.",
+     "example_meaning_en": "The director denied the report.",
+     "note": "Present يَنْفِي. The opposite of أَكَّدَ, “he confirmed”."
+    },
+    {
+     "id": "lexeme.arabic-news-language-5",
+     "form_ar": "مَسْؤُول",
+     "meaning_en": "official; responsible",
+     "part_of_speech": "noun",
+     "root_ar": "س-أ-ل",
+     "root_reading": "s-ʾ-l",
+     "example_ar": "قَالَ مَسْؤُولٌ فِي الْوِزَارَةِ إِنَّ الْعَمَلَ سَيَبْدَأُ قَرِيبًا.",
+     "example_meaning_en": "An official in the ministry said that the work will start soon.",
+     "note": "Plural مَسْؤُولُونَ. مَسْؤُولٌ عَنْ means “responsible for”."
+    },
+    {
+     "id": "lexeme.arabic-news-language-6",
+     "form_ar": "رَجَّحَ",
+     "meaning_en": "considered likely",
+     "part_of_speech": "verb",
+     "root_ar": "ر-ج-ح",
+     "root_reading": "r-j-ḥ",
+     "example_ar": "رَجَّحَ الْخُبَرَاءُ أَنْ يَرْتَفِعَ عَدَدُ الزُّوَّارِ.",
+     "example_meaning_en": "Experts considered it likely that the number of visitors would rise.",
+     "note": "A likelihood, not a fact. The passive يُرَجَّحُ means “it is thought likely”."
+    },
+    {
+     "id": "lexeme.arabic-news-language-7",
+     "form_ar": "مَصَادِرُ مُطَّلِعَةٌ",
+     "meaning_en": "informed sources",
+     "part_of_speech": "chunk",
+     "root_ar": "ط-ل-ع",
+     "root_reading": "ṭ-l-ʿ",
+     "example_ar": "ذَكَرَتْ مَصَادِرُ مُطَّلِعَةٌ أَنَّ الِاجْتِمَاعَ تَأَجَّلَ.",
+     "example_meaning_en": "Informed sources said that the meeting had been postponed.",
+     "note": "Sources without a name: the claim is still unconfirmed."
+    }
+   ]
+  },
+  "lesson.arabic-numbers-data": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-numbers-data-1",
+     "form_ar": "اِرْتَفَعَ",
+     "meaning_en": "rose, went up",
+     "part_of_speech": "verb",
+     "root_ar": "ر-ف-ع",
+     "root_reading": "r-f-ʿ",
+     "example_ar": "اِرْتَفَعَتْ أَسْعَارُ الْخُبْزِ هَذَا الشَّهْرَ.",
+     "example_meaning_en": "Bread prices rose this month.",
+     "note": "Present يَرْتَفِعُ. The noun اِرْتِفَاع means “rise” or “height”."
+    },
+    {
+     "id": "lexeme.arabic-numbers-data-2",
+     "form_ar": "اِنْخَفَضَ",
+     "meaning_en": "fell, went down",
+     "part_of_speech": "verb",
+     "root_ar": "خ-ف-ض",
+     "root_reading": "kh-f-ḍ",
+     "example_ar": "اِنْخَفَضَتْ دَرَجَةُ الْحَرَارَةِ لَيْلًا.",
+     "example_meaning_en": "The temperature fell at night.",
+     "note": "Present يَنْخَفِضُ. The noun اِنْخِفَاض means “fall, decrease”."
+    },
+    {
+     "id": "lexeme.arabic-numbers-data-3",
+     "form_ar": "نِسْبَة",
+     "meaning_en": "proportion, rate",
+     "part_of_speech": "noun",
+     "root_ar": "ن-س-ب",
+     "root_reading": "n-s-b",
+     "example_ar": "نِسْبَةُ النَّجَاحِ عَالِيَةٌ هَذَا الْعَامَ.",
+     "example_meaning_en": "The pass rate is high this year.",
+     "note": "Plural نِسَب. نِسْبَةٌ مِئَوِيَّةٌ means “a percentage”."
+    },
+    {
+     "id": "lexeme.arabic-numbers-data-4",
+     "form_ar": "فِي الْمِئَةِ",
+     "meaning_en": "per cent",
+     "part_of_speech": "chunk",
+     "root_ar": "م-أ-ي",
+     "root_reading": "m-ʾ-y",
+     "example_ar": "نَجَحَ ثَمَانُونَ فِي الْمِئَةِ مِنَ الطُّلَّابِ.",
+     "example_meaning_en": "Eighty per cent of the students passed.",
+     "note": "Also بِالْمِئَةِ, with the same meaning."
+    },
+    {
+     "id": "lexeme.arabic-numbers-data-5",
+     "form_ar": "مِلْيُون",
+     "meaning_en": "million",
+     "part_of_speech": "number",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "يَزُورُ الْمَتْحَفَ مِلْيُونُ زَائِرٍ كُلَّ سَنَةٍ.",
+     "example_meaning_en": "A million visitors visit the museum every year.",
+     "note": "Plural مَلَايِين. Two million: مِلْيُونَانِ."
+    },
+    {
+     "id": "lexeme.arabic-numbers-data-6",
+     "form_ar": "ضِعْف",
+     "meaning_en": "double, twice as much",
+     "part_of_speech": "noun",
+     "root_ar": "ض-ع-ف",
+     "root_reading": "ḍ-ʿ-f",
+     "example_ar": "صَارَ الثَّمَنُ ضِعْفَ مَا كَانَ.",
+     "example_meaning_en": "The price became double what it was.",
+     "note": "Plural أَضْعَاف, as in ثَلَاثَةُ أَضْعَافٍ, “three times as much”."
+    },
+    {
+     "id": "lexeme.arabic-numbers-data-7",
+     "form_ar": "مُتَوَسِّط",
+     "meaning_en": "average; medium",
+     "part_of_speech": "noun",
+     "root_ar": "و-س-ط",
+     "root_reading": "w-s-ṭ",
+     "example_ar": "مُتَوَسِّطُ عُمْرِ الطُّلَّابِ عِشْرُونَ سَنَةً.",
+     "example_meaning_en": "The students' average age is twenty.",
+     "note": "Also an adjective, “medium”: حَجْمٌ مُتَوَسِّطٌ."
+    }
+   ]
+  },
+  "lesson.arabic-interview-notes": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-interview-notes-1",
+     "form_ar": "مُقَابَلَة",
+     "meaning_en": "interview",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ب-ل",
+     "root_reading": "q-b-l",
+     "example_ar": "أَجْرَتِ الْقَنَاةُ مُقَابَلَةً مَعَ الْكَاتِبَةِ.",
+     "example_meaning_en": "The channel did an interview with the writer.",
+     "note": "Plural مُقَابَلَات. أَجْرَى مُقَابَلَةً means “to conduct an interview”."
+    },
+    {
+     "id": "lexeme.arabic-interview-notes-2",
+     "form_ar": "ضَيْف",
+     "meaning_en": "guest",
+     "part_of_speech": "noun",
+     "root_ar": "ض-ي-ف",
+     "root_reading": "ḍ-y-f",
+     "example_ar": "سَأَلَ الْمُذِيعُ الضَّيْفَ عَنْ رَأْيِهِ.",
+     "example_meaning_en": "The presenter asked the guest for his opinion.",
+     "note": "Plural ضُيُوف. For a woman: ضَيْفَة."
+    },
+    {
+     "id": "lexeme.arabic-interview-notes-3",
+     "form_ar": "تَهَرَّبَ",
+     "meaning_en": "evaded, dodged",
+     "part_of_speech": "verb",
+     "root_ar": "ه-ر-ب",
+     "root_reading": "h-r-b",
+     "example_ar": "تَهَرَّبَ الْوَزِيرُ مِنَ السُّؤَالِ.",
+     "example_meaning_en": "The minister evaded the question.",
+     "note": "Used with مِنْ. The noun: تَهَرُّب."
+    },
+    {
+     "id": "lexeme.arabic-interview-notes-4",
+     "form_ar": "اِقْتِبَاس",
+     "meaning_en": "quotation",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ب-س",
+     "root_reading": "q-b-s",
+     "example_ar": "رَاجِعِ الِاقْتِبَاسَ قَبْلَ أَنْ تَنْشُرَهُ.",
+     "example_meaning_en": "Check the quotation before you publish it.",
+     "note": "Plural اِقْتِبَاسَات. Check it against the recording."
+    },
+    {
+     "id": "lexeme.arabic-interview-notes-5",
+     "form_ar": "صِيَاغَة",
+     "meaning_en": "wording, phrasing",
+     "part_of_speech": "noun",
+     "root_ar": "ص-و-غ",
+     "root_reading": "ṣ-w-gh",
+     "example_ar": "أَعَدْتُ صِيَاغَةَ الْفِكْرَةِ بِكَلِمَاتِي.",
+     "example_meaning_en": "I reworded the idea in my own words.",
+     "note": "أَعَادَ صِيَاغَةَ means “to rephrase”: a paraphrase, not a quotation."
+    },
+    {
+     "id": "lexeme.arabic-interview-notes-6",
+     "form_ar": "مُحَاوِر",
+     "meaning_en": "interviewer; the other party in a dialogue",
+     "part_of_speech": "noun",
+     "root_ar": "ح-و-ر",
+     "root_reading": "ḥ-w-r",
+     "example_ar": "طَرَحَ الْمُحَاوِرُ سُؤَالًا صَعْبًا.",
+     "example_meaning_en": "The interviewer asked a difficult question.",
+     "note": "For a woman: مُحَاوِرَة. From حِوَار, “dialogue”."
+    },
+    {
+     "id": "lexeme.arabic-interview-notes-7",
+     "form_ar": "مَوْقِف",
+     "meaning_en": "position, stance",
+     "part_of_speech": "noun",
+     "root_ar": "و-ق-ف",
+     "root_reading": "w-q-f",
+     "example_ar": "لَمْ يُوَضِّحِ الضَّيْفُ مَوْقِفَهُ.",
+     "example_meaning_en": "The guest didn't make his position clear.",
+     "note": "Plural مَوَاقِف. Also “a bus stop” or “a car park”."
+    }
+   ]
+  },
+  "lesson.arabic-news-digest": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-news-digest-1",
+     "form_ar": "نَشْرَةُ الْأَخْبَارِ",
+     "meaning_en": "the news bulletin",
+     "part_of_speech": "chunk",
+     "root_ar": "ن-ش-ر",
+     "root_reading": "n-sh-r",
+     "example_ar": "أَسْتَمِعُ إِلَى نَشْرَةِ الْأَخْبَارِ كُلَّ صَبَاحٍ.",
+     "example_meaning_en": "I listen to the news bulletin every morning.",
+     "note": "نَشْرَة alone is a bulletin, leaflet or newsletter."
+    },
+    {
+     "id": "lexeme.arabic-news-digest-2",
+     "form_ar": "تَحْدِيث",
+     "meaning_en": "update",
+     "part_of_speech": "noun",
+     "root_ar": "ح-د-ث",
+     "root_reading": "ḥ-d-th",
+     "example_ar": "نُشِرَ تَحْدِيثٌ لِلْخَبَرِ بَعْدَ سَاعَةٍ.",
+     "example_meaning_en": "An update to the story was published an hour later.",
+     "note": "Plural تَحْدِيثَات. From حَدَّثَ, “to update”."
+    },
+    {
+     "id": "lexeme.arabic-news-digest-3",
+     "form_ar": "مُتَنَاقِض",
+     "meaning_en": "contradictory",
+     "part_of_speech": "adjective",
+     "root_ar": "ن-ق-ض",
+     "root_reading": "n-q-ḍ",
+     "example_ar": "وَصَلَتْنَا أَخْبَارٌ مُتَنَاقِضَةٌ عَنِ الْحَادِثِ.",
+     "example_meaning_en": "Contradictory reports reached us about the incident.",
+     "note": "تَنَاقُض means “a contradiction”."
+    },
+    {
+     "id": "lexeme.arabic-news-digest-4",
+     "form_ar": "غَيْرُ مُؤَكَّدٍ",
+     "meaning_en": "unconfirmed",
+     "part_of_speech": "chunk",
+     "root_ar": "أ-ك-د",
+     "root_reading": "ʾ-k-d",
+     "example_ar": "الْخَبَرُ مَا زَالَ غَيْرَ مُؤَكَّدٍ.",
+     "example_meaning_en": "The report is still unconfirmed.",
+     "note": "The opposite: مُؤَكَّد, “confirmed”."
+    },
+    {
+     "id": "lexeme.arabic-news-digest-5",
+     "form_ar": "عَلَى حَدِّ قَوْلِهِ",
+     "meaning_en": "as he put it, by his account",
+     "part_of_speech": "chunk",
+     "root_ar": "ح-د-د",
+     "root_reading": "ḥ-d-d",
+     "example_ar": "الْمَشْرُوعُ نَاجِحٌ، عَلَى حَدِّ قَوْلِهِ.",
+     "example_meaning_en": "The project is a success, as he put it.",
+     "note": "Keeps a claim with its speaker. For a woman: عَلَى حَدِّ قَوْلِهَا."
+    },
+    {
+     "id": "lexeme.arabic-news-digest-6",
+     "form_ar": "بِالْمُقَارَنَةِ مَعَ",
+     "meaning_en": "compared with",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-ر-ن",
+     "root_reading": "q-r-n",
+     "example_ar": "الْبَيْتُ صَغِيرٌ بِالْمُقَارَنَةِ مَعَ بَيْتِنَا الْقَدِيمِ.",
+     "example_meaning_en": "The house is small compared with our old house.",
+     "note": "مُقَارَنَة alone means “a comparison”."
+    },
+    {
+     "id": "lexeme.arabic-news-digest-7",
+     "form_ar": "مُوجَز",
+     "meaning_en": "summary, brief",
+     "part_of_speech": "noun",
+     "root_ar": "و-ج-ز",
+     "root_reading": "w-j-z",
+     "example_ar": "إِلَيْكُمْ مُوجَزُ الْأَخْبَارِ.",
+     "example_meaning_en": "Here is the news in brief.",
+     "note": "Also an adjective, “brief”: تَقْرِيرٌ مُوجَزٌ."
+    }
+   ]
+  },
+  "lesson.arabic-claim-evidence": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-claim-evidence-1",
+     "form_ar": "حُجَّة",
+     "meaning_en": "argument",
+     "part_of_speech": "noun",
+     "root_ar": "ح-ج-ج",
+     "root_reading": "ḥ-j-j",
+     "example_ar": "قَدَّمَتِ الْكَاتِبَةُ حُجَّةً قَوِيَّةً.",
+     "example_meaning_en": "The writer put forward a strong argument.",
+     "note": "Plural حُجَج. Often with دَلِيل, “evidence”."
+    },
+    {
+     "id": "lexeme.arabic-claim-evidence-2",
+     "form_ar": "اِدِّعَاء",
+     "meaning_en": "claim",
+     "part_of_speech": "noun",
+     "root_ar": "د-ع-و",
+     "root_reading": "d-ʿ-w",
+     "example_ar": "هَذَا ادِّعَاءٌ بِلَا دَلِيلٍ.",
+     "example_meaning_en": "This is a claim without evidence.",
+     "note": "Plural اِدِّعَاءَات. From اِدَّعَى, “to claim”."
+    },
+    {
+     "id": "lexeme.arabic-claim-evidence-3",
+     "form_ar": "تَعْمِيم",
+     "meaning_en": "generalisation",
+     "part_of_speech": "noun",
+     "root_ar": "ع-م-م",
+     "root_reading": "ʿ-m-m",
+     "example_ar": "اِحْذَرْ مِنَ التَّعْمِيمِ فِي الْمَقَالِ.",
+     "example_meaning_en": "Beware of generalising in the article.",
+     "note": "From عَمَّمَ, “to generalise”."
+    },
+    {
+     "id": "lexeme.arabic-claim-evidence-4",
+     "form_ar": "مُقْنِع",
+     "meaning_en": "convincing",
+     "part_of_speech": "adjective",
+     "root_ar": "ق-ن-ع",
+     "root_reading": "q-n-ʿ",
+     "example_ar": "لَمْ يَكُنْ جَوَابُهُ مُقْنِعًا.",
+     "example_meaning_en": "His answer wasn't convincing.",
+     "note": "From أَقْنَعَ, “to convince”."
+    },
+    {
+     "id": "lexeme.arabic-claim-evidence-5",
+     "form_ar": "دَعَمَ",
+     "meaning_en": "supported",
+     "part_of_speech": "verb",
+     "root_ar": "د-ع-م",
+     "root_reading": "d-ʿ-m",
+     "example_ar": "تَدْعَمُ الْأَرْقَامُ هَذَا الرَّأْيَ.",
+     "example_meaning_en": "The figures support this view.",
+     "note": "Present يَدْعَمُ. The noun دَعْم means “support”."
+    },
+    {
+     "id": "lexeme.arabic-claim-evidence-6",
+     "form_ar": "ذُو صِلَةٍ",
+     "meaning_en": "relevant",
+     "part_of_speech": "chunk",
+     "root_ar": "و-ص-ل",
+     "root_reading": "w-ṣ-l",
+     "example_ar": "هَذَا الْمِثَالُ لَيْسَ ذَا صِلَةٍ بِالْمَوْضُوعِ.",
+     "example_meaning_en": "This example isn't relevant to the topic.",
+     "note": "For a feminine noun: ذَاتُ صِلَةٍ."
+    },
+    {
+     "id": "lexeme.arabic-claim-evidence-7",
+     "form_ar": "كَافٍ",
+     "meaning_en": "sufficient, enough",
+     "part_of_speech": "adjective",
+     "root_ar": "ك-ف-ي",
+     "root_reading": "k-f-y",
+     "example_ar": "الْوَقْتُ غَيْرُ كَافٍ.",
+     "example_meaning_en": "The time isn't enough.",
+     "note": "With the article: الْكَافِي. From كَفَى, “to be enough”."
+    }
+   ]
+  },
+  "lesson.arabic-stance-hedging": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-stance-hedging-1",
+     "form_ar": "مِنَ الْمُحْتَمَلِ أَنْ",
+     "meaning_en": "it is likely that",
+     "part_of_speech": "chunk",
+     "root_ar": "ح-م-ل",
+     "root_reading": "ḥ-m-l",
+     "example_ar": "مِنَ الْمُحْتَمَلِ أَنْ تُمْطِرَ غَدًا.",
+     "example_meaning_en": "It's likely to rain tomorrow.",
+     "note": "Weaker: مِنَ الْمُمْكِنِ أَنْ, “it is possible that”."
+    },
+    {
+     "id": "lexeme.arabic-stance-hedging-2",
+     "form_ar": "يَبْدُو أَنَّ",
+     "meaning_en": "it seems that",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-د-و",
+     "root_reading": "b-d-w",
+     "example_ar": "يَبْدُو أَنَّ الْمَكْتَبَةَ مُغْلَقَةٌ الْيَوْمَ.",
+     "example_meaning_en": "It seems that the library is closed today.",
+     "note": "With an adjective: يَبْدُو سَعِيدًا, “he looks happy”."
+    },
+    {
+     "id": "lexeme.arabic-stance-hedging-3",
+     "form_ar": "بِالتَّأْكِيدِ",
+     "meaning_en": "certainly",
+     "part_of_speech": "adverb",
+     "root_ar": "أ-ك-د",
+     "root_reading": "ʾ-k-d",
+     "example_ar": "سَأَحْضُرُ الْحَفْلَ بِالتَّأْكِيدِ.",
+     "example_meaning_en": "I'll certainly come to the party.",
+     "note": "The same root as أَكَّدَ, “he confirmed”."
+    },
+    {
+     "id": "lexeme.arabic-stance-hedging-4",
+     "form_ar": "غَالِبًا",
+     "meaning_en": "usually; most likely",
+     "part_of_speech": "adverb",
+     "root_ar": "غ-ل-ب",
+     "root_reading": "gh-l-b",
+     "example_ar": "غَالِبًا مَا أَدْرُسُ فِي الصَّبَاحِ.",
+     "example_meaning_en": "I usually study in the morning.",
+     "note": "غَالِبًا مَا with a verb means “often”."
+    },
+    {
+     "id": "lexeme.arabic-stance-hedging-5",
+     "form_ar": "إِلَى حَدٍّ مَا",
+     "meaning_en": "to some extent",
+     "part_of_speech": "chunk",
+     "root_ar": "ح-د-د",
+     "root_reading": "ḥ-d-d",
+     "example_ar": "الْخُطَّةُ نَاجِحَةٌ إِلَى حَدٍّ مَا.",
+     "example_meaning_en": "The plan is successful to some extent.",
+     "note": "Limits a claim without taking it back."
+    },
+    {
+     "id": "lexeme.arabic-stance-hedging-6",
+     "form_ar": "لَا أَسْتَبْعِدُ",
+     "meaning_en": "I don't rule out",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-ع-د",
+     "root_reading": "b-ʿ-d",
+     "example_ar": "لَا أَسْتَبْعِدُ أَنْ يَتَأَخَّرَ الْقِطَارُ.",
+     "example_meaning_en": "I don't rule out the train being late.",
+     "note": "From اِسْتَبْعَدَ, “to rule out, think unlikely”."
+    },
+    {
+     "id": "lexeme.arabic-stance-hedging-7",
+     "form_ar": "عَلَى الْأَرْجَحِ",
+     "meaning_en": "most probably",
+     "part_of_speech": "chunk",
+     "root_ar": "ر-ج-ح",
+     "root_reading": "r-j-ḥ",
+     "example_ar": "سَيَصِلُ عَلَى الْأَرْجَحِ مَسَاءً.",
+     "example_meaning_en": "He will most probably arrive in the evening.",
+     "note": "The same root as رَجَّحَ, “to think likely”."
+    }
+   ]
+  },
+  "lesson.arabic-implicit-meaning": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-implicit-meaning-1",
+     "form_ar": "ضِمْنِيّ",
+     "meaning_en": "implicit",
+     "part_of_speech": "adjective",
+     "root_ar": "ض-م-ن",
+     "root_reading": "ḍ-m-n",
+     "example_ar": "فِي كَلَامِهِ نَقْدٌ ضِمْنِيٌّ.",
+     "example_meaning_en": "There is implicit criticism in what he says.",
+     "note": "ضِمْنِيًّا means “implicitly”. The opposite: صَرِيح."
+    },
+    {
+     "id": "lexeme.arabic-implicit-meaning-2",
+     "form_ar": "صَرِيح",
+     "meaning_en": "explicit; frank",
+     "part_of_speech": "adjective",
+     "root_ar": "ص-ر-ح",
+     "root_reading": "ṣ-r-ḥ",
+     "example_ar": "كَانَ الْجَوَابُ صَرِيحًا.",
+     "example_meaning_en": "The answer was explicit.",
+     "note": "Also “frank”: كُنْ صَرِيحًا مَعِي."
+    },
+    {
+     "id": "lexeme.arabic-implicit-meaning-3",
+     "form_ar": "نِيَّة",
+     "meaning_en": "intention",
+     "part_of_speech": "noun",
+     "root_ar": "ن-و-ي",
+     "root_reading": "n-w-y",
+     "example_ar": "كَانَتْ نِيَّتُهُ طَيِّبَةً.",
+     "example_meaning_en": "His intention was good.",
+     "note": "Plural نِيَّات."
+    },
+    {
+     "id": "lexeme.arabic-implicit-meaning-4",
+     "form_ar": "تَفْسِير",
+     "meaning_en": "interpretation, explanation",
+     "part_of_speech": "noun",
+     "root_ar": "ف-س-ر",
+     "root_reading": "f-s-r",
+     "example_ar": "هُنَاكَ تَفْسِيرٌ آخَرُ لِهَذِهِ الْجُمْلَةِ.",
+     "example_meaning_en": "There is another interpretation of this sentence.",
+     "note": "Plural تَفْسِيرَات. From فَسَّرَ, “to explain, interpret”."
+    },
+    {
+     "id": "lexeme.arabic-implicit-meaning-5",
+     "form_ar": "أَوْحَى",
+     "meaning_en": "suggested, implied",
+     "part_of_speech": "verb",
+     "root_ar": "و-ح-ي",
+     "root_reading": "w-ḥ-y",
+     "example_ar": "تُوحِي نَبْرَتُهُ بِالْغَضَبِ.",
+     "example_meaning_en": "His tone suggests anger.",
+     "note": "Used with بِ: يُوحِي بِأَنَّ, “suggests that”."
+    },
+    {
+     "id": "lexeme.arabic-implicit-meaning-6",
+     "form_ar": "اِفْتِرَاض",
+     "meaning_en": "assumption",
+     "part_of_speech": "noun",
+     "root_ar": "ف-ر-ض",
+     "root_reading": "f-r-ḍ",
+     "example_ar": "هَذَا مُجَرَّدُ افْتِرَاضٍ.",
+     "example_meaning_en": "This is just an assumption.",
+     "note": "From اِفْتَرَضَ, “to assume”."
+    },
+    {
+     "id": "lexeme.arabic-implicit-meaning-7",
+     "form_ar": "ظَاهِر",
+     "meaning_en": "apparent, literal",
+     "part_of_speech": "adjective",
+     "root_ar": "ظ-ه-ر",
+     "root_reading": "ẓ-h-r",
+     "example_ar": "الْمَعْنَى الظَّاهِرُ بَسِيطٌ.",
+     "example_meaning_en": "The literal meaning is simple.",
+     "note": "ظَاهِرُ النَّصِّ, “the surface meaning of the text”."
+    }
+   ]
+  },
+  "lesson.arabic-counterargument": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-counterargument-1",
+     "form_ar": "مَعَ ذَلِكَ",
+     "meaning_en": "nevertheless",
+     "part_of_speech": "chunk",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "كَانَ مُتْعَبًا، وَمَعَ ذَلِكَ أَكْمَلَ الْعَمَلَ.",
+     "example_meaning_en": "He was tired; nevertheless, he finished the work.",
+     "note": "Often with وَ before it: وَمَعَ ذَلِكَ."
+    },
+    {
+     "id": "lexeme.arabic-counterargument-2",
+     "form_ar": "اِعْتِرَاض",
+     "meaning_en": "objection",
+     "part_of_speech": "noun",
+     "root_ar": "ع-ر-ض",
+     "root_reading": "ʿ-r-ḍ",
+     "example_ar": "عِنْدِي اعْتِرَاضٌ وَاحِدٌ عَلَى الْخُطَّةِ.",
+     "example_meaning_en": "I have one objection to the plan.",
+     "note": "From اِعْتَرَضَ عَلَى, “to object to”."
+    },
+    {
+     "id": "lexeme.arabic-counterargument-3",
+     "form_ar": "فَنَّدَ",
+     "meaning_en": "refuted",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ن-د",
+     "root_reading": "f-n-d",
+     "example_ar": "فَنَّدَ الْكَاتِبُ الرَّأْيَ الْمُخَالِفَ بِالْأَدِلَّةِ.",
+     "example_meaning_en": "The writer refuted the opposing view with evidence.",
+     "note": "Present يُفَنِّدُ. The noun تَفْنِيد means “rebuttal”."
+    },
+    {
+     "id": "lexeme.arabic-counterargument-4",
+     "form_ar": "صَحِيحٌ أَنَّ",
+     "meaning_en": "it is true that",
+     "part_of_speech": "chunk",
+     "root_ar": "ص-ح-ح",
+     "root_reading": "ṣ-ḥ-ḥ",
+     "example_ar": "صَحِيحٌ أَنَّ الطَّرِيقَ طَوِيلٌ، لَكِنَّهُ آمِنٌ.",
+     "example_meaning_en": "It's true that the road is long, but it's safe.",
+     "note": "Usually followed by لَكِنَّ, “but”."
+    },
+    {
+     "id": "lexeme.arabic-counterargument-5",
+     "form_ar": "مُبَالَغَة",
+     "meaning_en": "exaggeration",
+     "part_of_speech": "noun",
+     "root_ar": "ب-ل-غ",
+     "root_reading": "b-l-gh",
+     "example_ar": "فِي هَذَا الْكَلَامِ مُبَالَغَةٌ.",
+     "example_meaning_en": "There is exaggeration in what was said.",
+     "note": "From بَالَغَ, “to exaggerate”."
+    },
+    {
+     "id": "lexeme.arabic-counterargument-6",
+     "form_ar": "وَجِيه",
+     "meaning_en": "valid, sound",
+     "part_of_speech": "adjective",
+     "root_ar": "و-ج-ه",
+     "root_reading": "w-j-h",
+     "example_ar": "سُؤَالُكَ وَجِيهٌ.",
+     "example_meaning_en": "Your question is a fair one.",
+     "note": "Said of a reason or a question: سَبَبٌ وَجِيهٌ."
+    },
+    {
+     "id": "lexeme.arabic-counterargument-7",
+     "form_ar": "أَرْضِيَّةٌ مُشْتَرَكَةٌ",
+     "meaning_en": "common ground",
+     "part_of_speech": "chunk",
+     "root_ar": "ش-ر-ك",
+     "root_reading": "sh-r-k",
+     "example_ar": "بَيْنَنَا أَرْضِيَّةٌ مُشْتَرَكَةٌ.",
+     "example_meaning_en": "We have common ground.",
+     "note": "أَرْضِيَّة alone means “a floor” or “a basis”."
+    }
+   ]
+  },
+  "lesson.arabic-supported-debate": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-supported-debate-1",
+     "form_ar": "نِقَاش",
+     "meaning_en": "discussion",
+     "part_of_speech": "noun",
+     "root_ar": "ن-ق-ش",
+     "root_reading": "n-q-sh",
+     "example_ar": "دَارَ نِقَاشٌ هَادِئٌ بَيْنَ الطُّلَّابِ.",
+     "example_meaning_en": "A calm discussion took place among the students.",
+     "note": "From نَاقَشَ, “to discuss”."
+    },
+    {
+     "id": "lexeme.arabic-supported-debate-2",
+     "form_ar": "تَوْضِيح",
+     "meaning_en": "clarification",
+     "part_of_speech": "noun",
+     "root_ar": "و-ض-ح",
+     "root_reading": "w-ḍ-ḥ",
+     "example_ar": "أَحْتَاجُ إِلَى تَوْضِيحٍ بَسِيطٍ.",
+     "example_meaning_en": "I need a small clarification.",
+     "note": "From وَضَّحَ, “to clarify”."
+    },
+    {
+     "id": "lexeme.arabic-supported-debate-3",
+     "form_ar": "دَوْر",
+     "meaning_en": "turn; role",
+     "part_of_speech": "noun",
+     "root_ar": "د-و-ر",
+     "root_reading": "d-w-r",
+     "example_ar": "جَاءَ دَوْرُكَ الْآنَ.",
+     "example_meaning_en": "It's your turn now.",
+     "note": "Also “role”: دَوْرٌ مُهِمٌّ."
+    },
+    {
+     "id": "lexeme.arabic-supported-debate-4",
+     "form_ar": "خُلَاصَة",
+     "meaning_en": "summary, upshot",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ل-ص",
+     "root_reading": "kh-l-ṣ",
+     "example_ar": "الْخُلَاصَةُ أَنَّنَا نَحْتَاجُ إِلَى وَقْتٍ أَطْوَلَ.",
+     "example_meaning_en": "The upshot is that we need more time.",
+     "note": "خُلَاصَةُ الْقَوْلِ means “in short”."
+    },
+    {
+     "id": "lexeme.arabic-supported-debate-5",
+     "form_ar": "أَتَفَهَّمُ",
+     "meaning_en": "I understand (your point)",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ه-م",
+     "root_reading": "f-h-m",
+     "example_ar": "أَتَفَهَّمُ قَلَقَكَ.",
+     "example_meaning_en": "I understand your concern.",
+     "note": "From تَفَهَّمَ, “to show understanding for”."
+    },
+    {
+     "id": "lexeme.arabic-supported-debate-6",
+     "form_ar": "مُقَاطَعَة",
+     "meaning_en": "interruption",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ط-ع",
+     "root_reading": "q-ṭ-ʿ",
+     "example_ar": "أَرْجُو عَدَمَ الْمُقَاطَعَةِ.",
+     "example_meaning_en": "Please do not interrupt.",
+     "note": "From قَاطَعَ, “to interrupt”."
+    },
+    {
+     "id": "lexeme.arabic-supported-debate-7",
+     "form_ar": "بِنَاءً عَلَى",
+     "meaning_en": "based on",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-ن-ي",
+     "root_reading": "b-n-y",
+     "example_ar": "بِنَاءً عَلَى هَذِهِ الْأَرْقَامِ، أَقْتَرِحُ خُطَّةً جَدِيدَةً.",
+     "example_meaning_en": "Based on these figures, I suggest a new plan.",
+     "note": "Points to the evidence behind a view."
+    }
+   ]
+  },
+  "lesson.arabic-word-order-agreement": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-word-order-agreement-1",
+     "form_ar": "مُطَابَقَة",
+     "meaning_en": "agreement (grammar)",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ب-ق",
+     "root_reading": "ṭ-b-q",
+     "example_ar": "اِنْتَبِهْ إِلَى الْمُطَابَقَةِ فِي الْعَدَدِ.",
+     "example_meaning_en": "Watch the agreement in number.",
+     "note": "From طَابَقَ, “to match, agree with”."
+    },
+    {
+     "id": "lexeme.arabic-word-order-agreement-2",
+     "form_ar": "جُمْلَةٌ فِعْلِيَّةٌ",
+     "meaning_en": "verbal sentence",
+     "part_of_speech": "chunk",
+     "root_ar": "ف-ع-ل",
+     "root_reading": "f-ʿ-l",
+     "example_ar": "تَبْدَأُ الْجُمْلَةُ الْفِعْلِيَّةُ بِفِعْلٍ.",
+     "example_meaning_en": "A verbal sentence begins with a verb.",
+     "note": "One that begins with a noun: جُمْلَةٌ اسْمِيَّةٌ."
+    },
+    {
+     "id": "lexeme.arabic-word-order-agreement-3",
+     "form_ar": "تَرْتِيب",
+     "meaning_en": "order, arrangement",
+     "part_of_speech": "noun",
+     "root_ar": "ر-ت-ب",
+     "root_reading": "r-t-b",
+     "example_ar": "يُغَيِّرُ تَرْتِيبُ الْكَلِمَاتِ التَّرْكِيزَ.",
+     "example_meaning_en": "The order of the words changes the emphasis.",
+     "note": "From رَتَّبَ, “to arrange”."
+    },
+    {
+     "id": "lexeme.arabic-word-order-agreement-4",
+     "form_ar": "مُؤَنَّث",
+     "meaning_en": "feminine",
+     "part_of_speech": "adjective",
+     "root_ar": "أ-ن-ث",
+     "root_reading": "ʾ-n-th",
+     "example_ar": "الطَّالِبَةُ اسْمٌ مُؤَنَّثٌ.",
+     "example_meaning_en": "Ṭāliba is a feminine noun.",
+     "note": "The opposite: مُذَكَّر."
+    },
+    {
+     "id": "lexeme.arabic-word-order-agreement-5",
+     "form_ar": "عَاقِل",
+     "meaning_en": "rational, human (in grammar)",
+     "part_of_speech": "adjective",
+     "root_ar": "ع-ق-ل",
+     "root_reading": "ʿ-q-l",
+     "example_ar": "الطُّلَّابُ جَمْعُ عَاقِلٍ.",
+     "example_meaning_en": "Ṭullāb is a human plural.",
+     "note": "A thing or an animal is غَيْرُ عَاقِلٍ."
+    },
+    {
+     "id": "lexeme.arabic-word-order-agreement-6",
+     "form_ar": "تَقْدِيم",
+     "meaning_en": "putting first; presentation",
+     "part_of_speech": "noun",
+     "root_ar": "ق-د-م",
+     "root_reading": "q-d-m",
+     "example_ar": "يُفِيدُ تَقْدِيمُ الْفَاعِلِ التَّأْكِيدَ أَحْيَانًا.",
+     "example_meaning_en": "Putting the subject first sometimes adds emphasis.",
+     "note": "Also “presentation”: تَقْدِيمُ عَرْضٍ."
+    },
+    {
+     "id": "lexeme.arabic-word-order-agreement-7",
+     "form_ar": "فِعْلٌ مَاضٍ",
+     "meaning_en": "past verb",
+     "part_of_speech": "chunk",
+     "root_ar": "م-ض-ي",
+     "root_reading": "m-ḍ-y",
+     "example_ar": "كَتَبَ فِعْلٌ مَاضٍ.",
+     "example_meaning_en": "Kataba is a past verb.",
+     "note": "A present verb is فِعْلٌ مُضَارِعٌ."
+    }
+   ]
+  },
+  "lesson.arabic-hal-tamyiz": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-hal-tamyiz-1",
+     "form_ar": "حَال",
+     "meaning_en": "ḥāl (circumstantial accusative); state",
+     "part_of_speech": "noun",
+     "root_ar": "ح-و-ل",
+     "root_reading": "ḥ-w-l",
+     "example_ar": "فِي جُمْلَةِ جَاءَ رَاكِضًا حَالٌ.",
+     "example_meaning_en": "There is a ḥāl in the sentence jāʾa rākiḍan.",
+     "note": "The grammar term. The everyday word is the one in كَيْفَ حَالُكَ؟"
+    },
+    {
+     "id": "lexeme.arabic-hal-tamyiz-2",
+     "form_ar": "تَمْيِيز",
+     "meaning_en": "tamyīz (specification)",
+     "part_of_speech": "noun",
+     "root_ar": "م-ي-ز",
+     "root_reading": "m-y-z",
+     "example_ar": "يُوَضِّحُ التَّمْيِيزُ الْعَدَدَ أَوِ الْكَمِّيَّةَ.",
+     "example_meaning_en": "The tamyīz clarifies a number or a quantity.",
+     "note": "From مَيَّزَ, “to distinguish”."
+    },
+    {
+     "id": "lexeme.arabic-hal-tamyiz-3",
+     "form_ar": "مُبْتَسِم",
+     "meaning_en": "smiling",
+     "part_of_speech": "adjective",
+     "root_ar": "ب-س-م",
+     "root_reading": "b-s-m",
+     "example_ar": "دَخَلَتِ الْمُعَلِّمَةُ مُبْتَسِمَةً.",
+     "example_meaning_en": "The teacher came in smiling.",
+     "note": "From اِبْتَسَمَ, “to smile”."
+    },
+    {
+     "id": "lexeme.arabic-hal-tamyiz-4",
+     "form_ar": "مُسْرِع",
+     "meaning_en": "in a hurry",
+     "part_of_speech": "adjective",
+     "root_ar": "س-ر-ع",
+     "root_reading": "s-r-ʿ",
+     "example_ar": "خَرَجَ مُسْرِعًا.",
+     "example_meaning_en": "He went out in a hurry.",
+     "note": "From أَسْرَعَ, “to hurry”."
+    },
+    {
+     "id": "lexeme.arabic-hal-tamyiz-5",
+     "form_ar": "كَمِّيَّة",
+     "meaning_en": "quantity",
+     "part_of_speech": "noun",
+     "root_ar": "ك-م-م",
+     "root_reading": "k-m-m",
+     "example_ar": "اِشْتَرَيْنَا كَمِّيَّةً كَبِيرَةً مِنَ الْأَرُزِّ.",
+     "example_meaning_en": "We bought a large quantity of rice.",
+     "note": "From كَمْ, “how much, how many”."
+    },
+    {
+     "id": "lexeme.arabic-hal-tamyiz-6",
+     "form_ar": "اِزْدَادَ",
+     "meaning_en": "increased, grew",
+     "part_of_speech": "verb",
+     "root_ar": "ز-ي-د",
+     "root_reading": "z-y-d",
+     "example_ar": "اِزْدَادَ الطَّالِبُ خِبْرَةً.",
+     "example_meaning_en": "The student grew in experience.",
+     "note": "What grows comes after it in the accusative."
+    }
+   ]
+  },
+  "lesson.arabic-numbers-exceptions": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-numbers-exceptions-1",
+     "form_ar": "مِئَة",
+     "meaning_en": "hundred",
+     "part_of_speech": "number",
+     "root_ar": "م-أ-ي",
+     "root_reading": "m-ʾ-y",
+     "example_ar": "فِي الْقَاعَةِ مِئَةُ كُرْسِيٍّ.",
+     "example_meaning_en": "There are a hundred chairs in the hall.",
+     "note": "Two hundred: مِئَتَانِ."
+    },
+    {
+     "id": "lexeme.arabic-numbers-exceptions-2",
+     "form_ar": "أَحَدَ عَشَرَ",
+     "meaning_en": "eleven",
+     "part_of_speech": "number",
+     "root_ar": "أ-ح-د",
+     "root_reading": "ʾ-ḥ-d",
+     "example_ar": "فِي الْفَرِيقِ أَحَدَ عَشَرَ لَاعِبًا.",
+     "example_meaning_en": "There are eleven players in the team.",
+     "note": "With a feminine noun: إِحْدَى عَشْرَةَ."
+    },
+    {
+     "id": "lexeme.arabic-numbers-exceptions-3",
+     "form_ar": "أَلْف",
+     "meaning_en": "thousand",
+     "part_of_speech": "number",
+     "root_ar": "أ-ل-ف",
+     "root_reading": "ʾ-l-f",
+     "example_ar": "حَضَرَ الْمُؤْتَمَرَ أَلْفُ شَخْصٍ.",
+     "example_meaning_en": "A thousand people attended the conference.",
+     "note": "Plural آلَاف. Two thousand: أَلْفَانِ."
+    },
+    {
+     "id": "lexeme.arabic-numbers-exceptions-4",
+     "form_ar": "مَمْنُوعٌ مِنَ الصَّرْفِ",
+     "meaning_en": "diptote (restricted declension)",
+     "part_of_speech": "chunk",
+     "root_ar": "ص-ر-ف",
+     "root_reading": "ṣ-r-f",
+     "example_ar": "أَحْمَدُ اسْمٌ مَمْنُوعٌ مِنَ الصَّرْفِ.",
+     "example_meaning_en": "Aḥmad is a diptote name.",
+     "note": "Other examples: مَسَاجِد, and many names like زَيْنَب."
+    },
+    {
+     "id": "lexeme.arabic-numbers-exceptions-5",
+     "form_ar": "تَنْوِين",
+     "meaning_en": "nunation (tanwīn)",
+     "part_of_speech": "noun",
+     "root_ar": "ن-و-ن",
+     "root_reading": "n-w-n",
+     "example_ar": "فِي آخِرِ كَلِمَةِ كِتَابٌ تَنْوِينٌ.",
+     "example_meaning_en": "There is tanwīn at the end of the word kitābun.",
+     "note": "The endings -un, -an and -in: كِتَابٌ, كِتَابًا and كِتَابٍ."
+    },
+    {
+     "id": "lexeme.arabic-numbers-exceptions-6",
+     "form_ar": "مَرْجِع",
+     "meaning_en": "reference (work)",
+     "part_of_speech": "noun",
+     "root_ar": "ر-ج-ع",
+     "root_reading": "r-j-ʿ",
+     "example_ar": "تَأَكَّدْتُ مِنَ الْقَاعِدَةِ فِي مَرْجِعٍ مَوْثُوقٍ.",
+     "example_meaning_en": "I checked the rule in a reliable reference.",
+     "note": "Plural مَرَاجِع."
+    },
+    {
+     "id": "lexeme.arabic-numbers-exceptions-7",
+     "form_ar": "مَعْدُود",
+     "meaning_en": "counted noun",
+     "part_of_speech": "noun",
+     "root_ar": "ع-د-د",
+     "root_reading": "ʿ-d-d",
+     "example_ar": "فِي ثَلَاثَةِ كُتُبٍ، الْمَعْدُودُ كُتُبٌ.",
+     "example_meaning_en": "In thalāthatu kutubin, the counted noun is kutub.",
+     "note": "From عَدَّ, “to count”."
+    }
+   ]
+  },
+  "lesson.arabic-negation-exception": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-negation-exception-1",
+     "form_ar": "إِلَّا",
+     "meaning_en": "except",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "حَضَرَ الْجَمِيعُ إِلَّا سَامِرًا.",
+     "example_meaning_en": "Everyone came except Sāmir.",
+     "note": "Also إِلَّا أَنَّ, “except that, however”."
+    },
+    {
+     "id": "lexeme.arabic-negation-exception-2",
+     "form_ar": "إِنَّمَا",
+     "meaning_en": "rather; only",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "لَمْ يَتَأَخَّرْ كَسَلًا، وَإِنَّمَا بِسَبَبِ الْمَطَرِ.",
+     "example_meaning_en": "He wasn't late out of laziness, but because of the rain.",
+     "note": "After a negative it often comes as وَإِنَّمَا, “but rather”. At the start of a sentence it restricts: “it is only…”."
+    },
+    {
+     "id": "lexeme.arabic-negation-exception-3",
+     "form_ar": "فَقَطْ",
+     "meaning_en": "only",
+     "part_of_speech": "adverb",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "لِلْمُوَظَّفِينَ فَقَطْ.",
+     "example_meaning_en": "Staff only.",
+     "note": "It comes after what it limits."
+    },
+    {
+     "id": "lexeme.arabic-negation-exception-4",
+     "form_ar": "لَا شَكَّ",
+     "meaning_en": "no doubt",
+     "part_of_speech": "chunk",
+     "root_ar": "ش-ك-ك",
+     "root_reading": "sh-k-k",
+     "example_ar": "لَا شَكَّ أَنَّ التَّمْرِينَ مُفِيدٌ.",
+     "example_meaning_en": "No doubt the exercise is useful.",
+     "note": "Also لَا شَكَّ فِي ذَلِكَ, “there is no doubt about that”."
+    },
+    {
+     "id": "lexeme.arabic-negation-exception-5",
+     "form_ar": "اِسْتِثْنَاء",
+     "meaning_en": "exception",
+     "part_of_speech": "noun",
+     "root_ar": "ث-ن-ي",
+     "root_reading": "th-n-y",
+     "example_ar": "لِكُلِّ قَاعِدَةٍ اسْتِثْنَاءٌ.",
+     "example_meaning_en": "Every rule has an exception.",
+     "note": "بِاسْتِثْنَاءِ means “with the exception of”."
+    },
+    {
+     "id": "lexeme.arabic-negation-exception-6",
+     "form_ar": "نَفْي",
+     "meaning_en": "negation",
+     "part_of_speech": "noun",
+     "root_ar": "ن-ف-ي",
+     "root_reading": "n-f-y",
+     "example_ar": "تُغَيِّرُ أَدَاةُ النَّفْيِ مَعْنَى الْجُمْلَةِ.",
+     "example_meaning_en": "The negative particle changes the meaning of the sentence.",
+     "note": "The same root as نَفَى, “he denied”."
+    },
+    {
+     "id": "lexeme.arabic-negation-exception-7",
+     "form_ar": "لَا أَحَدَ",
+     "meaning_en": "nobody",
+     "part_of_speech": "chunk",
+     "root_ar": "أ-ح-د",
+     "root_reading": "ʾ-ḥ-d",
+     "example_ar": "لَا أَحَدَ فِي الْبَيْتِ.",
+     "example_meaning_en": "There is nobody at home.",
+     "note": "Also لَمْ يَأْتِ أَحَدٌ, “nobody came”."
+    }
+   ]
+  },
+  "lesson.arabic-precision-edit": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-precision-edit-1",
+     "form_ar": "تَدْقِيق",
+     "meaning_en": "checking, proofreading",
+     "part_of_speech": "noun",
+     "root_ar": "د-ق-ق",
+     "root_reading": "d-q-q",
+     "example_ar": "يَحْتَاجُ النَّصُّ إِلَى تَدْقِيقٍ قَبْلَ النَّشْرِ.",
+     "example_meaning_en": "The text needs checking before publication.",
+     "note": "From دَقَّقَ, “to check carefully”. دَقِيق means “precise”."
+    },
+    {
+     "id": "lexeme.arabic-precision-edit-2",
+     "form_ar": "بَدِيل",
+     "meaning_en": "alternative",
+     "part_of_speech": "noun",
+     "root_ar": "ب-د-ل",
+     "root_reading": "b-d-l",
+     "example_ar": "هَلْ هُنَاكَ بَدِيلٌ لِهَذِهِ الْكَلِمَةِ؟",
+     "example_meaning_en": "Is there an alternative to this word?",
+     "note": "Plural بَدَائِل."
+    },
+    {
+     "id": "lexeme.arabic-precision-edit-3",
+     "form_ar": "غُمُوض",
+     "meaning_en": "ambiguity, unclarity",
+     "part_of_speech": "noun",
+     "root_ar": "غ-م-ض",
+     "root_reading": "gh-m-ḍ",
+     "example_ar": "فِي الْجُمْلَةِ غُمُوضٌ.",
+     "example_meaning_en": "There is an ambiguity in the sentence.",
+     "note": "غَامِض means “unclear, ambiguous”."
+    },
+    {
+     "id": "lexeme.arabic-precision-edit-4",
+     "form_ar": "سَهْوًا",
+     "meaning_en": "by mistake, inadvertently",
+     "part_of_speech": "adverb",
+     "root_ar": "س-ه-و",
+     "root_reading": "s-h-w",
+     "example_ar": "نَسِيتُ الْهَمْزَةَ سَهْوًا.",
+     "example_meaning_en": "I left out the hamza by mistake.",
+     "note": "The noun سَهْو means “an oversight, a slip”."
+    },
+    {
+     "id": "lexeme.arabic-precision-edit-5",
+     "form_ar": "حَذْف",
+     "meaning_en": "deletion, leaving out",
+     "part_of_speech": "noun",
+     "root_ar": "ح-ذ-ف",
+     "root_reading": "ḥ-dh-f",
+     "example_ar": "حَذْفُ أَدَاةِ النَّفْيِ يَعْكِسُ الْمَعْنَى.",
+     "example_meaning_en": "Leaving out the negative particle reverses the meaning.",
+     "note": "From حَذَفَ, “to delete, leave out”."
+    },
+    {
+     "id": "lexeme.arabic-precision-edit-6",
+     "form_ar": "صِيغَة",
+     "meaning_en": "form (of a word)",
+     "part_of_speech": "noun",
+     "root_ar": "ص-و-غ",
+     "root_reading": "ṣ-w-gh",
+     "example_ar": "اِخْتَرْتُ صِيغَةَ الْجَمْعِ.",
+     "example_meaning_en": "I chose the plural form.",
+     "note": "Plural صِيَغ."
+    },
+    {
+     "id": "lexeme.arabic-precision-edit-7",
+     "form_ar": "بِأَمَانَةٍ",
+     "meaning_en": "faithfully",
+     "part_of_speech": "adverb",
+     "root_ar": "أ-م-ن",
+     "root_reading": "ʾ-m-n",
+     "example_ar": "نَقَلَ الْمُتَرْجِمُ الْمَعْنَى بِأَمَانَةٍ.",
+     "example_meaning_en": "The translator conveyed the meaning faithfully.",
+     "note": "أَمَانَة means “honesty, faithfulness”."
     }
    ]
   }
