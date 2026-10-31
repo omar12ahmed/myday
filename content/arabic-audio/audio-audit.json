@@ -24100,13 +24100,6 @@
    "spoken": "يَزُورُ الْمَتْحَفَ مِلْيُونُ زَائِرٍ كُلَّ سَنَةٍ.",
    "check": "to check"
   },
-  "ضِعْف": {
-   "file": "d3ddb788f2ff3bcb.mp3",
-   "voice": "ar-XA-Wavenet-B",
-   "made": "2026-10-31",
-   "spoken": "ضِعْف.",
-   "check": "to check"
-  },
   "صَارَ الثَّمَنُ ضِعْفَ مَا كَانَ.": {
    "file": "f16fddff477747e6.mp3",
    "voice": "ar-XA-Wavenet-B",
@@ -24322,13 +24315,6 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "حُجَّة.",
-   "check": "to check"
-  },
-  "قَدَّمَتِ الْكَاتِبَةُ حُجَّةً قَوِيَّةً.": {
-   "file": "1f085e9069e88a97.mp3",
-   "voice": "ar-XA-Wavenet-B",
-   "made": "2026-10-31",
-   "spoken": "قَدَّمَتِ الْكَاتِبَةُ حُجَّةً قَوِيَّةً.",
    "check": "to check"
   },
   "اِدِّعَاء": {
@@ -26045,6 +26031,20 @@
    "made": "2026-10-31",
    "spoken": "أَمَانَة.",
    "check": "to check"
+  },
+  "ضِعْفُ الْعَدَدِ": {
+   "file": "8e03954ed3a25a88.mp3",
+   "voice": "ar-XA-Wavenet-B",
+   "made": "2026-10-31",
+   "spoken": "ضِعْفُ الْعَدَدِ.",
+   "check": "to check"
+  },
+  "لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ.": {
+   "file": "70946e2f77928468.mp3",
+   "voice": "ar-XA-Wavenet-B",
+   "made": "2026-10-31",
+   "spoken": "لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ.",
+   "check": "to check"
   }
  },
  "removed": [
@@ -26187,6 +26187,20 @@
    "reason": "The owner asked for شعري (“poetic”) again on the re-listen with the scripts shown; the voice read it as شَعْرِي (“my hair”) on every take, also with the ending, so it is left out of voice-scripts.json with that reason.",
    "files": [
     "6efba4041d8b4a87.mp3"
+   ]
+  },
+  {
+   "date": "2026-10-31",
+   "reason": "The owner heard ضِعْف (“double”, said alone) begin with b; WaveNet gave the same audio on a retake, so the headword is now the phrase ضِعْفُ الْعَدَدِ, “double the number” (the voice says ضِعْفَ right in its example).",
+   "files": [
+    "d3ddb788f2ff3bcb.mp3"
+   ]
+  },
+  {
+   "date": "2026-10-31",
+   "reason": "The owner heard the jīm of حُجَّةً slightly off in قَدَّمَتِ الْكَاتِبَةُ حُجَّةً قَوِيَّةً. WaveNet gave the same audio on a retake, so the example is now لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ.",
+   "files": [
+    "1f085e9069e88a97.mp3"
    ]
   }
  ],

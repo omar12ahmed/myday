@@ -4,11 +4,11 @@
  "method": "Blind audio-only transcription of the clips made for the course words (module 4). Main session read every transcript against the authored text; punctuation and pausal endings can differ. This does not approve a clip.",
  "prompt": "Transcribe only the speech you hear, in Arabic with full vowel marks. Do not translate, explain, add speaker labels, or guess any extra words. Return just the Arabic transcription.",
  "request_cap": 1990,
- "requests": 1884,
+ "requests": 1886,
  "usage_tokens": {
-  "text": 69708,
-  "audio": 82411,
-  "output": 362763
+  "text": 69782,
+  "audio": 82508,
+  "output": 363012
  },
  "results": {
   "مَرْحَبًا، أَنَا سَارَةُ.": {
@@ -39524,6 +39524,50 @@
      }
     ],
     "thoughtsTokenCount": 214,
+    "serviceTier": "standard"
+   }
+  },
+  "ضِعْفُ الْعَدَدِ": {
+   "file": "8e03954ed3a25a88.mp3",
+   "heard": "ضِعْفُ الْعَدَدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 232,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     }
+    ],
+    "thoughtsTokenCount": 149,
+    "serviceTier": "standard"
+   }
+  },
+  "لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ.": {
+   "file": "70946e2f77928468.mp3",
+   "heard": "لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 188,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 70,
     "serviceTier": "standard"
    }
   }

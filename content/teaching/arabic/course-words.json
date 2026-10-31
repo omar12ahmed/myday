@@ -7118,9 +7118,9 @@
     },
     {
      "id": "lexeme.arabic-numbers-data-6",
-     "form_ar": "ضِعْف",
-     "meaning_en": "double, twice as much",
-     "part_of_speech": "noun",
+     "form_ar": "ضِعْفُ الْعَدَدِ",
+     "meaning_en": "double the number",
+     "part_of_speech": "chunk",
      "root_ar": "ض-ع-ف",
      "root_reading": "ḍ-ʿ-f",
      "example_ar": "صَارَ الثَّمَنُ ضِعْفَ مَا كَانَ.",
@@ -7314,8 +7314,8 @@
      "part_of_speech": "noun",
      "root_ar": "ح-ج-ج",
      "root_reading": "ḥ-j-j",
-     "example_ar": "قَدَّمَتِ الْكَاتِبَةُ حُجَّةً قَوِيَّةً.",
-     "example_meaning_en": "The writer put forward a strong argument.",
+     "example_ar": "لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ.",
+     "example_meaning_en": "The writer has a strong argument.",
      "note": "Plural حُجَج. Often with دَلِيل, “evidence”."
     },
     {
