@@ -7,8 +7,8 @@
 //
 // Your preferences always come first: MyDay uses a pattern only once you've said it's right and asked it to (it then
 // becomes a preference, with the evidence it was based on kept as its "Why?").
-import { isDateKey, todayKey } from '../dates';
-import type { Category, PatternsData, Pref } from '../types';
+import { isDateKey, shift, todayKey } from '../dates';
+import type { AskSeen, Category, PatternsData, Pref } from '../types';
 import { intIn, isObj } from '../util';
 
 export const CATEGORIES: Category[] = ['learning', 'admin', 'health'];
@@ -50,6 +50,19 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
   const name = typeof prefs.name === 'string' ? prefs.name.trim().slice(0, NAME_MAX) : '';
   if (name) out.prefs.name = name; else delete out.prefs.name;
   if (prefs.aiNotes === true) out.prefs.aiNotes = true; else delete out.prefs.aiNotes; // AI help with notes (1.15.0)
+  if (prefs.askUse === true) out.prefs.askUse = true; else delete out.prefs.askUse; // Ask MyDay uses how you work (1.108.0)
+  // What you did with Ask MyDay's suggestions (1.108.0): kept only when there are some, so a device that never counted
+  // saves exactly as before; one that can't be read is counted, never dropped silently.
+  if (Array.isArray(raw.askSeen)) {
+    const seen: AskSeen[] = [];
+    for (const x of raw.askSeen) {
+      const n = (v: unknown) => (v === null ? null : intIn(v, 0, 600, null));
+      if (!isObj(x) || !isDateKey(x.on) || typeof x.type !== 'string' || !x.type || x.type.length > 20 || !(x.category === null || CATEGORIES.includes(x.category as Category))
+        || (x.proposed !== null && n(x.proposed) === null) || (x.minutes !== null && n(x.minutes) === null) || typeof x.added !== 'boolean' || typeof x.renamed !== 'boolean') { report.dropped++; continue; }
+      seen.push({ ...x, on: x.on, type: x.type, category: x.category as Category | null, proposed: n(x.proposed), minutes: n(x.minutes), added: x.added, renamed: x.renamed });
+    }
+    if (seen.length) out.askSeen = seen.slice(-ASK_SEEN_MAX); else delete out.askSeen;
+  } else delete out.askSeen;
   // The weekly review (1.37.0): kept only when valid, so a device that never reviewed saves exactly as before.
   if (Number.isInteger(prefs.reviewDay) && (prefs.reviewDay as number) >= 1 && (prefs.reviewDay as number) <= 6) out.prefs.reviewDay = prefs.reviewDay as number; else delete out.prefs.reviewDay;
   for (const key of ['reviewed', 'reviewHidden'] as const) { if (isDateKey(prefs[key])) out.prefs[key] = prefs[key] as string; else delete out.prefs[key]; }
@@ -71,6 +84,20 @@ export function setMaxTasks(d: PatternsData, value: number | null, from: string 
   return true;
 }
 // What MyDay calls you ("Good morning, Sam!"). Empty removes it.
+// Let Ask MyDay use how you work (or stop it). Switching it off also forgets what it counted of Ask's suggestions.
+export function setAskUse(d: PatternsData, on: boolean): boolean {
+  if (!!d.prefs.askUse === on) return false;
+  if (on) d.prefs.askUse = true; else { delete d.prefs.askUse; delete d.askSeen; }
+  return true;
+}
+// What you did with Ask MyDay's suggestions this time (only while it's on): newest last, the last 8 weeks, at most 200.
+export const ASK_SEEN_MAX = 200;
+export function recordAskSeen(d: PatternsData, xs: Omit<AskSeen, 'on'>[], today = todayKey()): boolean {
+  if (!d.prefs.askUse || !xs.length) return false;
+  const from = shift(today, -56);
+  d.askSeen = [...(d.askSeen ?? []).filter(x => x.on >= from), ...xs.map(x => ({ ...x, on: today }))].slice(-ASK_SEEN_MAX);
+  return true;
+}
 // Let AI help place notes in projects (or stop it). Returns false when nothing changed.
 export function setAiNotes(d: PatternsData, on: boolean): boolean {
   if (!!d.prefs.aiNotes === on) return false;

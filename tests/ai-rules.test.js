@@ -1103,7 +1103,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v25' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v26' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -2064,6 +2064,61 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('a reply asking to look again is refused when the lookup was made for this message…', K.checkAskReply(LK, dw2, cslice, CD, 'x', dl) === null);
     const again = K.checkAskReply(LK, dw2, cslice, CD, 'x', dl, undefined, true);
     check('…and taken when it was made for an earlier one (the lookup it asks for, checked as for a first question)', again?.kind === 'lookup' && again.tool === 'day' && again.query === '2026-11-13', again);
+  }
+
+  console.log('\n[How you work] Ask MyDay uses what you\'ve confirmed, and learns from what you do with its suggestions (v26; specs/ask-how-you-work.md)');
+  {
+    const HD = '2026-11-10';
+    K.setClock(`${HD}T09:30`);
+    const hw = K.freshState(), hs = () => K.askSlice(hw, '#today', HD);
+    hw.patterns.prefs.name = 'Sam'; hw.patterns.prefs.maxMinutes.learning = { value: 20, on: HD, from: null, why: 'x' }; hw.patterns.prefs.maxTasks = { value: 2, on: HD, from: null, why: 'x' };
+    hw.patterns.answers = { 'study-time': { said: 'yes', on: HD, examples: 12, title: 'You study most between 07:00 and 09:00' }, blocker: { said: 'no', on: HD, examples: 5, title: 'SAID-NO pattern' } };
+    check('off (the default): nothing about how you work is sent, and the request is as before', !K.howYouWork(hw).length && !('howYouWork' in K.askContext(hs(), 'Plan my study', HD)));
+    K.setAskUse(hw.patterns, true);
+    const hy = K.howYouWork(hw);
+    check('on: your preferences as limits and the patterns you said are right, as plain statements', eq(hy, ['Learning tasks: 20 min at most', 'At most 2 tasks a day on the plan', 'You study most between 07:00 and 09:00']), hy);
+    const hc = K.askContext(hs(), 'Plan my study', HD);
+    check('…sent with Ask\'s request (and in its preview), never a pattern you said no to, nor your name', eq(hc.howYouWork, hy) && !/SAID-NO|Sam/.test(JSON.stringify(hc)) && K.askPreview(hc).all.some(x => x.label.startsWith('How you work') && eq(x.lines, hy)), hc.howYouWork);
+    check('…which the server accepts', K.checkAskContext(hc));
+    const many = K.freshState(); K.setAskUse(many.patterns, true);
+    many.patterns.answers = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`p${i}`, { said: 'yes', on: HD, examples: 9, title: `Pattern ${i} ` + 'x'.repeat(200) }]));
+    const hm = K.howYouWork(many);
+    check('…at most 8 statements of up to 120 characters', hm.length === 8 && hm.every(x => x.length <= 120));
+    for (const [why, v] of [['more than 8', Array.from({ length: 9 }, (_, i) => `s${i}`)], ['one over 120 characters', ['x'.repeat(121)]], ['an empty one', ['  ']], ['not a list', 'Learning tasks: 20 min at most'], ['an empty list', []]])
+      check(`the server refuses "howYouWork" that\'s ${why}`, !K.checkAskContext({ ...hc, howYouWork: v }));
+    const sysOn = K.buildAskMessages(hc)[0].content, sysOff = K.buildAskMessages(K.askContext(K.askSlice(K.freshState(), '#today', HD), 'Plan my study', HD))[0].content;
+    check('the instructions (v26) say to keep within its lengths and fit advice to it, only when it\'s sent', /"howYouWork" is what they've confirmed about how they work/.test(sysOn) && !/howYouWork/.test(sysOff) && K.ASK_PROMPT_VERSION === 'myday-ask-v26');
+    // The app keeps Ask's suggestions to your longest, whatever the AI said — only when you've let it use how you work.
+    const R = x => JSON.stringify(x), T = { kind: 'add', message: 'Here are two study tasks.', items: [{ type: 'task', title: 'Read about DNS', minutes: 45, category: 'learning' }, { type: 'task', title: 'Pay the bill', minutes: 45, category: 'admin' }], action: null };
+    const kept = K.checkAskReply(R(T), hw, hs(), HD);
+    check('on: a learning task suggested for 45 min is kept to your 20, and says so; a list with no limit is left as it was', kept.items[0].minutes === 20 && kept.items[0].kept === true && kept.items[1].minutes === 45 && !kept.items[1].kept, kept.items);
+    const off = K.freshState(); off.patterns.prefs.maxMinutes.learning = { value: 20, on: HD, from: null, why: 'x' };
+    check('…off: left as it was (Ask doesn\'t know your limits then)', K.checkAskReply(R(T), off, K.askSlice(off, '#today', HD), HD).items[0].minutes === 45);
+    // What you do with its suggestions: counted only while it's on; counts and lengths, never words.
+    const pd = K.freshState();
+    const S = (x = {}) => ({ type: 'task', category: 'learning', proposed: 30, minutes: 15, added: true, renamed: false, ...x });
+    check('counted only while it\'s on', !K.recordAskSeen(pd.patterns, [S()], HD) && !pd.patterns.askSeen);
+    K.setAskUse(pd.patterns, true);
+    K.recordAskSeen(pd.patterns, Array.from({ length: 7 }, () => S()), HD);
+    check('…kept newest last, dated, with no words of the suggestion', pd.patterns.askSeen.length === 7 && pd.patterns.askSeen.every(x => x.on === HD) && !JSON.stringify(pd.patterns.askSeen).includes('title'));
+    let ps = K.findPatterns(pd, HD).find(p => p.id === 'ask-size:learning');
+    check('MyDay notices when you shorten its learning tasks most of the time (with how many, and to about how long)', !!ps && ps.title === 'You shorten Ask MyDay\'s learning tasks to about 15 min' && /you shortened 7, to 15 min/.test(ps.why) && ps.use === null, ps);
+    K.recordAskSeen(pd.patterns, Array.from({ length: 9 }, (_, i) => S({ type: 'note', category: null, proposed: null, minutes: null, added: i === 0 })), HD);
+    ps = K.findPatterns(pd, HD).find(p => p.id === 'ask-skip:note');
+    check('…and when you rarely add one kind of thing it suggests', !!ps && ps.title === 'You rarely add the notes Ask MyDay suggests' && /added 1 of the 9 notes/.test(ps.why), ps);
+    const few = K.freshState(); K.setAskUse(few.patterns, true); K.recordAskSeen(few.patterns, [S(), S(), S({ minutes: 30 })], HD);
+    check('…but not on too few examples, or when you mostly keep its length', !K.findPatterns(few, HD).some(p => p.id.startsWith('ask-')));
+    K.recordAskSeen(pd.patterns, Array.from({ length: 250 }, () => S()), HD);
+    check(`at most ${K.ASK_SEEN_MAX} kept`, pd.patterns.askSeen.length === K.ASK_SEEN_MAX);
+    pd.patterns.askSeen[0].on = '2026-09-01'; K.recordAskSeen(pd.patterns, [S()], HD);
+    check('…and only the last 8 weeks', pd.patterns.askSeen.every(x => x.on >= '2026-09-15'));
+    K.setAskUse(pd.patterns, false);
+    check('switching it off forgets what it counted', !pd.patterns.prefs.askUse && !('askSeen' in pd.patterns));
+    // Saved: kept when valid, a bad entry counted (never dropped silently), absent when there's nothing.
+    const rep = { dropped: 0 }, np = K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askUse: true }, answers: {}, askSeen: [S({ on: HD }), { on: HD, type: 'task' }, S({ on: 'soon' }), S({ on: HD, minutes: 9999 })], later: 'kept' }, rep);
+    check('saved: the switch and valid counts kept, a field from a newer MyDay kept, each bad entry counted', np.prefs.askUse === true && np.askSeen.length === 1 && rep.dropped === 3 && np.later === 'kept', [np.askSeen, rep.dropped]);
+    const none = K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askUse: 'yes' }, answers: {}, askSeen: [] }, { dropped: 0 });
+    check('…and a device that never used it saves exactly as before (no switch, no empty list)', !('askUse' in none.prefs) && !('askSeen' in none));
   }
 
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');

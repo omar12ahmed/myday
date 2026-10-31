@@ -197,12 +197,37 @@ function blockers(data: MyDayData, k: DateKey): Pattern | null {
     `You chose that ${top[1]} of the ${bs.length} times you said what was in the way of a task.`, bs.map(b => b.on), null, BLOCKER_TIP[top[0]] ?? null);
 }
 
+// What you do with Ask MyDay's suggestions (1.108.0, specs/ask-how-you-work.md; counted only while "Let Ask MyDay use
+// how you work" is on). You shorten one list's tasks most of the time…
+function askSize(data: MyDayData, k: DateKey, cat: Category): Pattern | null {
+  const from = shift(k, -WEEKS * 7);
+  const xs = (data.patterns.askSeen ?? []).filter(x => x.on >= from && x.added && x.category === cat && !!x.proposed && !!x.minutes);
+  if (xs.length < 6) return null;
+  const short = xs.filter(x => x.minutes! < x.proposed!);
+  if (short.length < xs.length * 0.7) return null;
+  const to = round5(median(short.map(x => x.minutes!)));
+  return make(`ask-size:${cat}`, `You shorten Ask MyDay's ${name(cat)} tasks to about ${to} min`,
+    `Of the ${xs.length} ${name(cat)} tasks you added from Ask MyDay in the last ${WEEKS} weeks, you shortened ${short.length}, to ${to} min in the middle.`, short.map(x => x.on));
+}
+// …or rarely add one kind of thing it suggests.
+const ASK_KINDS: [string, string][] = [['task', 'tasks'], ['study-task', 'study tasks'], ['note', 'notes'], ['appointment', 'appointments'], ['project', 'projects'], ['milestone', 'milestones'], ['step', 'steps']];
+function askSkip(data: MyDayData, k: DateKey, type: string, words: string): Pattern | null {
+  const from = shift(k, -WEEKS * 7);
+  const xs = (data.patterns.askSeen ?? []).filter(x => x.on >= from && x.type === type);
+  if (xs.length < 8) return null;
+  const added = xs.filter(x => x.added).length;
+  if (added > xs.length * 0.2) return null;
+  return make(`ask-skip:${type}`, `You rarely add the ${words} Ask MyDay suggests`,
+    `In the last ${WEEKS} weeks you added ${added} of the ${xs.length} ${words} it suggested.`, xs.map(x => x.on));
+}
+
 // Every pattern there's enough evidence for today, in a fixed order.
 export function findPatterns(data: MyDayData, k: DateKey): Pattern[] {
   const days = usedDays(data, k);
   return [
     ...CATEGORIES.map(c => size(data, days, c)), studyLength(data, k), taskCount(data, days), leftForLater(data, days),
     studyTime(data, k), sleepEnergy(data, k), workEnergy(data, k), blockers(data, k),
+    ...CATEGORIES.map(c => askSize(data, k, c)), ...ASK_KINDS.map(([t, w]) => askSkip(data, k, t, w)),
   ].filter((p): p is Pattern => !!p);
 }
 

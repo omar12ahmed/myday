@@ -7,6 +7,8 @@ export const ASK_LIMITS = {
   previousChars: 1500,     // the answer you're following up on, as it was shown
   // A longer conversation (v25): what came before the newest message, oldest first, at most this much in all.
   conversationChars: 4000, conversationTurns: 12, conversationLeftOut: 500,
+  // How you work (v26): what you've confirmed about yourself, sent only when you let Ask MyDay use it.
+  howLines: 8, howChars: 120,
   list: 20,                // items in any list of the page's context (tasks, projects, notes, appointments)
   titleChars: 120,         // any title sent or proposed
   summaryChars: 600,       // a project's summary
@@ -83,6 +85,7 @@ export interface AskContext {
   text: string;      // what you typed
   followUp?: { previous: string; text: string }; // one follow-up: the answer as it was shown, and what you added
   conversation?: AskConversation;                  // v25: what came before the newest message (never with followUp)
+  howYouWork?: string[];                           // v26: what they've confirmed about how they work (only when they've let Ask use it)
   context: AskPageContext;
   can?: typeof ASK_TOOLS[number][];                // what this app can look up for an answer (absent: nothing)
   lookup?: AskLookup;                              // what it found, the second time round (one lookup per question)
@@ -231,7 +234,8 @@ function checkProject(p: unknown, focus: boolean): boolean {
 export function checkAskContext(raw: unknown): raw is AskContext {
   if (!obj(raw)) return false;
   const L = ASK_LIMITS, c = raw;
-  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'conversation', 'context', 'can', 'lookup'])) return false;
+  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'conversation', 'howYouWork', 'context', 'can', 'lookup'])) return false;
+  if (c.howYouWork !== undefined && !(Array.isArray(c.howYouWork) && c.howYouWork.length >= 1 && c.howYouWork.length <= L.howLines && c.howYouWork.every(h => str(h, L.howChars, false)))) return false;
   if (c.can !== undefined && !(Array.isArray(c.can) && c.can.length <= ASK_TOOLS.length && c.can.every(t => ASK_TOOLS.includes(t as typeof ASK_TOOLS[number])))) return false;
   if (c.lookup !== undefined) {
     const lk = c.lookup, n = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100000;

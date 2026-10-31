@@ -37,6 +37,7 @@ export interface AskProposal {
   chaseFor?: string;                            // a "Chase:" task for this waiting task (added as its chase, as Chase it does)
   stepFor?: string;                             // a step: the task whose checklist it goes into (v23)
   stepOf?: string;                              // a task that's already an open step of this task (so already, unticked)
+  kept?: true;                                  // shortened to your longest for its list (you let Ask MyDay use how you work)
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
   // (named) in an existing module or a new module (named).
   study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
@@ -303,6 +304,11 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
       already: type === 'task' && (onLists.has(sameTask(title)) || inSteps.has(sameTask(title))),
       ...(type === 'task' && !onLists.has(sameTask(title)) && inSteps.has(sameTask(title)) ? { stepOf: inSteps.get(sameTask(title)) } : {}),
     });
+  }
+  // Your longest task for each list, when you let Ask MyDay use how you work (1.108.0): held to it whatever the AI said.
+  if (data.patterns.prefs.askUse) for (const it of items) {
+    const most = it.type === 'task' || it.type === 'study-task' ? data.patterns.prefs.maxMinutes[it.category]?.value : undefined;
+    if (most && it.minutes > most) { it.minutes = most; it.kept = true; }
   }
   // With a decision on the page, the choice stays yours: a message that picks one is reworded.
   let msg = message;

@@ -14,7 +14,8 @@ import { Select, TextArea, TextInput } from '../components/Field';
 import { LinkButton } from '../components/parts';
 import { prettyDate, todayKey } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
-import { catchUp, getSnapshot } from '../data/storage';
+import { catchUp, getSnapshot, update } from '../data/storage';
+import { recordAskSeen } from '../data/patterns/saved';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { startLearning, startRevision } from '../study/actions';
@@ -224,6 +225,19 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     setMore('');
     void ask(m, turns, looked, true);
   }
+  // What you did with these suggestions, counted only while you let Ask MyDay use how you work (1.108.0): each one's kind
+  // and list, the minutes suggested and added, added or not, renamed or not — never its words. Ones already on your
+  // lists aren't counted (they come unticked).
+  function count(r: Extract<AskChecked, { kind: 'add' | 'steps' }>, added: boolean) {
+    if (!getSnapshot().data.patterns.prefs.askUse) return;
+    const seen = r.items.flatMap((orig, i) => {
+      if (orig.already) return [];
+      const timed = orig.type === 'task' || orig.type === 'study-task', yes = added && !!picked[i];
+      return [{ type: orig.type, category: timed ? orig.category : null, proposed: timed ? orig.minutes : null, minutes: timed && yes ? applyAskEdit(orig, edits[i], k).minutes : null,
+        added: yes, renamed: yes && (titles[i]?.trim() || orig.title) !== orig.title }];
+    });
+    update(d => (recordAskSeen(d.patterns, seen) ? undefined : false));
+  }
   function add(r: Extract<AskChecked, { kind: 'add' | 'steps' }>, after: After) {
     if (!previewIsCurrent()) return;
     const chosen = r.items.map((it, i) => ({ ...applyAskEdit(it, edits[i], k), title: titles[i]?.trim().slice(0, 120) || it.title })).filter((_, i) => picked[i]);
@@ -231,6 +245,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     const undo = addAskItems(chosen);
     if (!undo) { toast("Couldn't save just now — nothing was added."); return; }
     const words = countWords(chosen);
+    count(r, true);
     toast(`Added ${words}.`);
     const id = rememberAsk({ kind: 'added', undo, words }); // undoable from + until midnight, after this panel has closed
     setPhase({ at: 'added', undo, words, id, after });
@@ -336,8 +351,8 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
                       {it.date && <span>· {it.type === 'milestone' ? 'aiming for ' : ''}{prettyDate(it.date)}{it.time ? `, ${it.time}` : ''}</span>}
                       {(it.type === 'pro' || it.type === 'con') && <span>· for “{it.text}”</span>}
                       {it.type === 'must-be-true' && <span>· on your one page, not checked yet</span>}
-                      {it.type === 'task' && <span>· {it.minutes} min · {CAT_LABEL[it.category]}</span>}
-                      {it.study && <span>· {it.minutes} min · {it.study.kind === 'practical' ? 'Practical' : 'Learn'} · in {it.study.sectionId
+                      {it.type === 'task' && <span>· {it.minutes} min{orig.kept && !e.minutes ? ', as you prefer' : ''} · {CAT_LABEL[it.category]}</span>}
+                      {it.study && <span>· {it.minutes} min{orig.kept && !e.minutes ? ', as you prefer' : ''} · {it.study.kind === 'practical' ? 'Practical' : 'Learn'} · in {it.study.sectionId
                         ? `“${slice.context.course?.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId)?.title || 'this section'}”`
                         : `a new section “${it.study.section}”${it.study.module ? ` (new module “${it.study.module}”)` : ''}`}</span>}
                       {it.projectId && <span>· in “{it.projectId === NEW_PROJECT ? r.items.find(x => x.type === 'project')?.title : data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
@@ -374,7 +389,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
               : <>They go in the same list and project as “{slice.context.task.title}”, which stays as it is — tick it off once the steps are done.</>}</p>}
             <div className="grid grid-cols-2 gap-2.5 mt-3">
               <Button variant="primary" data-action="ask-add" disabled={!picked.some(Boolean)} onClick={() => add(r, after)}>Add {picked.filter(Boolean).length || ''}</Button>
-              <Button variant="ghost" data-action="ask-dismiss" onClick={startOver}>Dismiss</Button>
+              <Button variant="ghost" data-action="ask-dismiss" onClick={() => { count(r, false); startOver(); }}>Dismiss</Button>
             </div>
           </>}
           {r.kind === 'change' && <>

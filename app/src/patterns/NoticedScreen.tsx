@@ -11,6 +11,7 @@ import { CAT_LABEL } from '../data/plan';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
+import { AskUseCard } from './AskUseCard';
 
 // What MyDay has noticed (#noticed): patterns from your own history, each with its evidence ("Why?"), for you to
 // confirm or dismiss — and your preferences, which always come first. See data/patterns/.
@@ -45,6 +46,7 @@ export function NoticedScreen({ data }: { data: MyDayData }) {
         </Card>
       )}
       <PrefsCard data={data} />
+      <AskUseCard data={data} />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { topicGlance, topicsOf } from '../data/study/topics';
 import type { DateKey, MyDayData, Project } from '../data/types';
 import { notesRoute } from '../notes/route';
 import { tasksRoute } from '../tasks/route';
+import { CAT_LABEL } from '../data/plan';
 import { buildContext } from './context';
 import { aiReach } from './reach';
 
@@ -47,7 +48,20 @@ export function askPage(hash: string): { page: AskPage; id: string | null } {
 // `privateNote`: the page's own note is private (or in a private project), so it isn't sent. `held`: what else was left out
 // because you made it private — the page's own project or task (`here`), and how many items of private projects
 // (`count`: open projects' names, tasks on today's plan or due today, appointments).
-export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean; held: { here: 'project' | 'task' | 'note' | null; count: number } }
+export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean; held: { here: 'project' | 'task' | 'note' | null; count: number }; how?: string[] }
+
+// How you work, for Ask MyDay — only when you've let it use that (1.108.0, specs/ask-how-you-work.md), and only what you've
+// confirmed: your preferences as limits, and the patterns you said are right, as plain statements (never their evidence,
+// patterns you said no to or haven't answered, or your name). At most 8, each up to 120 characters.
+export function howYouWork(data: MyDayData): string[] {
+  const p = data.patterns.prefs;
+  if (!p.askUse) return [];
+  const out: string[] = [];
+  for (const c of ['learning', 'admin', 'health'] as const) { const m = p.maxMinutes[c]; if (m) out.push(`${CAT_LABEL[c]} tasks: ${m.value} min at most`); }
+  if (p.maxTasks) out.push(`At most ${p.maxTasks.value} ${p.maxTasks.value === 1 ? 'task' : 'tasks'} a day on the plan`);
+  for (const a of Object.values(data.patterns.answers)) if (a.said === 'yes' && a.title.trim()) out.push(a.title.trim());
+  return [...new Set(out.map(s => cut(s, L.howChars)))].slice(0, L.howLines);
+}
 
 // The words for what each page sends — shared by the "Sends:" line and the What MyDay knows page, so they can't drift.
 export const SENDS = {
@@ -178,7 +192,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
     parts.push(SENDS.calendar);
   }
-  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count } };
+  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count }, how: howYouWork(data) };
 }
 
 // A project as its page sends it — and as Ask MyDay's look at a project sends it (v19): its name, summary, stage, tasks,
@@ -244,6 +258,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     can: [...ASK_TOOLS].filter(t => t === 'notes' ? false : t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health'
       : t === 'study' ? !slice.context.study && !slice.context.course : true), ...(lookup ? { lookup } : {}),
     ...(conversation ? { conversation } : {}),
+    ...(slice.how?.length ? { howYouWork: slice.how } : {}),
   };
 }
 
@@ -262,6 +277,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   const x = c.context, short: string[] = [], all: AskPreview['all'] = [];
   all.push({ label: 'What you typed', lines: [c.text || '(nothing yet)', ...(c.followUp ? [`and then: “${c.followUp.text}”`] : [])] });
   all.push({ label: 'When and where', lines: [`${prettyDate(c.date)}, ${c.time}`, `Page: ${PAGE_WORD[c.page]}`] });
+  if (c.howYouWork?.length) { short.push('How you work'); all.push({ label: 'How you work (you let Ask MyDay use it)', lines: c.howYouWork }); }
   if (x.today) {
     const t = x.today;
     short.push(`Energy ${energyWord(t.energy)}`, `Free time ${freeWord(t.freeMinutes)}`, n(t.plan.length, 'task') + ' on today’s plan', n(t.dueToday.length, 'task') + ' due today');

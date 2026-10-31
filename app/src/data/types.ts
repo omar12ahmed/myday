@@ -596,12 +596,18 @@ export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: strin
 // A preference: something you chose, or a pattern you said was right and asked MyDay to use.
 export interface Pref { value: number; on: DateKey; from: string | null; why: string }
 export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: number; title: string }
+// What you did with one of Ask MyDay's suggestions (1.108.0, specs/ask-how-you-work.md; counted only while "Let Ask MyDay
+// use how you work" is on): its kind and list, the minutes it suggested and the minutes you added it with, whether you
+// added it and renamed it. Counts and lengths only, never its words.
+export interface AskSeen { on: DateKey; type: string; category: Category | null; proposed: number | null; minutes: number | null; added: boolean; renamed: boolean; [other: string]: unknown }
 export interface PatternsData {
   // name: what MyDay calls you (from 1.11.0); aiNotes: you let AI help place notes in projects (1.15.0; absent = off)
-  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true;
+  // askUse: you let Ask MyDay use how you work (1.108.0; absent = off)
+  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true; askUse?: true;
     // The weekly review (1.37.0): your review day (0 Sunday … 6; absent = Sunday), and the review day you've done or put off.
     reviewDay?: number; reviewed?: DateKey; reviewHidden?: DateKey; [other: string]: unknown };
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
+  askSeen?: AskSeen[];                    // what you did with Ask MyDay's suggestions, newest last (at most 200, the last 8 weeks)
   [other: string]: unknown;
 }
 
