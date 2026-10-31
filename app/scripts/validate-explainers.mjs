@@ -96,7 +96,7 @@ const secretsFor = lessonId => {
   const asked = prompts.filter(p => wordsOf(p).length > 1);
   const answers = (check?.questions ?? []).flatMap(q => pieces(keys.find(k => k.id === q.answer_key_id)?.expected_answer ?? ''));
   const words = answers.flatMap(wordsOf).filter(w => letters(w) > 1 && !shownWords.has(w) && !askedWords.has(w));
-  return [...new Set([...asked, ...answers, ...words])].filter(p => !shown.has(p));
+  return [...new Set([...asked, ...answers, ...words])].filter(p => !shown.has(p) && !(wordsOf(p).length === 1 && shownWords.has(p)));
 };
 // The lesson each course word is in: an explainer is shown there too, through its link.
 const wordLesson = new Map(Object.entries(courseWords).flatMap(([l, x]) => x.words.map(w => [w.id, l])));
@@ -140,13 +140,16 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
       ...(e.selftest ?? []).flatMap((q, i) => [[`self-test ${i + 1} question`, q.q_en], [`self-test ${i + 1} explanation`, q.why_en],
         ...(q.choices ?? []).filter(c => typeof c === 'string' && !onePiece(c)).map(c => [`self-test ${i + 1} choice`, c])])];
     for (const [where, s] of mixed) if (!text(s)) fail(`${at}, ${where}`, 'missing');
+    // A table row's form and a word's gloss may name Arabic too ("-a after أَنَّ"): checked like the rest, never voiced.
+    const labels = [];
     // Table: one Arabic piece per row, English around it.
     if (!Array.isArray(e.table) || e.table.length < 4 || e.table.length > 12) fail(at, 'the table has 4 to 12 rows');
     const forms = new Set();
     (e.table ?? []).forEach((r, i) => {
       const where = `${at}, table row ${i + 1}`;
       only(where, r, ['form_en', 'ar', 'en']);
-      english(`${where} form`, r.form_en); english(`${where} meaning`, r.en);
+      if (!text(r.form_en)) fail(`${where} form`, 'missing'); else labels.push([`table row ${i + 1} form`, r.form_en]);
+      english(`${where} meaning`, r.en);
       if (!text(r.ar) || !onePiece(r.ar) || runs(r.ar)[0] !== r.ar.trim()) fail(where, 'one Arabic piece');
       else { checkRun(where, r.ar); voiced.add(r.ar.trim()); }
       if (forms.has(r.ar)) fail(where, `${r.ar} is already in the table`);
@@ -167,7 +170,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
       if (!Array.isArray(x.words) || x.words.length < 2) { fail(where, 'break it down into two or more words'); return; }
       x.words.forEach((w, j) => {
         only(`${where}, word ${j + 1}`, w, ['ar', 'en']);
-        english(`${where}, word ${j + 1} meaning`, w.en);
+        if (!text(w.en)) fail(`${where}, word ${j + 1} meaning`, 'missing'); else labels.push([`sentence ${i + 1}, word ${j + 1} meaning`, w.en]);
         if (!text(w.ar) || /\s/.test(w.ar.trim()) || STOP.test(w.ar)) fail(`${where}, word ${j + 1}`, 'one Arabic word, without punctuation');
       });
       if (wordsOf(sentence).join(' ') !== x.words.map(w => w.ar).join(' ')) fail(where, 'its words, in order, must spell the sentence exactly');
@@ -190,7 +193,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     // or one of its phrases_ar), so two pieces can't run together and be voiced as one.
     const phrases = new Set(e.phrases_ar ?? []), used = new Set();
     for (const p of phrases) if (!onePiece(p) || wordsOf(p).length < 2) fail(`${at}, phrases_ar`, `${p} must be one Arabic phrase of two or more words`);
-    for (const [where, s] of mixed) {
+    for (const [where, s, label] of [...mixed, ...labels.map(([w, t]) => [w, t, true])]) {
       if (!text(s)) continue;
       for (const run of runs(s)) {
         checkRun(`${at}, ${where}`, run); shown.add(run);
@@ -198,12 +201,12 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
           if (phrases.has(run)) used.add(run);
           else if (!forms.has(run) && !sentences.has(run)) fail(`${at}, ${where}`, `${run} reads as one piece: put English, a full stop, a colon or an ASCII comma between two pieces, or list it under phrases_ar if it is one phrase`);
         }
-        if (!cited(run)) voiced.add(run);
+        if (!cited(run) && !label) voiced.add(run);
       }
     }
     for (const p of phrases) if (!used.has(p)) fail(`${at}, phrases_ar`, `${p} isn't used in the text`);
     // Nothing that answers its lesson's check, or the check of a lesson whose words link here.
-    const everything = [...mixed.map(([, s]) => s), ...(e.table ?? []).map(r => r.ar), ...(e.examples ?? []).map(x => x.ar),
+    const everything = [...mixed.map(([, s]) => s), ...labels.map(([, s]) => s), ...(e.table ?? []).map(r => r.ar), ...(e.examples ?? []).map(x => x.ar),
       ...(e.selftest ?? []).flatMap(q => q.choices ?? [])].filter(text);
     for (const s of everything) for (const run of runs(s)) for (const secret of secrets) if (contains(run, secret)) fail(at, `${run} gives away the lesson check's answer (${secret})`);
   }

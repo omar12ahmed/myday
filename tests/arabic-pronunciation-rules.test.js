@@ -33,7 +33,7 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
     ['هِيَ اتَّصَلَتْ', 'hiya ttaṣalat'], ['فِي الاسْتِخْدَامِ', 'fī l-istikhdāmi'],
     // The relative pronouns' doubled ل, a doubled ل after لِ, an authored reading after a vowel, a misspelt article.
     ['الَّذِينَ', 'alladhīna'], ['الطُّلَّابُ الَّذِينَ نَجَحُوا', 'aṭ-ṭullābu lladhīna najaḥū'], ['وَالَّذِي', 'wa-lladhī'],
-    ['لِلَّيْلِ', 'li-l-layli'], ['أَيْنَ الْقَلَمُ الَّذِي', 'ayna l-qalamu lladhī'], ['مَا اسْمُكَ', 'mā smuka'], ['الْشَمْسُ', 'ash-shamsu'], ['وَالِدِي', 'wālidī'], ['فَالِحٌ', 'fāliḥun'],
+    ['لِلَّيْلِ', 'li-l-layli'], ['أَيْنَ الْقَلَمُ الَّذِي', 'ayna l-qalamu lladhī'], ['مَا اسْمُكَ', 'mā smuka'], ['الْشَمْسُ', 'ash-shamsu'], ['وَالِدِي', 'wālidī'], ['فَالِحٌ', 'fāliḥun'], ['الْـ', 'al-'],
     ['هَذَا', 'hādhā'], ['هَذِهِ', 'hādhihi'],
     ['ذَلِكَ', 'dhālika'], ['لَكِنَّ', 'lākinna'], ['الَّذِي', 'alladhī'], ['اسْمِي', 'ismī'],
   ]) { const r = t(ar); check(`${ar} → ${latin}`, r.text === latin && !r.incomplete); }

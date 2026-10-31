@@ -80,10 +80,10 @@ function ExplainerCard({ e }: { e: Explainer }) {
           <th scope="col" className="py-2 font-semibold">Meaning</th>
         </tr></thead>
         <tbody>{e.table.map((r, i) => <tr key={i} className="border-b border-outline align-top" data-ar-explainer-row={r.ar}>
-          <td className="py-2 pr-3 text-sm text-fg-2 hidden sm:table-cell">{r.form_en}</td>
+          <td className="py-2 pr-3 text-sm text-fg-2 hidden sm:table-cell"><WordNote text={r.form_en} /></td>
           <td className="py-2 pr-3"><div className="flex items-start gap-2"><div className="min-w-0"><Ar block className="text-[22px] m-0">{r.ar}</Ar></div>
             <PlayButton text={r.ar} name={`${voice}:form:${i}`} label={r.ar} /></div></td>
-          <td className="py-2 text-[15px]">{r.en}<span className="block text-sm text-fg-2 sm:hidden">{r.form_en}</span></td>
+          <td className="py-2 text-[15px]">{r.en}<span className="block text-sm text-fg-2 sm:hidden"><WordNote text={r.form_en} /></span></td>
         </tr>)}</tbody>
       </table>
     </div>
@@ -97,7 +97,7 @@ function ExplainerCard({ e }: { e: Explainer }) {
         <PlayButton text={x.ar} name={`${voice}:sentence:${i}`} label={x.ar} /></div>
       <p className="text-[15px] mt-1 mb-2">{x.en}</p>
       <p className="text-sm text-fg-2 m-0">Word by word:</p>
-      <ul className="list-none p-0 m-0 grid gap-1">{x.words.map((w, j) => <li key={j} className="text-[15px]"><Ar className="text-[20px]">{w.ar}</Ar> <span className="text-fg-2">{w.en}</span></li>)}</ul>
+      <ul className="list-none p-0 m-0 grid gap-1">{x.words.map((w, j) => <li key={j} className="text-[15px]"><Ar className="text-[20px]">{w.ar}</Ar> <span className="text-fg-2"><WordNote text={w.en} /></span></li>)}</ul>
     </div>)}</div>
 
     <H>Why?</H>

@@ -44,6 +44,8 @@ function word(written: string, afterVowel = false): Reading {
   // unvowelled ا that's really a hamza (انا, الى) keeps its vowel.
   if (authored) return { text: afterVowel && /^(ٱ|ال|ا[^ًٌٍَُِّْ][ًٌٍَُِ]*[ّْ])/.test(word) && /^[aiu]/.test(authored) ? authored.slice(1) : authored, incomplete: false };
   if (names[word]) return { text: names[word], incomplete: false };
+  // The article cited on its own (الْـ, ال): al-.
+  if (/^[اٱ]لْ?$/.test(word)) return { text: afterVowel ? 'l-' : 'al-', incomplete: false };
   if (word === 'كتب') return { text: 'kataba / kutub / kutiba…', incomplete: false, note: 'Several readings are possible; use the sentence context.' };
   const a = units(word);
   if (!a.length) return { text: word.replace(/[ًٌٍَُِْٰ]/g, c => vowels[c] ?? 'ā'), incomplete: false };

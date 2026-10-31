@@ -1,6 +1,6 @@
 {
  "about": "Explainers: one verb family at a time, explained in short steps (MyDay's own, not part of the supplied package). Each has the family as a table, the contrast learners trip on, two or three short sentences broken down word by word, the natural \"why\" question, and a three-question self-test with answers. Only the Arabic is stored: the app shows its own transliteration. Standard Arabic only, fully vowelled, made-up names. Checked by app/scripts/validate-explainers.mjs. Proposal: specs/arabic-explainers.md.",
- "status": "module 14 (ten explainers): cross-checked independently (nine fixes, re-checked), then checked by the owner's fluent checker on 30 October 2026; shown in the app; not voiced yet",
+ "status": "module 14 (ten explainers): cross-checked independently, then checked by the owner's fluent checker on 30 October 2026; shown in the app. Module 15 (eight): draft 1, 31 October 2026, not yet cross-checked or checked",
  "version": "1.0",
  "lessons": {
   "lesson.arabic-weak-verbs": [
@@ -1653,6 +1653,1384 @@
      }
     ],
     "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-relative-clauses": [
+   {
+    "id": "explainer.arabic-who-which",
+    "title_en": "Who, which, that: الَّذِي and its family",
+    "family_en": "Relative words: they link a noun to the sentence that describes it",
+    "course_words": [
+     "lexeme.arabic-relative-clauses-1",
+     "lexeme.arabic-relative-clauses-2",
+     "lexeme.arabic-relative-clauses-3"
+    ],
+    "table": [
+     {
+      "form_en": "one man, or a masculine thing",
+      "ar": "الَّذِي",
+      "en": "who, which, that"
+     },
+     {
+      "form_en": "one woman, a feminine thing, or things in the plural",
+      "ar": "الَّتِي",
+      "en": "who, which, that"
+     },
+     {
+      "form_en": "men, or a mixed group (people only)",
+      "ar": "الَّذِينَ",
+      "en": "who"
+     },
+     {
+      "form_en": "women (people only)",
+      "ar": "اللَّاتِي",
+      "en": "who"
+     },
+     {
+      "form_en": "two, masculine",
+      "ar": "اللَّذَانِ",
+      "en": "who, which (the two)"
+     },
+     {
+      "form_en": "two, feminine",
+      "ar": "اللَّتَانِ",
+      "en": "who, which (the two)"
+     }
+    ],
+    "steps": [
+     "Arabic links a noun to a sentence that describes it with a relative word, much like \"who\", \"which\" or \"that\". الَّذِي is for one man or a masculine thing, الَّتِي for one woman or a feminine thing.",
+     "The relative word matches the noun: الطَّالِبُ الَّذِي, the student (a man) who; الطَّالِبَةُ الَّتِي, the student (a woman) who; الطُّلَّابُ الَّذِينَ, the students who.",
+     "Things in the plural count as feminine singular, so they take الَّتِي: الْكُتُبُ الَّتِي, the books that.",
+     "A relative word follows only a definite noun: one with الْـ, a name, or a possessive. After a noun without الْـ, the describing sentence follows directly, with no relative word.",
+     "When the noun is the one the action is done to, the describing sentence points back to it with a pronoun: الْمَدِينَةُ الَّتِي زُرْتُهَا, the city that I visited (literally \"that I visited it\").",
+     "When the noun is the one doing the action, the verb already points back, so no extra pronoun is needed: الرَّجُلُ الَّذِي يَسْكُنُ هُنَا, the man who lives here.",
+     "For two, use اللَّذَانِ and اللَّتَانِ. After a preposition, or as an object, they become اللَّذَيْنِ and اللَّتَيْنِ."
+    ],
+    "examples": [
+     {
+      "ar": "الْقَمِيصُ الَّذِي اشْتَرَيْتُهُ أَزْرَقُ.",
+      "en": "The shirt I bought is blue.",
+      "words": [
+       {
+        "ar": "الْقَمِيصُ",
+        "en": "the shirt"
+       },
+       {
+        "ar": "الَّذِي",
+        "en": "that (masculine, like the shirt)"
+       },
+       {
+        "ar": "اشْتَرَيْتُهُ",
+        "en": "I bought it (-hu points back to the shirt)"
+       },
+       {
+        "ar": "أَزْرَقُ",
+        "en": "is blue"
+       }
+      ]
+     },
+     {
+      "ar": "قَرَأْتُ قِصَّةً أَعْجَبَتْنِي كَثِيرًا.",
+      "en": "I read a story that I liked a lot.",
+      "words": [
+       {
+        "ar": "قَرَأْتُ",
+        "en": "I read"
+       },
+       {
+        "ar": "قِصَّةً",
+        "en": "a story (no الْـ, so no relative word)"
+       },
+       {
+        "ar": "أَعْجَبَتْنِي",
+        "en": "that I liked (literally \"it pleased me\")"
+       },
+       {
+        "ar": "كَثِيرًا",
+        "en": "a lot"
+       }
+      ]
+     },
+     {
+      "ar": "شَكَرْتُ الْجِيرَانَ الَّذِينَ سَاعَدُونَا.",
+      "en": "I thanked the neighbours who helped us.",
+      "words": [
+       {
+        "ar": "شَكَرْتُ",
+        "en": "I thanked"
+       },
+       {
+        "ar": "الْجِيرَانَ",
+        "en": "the neighbours (the -a ending: the ones thanked)"
+       },
+       {
+        "ar": "الَّذِينَ",
+        "en": "who (people, plural)"
+       },
+       {
+        "ar": "سَاعَدُونَا",
+        "en": "helped us"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does a plural like الْكُتُبُ take الَّتِي, not الَّذِينَ?",
+     "a_en": "الَّذِينَ is only for people. Plurals of things are treated as feminine singular: you say الْكُتُبُ جَدِيدَةٌ, the books are new, with a feminine singular describing word, and in the same way الْكُتُبُ الَّتِي, the books that."
+    },
+    "selftest": [
+     {
+      "q_en": "\"The girl who studies with me\": which word links الْبِنْتُ to تَدْرُسُ مَعِي?",
+      "choices": [
+       "الَّتِي",
+       "الَّذِي",
+       "الَّذِينَ"
+      ],
+      "answer": "الَّتِي",
+      "why_en": "الْبِنْتُ is one girl, so الَّتِي. الَّذِي is for a man, and الَّذِينَ for men."
+     },
+     {
+      "q_en": "\"The friends who visited us\": which relative word goes with الْأَصْدِقَاءُ?",
+      "choices": [
+       "الَّذِينَ",
+       "الَّتِي",
+       "الَّذِي"
+      ],
+      "answer": "الَّذِينَ",
+      "why_en": "Friends are people, and there are several of them, so الَّذِينَ. الَّتِي would suit things in the plural."
+     },
+     {
+      "q_en": "Which of these takes الَّتِي?",
+      "choices": [
+       "الْبُيُوتُ, the houses",
+       "الرِّجَالُ, the men",
+       "الْبَيْتُ, the house"
+      ],
+      "answer": "الْبُيُوتُ, the houses",
+      "why_en": "Things in the plural take الَّتِي. Men take الَّذِينَ, and one house takes الَّذِي."
+     }
+    ],
+    "phrases_ar": [
+     "الطَّالِبُ الَّذِي",
+     "الطَّالِبَةُ الَّتِي",
+     "الطُّلَّابُ الَّذِينَ",
+     "الْكُتُبُ الَّتِي",
+     "الْمَدِينَةُ الَّتِي زُرْتُهَا",
+     "الرَّجُلُ الَّذِي يَسْكُنُ هُنَا",
+     "الْكُتُبُ جَدِيدَةٌ",
+     "تَدْرُسُ مَعِي"
+    ]
+   }
+  ],
+  "lesson.arabic-inna-kana": [
+   {
+    "id": "explainer.arabic-inna-sisters",
+    "title_en": "إِنَّ and its sisters: إِنَّ, أَنَّ, لَكِنَّ, لَعَلَّ",
+    "family_en": "Particles that make the noun after them end in -a",
+    "course_words": [
+     "lexeme.arabic-inna-kana-1",
+     "lexeme.arabic-inna-kana-2",
+     "lexeme.arabic-inna-kana-3"
+    ],
+    "table": [
+     {
+      "form_en": "the plain sentence",
+      "ar": "الْجَوُّ جَمِيلٌ",
+      "en": "the weather is nice"
+     },
+     {
+      "form_en": "with إِنَّ: weight",
+      "ar": "إِنَّ الْجَوَّ جَمِيلٌ",
+      "en": "the weather is (indeed) nice"
+     },
+     {
+      "form_en": "with أَنَّ: that",
+      "ar": "أَعْرِفُ أَنَّ الْجَوَّ جَمِيلٌ",
+      "en": "I know that the weather is nice"
+     },
+     {
+      "form_en": "with لَكِنَّ: but",
+      "ar": "لَكِنَّ الْجَوَّ جَمِيلٌ",
+      "en": "but the weather is nice"
+     },
+     {
+      "form_en": "with لَعَلَّ: perhaps",
+      "ar": "لَعَلَّ الْجَوَّ جَمِيلٌ",
+      "en": "perhaps the weather is nice"
+     },
+     {
+      "form_en": "with كَأَنَّ: as if",
+      "ar": "كَأَنَّنَا فِي الصَّيْفِ",
+      "en": "it's as if we were in summer"
+     },
+     {
+      "form_en": "with a pronoun",
+      "ar": "إِنَّهُ جَمِيلٌ",
+      "en": "it is (indeed) nice"
+     }
+    ],
+    "steps": [
+     "A sentence such as الْجَوُّ جَمِيلٌ has a subject and a description, and both end in -u.",
+     "Put إِنَّ in front and the subject changes to -a, while the description keeps its -u: إِنَّ الْجَوَّ جَمِيلٌ.",
+     "Its sisters work the same way and add their own meaning: أَنَّ, that; لَكِنَّ, but; لَعَلَّ, perhaps (hoping); كَأَنَّ, as if.",
+     "إِنَّ starts a statement, or follows قَالَ. أَنَّ follows another word, usually a verb such as أَعْرِفُ, I know.",
+     "A pronoun can join straight on: إِنَّهُ, أَنَّهَا, لَعَلَّكَ. With \"I\" and \"we\" you'll see both إِنِّي and إِنَّنِي, and both are correct.",
+     "Don't confuse أَنَّ with أَنْ. أَنْ comes before a verb (أُرِيدُ أَنْ أَنَامَ, I want to sleep), and أَنَّ before a noun or a pronoun."
+    ],
+    "examples": [
+     {
+      "ar": "سَمِعْتُ أَنَّ الْمَتْحَفَ مُغْلَقٌ الْيَوْمَ.",
+      "en": "I heard that the museum is closed today.",
+      "words": [
+       {
+        "ar": "سَمِعْتُ",
+        "en": "I heard"
+       },
+       {
+        "ar": "أَنَّ",
+        "en": "that"
+       },
+       {
+        "ar": "الْمَتْحَفَ",
+        "en": "the museum (-a after أَنَّ)"
+       },
+       {
+        "ar": "مُغْلَقٌ",
+        "en": "closed (keeps its -un)"
+       },
+       {
+        "ar": "الْيَوْمَ",
+        "en": "today"
+       }
+      ]
+     },
+     {
+      "ar": "لَعَلَّ الْقِطَارَ يَصِلُ قَرِيبًا.",
+      "en": "Perhaps the train will arrive soon.",
+      "words": [
+       {
+        "ar": "لَعَلَّ",
+        "en": "perhaps (hoping)"
+       },
+       {
+        "ar": "الْقِطَارَ",
+        "en": "the train (-a after لَعَلَّ)"
+       },
+       {
+        "ar": "يَصِلُ",
+        "en": "arrives, will arrive"
+       },
+       {
+        "ar": "قَرِيبًا",
+        "en": "soon"
+       }
+      ]
+     },
+     {
+      "ar": "الْبَيْتُ صَغِيرٌ، لَكِنَّهُ مُرِيحٌ.",
+      "en": "The house is small, but it's comfortable.",
+      "words": [
+       {
+        "ar": "الْبَيْتُ",
+        "en": "the house"
+       },
+       {
+        "ar": "صَغِيرٌ",
+        "en": "small"
+       },
+       {
+        "ar": "لَكِنَّهُ",
+        "en": "but it (لَكِنَّ with -hu)"
+       },
+       {
+        "ar": "مُرِيحٌ",
+        "en": "comfortable"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Do I always translate إِنَّ as \"indeed\"?",
+     "a_en": "No. إِنَّ gives a statement weight, a little like \"indeed\" or \"truly\", but English usually leaves it out: إِنَّ الْعِلْمَ نُورٌ is simply \"knowledge is light\". After قَالَ it means \"that\": قَالَتْ إِنَّهَا مَشْغُولَةٌ, she said that she was busy."
+    },
+    "selftest": [
+     {
+      "q_en": "Which is right?",
+      "choices": [
+       "إِنَّ الطَّقْسَ بَارِدٌ",
+       "إِنَّ الطَّقْسُ بَارِدٌ",
+       "إِنَّ الطَّقْسَ بَارِدًا"
+      ],
+      "answer": "إِنَّ الطَّقْسَ بَارِدٌ",
+      "why_en": "After إِنَّ the subject ends in -a (الطَّقْسَ), and the description keeps its -un (بَارِدٌ)."
+     },
+     {
+      "q_en": "Which says \"I know that the shop is closed\"?",
+      "choices": [
+       "أَعْرِفُ أَنَّ الْمَحَلَّ مُغْلَقٌ",
+       "أَعْرِفُ أَنْ الْمَحَلُّ مُغْلَقٌ",
+       "أَعْرِفُ إِنَّ الْمَحَلُّ مُغْلَقٌ"
+      ],
+      "answer": "أَعْرِفُ أَنَّ الْمَحَلَّ مُغْلَقٌ",
+      "why_en": "After a verb like أَعْرِفُ, use أَنَّ, and the noun after it ends in -a. أَنْ goes before a verb."
+     },
+     {
+      "q_en": "What does لَعَلَّ add to a sentence?",
+      "choices": [
+       "perhaps, often hopeful",
+       "as if",
+       "but"
+      ],
+      "answer": "perhaps, often hopeful",
+      "why_en": "لَعَلَّ is \"perhaps\", often with hope. \"As if\" is كَأَنَّ, and \"but\" is لَكِنَّ."
+     }
+    ],
+    "phrases_ar": [
+     "الْجَوُّ جَمِيلٌ",
+     "إِنَّ الْجَوَّ جَمِيلٌ",
+     "أُرِيدُ أَنْ أَنَامَ",
+     "إِنَّ الْعِلْمَ نُورٌ",
+     "قَالَتْ إِنَّهَا مَشْغُولَةٌ"
+    ]
+   },
+   {
+    "id": "explainer.arabic-kana-sisters",
+    "title_en": "كَانَ and its sisters: كَانَ, أَصْبَحَ, لَيْسَ, مَا زَالَ",
+    "family_en": "Verbs that make the description after them end in -a",
+    "course_words": [
+     "lexeme.arabic-inna-kana-4",
+     "lexeme.arabic-inna-kana-5"
+    ],
+    "table": [
+     {
+      "form_en": "the plain sentence",
+      "ar": "الْجَوُّ بَارِدٌ",
+      "en": "the weather is cold"
+     },
+     {
+      "form_en": "with كَانَ: was",
+      "ar": "كَانَ الْجَوُّ بَارِدًا",
+      "en": "the weather was cold"
+     },
+     {
+      "form_en": "with أَصْبَحَ: became",
+      "ar": "أَصْبَحَ الْجَوُّ بَارِدًا",
+      "en": "the weather became cold"
+     },
+     {
+      "form_en": "with لَيْسَ: is not",
+      "ar": "لَيْسَ الْجَوُّ بَارِدًا",
+      "en": "the weather isn't cold"
+     },
+     {
+      "form_en": "with مَا زَالَ: still",
+      "ar": "مَا زَالَ الْجَوُّ بَارِدًا",
+      "en": "the weather is still cold"
+     },
+     {
+      "form_en": "with سَيَكُونُ: will be",
+      "ar": "سَيَكُونُ الْجَوُّ بَارِدًا",
+      "en": "the weather will be cold"
+     }
+    ],
+    "steps": [
+     "كَانَ and its sisters are verbs that work on a whole sentence like الْجَوُّ بَارِدٌ. The subject keeps its -u, and the description changes to -a (here -an): كَانَ الْجَوُّ بَارِدًا.",
+     "That's the opposite of إِنَّ, which changes the subject and leaves the description alone.",
+     "Each adds its own meaning: كَانَ, was; أَصْبَحَ, became; لَيْسَ, is not; مَا زَالَ, still is.",
+     "Like any verb, they change for the subject: كَانَتِ الْغُرْفَةُ بَارِدَةً, the room was cold; أَصْبَحْتُ مُعَلِّمًا, I became a teacher.",
+     "مَا زَالَ looks negative (literally \"hasn't stopped\"), but it means \"still\". In the present it's لَا يَزَالُ: لَا يَزَالُ الْمَطَرُ غَزِيرًا, the rain is still heavy."
+    ],
+    "examples": [
+     {
+      "ar": "كَانَتِ الرِّحْلَةُ طَوِيلَةً.",
+      "en": "The journey was long.",
+      "words": [
+       {
+        "ar": "كَانَتِ",
+        "en": "was (-at: the journey is feminine; the i joins it to the next word)"
+       },
+       {
+        "ar": "الرِّحْلَةُ",
+        "en": "the journey (keeps its -u)"
+       },
+       {
+        "ar": "طَوِيلَةً",
+        "en": "long (-an after كَانَ)"
+       }
+      ]
+     },
+     {
+      "ar": "أَصْبَحَ يُوسُفُ طَبِيبًا.",
+      "en": "Yūsuf became a doctor.",
+      "words": [
+       {
+        "ar": "أَصْبَحَ",
+        "en": "became"
+       },
+       {
+        "ar": "يُوسُفُ",
+        "en": "Yūsuf"
+       },
+       {
+        "ar": "طَبِيبًا",
+        "en": "a doctor (-an after أَصْبَحَ)"
+       }
+      ]
+     },
+     {
+      "ar": "لَيْسَ الْمَطْعَمُ بَعِيدًا.",
+      "en": "The restaurant isn't far.",
+      "words": [
+       {
+        "ar": "لَيْسَ",
+        "en": "isn't"
+       },
+       {
+        "ar": "الْمَطْعَمُ",
+        "en": "the restaurant (keeps its -u)"
+       },
+       {
+        "ar": "بَعِيدًا",
+        "en": "far (-an after لَيْسَ)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is لَيْسَ in this family, when it means \"is not\"?",
+     "a_en": "Because it works exactly like كَانَ: its subject keeps -u and its description takes -a, as in لَيْسَ الْمَطْعَمُ بَعِيدًا. It's a verb too, and changes for the person (لَسْتُ مُتْعَبًا, I'm not tired), though it has only this one form, with no present or future."
+    },
+    "selftest": [
+     {
+      "q_en": "Which says \"the room was clean\"?",
+      "choices": [
+       "كَانَتِ الْغُرْفَةُ نَظِيفَةً",
+       "كَانَتِ الْغُرْفَةَ نَظِيفَةٌ",
+       "كَانَ الْغُرْفَةُ نَظِيفَةٌ"
+      ],
+      "answer": "كَانَتِ الْغُرْفَةُ نَظِيفَةً",
+      "why_en": "After كَانَ the description takes -an (نَظِيفَةً) and the subject keeps -u. كَانَتْ also agrees with the feminine الْغُرْفَةُ."
+     },
+     {
+      "q_en": "What does مَا زَالَ الْمَطَرُ غَزِيرًا mean?",
+      "choices": [
+       "The rain is still heavy",
+       "The rain is no longer heavy",
+       "The rain was never heavy"
+      ],
+      "answer": "The rain is still heavy",
+      "why_en": "مَا زَالَ means \"still\", though it looks negative."
+     },
+     {
+      "q_en": "Which of these changes the description, not the subject?",
+      "choices": [
+       "كَانَ",
+       "إِنَّ",
+       "لَعَلَّ"
+      ],
+      "answer": "كَانَ",
+      "why_en": "كَانَ and its sisters change the description to -a. إِنَّ and لَعَلَّ change the subject."
+     }
+    ],
+    "phrases_ar": [
+     "الْجَوُّ بَارِدٌ",
+     "كَانَ الْجَوُّ بَارِدًا",
+     "كَانَتِ الْغُرْفَةُ بَارِدَةً",
+     "أَصْبَحْتُ مُعَلِّمًا",
+     "لَا يَزَالُ الْمَطَرُ غَزِيرًا",
+     "لَسْتُ مُتْعَبًا",
+     "مَا زَالَ الْمَطَرُ غَزِيرًا",
+     "مَا زَالَ",
+     "لَا يَزَالُ"
+    ]
+   }
+  ],
+  "lesson.arabic-reported-information": [
+   {
+    "id": "explainer.arabic-reporting",
+    "title_en": "Saying who said it: قَالَ إِنَّ and ذَكَرَ أَنَّ",
+    "family_en": "Reporting verbs, and the \"that\" after them",
+    "course_words": [
+     "lexeme.arabic-reported-information-1",
+     "lexeme.arabic-reported-information-2",
+     "lexeme.arabic-reported-information-3",
+     "lexeme.arabic-reported-information-4",
+     "lexeme.arabic-reported-information-5",
+     "lexeme.arabic-reported-information-6"
+    ],
+    "table": [
+     {
+      "form_en": "said (neutral)",
+      "ar": "قَالَ إِنَّ",
+      "en": "he said that"
+     },
+     {
+      "form_en": "mentioned",
+      "ar": "ذَكَرَ أَنَّ",
+      "en": "he mentioned that"
+     },
+     {
+      "form_en": "explained",
+      "ar": "أَوْضَحَ أَنَّ",
+      "en": "he explained that"
+     },
+     {
+      "form_en": "confirmed (presented as certain)",
+      "ar": "أَكَّدَ أَنَّ",
+      "en": "he confirmed that"
+     },
+     {
+      "form_en": "believed",
+      "ar": "اِعْتَقَدَ أَنَّ",
+      "en": "he believed that"
+     },
+     {
+      "form_en": "supposed (may be wrong)",
+      "ar": "ظَنَّ أَنَّ",
+      "en": "he thought that"
+     },
+     {
+      "form_en": "claimed (the writer may doubt it)",
+      "ar": "زَعَمَ أَنَّ",
+      "en": "he claimed that"
+     }
+    ],
+    "steps": [
+     "When you report what someone said, a reporting verb and \"that\" keep their words apart from your own.",
+     "After قَالَ, \"that\" is إِنَّ, with i. After almost every other reporting verb it's أَنَّ, with a: ذَكَرَ أَنَّ, أَكَّدَ أَنَّ.",
+     "Both work like إِنَّ: the noun after them ends in -a, or a pronoun joins on. قَالَتْ إِنَّ الدَّرْسَ مُفِيدٌ; ذَكَرَ أَنَّهُ مَشْغُولٌ.",
+     "Change the person to fit the report. Laylā says أَنَا مَشْغُولَةٌ, \"I'm busy\", and you report قَالَتْ إِنَّهَا مَشْغُولَةٌ, she said she was busy.",
+     "The verb shows how sure the speaker is: أَكَّدَ presents it as certain, ظَنَّ as a guess, and زَعَمَ hints that the writer doubts it. Reporting a claim doesn't make it true.",
+     "Arabic keeps the speaker's own tense. Where English shifts \"is\" to \"was\", Arabic leaves مَشْغُولَةٌ as it was said."
+    ],
+    "examples": [
+     {
+      "ar": "ذَكَرَتْ سَلْمَى أَنَّ الْحَفْلَةَ يَوْمَ الْخَمِيسِ.",
+      "en": "Salmā mentioned that the party is on Thursday.",
+      "words": [
+       {
+        "ar": "ذَكَرَتْ",
+        "en": "mentioned (she)"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       },
+       {
+        "ar": "أَنَّ",
+        "en": "that"
+       },
+       {
+        "ar": "الْحَفْلَةَ",
+        "en": "the party (-a after أَنَّ)"
+       },
+       {
+        "ar": "يَوْمَ",
+        "en": "on (the day of)"
+       },
+       {
+        "ar": "الْخَمِيسِ",
+        "en": "Thursday"
+       }
+      ]
+     },
+     {
+      "ar": "قَالَ يُوسُفُ إِنَّهُ سَيَتَأَخَّرُ قَلِيلًا.",
+      "en": "Yūsuf said he would be a little late.",
+      "words": [
+       {
+        "ar": "قَالَ",
+        "en": "said"
+       },
+       {
+        "ar": "يُوسُفُ",
+        "en": "Yūsuf"
+       },
+       {
+        "ar": "إِنَّهُ",
+        "en": "that he (إِنَّ with -hu)"
+       },
+       {
+        "ar": "سَيَتَأَخَّرُ",
+        "en": "will be late"
+       },
+       {
+        "ar": "قَلِيلًا",
+        "en": "a little"
+       }
+      ]
+     },
+     {
+      "ar": "زَعَمَ الْبَائِعُ أَنَّ السِّعْرَ مُنَاسِبٌ.",
+      "en": "The seller claimed that the price was fair.",
+      "words": [
+       {
+        "ar": "زَعَمَ",
+        "en": "claimed (the writer may doubt it)"
+       },
+       {
+        "ar": "الْبَائِعُ",
+        "en": "the seller"
+       },
+       {
+        "ar": "أَنَّ",
+        "en": "that"
+       },
+       {
+        "ar": "السِّعْرَ",
+        "en": "the price (-a after أَنَّ)"
+       },
+       {
+        "ar": "مُنَاسِبٌ",
+        "en": "fair, reasonable"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Does قَالَتْ إِنَّهَا مَشْغُولَةٌ mean that she is busy, or that she was?",
+     "a_en": "It can be either. Arabic keeps the speaker's tense, so مَشْغُولَةٌ doesn't change; English usually shifts it to \"was\". The context tells you whether it's still true."
+    },
+    "selftest": [
+     {
+      "q_en": "Which word for \"that\" follows قَالَ?",
+      "choices": [
+       "إِنَّ",
+       "أَنَّ",
+       "أَنْ"
+      ],
+      "answer": "إِنَّ",
+      "why_en": "قَالَ is followed by إِنَّ. Most other reporting verbs take أَنَّ, and أَنْ goes before a verb."
+     },
+     {
+      "q_en": "Which verb hints that the writer doubts the claim?",
+      "choices": [
+       "زَعَمَ",
+       "أَكَّدَ",
+       "أَوْضَحَ"
+      ],
+      "answer": "زَعَمَ",
+      "why_en": "زَعَمَ, \"claimed\", often hints at doubt. أَكَّدَ presents a claim as certain, and أَوْضَحَ as an explanation."
+     },
+     {
+      "q_en": "What does ظَنَنْتُ أَنَّكَ مَشْغُولٌ suggest?",
+      "choices": [
+       "I supposed you were busy, and may have been wrong",
+       "I'm certain you're busy",
+       "Someone told me you were busy"
+      ],
+      "answer": "I supposed you were busy, and may have been wrong",
+      "why_en": "ظَنَّ is a supposition. For certainty you'd use أَكَّدَ, and \"I was told\" is قِيلَ لِي."
+     }
+    ],
+    "phrases_ar": [
+     "قَالَتْ إِنَّ الدَّرْسَ مُفِيدٌ",
+     "ذَكَرَ أَنَّهُ مَشْغُولٌ",
+     "أَنَا مَشْغُولَةٌ",
+     "قَالَتْ إِنَّهَا مَشْغُولَةٌ",
+     "ظَنَنْتُ أَنَّكَ مَشْغُولٌ",
+     "قِيلَ لِي"
+    ]
+   }
+  ],
+  "lesson.arabic-conditionals": [
+   {
+    "id": "explainer.arabic-if-when",
+    "title_en": "If and when: إِذَا and إِنْ",
+    "family_en": "Conditions that can come true",
+    "course_words": [
+     "lexeme.arabic-conditionals-1",
+     "lexeme.arabic-conditionals-2",
+     "lexeme.arabic-conditionals-5",
+     "lexeme.arabic-conditionals-6"
+    ],
+    "table": [
+     {
+      "form_en": "if, when (expected)",
+      "ar": "إِذَا",
+      "en": "if, when"
+     },
+     {
+      "form_en": "if (more formal)",
+      "ar": "إِنْ",
+      "en": "if"
+     },
+     {
+      "form_en": "unless",
+      "ar": "إِلَّا إِذَا",
+      "en": "unless"
+     },
+     {
+      "form_en": "after إِذَا: a past verb",
+      "ar": "إِذَا وَصَلْتَ",
+      "en": "if (or when) you arrive"
+     },
+     {
+      "form_en": "after إِنْ: the jussive",
+      "ar": "إِنْ تَدْرُسْ",
+      "en": "if you study"
+     },
+     {
+      "form_en": "a result with فَـ",
+      "ar": "فَسَأَتَّصِلُ بِكَ",
+      "en": "then I'll call you"
+     }
+    ],
+    "steps": [
+     "A condition sentence has two halves: the condition (\"if …\") and the result. إِذَا is the everyday \"if\" or \"when\", for something you expect, or that may well happen.",
+     "After إِذَا, use a past verb, even about the future: إِذَا وَصَلْتَ, if (or when) you arrive. Here the past form doesn't mean it has already happened.",
+     "The result starts with فَـ when it begins with سَـ (will), a command or a noun: إِذَا وَصَلْتَ، فَاتَّصِلْ بِي, when you arrive, call me.",
+     "إِنْ is a more formal \"if\". Both its verbs are often in the jussive, the form used after لَمْ: إِنْ تَدْرُسْ تَنْجَحْ, if you study, you'll succeed.",
+     "Don't confuse إِنْ, if, with إِنَّ, which gives weight to a statement: the shadda makes the difference.",
+     "إِلَّا إِذَا means \"unless\": سَنَمْشِي إِلَّا إِذَا أَمْطَرَتْ, we'll walk unless it rains."
+    ],
+    "examples": [
+     {
+      "ar": "إِذَا انْتَهَيْتُ مُبَكِّرًا، فَسَأَزُورُكَ.",
+      "en": "If I finish early, I'll visit you.",
+      "words": [
+       {
+        "ar": "إِذَا",
+        "en": "if, when"
+       },
+       {
+        "ar": "انْتَهَيْتُ",
+        "en": "I finish (a past form, about the future)"
+       },
+       {
+        "ar": "مُبَكِّرًا",
+        "en": "early"
+       },
+       {
+        "ar": "فَسَأَزُورُكَ",
+        "en": "then I'll visit you (فَـ before سَـ)"
+       }
+      ]
+     },
+     {
+      "ar": "إِنْ تُسَافِرْ غَدًا تَجِدِ الطَّرِيقَ مُزْدَحِمًا.",
+      "en": "If you travel tomorrow, you'll find the road busy.",
+      "words": [
+       {
+        "ar": "إِنْ",
+        "en": "if"
+       },
+       {
+        "ar": "تُسَافِرْ",
+        "en": "you travel (jussive)"
+       },
+       {
+        "ar": "غَدًا",
+        "en": "tomorrow"
+       },
+       {
+        "ar": "تَجِدِ",
+        "en": "you'll find (jussive; the i joins it to the next word)"
+       },
+       {
+        "ar": "الطَّرِيقَ",
+        "en": "the road"
+       },
+       {
+        "ar": "مُزْدَحِمًا",
+        "en": "busy, crowded"
+       }
+      ]
+     },
+     {
+      "ar": "سَنَمْشِي إِلَّا إِذَا أَمْطَرَتْ.",
+      "en": "We'll walk unless it rains.",
+      "words": [
+       {
+        "ar": "سَنَمْشِي",
+        "en": "we'll walk"
+       },
+       {
+        "ar": "إِلَّا",
+        "en": "except"
+       },
+       {
+        "ar": "إِذَا",
+        "en": "if"
+       },
+       {
+        "ar": "أَمْطَرَتْ",
+        "en": "it rains (a past form)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is إِذَا followed by a past verb when it's about the future?",
+     "a_en": "That's how Arabic sets up a condition: the past form says \"once this happens\", and the result says what follows. إِذَا وَصَلْتَ is \"if (or when) you arrive\", not \"if you arrived\"."
+    },
+    "selftest": [
+     {
+      "q_en": "Which verb form usually follows إِذَا?",
+      "choices": [
+       "the past, as in وَصَلْتَ",
+       "the present, as in تَصِلُ",
+       "the command, as in صِلْ"
+      ],
+      "answer": "the past, as in وَصَلْتَ",
+      "why_en": "إِذَا is usually followed by a past verb, even when the condition is about the future."
+     },
+     {
+      "q_en": "In إِذَا جَاءَتْ سَلْمَى، نَذْهَبُ مَعًا, which part is the result?",
+      "choices": [
+       "نَذْهَبُ مَعًا",
+       "إِذَا جَاءَتْ سَلْمَى",
+       "جَاءَتْ"
+      ],
+      "answer": "نَذْهَبُ مَعًا",
+      "why_en": "The condition is إِذَا جَاءَتْ سَلْمَى, \"if Salmā comes\". The result is what follows it: نَذْهَبُ مَعًا, we'll go together."
+     },
+     {
+      "q_en": "What's the difference between إِنْ and إِنَّ?",
+      "choices": [
+       "إِنْ is \"if\"; إِنَّ gives a statement weight",
+       "They mean the same",
+       "إِنَّ is \"if\"; إِنْ gives a statement weight"
+      ],
+      "answer": "إِنْ is \"if\"; إِنَّ gives a statement weight",
+      "why_en": "The shadda makes the difference. إِنْ, if, is often followed by jussive verbs; إِنَّ is followed by a noun ending in -a."
+     }
+    ],
+    "phrases_ar": [
+     "إِذَا وَصَلْتَ",
+     "إِذَا وَصَلْتَ، فَاتَّصِلْ بِي",
+     "إِنْ تَدْرُسْ تَنْجَحْ",
+     "سَنَمْشِي إِلَّا إِذَا أَمْطَرَتْ",
+     "إِذَا جَاءَتْ سَلْمَى، نَذْهَبُ مَعًا",
+     "إِذَا جَاءَتْ سَلْمَى",
+     "نَذْهَبُ مَعًا"
+    ]
+   },
+   {
+    "id": "explainer.arabic-if-only",
+    "title_en": "Imagined conditions: لَوْ and لَوْلَا",
+    "family_en": "Conditions that aren't real, or didn't happen",
+    "course_words": [
+     "lexeme.arabic-conditionals-3",
+     "lexeme.arabic-conditionals-4"
+    ],
+    "table": [
+     {
+      "form_en": "a real possibility, with إِذَا",
+      "ar": "إِذَا كَانَ عِنْدِي وَقْتٌ، أَزُورُكَ",
+      "en": "if I have time, I'll visit you"
+     },
+     {
+      "form_en": "imagined, with لَوْ",
+      "ar": "لَوْ كَانَ عِنْدِي وَقْتٌ لَزُرْتُكَ",
+      "en": "if I had time, I'd visit you"
+     },
+     {
+      "form_en": "imagined, about the past",
+      "ar": "لَوْ كُنْتُ أَعْرِفُ لَأَخْبَرْتُكَ",
+      "en": "if I had known, I'd have told you"
+     },
+     {
+      "form_en": "a negative result, with لَمَا",
+      "ar": "لَوْ ذَهَبْتَ مَعَنَا لَمَا نَدِمْتَ",
+      "en": "if you'd gone with us, you wouldn't have regretted it"
+     },
+     {
+      "form_en": "if it weren't for, with لَوْلَا",
+      "ar": "لَوْلَا مُسَاعَدَتُكَ لَتَأَخَّرْتُ",
+      "en": "if it weren't for your help, I'd have been late"
+     }
+    ],
+    "steps": [
+     "لَوْ is for a condition you imagine, usually one that isn't true or didn't happen: لَوْ كَانَ عِنْدِي وَقْتٌ, if I had time (but I don't).",
+     "Its result usually starts with لَـ: لَزُرْتُكَ, I would visit you.",
+     "Both halves usually use the past form, even about now or the future. With لَوْ, the past form means \"not real\" rather than \"earlier\".",
+     "For a result that says what wouldn't happen, use لَمَا: لَمَا نَدِمْتَ, you wouldn't have regretted it.",
+     "لَوْلَا means \"if it weren't for\", and it's followed by a noun in -u: لَوْلَا الْمَطَرُ لَخَرَجْنَا, if it weren't for the rain, we'd have gone out.",
+     "Compare إِذَا: إِذَا كَانَ عِنْدِي وَقْتٌ treats having time as a real possibility, while لَوْ كَانَ عِنْدِي وَقْتٌ only imagines it."
+    ],
+    "examples": [
+     {
+      "ar": "لَوْ كُنْتُ مَكَانَكَ لَقَبِلْتُ الْعَرْضَ.",
+      "en": "If I were you, I'd accept the offer.",
+      "words": [
+       {
+        "ar": "لَوْ",
+        "en": "if (imagined)"
+       },
+       {
+        "ar": "كُنْتُ",
+        "en": "I were"
+       },
+       {
+        "ar": "مَكَانَكَ",
+        "en": "in your place"
+       },
+       {
+        "ar": "لَقَبِلْتُ",
+        "en": "I'd accept (لَـ marks the result)"
+       },
+       {
+        "ar": "الْعَرْضَ",
+        "en": "the offer"
+       }
+      ]
+     },
+     {
+      "ar": "لَوْلَا الزِّحَامُ لَوَصَلْنَا فِي الْمَوْعِدِ.",
+      "en": "If it weren't for the traffic, we'd have arrived on time.",
+      "words": [
+       {
+        "ar": "لَوْلَا",
+        "en": "if it weren't for"
+       },
+       {
+        "ar": "الزِّحَامُ",
+        "en": "the traffic (-u after لَوْلَا)"
+       },
+       {
+        "ar": "لَوَصَلْنَا",
+        "en": "we'd have arrived"
+       },
+       {
+        "ar": "فِي",
+        "en": "on, at"
+       },
+       {
+        "ar": "الْمَوْعِدِ",
+        "en": "the agreed time"
+       }
+      ]
+     },
+     {
+      "ar": "لَوْ عَرَفْتُ رَقْمَكَ لَكَتَبْتُ لَكَ.",
+      "en": "If I'd known your number, I'd have written to you.",
+      "words": [
+       {
+        "ar": "لَوْ",
+        "en": "if (imagined)"
+       },
+       {
+        "ar": "عَرَفْتُ",
+        "en": "I had known"
+       },
+       {
+        "ar": "رَقْمَكَ",
+        "en": "your number"
+       },
+       {
+        "ar": "لَكَتَبْتُ",
+        "en": "I'd have written"
+       },
+       {
+        "ar": "لَكَ",
+        "en": "to you"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why do both halves of a لَوْ sentence use the past, even about now?",
+     "a_en": "With لَوْ the past form signals \"not real\" rather than \"earlier\". لَوْ كَانَ عِنْدِي وَقْتٌ لَزُرْتُكَ is about now: if I had time (I don't), I'd visit you. The context tells you whether it's about now or about the past."
+    },
+    "selftest": [
+     {
+      "q_en": "Which sentence imagines something that isn't true?",
+      "choices": [
+       "لَوْ كَانَ الْجَوُّ دَافِئًا لَسَبَحْنَا",
+       "إِذَا كَانَ الْجَوُّ دَافِئًا نَسْبَحُ",
+       "الْجَوُّ دَافِئٌ"
+      ],
+      "answer": "لَوْ كَانَ الْجَوُّ دَافِئًا لَسَبَحْنَا",
+      "why_en": "لَوْ imagines it: the weather isn't warm. إِذَا treats it as a real possibility, and the last simply says it's warm."
+     },
+     {
+      "q_en": "What does لَوْلَا mean?",
+      "choices": [
+       "if it weren't for",
+       "if only",
+       "unless"
+      ],
+      "answer": "if it weren't for",
+      "why_en": "لَوْلَا is \"if it weren't for\", followed by a noun. \"Unless\" is إِلَّا إِذَا."
+     },
+     {
+      "q_en": "How does the result of a لَوْ sentence usually start?",
+      "choices": [
+       "with لَـ",
+       "with فَـ",
+       "with سَـ"
+      ],
+      "answer": "with لَـ",
+      "why_en": "The result of لَوْ usually starts with لَـ, as in لَزُرْتُكَ. فَـ is for the result of إِذَا, before سَـ, a command or a noun."
+     }
+    ],
+    "phrases_ar": [
+     "لَوْ كَانَ عِنْدِي وَقْتٌ",
+     "لَمَا نَدِمْتَ",
+     "لَوْلَا الْمَطَرُ لَخَرَجْنَا",
+     "إِذَا كَانَ عِنْدِي وَقْتٌ",
+     "إِلَّا إِذَا"
+    ]
+   }
+  ],
+  "lesson.arabic-cause-purpose-contrast": [
+   {
+    "id": "explainer.arabic-why-what-for",
+    "title_en": "Why and what for: لِأَنَّ, بِسَبَبِ, لِكَيْ, لِذَلِكَ",
+    "family_en": "Words for reasons, purposes and results",
+    "course_words": [
+     "lexeme.arabic-cause-purpose-contrast-1",
+     "lexeme.arabic-cause-purpose-contrast-2",
+     "lexeme.arabic-cause-purpose-contrast-3"
+    ],
+    "table": [
+     {
+      "form_en": "a reason, before a sentence",
+      "ar": "لِأَنَّ",
+      "en": "because"
+     },
+     {
+      "form_en": "a reason, before a noun",
+      "ar": "بِسَبَبِ",
+      "en": "because of"
+     },
+     {
+      "form_en": "a purpose, before a verb",
+      "ar": "لِكَيْ",
+      "en": "in order to, so that"
+     },
+     {
+      "form_en": "a purpose, before a noun",
+      "ar": "مِنْ أَجْلِ",
+      "en": "for (the sake of)"
+     },
+     {
+      "form_en": "a result",
+      "ar": "لِذَلِكَ",
+      "en": "so, that's why"
+     }
+    ],
+    "steps": [
+     "First decide what you mean: a reason (why it happened), a purpose (what it's for) or a result (what followed). Then choose the word.",
+     "For a reason, use لِأَنَّ before a sentence and بِسَبَبِ before a noun: تَأَخَّرْتُ لِأَنَّ الطَّرِيقَ مُزْدَحِمٌ; تَأَخَّرْتُ بِسَبَبِ الزِّحَامِ.",
+     "After لِأَنَّ the noun ends in -a, as after أَنَّ, or a pronoun joins on: لِأَنَّهُ, because he; لِأَنَّنِي, because I.",
+     "For a purpose, use لِكَيْ before a verb, which then ends in -a: لِكَيْ أَصِلَ, so that I arrive. مِنْ أَجْلِ goes before a noun: مِنْ أَجْلِ أُسْرَتِي, for my family.",
+     "For a result, لِذَلِكَ starts the next part: كَانَ الْمَحَلُّ مُغْلَقًا، لِذَلِكَ رَجَعْتُ, the shop was closed, so I went back."
+    ],
+    "examples": [
+     {
+      "ar": "بَقِيتُ فِي الْبَيْتِ لِأَنَّنِي كُنْتُ مَرِيضًا.",
+      "en": "I stayed at home because I was ill.",
+      "words": [
+       {
+        "ar": "بَقِيتُ",
+        "en": "I stayed"
+       },
+       {
+        "ar": "فِي",
+        "en": "at, in"
+       },
+       {
+        "ar": "الْبَيْتِ",
+        "en": "home"
+       },
+       {
+        "ar": "لِأَنَّنِي",
+        "en": "because I (لِأَنَّ with -nī)"
+       },
+       {
+        "ar": "كُنْتُ",
+        "en": "I was"
+       },
+       {
+        "ar": "مَرِيضًا",
+        "en": "ill (-an after كَانَ)"
+       }
+      ]
+     },
+     {
+      "ar": "أَتَدَرَّبُ كُلَّ يَوْمٍ لِكَيْ أُشَارِكَ فِي السِّبَاقِ.",
+      "en": "I train every day so that I can take part in the race.",
+      "words": [
+       {
+        "ar": "أَتَدَرَّبُ",
+        "en": "I train"
+       },
+       {
+        "ar": "كُلَّ",
+        "en": "every"
+       },
+       {
+        "ar": "يَوْمٍ",
+        "en": "day"
+       },
+       {
+        "ar": "لِكَيْ",
+        "en": "so that, in order to"
+       },
+       {
+        "ar": "أُشَارِكَ",
+        "en": "I take part (-a after لِكَيْ)"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "السِّبَاقِ",
+        "en": "the race"
+       }
+      ]
+     },
+     {
+      "ar": "أُغْلِقَ الطَّرِيقُ بِسَبَبِ الثَّلْجِ.",
+      "en": "The road was closed because of the snow.",
+      "words": [
+       {
+        "ar": "أُغْلِقَ",
+        "en": "was closed"
+       },
+       {
+        "ar": "الطَّرِيقُ",
+        "en": "the road"
+       },
+       {
+        "ar": "بِسَبَبِ",
+        "en": "because of"
+       },
+       {
+        "ar": "الثَّلْجِ",
+        "en": "the snow (-i after بِسَبَبِ)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "What's the difference between لِأَنَّ and بِسَبَبِ?",
+     "a_en": "Both give a reason. لِأَنَّ comes before a whole sentence (لِأَنَّ الطَّرِيقَ مُزْدَحِمٌ), and بِسَبَبِ before a noun (بِسَبَبِ الزِّحَامِ). Purpose works the same way: لِكَيْ before a verb, مِنْ أَجْلِ before a noun."
+    },
+    "selftest": [
+     {
+      "q_en": "Which word introduces a purpose?",
+      "choices": [
+       "لِكَيْ",
+       "لِأَنَّ",
+       "بِسَبَبِ"
+      ],
+      "answer": "لِكَيْ",
+      "why_en": "لِكَيْ, \"in order to\", names what you're aiming for. لِأَنَّ and بِسَبَبِ give a reason."
+     },
+     {
+      "q_en": "Which says \"I was late because of the rain\"?",
+      "choices": [
+       "تَأَخَّرْتُ بِسَبَبِ الْمَطَرِ",
+       "تَأَخَّرْتُ لِأَنَّ الْمَطَرِ",
+       "تَأَخَّرْتُ لِكَيْ الْمَطَرِ"
+      ],
+      "answer": "تَأَخَّرْتُ بِسَبَبِ الْمَطَرِ",
+      "why_en": "Before a noun, use بِسَبَبِ, and the noun ends in -i. لِأَنَّ needs a whole sentence after it, and لِكَيْ a verb."
+     },
+     {
+      "q_en": "After لِكَيْ, how does the verb end?",
+      "choices": [
+       "in -a (fatḥa)",
+       "in -u (ḍamma)",
+       "with no vowel (sukūn)"
+      ],
+      "answer": "in -a (fatḥa)",
+      "why_en": "After لِكَيْ the verb takes the subjunctive, which ends in -a, as in لِكَيْ أَصِلَ."
+     }
+    ],
+    "phrases_ar": [
+     "تَأَخَّرْتُ لِأَنَّ الطَّرِيقَ مُزْدَحِمٌ",
+     "تَأَخَّرْتُ بِسَبَبِ الزِّحَامِ",
+     "لِكَيْ أَصِلَ",
+     "مِنْ أَجْلِ أُسْرَتِي",
+     "كَانَ الْمَحَلُّ مُغْلَقًا، لِذَلِكَ رَجَعْتُ",
+     "لِأَنَّ الطَّرِيقَ مُزْدَحِمٌ",
+     "بِسَبَبِ الزِّحَامِ"
+    ]
+   },
+   {
+    "id": "explainer.arabic-but-although",
+    "title_en": "But, although, whereas: لَكِنَّ, مَعَ أَنَّ, رَغْمَ, بَيْنَمَا",
+    "family_en": "Words for contrast",
+    "course_words": [
+     "lexeme.arabic-cause-purpose-contrast-4",
+     "lexeme.arabic-cause-purpose-contrast-5",
+     "lexeme.arabic-cause-purpose-contrast-6",
+     "lexeme.arabic-cause-purpose-contrast-7"
+    ],
+    "table": [
+     {
+      "form_en": "but, before a noun or pronoun",
+      "ar": "لَكِنَّ",
+      "en": "but"
+     },
+     {
+      "form_en": "but, before a verb (the light form)",
+      "ar": "لَكِنْ",
+      "en": "but"
+     },
+     {
+      "form_en": "although, before a sentence",
+      "ar": "مَعَ أَنَّ",
+      "en": "although"
+     },
+     {
+      "form_en": "despite, before a noun",
+      "ar": "رَغْمَ",
+      "en": "despite"
+     },
+     {
+      "form_en": "whereas, while",
+      "ar": "بَيْنَمَا",
+      "en": "whereas, while"
+     },
+     {
+      "form_en": "as for …",
+      "ar": "أَمَّا",
+      "en": "as for"
+     }
+    ],
+    "steps": [
+     "A contrast sets two things against each other. لَكِنَّ, \"but\", works like إِنَّ: a noun after it ends in -a, or a pronoun joins on, as in لَكِنَّهُ.",
+     "Before a verb, use the light form لَكِنْ, without the shadda: أَرَدْتُ أَنْ أَحْضُرَ، لَكِنْ تَأَخَّرَ الْقِطَارُ, I wanted to come, but the train was late.",
+     "مَعَ أَنَّ, \"although\", goes before a sentence, and its noun ends in -a, as after أَنَّ: خَرَجْنَا مَعَ أَنَّ الْجَوَّ بَارِدٌ, we went out although it was cold.",
+     "رَغْمَ, \"despite\", goes before a noun in -i: ذَهَبْنَا رَغْمَ الْمَطَرِ, we went despite the rain. You'll also see بِالرَّغْمِ مِنْ.",
+     "بَيْنَمَا sets two things side by side, \"whereas\" or \"while\": أَخِي يُحِبُّ الشِّتَاءَ، بَيْنَمَا أُحِبُّ الصَّيْفَ.",
+     "أَمَّا means \"as for\". The comment after its topic starts with فَـ: أَمَّا أَنَا فَأُفَضِّلُ الشَّايَ, as for me, I prefer tea."
+    ],
+    "examples": [
+     {
+      "ar": "الْفُنْدُقُ غَالٍ، لَكِنَّهُ قَرِيبٌ مِنَ الْبَحْرِ.",
+      "en": "The hotel is expensive, but it's close to the sea.",
+      "words": [
+       {
+        "ar": "الْفُنْدُقُ",
+        "en": "the hotel"
+       },
+       {
+        "ar": "غَالٍ",
+        "en": "expensive"
+       },
+       {
+        "ar": "لَكِنَّهُ",
+        "en": "but it (لَكِنَّ with -hu)"
+       },
+       {
+        "ar": "قَرِيبٌ",
+        "en": "close"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "to (the a joins it to the next word)"
+       },
+       {
+        "ar": "الْبَحْرِ",
+        "en": "the sea"
+       }
+      ]
+     },
+     {
+      "ar": "نَجَحَتْ سَلْمَى رَغْمَ صُعُوبَةِ الِامْتِحَانِ.",
+      "en": "Salmā passed despite the difficult exam.",
+      "words": [
+       {
+        "ar": "نَجَحَتْ",
+        "en": "passed (she)"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       },
+       {
+        "ar": "رَغْمَ",
+        "en": "despite"
+       },
+       {
+        "ar": "صُعُوبَةِ",
+        "en": "the difficulty (-i after رَغْمَ)"
+       },
+       {
+        "ar": "الِامْتِحَانِ",
+        "en": "of the exam"
+       }
+      ]
+     },
+     {
+      "ar": "أَمَّا يُوسُفُ فَيُفَضِّلُ الْقَهْوَةَ.",
+      "en": "As for Yūsuf, he prefers coffee.",
+      "words": [
+       {
+        "ar": "أَمَّا",
+        "en": "as for"
+       },
+       {
+        "ar": "يُوسُفُ",
+        "en": "Yūsuf"
+       },
+       {
+        "ar": "فَيُفَضِّلُ",
+        "en": "(then) he prefers (فَـ after the topic)"
+       },
+       {
+        "ar": "الْقَهْوَةَ",
+        "en": "coffee"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "What's the difference between لَكِنَّ and لَكِنْ?",
+     "a_en": "Both mean \"but\". لَكِنَّ, with a shadda, is followed by a noun or a pronoun, which takes -a: لَكِنَّ الْجَوَّ بَارِدٌ; لَكِنَّهُ. لَكِنْ, the light form, is followed by a verb or a whole sentence: لَكِنْ تَأَخَّرَ الْقِطَارُ."
+    },
+    "selftest": [
+     {
+      "q_en": "Which says \"although the weather was cold\"?",
+      "choices": [
+       "مَعَ أَنَّ الْجَوَّ كَانَ بَارِدًا",
+       "رَغْمَ الْجَوَّ كَانَ بَارِدًا",
+       "لِأَنَّ الْجَوَّ كَانَ بَارِدًا"
+      ],
+      "answer": "مَعَ أَنَّ الْجَوَّ كَانَ بَارِدًا",
+      "why_en": "مَعَ أَنَّ goes before a sentence. رَغْمَ needs a noun (رَغْمَ الْبَرْدِ, despite the cold), and لِأَنَّ gives a reason, not a contrast."
+     },
+     {
+      "q_en": "Which is followed by a noun ending in -i?",
+      "choices": [
+       "رَغْمَ",
+       "مَعَ أَنَّ",
+       "لَكِنَّ"
+      ],
+      "answer": "رَغْمَ",
+      "why_en": "رَغْمَ is followed by a noun in -i (رَغْمَ الْمَطَرِ). After مَعَ أَنَّ and لَكِنَّ the noun ends in -a."
+     },
+     {
+      "q_en": "In أَمَّا أَنَا فَأُفَضِّلُ الشَّايَ, why is there a فَـ?",
+      "choices": [
+       "After أَمَّا and its topic, the comment starts with فَـ",
+       "It means \"and\"",
+       "It shows the past"
+      ],
+      "answer": "After أَمَّا and its topic, the comment starts with فَـ",
+      "why_en": "أَمَّا, \"as for\", is answered by فَـ: as for me, (then) I prefer tea."
+     }
+    ],
+    "phrases_ar": [
+     "أَرَدْتُ أَنْ أَحْضُرَ، لَكِنْ تَأَخَّرَ الْقِطَارُ",
+     "خَرَجْنَا مَعَ أَنَّ الْجَوَّ بَارِدٌ",
+     "ذَهَبْنَا رَغْمَ الْمَطَرِ",
+     "بِالرَّغْمِ مِنْ",
+     "أَخِي يُحِبُّ الشِّتَاءَ، بَيْنَمَا أُحِبُّ الصَّيْفَ",
+     "أَمَّا أَنَا فَأُفَضِّلُ الشَّايَ",
+     "لَكِنَّ الْجَوَّ بَارِدٌ",
+     "لَكِنْ تَأَخَّرَ الْقِطَارُ",
+     "رَغْمَ الْبَرْدِ",
+     "رَغْمَ الْمَطَرِ",
+     "مَعَ أَنَّ"
+    ]
    }
   ]
  }
