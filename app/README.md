@@ -1,5 +1,20 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.108.0 — Arabic explainers for modules 6 and 7, with their voice:** twelve more **How it works** cards for
+beginners. Module 6's six take present verbs for one person and for groups (أَكْتُبُ, تَكْتُبُ, يَكْتُبُ; نَكْتُبُ,
+يَكْتُبُونَ), what a verb takes after it (the -a ending, and إِلَى or عَنْ), "him" and "her" as endings (أَعْرِفُهُ),
+having, liking and needing (عِنْدِي, أُحِبُّ, أَحْتَاجُ إِلَى), and telling a routine with ثُمَّ. Module 7's six take Arabic
+digits and asking a price, telling the time (السَّاعَةُ الرَّابِعَةُ, "the fourth hour"), the days and "on" a day
+(يَوْمَ), directions, shopping, and short messages. Each has a table, short steps, two or three sentences broken down
+word by word, a "why" and three questions. An independent reviewer cross-checked them and the owner's fluent checker
+approved them; they never show a lesson check's answer. 55 more course words link to their explainer (147 in all).
+Each table form, whole sentence and the Arabic in the steps plays in the WaveNet B voice: 181 clips, transcribed blind
+and listened to by the owner. 71 of those words had clips in the earlier voice, mostly beginners' words, and were made
+again, so they now play the new voice everywhere. 2,978 clips in all. Arabic digits on their own (٤٧) are drawn at the
+size of the text around them; the Arabic typeface draws them small. No saved-data, sync or database change, and
+nothing goes to AI. Going back to 1.107.0 is safe: the module 6–7 cards, links and clips simply aren't there, those 71
+words play their earlier clips, and digits are drawn small again.
+
 **1.107.0 — Carry on today's Ask MyDay conversation:** close Ask MyDay and open + again later today, on any page, and
 a line at the top offers to carry the conversation on ("Your Ask MyDay conversation from 10:42 (3 messages)" ·
 Carry on). Carry on brings back the thread with a reply box; replies see the page you're on now. The last answer's
@@ -951,7 +966,7 @@ Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Underst
 works**, under its teaching: one closed card per family of forms or grammar topic (so far ten for module 14's weak,
 irregular and derived verbs, 1.98.0; and, in 1.105.0, eight for module 15's relative words, إِنَّ and كَانَ and their
 sisters, reporting, conditions, reasons and contrast, and thirteen for modules 4–5's first patterns, from "you" to a
-man or a woman to plurals and possession). Each has a table (form, Arabic, meaning; on a phone the form
+man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages). Each has a table (form, Arabic, meaning; on a phone the form
 sits under the meaning; a form label or a word's gloss may name Arabic, shown as Arabic and never voiced),
 short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
 when you choose (focus moves to the explanation). Nothing is saved, and it folds away with the explanation while you
