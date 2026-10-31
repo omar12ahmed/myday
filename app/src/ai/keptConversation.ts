@@ -12,7 +12,7 @@ import { aiReach } from './reach';
 // not part of your data, not synced, exported or backed up; Delete everything, signing out and another account's data
 // being cleared forget it. A kept answer may name something you've since made private, so if anything has been made
 // private since (or AI help with notes switched off), it's forgotten rather than offered (`held`).
-export type KeptTurn = { asked: string; answered: string };
+export type KeptTurn = { asked: string; answered: string; question?: true }; // question: it asked something, to help you think (v27), so carrying on keeps to your limit
 export type KeptLooked = { lookup: AskLookup; leftOut: number; hrefs?: Record<string, string>; more?: LookupMore; at?: string };
 export type KeptConversation = { id: string; on: DateKey; at: string; turns: KeptTurn[]; looked?: KeptLooked; held: string[] };
 
@@ -59,7 +59,7 @@ export function keptConversation(data: MyDayData, today: DateKey = todayKey()): 
   if (x === null) return null;
   const forget = () => { try { localStorage.removeItem(KEY); } catch { /* storage unavailable */ } return null; };
   if (!obj(x) || !str(x.id, 40) || x.on !== today || typeof x.at !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(x.at)) return forget();
-  if (!Array.isArray(x.turns) || !x.turns.length || x.turns.length > 100 || !x.turns.every(t => obj(t) && str(t.asked, ASK_LIMITS.textChars) && str(t.answered, 4000, true))) return forget();
+  if (!Array.isArray(x.turns) || !x.turns.length || x.turns.length > 100 || !x.turns.every(t => obj(t) && str(t.asked, ASK_LIMITS.textChars) && str(t.answered, 4000, true) && (t.question === undefined || t.question === true))) return forget();
   if (!Array.isArray(x.held) || !x.held.every(h => typeof h === 'string')) return forget();
   const l = x.looked;
   if (l !== undefined && !(obj(l) && lookupOk(l.lookup) && Number.isInteger(l.leftOut) && (l.leftOut as number) >= 0

@@ -1103,7 +1103,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v26' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v27' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -2102,7 +2102,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     for (const [why, v] of [['more than 8', Array.from({ length: 9 }, (_, i) => `s${i}`)], ['one over 120 characters', ['x'.repeat(121)]], ['an empty one', ['  ']], ['not a list', 'Learning tasks: 20 min at most'], ['an empty list', []]])
       check(`the server refuses "howYouWork" that\'s ${why}`, !K.checkAskContext({ ...hc, howYouWork: v }));
     const sysOn = K.buildAskMessages(hc)[0].content, sysOff = K.buildAskMessages(K.askContext(K.askSlice(K.freshState(), '#today', HD), 'Plan my study', HD))[0].content;
-    check('the instructions (v26) say to keep within its lengths and fit advice to it, only when it\'s sent', /"howYouWork" is what they've confirmed about how they work/.test(sysOn) && !/howYouWork/.test(sysOff) && K.ASK_PROMPT_VERSION === 'myday-ask-v26');
+    check('the instructions (v26) say to keep within its lengths and fit advice to it, only when it\'s sent', /"howYouWork" is what they've confirmed about how they work/.test(sysOn) && !/howYouWork/.test(sysOff) && K.ASK_PROMPT_VERSION === 'myday-ask-v27');
     // The app keeps Ask's suggestions to your longest, whatever the AI said — only when you've let it use how you work.
     const R = x => JSON.stringify(x), T = { kind: 'add', message: 'Here are two study tasks.', items: [{ type: 'task', title: 'Read about DNS', minutes: 45, category: 'learning' }, { type: 'task', title: 'Pay the bill', minutes: 45, category: 'admin' }], action: null };
     const kept = K.checkAskReply(R(T), hw, hs(), HD);
@@ -2148,6 +2148,49 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…kept when saved (a date), dropped when it isn\'t one', K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askAsked: HD }, answers: {} }, { dropped: 0 }).prefs.askAsked === HD && !('askAsked' in K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askAsked: 'soon' }, answers: {} }, { dropped: 0 }).prefs));
     const none = K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askUse: 'yes' }, answers: {}, askSeen: [] }, { dropped: 0 });
     check('…and a device that never used it saves exactly as before (no switch, no empty list)', !('askUse' in none.prefs) && !('askSeen' in none));
+  }
+
+  console.log('\n[Thinking] Ask MyDay helps you think: asks before ideas on an open question (v27; specs/ask-help-you-think.md)');
+  {
+    const TD = '2026-11-10';
+    K.setClock(`${TD}T09:30`);
+    const tw = K.freshState(), ts = K.askSlice(tw, '#today', TD);
+    const TH = { asked: 0, most: 5 };
+    const tc = K.askContext(ts, 'I want to start an online business', TD, undefined, undefined, undefined, undefined, TH);
+    check('the request carries how many thinking questions it has asked and your limit, and the server accepts it', eq(tc.thinking, TH) && K.checkAskContext(tc));
+    for (const [why, th] of [['a limit over 5', { asked: 0, most: 6 }], ['a limit of 0', { asked: 0, most: 0 }], ['a negative count', { asked: -1, most: 5 }], ['a field it doesn\'t know', { asked: 0, most: 5, why: 'x' }], ['not whole numbers', { asked: 0.5, most: 5 }]])
+      check(`…refused: ${why}`, !K.checkAskContext({ ...tc, thinking: th }));
+    const sysT = K.buildAskMessages(tc)[0].content, sysN = K.buildAskMessages(K.askContext(ts, 'I want to start an online business', TD))[0].content;
+    check('the instructions (v27) say to ask before ideas, with choices, up to the limit, then reflect back and offer one step, never on what a professional should advise on — only when "thinking" is sent', /don't offer ideas or plans yet/.test(sysT) && /"choices": up to 4 short ways/.test(sysT) && /offer at most one next step, only if they'd like it/.test(sysT) && /If they ask for ideas or a straight answer, give it at once/.test(sysT) && /professional\s+should advise on \(medication/.test(sysT)
+      && /"choices":\["…/.test(sysT) && !/thinking|"choices"/.test(sysN) && K.ASK_PROMPT_VERSION === 'myday-ask-v27');
+    // Reading a reply's choices: on an answer only, trimmed, different from each other, short, at most four.
+    const RA = x => K.readAsk(JSON.stringify(x));
+    const q = RA({ kind: 'answer', message: 'Before ideas: what are you looking for?', items: [], action: null, choices: [' Extra income ', 'Extra income', 'Something that grows', 'x'.repeat(41), '', 'A full-time business', 'Not sure yet', 'One more'] });
+    check('a question\'s choices are read: trimmed, no repeats, none empty or over 40 characters, at most four', eq(q.choices, ['Extra income', 'Something that grows', 'A full-time business', 'Not sure yet']), q.choices);
+    check('…never on anything but an answer', !('choices' in RA({ kind: 'add', message: 'Here are two tasks.', items: [{ type: 'task', title: 'Ring the bank', minutes: 15, category: 'admin' }], action: null, choices: ['a', 'b'] })));
+    const ca = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Before ideas: what are you looking for?', items: [], action: null, choices: ['Extra income', 'Something that grows'] }), tw, ts, TD);
+    check('the app keeps a question\'s choices for the panel to show', eq(ca.choices, ['Extra income', 'Something that grows']), ca);
+    const cact = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Let\'s plan today around your energy.', items: [], action: { type: 'adjust-today' }, choices: ['Yes', 'No'] }), tw, K.askSlice(tw, '#today', TD), TD);
+    check('…but never alongside an action (a question or an action, not both)', !cact || !('choices' in cact), cact);
+    // The practice helper: asks first on an open goal, up to the limit, then reflects back; ideas when asked; plain requests as before.
+    const M = (text, th, conv) => K.readAsk(K.mockAsk(K.askContext(ts, text, TD, undefined, undefined, undefined, conv, th)));
+    const m1 = M('I want to start an online business', TH);
+    check('practice helper: an open goal gets a question with choices first', m1.kind === 'answer' && /what are you looking for/.test(m1.message) && m1.choices?.length === 3, m1);
+    const conv2 = K.conversationOf([{ asked: 'I want to start an online business', answered: m1.message }]);
+    const m2 = M('Extra income', { asked: 1, most: 2 }, conv2);
+    check('…a tapped choice gets the next question while under the limit', m2.choices?.length > 0, m2);
+    const m3 = M('Enjoying it', { asked: 2, most: 2 }, K.conversationOf([{ asked: 'I want to start an online business', answered: m1.message }, { asked: 'Extra income', answered: m2.message }]));
+    check('…at the limit it stops asking: your thinking reflected back, one step offered', !m3.choices && /so far you've said: Extra income; Enjoying it/.test(m3.message), m3);
+    check('…"just give me ideas" gets ideas at once', /three ideas/.test(M('just give me ideas', TH).message));
+    const ms = M("I don't know where to start with this", TH), my = M('Should I quit? Just tell me yes or no', TH);
+    check('…"I don\'t know where to start" is asked which part is hardest to begin, and "yes or no" is answered at once without choosing for them', /hardest to begin/.test(ms.message) && ms.choices?.includes('It feels too big') && !my.choices && /yours to decide/.test(my.message), [ms, my]);
+    check('…and a plain request is answered as before, with no question', !M('Add a task to ring the bank tomorrow', TH).choices);
+    check('…as are everyday questions with "should I" in them ("should I revise first?", "What should I study next?"); "Should I change jobs?" is open', !M('should I revise first?', TH).choices && !M('What should I study next?', TH).choices && !!M('Should I change jobs?', TH).choices);
+    // Your limit, saved with your preferences: 1–5, absent means the usual 5.
+    const pq = K.freshState().patterns;
+    check('Questions before Ask MyDay offers something: set to 3, back to the usual 5 removes it', K.setAskQuestions(pq, 3) && pq.prefs.askQuestions === 3 && K.setAskQuestions(pq, 5) && !('askQuestions' in pq.prefs) && !K.setAskQuestions(pq, null));
+    check('…kept when saved (1–5), dropped otherwise', K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askQuestions: 2 }, answers: {} }, { dropped: 0 }).prefs.askQuestions === 2
+      && [0, 6, 2.5, '3'].every(v => !('askQuestions' in K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askQuestions: v }, answers: {} }, { dropped: 0 }).prefs)));
   }
 
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');

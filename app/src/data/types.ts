@@ -626,8 +626,9 @@ export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: numb
 export interface AskSeen { on: DateKey; type: string; category: Category | null; proposed: number | null; minutes: number | null; added: boolean; renamed: boolean; [other: string]: unknown }
 export interface PatternsData {
   // name: what MyDay calls you (from 1.11.0); aiNotes: you let AI help place notes in projects (1.15.0; absent = off)
-  // askUse: you let Ask MyDay use how you work (1.108.0; absent = off); askAsked: the day MyDay asked you that, once
-  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true; askUse?: true; askAsked?: DateKey;
+  // askUse: you let Ask MyDay use how you work (1.108.0; absent = off); askAsked: the day MyDay asked you that, once;
+  // askQuestions: how many questions Ask MyDay may ask to help you think before it offers something (1–5; absent = 5)
+  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true; askUse?: true; askAsked?: DateKey; askQuestions?: number;
     // The weekly review (1.37.0): your review day (0 Sunday … 6; absent = Sunday), and the review day you've done or put off.
     reviewDay?: number; reviewed?: DateKey; reviewHidden?: DateKey; [other: string]: unknown };
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"

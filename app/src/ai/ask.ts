@@ -59,7 +59,7 @@ export const NEW_PROJECT = '@new';
 export const DAY_TOO_FAR = 'I can only look at a day from a week ago to two months ahead — that one’s further off.';
 export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
-  | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
+  | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[]; choices?: string[] } // choices: a question's short replies to tap (v27)
   | { kind: 'cannot'; message: string; changed: string[] }
   | { kind: 'lookup'; tool: 'day' | 'project' | 'decisions' | 'waiting' | 'study' | 'search'; query: string } // query: the words to search, the day, a project's id, or "all"
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
@@ -186,7 +186,9 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
         if (a.taskId && !task) changed.push('The suggested task wasn’t found, so it starts on the course.');
       } else changed.push('Left out a suggestion for a course that isn’t in your roadmap.');
     }
-    return action || message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action, changed } : null;
+    // A question to help them think (v27): its choices to tap, gentle ones only, and never alongside an action.
+    const choices = action ? [] : (r.choices ?? []).filter(gentle);
+    return action || message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action, changed, ...(choices.length ? { choices } : {}) } : null;
   }
   // Things to add, or steps (an answer that suggests adding something is shown the same way, with its message).
   const open = new Map(data.projects.items.filter(p => p.status !== 'done').map(p => [p.id, p]));

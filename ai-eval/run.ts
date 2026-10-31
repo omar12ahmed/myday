@@ -462,6 +462,12 @@ function prepare(sc: AnyScenario): Prepared {
           if (e.banned) ex.notSteered = !e.banned.test(text);
           // Steps inside a task (v23): only checklist steps, none repeating one it has.
           if (e.stepsOf) { ex.stepsOnly = r.items.length > 0 && r.items.every(i => i.type === 'step'); ex.noRepeatStep = r.items.every(i => !e.stepsOf!.existing.some(t => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() === i.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim())); }
+          // Helping them think (v27): a question has 2-4 choices, nothing to add, and is one question; stopping offers at most one
+          // step and no more choices; a plain request or "just give me ideas" gets no question.
+          if (r.kind === 'answer' && r.choices?.length) ex.choicesFit = r.choices.length >= 2 && r.choices.length <= 4;
+          if (e.thinking === 'asks') { ex.asksFirst = r.kind === 'answer' && (r.choices?.length ?? 0) >= 2 && !r.action; ex.oneQuestion = (r.message.match(/\?/g) ?? []).length <= 2; }
+          if (e.thinking === 'stops') { ex.stopsAsking = !r.choices?.length; ex.atMostOneStep = r.items.length <= 1; }
+          if (e.thinking === 'none') ex.noQuestionFirst = !r.choices?.length;
           // Looking in your notes (v17): the right words the first time; after a lookup, only notes it found, never again.
           // In a longer conversation (v25), a lookup made for an earlier message may be followed by one more, for the newest.
           const lookAgain = !!sc.ctx.conversation?.lookupFromEarlier;

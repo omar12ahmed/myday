@@ -253,7 +253,8 @@ export function latestOnly(earlier: { asked: string; answered: string }[], looku
   return { earlier: [{ asked: cut(e.asked.trim(), L.textChars), answered: cut(e.answered.trim(), OLDER_ANSWER_CHARS) }], leftOut: earlier.length - 1, ...(lookupFromEarlier ? { lookupFromEarlier: true as const } : {}) };
 }
 
-export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup, conversation?: AskConversation): AskContext {
+// `thinking` (v27): how many questions it has asked to help you think in this conversation, and your limit (1–5).
+export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup, conversation?: AskConversation, thinking?: { asked: number; most: number }): AskContext {
   return {
     version: 1, action: 'ask', date: k, weekday: parseKey(k).toLocaleDateString('en-GB', { weekday: 'long' }),
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
@@ -268,6 +269,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
       : t === 'study' ? !slice.context.study && !slice.context.course : true), ...(lookup ? { lookup } : {}),
     ...(conversation ? { conversation } : {}),
     ...(slice.how?.length ? { howYouWork: slice.how } : {}),
+    ...(thinking ? { thinking } : {}),
   };
 }
 

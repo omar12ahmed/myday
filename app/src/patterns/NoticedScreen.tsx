@@ -6,7 +6,7 @@ import { BackLink, Eyebrow, Note } from '../components/parts';
 import { Why } from '../components/Why';
 import { shortDate, todayKey } from '../data/dates';
 import { noticed, type Pattern, type Shown } from '../data/patterns/notice';
-import { answerAskOffer, answerPattern, CATEGORIES, forgetAnswer, forgetLearned, MINUTE_CHOICES, NAME_MAX, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
+import { answerAskOffer, answerPattern, ASK_QUESTIONS_MOST, CATEGORIES, forgetAnswer, forgetLearned, MINUTE_CHOICES, NAME_MAX, setAskQuestions, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
 import { useState } from 'react';
 import { AI_MODE } from '../ai/request';
 import { CAT_LABEL } from '../data/plan';
@@ -144,6 +144,16 @@ function PrefsCard({ data }: { data: MyDayData }) {
         </Select>
       </Field>
       {from(prefs.maxTasks?.from ?? null) && <p className="text-sm text-fg-2 m-0 mt-2" data-s="pref-from">From “{from(prefs.maxTasks!.from)}”.</p>}
+      {/* Helping you think (1.113.0): how many questions Ask MyDay may ask before it offers something. */}
+      {AI_MODE !== 'off' && <Field label="Questions Ask MyDay may ask before it offers something" htmlFor="prefAskQuestions" className="mt-4">
+        <Select id="prefAskQuestions" value={prefs.askQuestions ?? ASK_QUESTIONS_MOST} onChange={e => {
+          const v = Number(e.target.value);
+          if (update(d => (setAskQuestions(d.patterns, v) ? undefined : false))) toast('Saved.');
+        }}>
+          {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n === 1 ? 'Just 1' : `Up to ${n}`}</option>)}
+          <option value={ASK_QUESTIONS_MOST}>Up to {ASK_QUESTIONS_MOST} (the usual)</option>
+        </Select>
+      </Field>}
       <Note className="mb-0 mt-3">Shorter tasks keep how long they were, so the plan shows e.g. "25 min (shortened from 60)". Fewer tasks never means more: your energy's limit still applies.</Note>
     </Card>
   );

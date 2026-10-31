@@ -615,6 +615,54 @@ const SEED = `s => {
     await askGo(mock);
     check('"delete all my tasks": it can\'t, says so kindly, and nothing changes', (await mock.text('[data-s=ask-message]')).includes("can't do that") && !(await mock.exists('[data-action=ask-add]')) && !(await mock.exists('[data-action=ask-action]')));
     await closeSheet(mock); await sleep(200);
+    // Helping you think (v27, specs/ask-help-you-think.md): an open goal gets a question with choices to tap, up to your limit.
+    const pickQ = v => mock.ev(`(() => { const el = document.getElementById('prefAskQuestions'); Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, ${JSON.stringify(String(v))}); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); return el.value; })()`);
+    const choicesNow = () => mock.ev(`[...document.querySelectorAll('[data-s=ask-choice]')].map(b => b.textContent.trim())`);
+    const shownAgain = prev => mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && document.querySelector('[data-s=ask-message]')?.textContent !== ${JSON.stringify(prev)}`, 10000);
+    await mock.ev(`location.hash = 'noticed'`); await mock.until(`!!document.getElementById('prefAskQuestions')`, 10000);
+    check('What MyDay has noticed: "Questions Ask MyDay may ask before it offers something" shows "5" by default, with nothing saved', (await mock.ev(`document.getElementById('prefAskQuestions').value`)) === '5' && !('askQuestions' in (await mock.data()).patterns.prefs), (await mock.data()).patterns.prefs);
+    await pickQ(2); await sleep(300);
+    check('choosing 2 saves your limit as 2 and says "Saved."', (await mock.data()).patterns.prefs.askQuestions === 2 && (await mock.text('#toast')).includes('Saved.'), [(await mock.data()).patterns.prefs.askQuestions, await mock.text('#toast')]);
+    await pickQ(5); await sleep(300);
+    check('choosing 5 (the usual) takes the saved limit away again', !('askQuestions' in (await mock.data()).patterns.prefs), (await mock.data()).patterns.prefs);
+    await pickQ(2); await sleep(300);
+    await mock.ev(`location.hash = 'today'`); await sleep(300);
+    await openAsk(mock, 'today', 'I want to start an online business');
+    await askGo(mock);
+    check('an open goal ("I want to start an online business") is answered with a question, "what are you looking for", not ideas', (await mock.text('[data-s=ask-message]')).includes('what are you looking for'), await mock.text('[data-s=ask-message]'));
+    check('…with exactly three choice buttons, in order, in a group labelled "Choose an answer, or reply in your own words"', eq(await choicesNow(), ['Extra income', 'Something that grows', 'A full-time business']) && (await mock.ev(`document.querySelector('[data-s=ask-choices]').getAttribute('aria-label')`)) === 'Choose an answer, or reply in your own words' && (await mock.ev(`document.querySelector('[data-s=ask-choices]').getAttribute('role')`)) === 'group', await choicesNow());
+    check('…no Add button, and the reply box says "Or in your own words…"', !(await mock.exists('[data-action=ask-add]')) && (await mock.ev(`document.querySelector('[data-s=ask-more]').placeholder`)) === 'Or in your own words…', await mock.ev(`document.querySelector('[data-s=ask-more]').placeholder`));
+    const q1 = await mock.text('[data-s=ask-message]');
+    await mock.ev(`document.querySelector('[data-s=ask-choice]').click()`); await shownAgain(q1); await sleep(150);
+    check('tapping "Extra income" sends it as your reply: the first question folds to one line and the reply shows as "You: Extra income"', eq(await thread(), ['You: I want to start an online business']) && (await mock.text('[data-s=ask-now]')) === 'You: Extra income', [await thread(), await mock.text('[data-s=ask-now]')]);
+    check('…and the next question, "what matters most to you here", has its own three choices', (await mock.text('[data-s=ask-message]')).includes('what matters most to you here') && eq(await choicesNow(), ['Time it takes', 'Money it makes', 'Enjoying it']), await choicesNow());
+    await closeSheet(mock); await sleep(250);
+    const kept = JSON.parse(await mock.ev(`localStorage.getItem('myday.ask.conversation')`) || 'null');
+    check('with a limit of 2, the kept conversation marks both turns as questions (question: true)', !!kept && kept.turns.length === 2 && kept.turns.every(t => t.question === true), kept && kept.turns);
+    await openAsk(mock, 'today', 'x');
+    await mock.click('[data-action=ask-carry-on]'); await sleep(250);
+    await mock.type('[data-s=ask-more]', 'Enjoying it'); await mock.click('[data-action=ask-again]');
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('Enjoying it')`, 10000); await sleep(150);
+    check('after Carry on, the earlier questions still count: at the limit of 2 it sums up "so far you\'ve said: Extra income; Enjoying it", with no choices', (await mock.text('[data-s=ask-message]')).includes("so far you've said: Extra income; Enjoying it") && !(await mock.exists('[data-s=ask-choice]')) && !(await mock.exists('[data-s=ask-choices]')), await mock.text('[data-s=ask-message]'));
+    await mock.click('[data-action=ask-dismiss]'); await sleep(150);
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'I want to start an online business');
+    await askGo(mock);
+    check('after Start over, the same open goal is asked about again from the beginning (three choices)', eq(await choicesNow(), ['Extra income', 'Something that grows', 'A full-time business']), await choicesNow());
+    const q1b = await mock.text('[data-s=ask-message]');
+    await mock.type('[data-s=ask-more]', 'just give me ideas'); await mock.click('[data-action=ask-again]'); await shownAgain(q1b); await sleep(150);
+    check('replying "just give me ideas" while a question shows gets the three ideas at once, with no choices', (await mock.text('[data-s=ask-message]')).includes('three ideas to weigh') && !(await mock.exists('[data-s=ask-choice]')), await mock.text('[data-s=ask-message]'));
+    await mock.click('[data-action=ask-dismiss]'); await sleep(150);
+    await closeSheet(mock); await sleep(200);
+    await mock.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await openAsk(mock, 'today', 'I want to start an online business'); await askGo(mock);
+    const choiceH = await mock.ev(`[...document.querySelectorAll('[data-s=ask-choice]')].map(b => Math.round(b.getBoundingClientRect().height))`);
+    check('phone: the three choice buttons are at least 44 px tall and nothing scrolls sideways', choiceH.length === 3 && choiceH.every(h => h >= 44) && !(await mock.ev('document.documentElement.scrollWidth > innerWidth')), choiceH);
+    await closeSheet(mock); await mock.send('Emulation.clearDeviceMetricsOverride');
+    await mock.ev(`localStorage.removeItem('myday.ask.conversation')`); // (so the kept question doesn't carry into later checks)
+    await mock.setData(`s => { delete s.patterns.prefs.askQuestions; }`); await mock.until(`document.querySelector('#app')`);
+    check('the limit is set back to the usual afterwards (nothing saved)', !('askQuestions' in (await mock.data()).patterns.prefs));
+    await mock.ev(`location.hash = 'today'`); await sleep(300);
     await openAsk(mock, 'today', 'Help me plan my day, I only have an hour');
     await askGo(mock);
     await mock.click('[data-action=ask-action]'); await mock.until(`document.getElementById('aiNote')`, 5000);
@@ -634,7 +682,7 @@ const SEED = `s => {
     const phaseD = await askGo(D);
     const sentA = aiCalls().slice(c0).find(c => c.body.context.action === 'ask');
     check('with an account: the server accepts the app\'s request and answers (labelled with the model)', phaseD === 'shown' && (await D.text('[data-s=ask-panel]')).includes('AI-written by Main model'), [phaseD, await D.text('[data-s=ask-panel]')]);
-    check('…it sent what you typed, the date, the page and that page\'s slice, and that it can look in your notes — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'can', 'context', 'date', 'page', 'text', 'time', 'version', 'weekday'])
+    check('…it sent what you typed, the date, the page and that page\'s slice, and that it can look in your notes — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'can', 'context', 'date', 'page', 'text', 'thinking', 'time', 'version', 'weekday'])
       && JSON.stringify(Object.keys(sentA.body.context.context).sort()) === JSON.stringify(['project', 'projects']) && !JSON.stringify(sentA.body).includes('private worry'), sentA && Object.keys(sentA.body.context));
     // A conversation through the server (v25): a reply sends what came before it; the server says how many requests are left.
     const usedD = async () => (await S.owner(db, 'select requests from public.ai_usage where user_id = $1', [userA])).rows[0].requests;
@@ -669,6 +717,22 @@ const SEED = `s => {
     check('a project made private after Capture opened is never sent, even before its storage event arrives', (await D.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`)) === 'error' && (await D.text('[data-s=ask-panel]')).includes('Close Capture and open it again') && aiCalls().length === beforePrivacyCalls);
     await closeSheet(D); await D.ev(`location.hash = 'today'`);
     await D.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjAsk'); s.notes.items = s.notes.items.filter(n => !['nAsk', 'nPriv'].includes(n.id)); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
+    // Helping you think through the server (the stand-in's mock:good model answers Ask with the same rules as practice mode).
+    {
+      await openAsk(D, 'today', 'I want to start an online business');
+      const phaseT = await askGo(D);
+      const sentT = aiCalls().slice(-1)[0].body.context;
+      check('with an account, an open goal\'s request carries thinking: nothing asked yet, and the usual limit of 5', phaseT === 'shown' && eq(sentT.thinking, { asked: 0, most: 5 }), sentT.thinking);
+      const choicesD = await D.ev(`[...document.querySelectorAll('[data-s=ask-choice]')].map(b => b.textContent.trim())`);
+      check('…and the answer through the server shows the three choice buttons', eq(choicesD, ['Extra income', 'Something that grows', 'A full-time business']), choicesD);
+      await D.ev(`document.querySelector('[data-s=ask-choice]').click()`);
+      await D.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && document.querySelector('[data-s=ask-now]')?.textContent === 'You: Extra income'`, 15000);
+      const sentC2 = aiCalls().slice(-1)[0].body.context;
+      check('tapping one sends it as the reply with thinking.asked 1, and the conversation so far, the question with the choices it offered', sentC2.text === 'Extra income' && eq(sentC2.thinking, { asked: 1, most: 5 }) && sentC2.conversation?.earlier.length === 1 && sentC2.conversation.earlier[0].asked === 'I want to start an online business'
+        && sentC2.conversation.earlier[0].answered.endsWith('\n(choices: Extra income · Something that grows · A full-time business)'), sentC2);
+      await D.click('[data-action=ask-dismiss]'); await sleep(150);
+      await closeSheet(D); await sleep(150);
+    }
 
     await mock.setData(askSeed);
     const privatiseElsewhere = () => mock.ev(`(() => { const oldValue = localStorage.getItem('myday.data.v4'); const s = JSON.parse(oldValue); s.projects.items.find(p => p.id === 'pjAsk').private = true; const newValue = JSON.stringify(s); localStorage.setItem('myday.data.v4', newValue); window.dispatchEvent(new StorageEvent('storage', { key: 'myday.data.v4', oldValue, newValue, storageArea: localStorage })); })()`);
@@ -764,6 +828,7 @@ const SEED = `s => {
     check('…has the AI help with notes switch, which models do which job, and the limits', (await mock.exists('#knows [data-action=ai-notes]')) && page.includes('GLM-5.3-Flash') && page.includes('Gemini 3.8 Flash') && page.includes('20 AI requests a day'));
     check('…and says this copy uses the practice helper (nothing sent)', (await mock.text('[data-s=knows-mode]')).includes('practice helper'));
     check('it shows what MyDay keeps about how you work — your own preferences, to change in What MyDay has noticed', (await mock.text('[data-s=knows-prefs]')).includes('AI help with notes: ') && await mock.exists('#knowsKeeps [data-action=knows-noticed]'));
+    check('it says Ask MyDay may ask "one question at a time" when you ask something open', (await mock.text('[data-s=knows-think]')).includes('one question at a time'), await mock.text('[data-s=knows-think]'));
     check('the footer links to it too', await mock.exists('#footer [data-action=knows]'));
     check('nothing scrolls sideways on the page', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')));
     await mock.ev(`location.hash = 'today'`); await sleep(200);

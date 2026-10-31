@@ -32,7 +32,7 @@ import { startLearning, startRevision } from '../study/actions';
 type Looked = { lookup: AskLookup; leftOut: number; hrefs?: Record<string, string>; more?: LookupMore; at?: Date }; // more and at: what didn't go, and when it was read, for its line; hrefs: where what it found opens (study's next steps, a look across MyDay's finds): the device's own
 type Shown = Exclude<AskChecked, { kind: 'lookup' }>;
 // An earlier exchange: your message, and the answer as it was shown with what you did with it; the lookup behind it.
-type Turn = { asked: string; answered: string; looked?: Looked };
+type Turn = { asked: string; answered: string; looked?: Looked; question?: true }; // question: the answer asked something, with choices, to help you think (v27)
 // What a failed request would send again: the message, what came before it, and the lookup it had.
 type Retry = { message: string; earlier: Turn[]; prior?: Looked; fromEarlier: boolean };
 // The answer a reply follows: what was shown, the lookup behind it, and how many requests were left today.
@@ -80,6 +80,7 @@ function shownText(r: Shown): string {
   const parts = [r.message];
   if (r.kind === 'add' || r.kind === 'steps') parts.push(...r.items.map(i => `- ${TYPE_WORD[i.type]}: ${i.title}`));
   if (r.kind === 'change') parts.push(...r.changes.map(c => `- Change ${c.target} “${c.label}”: ${c.lines.map(l => `${l.field.toLowerCase()} ${l.before} → ${l.after}`).join('; ')}`));
+  if (r.kind === 'answer' && r.choices?.length) parts.push(`(choices: ${r.choices.join(' · ')})`);
   if (r.kind === 'answer' && r.action) parts.push(r.action.type === 'adjust-today' ? '(offered: Help me adjust today)' : r.action.type === 'start-revision' ? `(offered: revise ${r.action.count} cards)` : `(offered: start ${r.action.minutes} minutes on ${r.action.label})`);
   return parts.filter(Boolean).join('\n');
 }
@@ -146,16 +147,18 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     if (earlier.length) setSlice(sl);
     const asked = [...earlier.map(t => t.asked), message].join('\n');
     const said = earlier.map(t => ({ asked: t.asked, answered: t.answered }));
+    // Helping you think (v27): how many questions it has asked in this conversation, and your limit (Your preferences).
+    const thinking = { asked: earlier.filter(t => t.question).length, most: getSnapshot().data.patterns.prefs.askQuestions ?? 5 };
     // The request: the conversation before this message (the oldest left out until it fits), with this lookup.
     const build = (lk: AskLookup | undefined, fe: boolean) => { // the time now (askContext reads the clock)
       for (let budget = ASK_LIMITS.conversationChars; budget >= 1000; budget -= 1000) {
-        const conversation = conversationOf(said, fe, budget), c = askContext(sl, message, k, undefined, undefined, lk, conversation);
+        const conversation = conversationOf(said, fe, budget), c = askContext(sl, message, k, undefined, undefined, lk, conversation, thinking);
         if (!conversation || bytes(c) <= MAX_BYTES) return { c, leftOut: conversation?.leftOut ?? 0 };
       }
       // Still too big: the latest exchange alone, then the message on its own (and the line says what was left out).
-      const one = latestOnly(said, fe), c1 = askContext(sl, message, k, undefined, undefined, lk, one);
+      const one = latestOnly(said, fe), c1 = askContext(sl, message, k, undefined, undefined, lk, one, thinking);
       if (bytes(c1) <= MAX_BYTES) return { c: c1, leftOut: one?.leftOut ?? 0 };
-      return { c: askContext(sl, message, k, undefined, undefined, lk), leftOut: said.length };
+      return { c: askContext(sl, message, k, undefined, undefined, lk, undefined, thinking), leftOut: said.length };
     };
     const fail = (m: string, lk: Looked | undefined, fe: boolean, stop = false) => setPhase({ at: 'error', message: m, retry: { message, earlier, ...(lk ? { prior: lk } : {}), fromEarlier: fe }, ...(stop ? { stop } : {}) });
     const again = fromEarlier && !!prior; // the lookup it has was made for an earlier message, so this one may look once more
@@ -201,18 +204,20 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     if (r.kind === 'change') setPicked(r.changes.map(() => true));
     setMore('');
     setPhase({ at: 'shown', r, model: reply.model, ...(looked ? { looked } : {}), ...(reply.left !== undefined ? { left: reply.left } : {}), leftOut });
-    keep(c, [...earlier, { asked: message, answered: notDone(r) + shownText(r) }], looked);
+    keep(c, [...earlier, { asked: message, answered: notDone(r) + shownText(r), ...(r.kind === 'answer' && r.choices?.length ? { question: true as const } : {}) }], looked);
   }
   // Kept on this device after each answer and after Add or Apply (with what you did), so + can offer it later today.
   // (A first question can be longer than a request takes — 2,000 characters in + — so it's kept as it's sent.)
-  const keep = (c: { id: string; at: string }, said: Turn[], looked?: Looked) => keepConversation(getSnapshot().data, { ...c, turns: said.map(t => ({ asked: t.asked.trim().slice(0, ASK_LIMITS.textChars), answered: t.answered })), ...(looked ? { looked: toKept(looked) } : {}) });
+  const keep = (c: { id: string; at: string }, said: Turn[], looked?: Looked) => keepConversation(getSnapshot().data, { ...c, turns: said.map(t => ({ asked: t.asked.trim().slice(0, ASK_LIMITS.textChars), answered: t.answered, ...(t.question ? { question: true as const } : {}) })), ...(looked ? { looked: toKept(looked) } : {}) });
   const notDone = (r: Shown) => (r.kind === 'add' || r.kind === 'steps' ? '(Not added.)\n' : r.kind === 'change' ? '(Not applied.)\n' : '');
   // A reply to the answer shown, after a note of what you did with it (`did`: first, so cutting a long answer never loses
   // it); the lookup behind that answer goes along with it.
-  function sendReply(after: After, did: string) {
-    const m = more.trim();
+  // `text`: a choice you tapped (otherwise what's in the reply box).
+  function sendReply(after: After, did: string, text = more.trim()) {
+    const m = text.trim();
     if (!m) return;
-    const earlier = [...turns, { asked: current, answered: did + shownText(after.r), ...(after.looked ? { looked: after.looked } : {}) }];
+    const asked = after.r.kind === 'answer' && !!after.r.choices?.length;
+    const earlier = [...turns, { asked: current, answered: did + shownText(after.r), ...(after.looked ? { looked: after.looked } : {}), ...(asked ? { question: true as const } : {}) }];
     setTurns(earlier); setMore('');
     void ask(m, earlier, after.looked, true);
   }
@@ -271,7 +276,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     ? <p className="text-[14px] text-fg-2 m-0 mt-3" data-s="ask-limit">That’s all the AI suggestions for today, so there’s no replying now. Ask MyDay is back tomorrow.</p>
     : <div className="mt-3">
       <div className="flex gap-2 items-start">
-        <TextInput value={more} maxLength={ASK_LIMITS.textChars} placeholder="Reply to MyDay…" aria-label="Reply to MyDay" data-s="ask-more" onChange={e => setMore(e.target.value)}
+        <TextInput value={more} maxLength={ASK_LIMITS.textChars} placeholder={after?.r.kind === 'answer' && after.r.choices?.length ? 'Or in your own words…' : 'Reply to MyDay…'} aria-label="Reply to MyDay" data-s="ask-more" onChange={e => setMore(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && more.trim()) { e.preventDefault(); if (after) sendReply(after, did); else sendResumed(looked); } }} />
         <Button inline variant="ghost" className="whitespace-nowrap" data-action="ask-again" disabled={!more.trim()} onClick={() => { if (after) sendReply(after, did); else sendResumed(looked); }}>Reply</Button>
       </div>
@@ -423,6 +428,9 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
             ? <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); handOverToAdjust(text); }}>Open Help me adjust today</Button>
             : <p className="text-[15px] text-fg-2 m-0" data-s="ask-build-first">Today’s plan isn’t built yet — set your energy and tap Build my day on Today, then Help me adjust today can shape it. <LinkButton data-action="ask-today" onClick={() => { onClose(); location.hash = 'today'; }}>Go to Today</LinkButton></p>)}
           {r.changed.length > 0 && <ul className="list-none p-0 m-0 mt-2 text-xs text-fg-3" data-s="ask-changed">{r.changed.map((c, i) => <li key={i}>{c}</li>)}</ul>}
+          {r.kind === 'answer' && r.choices?.length ? <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Choose an answer, or reply in your own words" data-s="ask-choices">
+            {r.choices.map(c => <Button key={c} inline variant="tonal" data-s="ask-choice" onClick={() => sendReply(after, '', c)}>{c}</Button>)}
+          </div> : null}
           {replyBox(after, r.kind === 'add' || r.kind === 'steps' ? '(Not added.)\n' : r.kind === 'change' ? '(Not applied.)\n' : '')}
           {turns.length > 0 && r.kind !== 'add' && r.kind !== 'steps' && r.kind !== 'change' && <LinkButton data-action="ask-dismiss" onClick={startOver}>Start over</LinkButton>}
         </div>;

@@ -9,6 +9,8 @@ export const ASK_LIMITS = {
   conversationChars: 4000, conversationTurns: 12, conversationLeftOut: 500,
   // How you work (v26): what you've confirmed about yourself, sent only when you let Ask MyDay use it.
   howLines: 8, howChars: 120,
+  // Helping you think (v27): a question's choices to tap, and how many questions before it offers something.
+  choices: 4, choiceChars: 40, thinkMost: 5,
   list: 20,                // items in any list of the page's context (tasks, projects, notes, appointments)
   titleChars: 120,         // any title sent or proposed
   summaryChars: 600,       // a project's summary
@@ -86,6 +88,7 @@ export interface AskContext {
   followUp?: { previous: string; text: string }; // one follow-up: the answer as it was shown, and what you added
   conversation?: AskConversation;                  // v25: what came before the newest message (never with followUp)
   howYouWork?: string[];                           // v26: what they've confirmed about how they work (only when they've let Ask use it)
+  thinking?: { asked: number; most: number };      // v27: thinking questions asked so far in this conversation, and their limit (1–5)
   context: AskPageContext;
   can?: typeof ASK_TOOLS[number][];                // what this app can look up for an answer (absent: nothing)
   lookup?: AskLookup;                              // what it found, the second time round (one lookup per question)
@@ -182,6 +185,7 @@ export interface AskReply {
   kind: typeof ASK_KINDS[number]; message: string; items: AskItem[]; action: AskAction | null;
   lookup?: { tool: typeof ASK_TOOLS[number]; query: string }; // kind "lookup": what to look in, and the words (or the day)
   sources?: string[];                                          // after a lookup: the ids of the notes the answer used
+  choices?: string[];                                          // v27: an answer that asks a question: up to 4 short replies to tap
 }
 
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -234,7 +238,9 @@ function checkProject(p: unknown, focus: boolean): boolean {
 export function checkAskContext(raw: unknown): raw is AskContext {
   if (!obj(raw)) return false;
   const L = ASK_LIMITS, c = raw;
-  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'conversation', 'howYouWork', 'context', 'can', 'lookup'])) return false;
+  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'conversation', 'howYouWork', 'thinking', 'context', 'can', 'lookup'])) return false;
+  if (c.thinking !== undefined && !(obj(c.thinking) && only(c.thinking, ['asked', 'most']) && Number.isInteger(c.thinking.asked) && (c.thinking.asked as number) >= 0 && (c.thinking.asked as number) <= 50
+    && Number.isInteger(c.thinking.most) && (c.thinking.most as number) >= 1 && (c.thinking.most as number) <= L.thinkMost)) return false;
   if (c.howYouWork !== undefined && !(Array.isArray(c.howYouWork) && c.howYouWork.length >= 1 && c.howYouWork.length <= L.howLines && c.howYouWork.every(h => str(h, L.howChars, false)))) return false;
   if (c.can !== undefined && !(Array.isArray(c.can) && c.can.length <= ASK_TOOLS.length && c.can.every(t => ASK_TOOLS.includes(t as typeof ASK_TOOLS[number])))) return false;
   if (c.lookup !== undefined) {
@@ -411,5 +417,8 @@ export function readAsk(textIn: string): AskReply | null {
   else if (obj(a) && a.type === 'start-study' && typeof a.courseId === 'string' && a.courseId) {
     action = { type: 'start-study', courseId: a.courseId, taskId: typeof a.taskId === 'string' && a.taskId ? a.taskId : null, minutes: Number.isFinite(a.minutes) ? Math.round(a.minutes as number) : 15 };
   }
-  return { kind: raw.kind as AskReply['kind'], message: (raw.message as string).trim(), items: out, action, ...(sources.length ? { sources } : {}) };
+  // A question's choices (v27): on an answer only, short, plain and different from each other; any that aren't are left out.
+  const choices = raw.kind !== 'answer' || !Array.isArray(raw.choices) ? [] : [...new Set(raw.choices.filter((x): x is string => typeof x === 'string').map(x => x.trim().replace(/\s+/g, ' '))
+    .filter(x => x.length > 0 && x.length <= ASK_LIMITS.choiceChars))].slice(0, ASK_LIMITS.choices);
+  return { kind: raw.kind as AskReply['kind'], message: (raw.message as string).trim(), items: out, action, ...(sources.length ? { sources } : {}), ...(choices.length ? { choices } : {}) };
 }
