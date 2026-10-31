@@ -76,7 +76,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
       {tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
-        : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
+        : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
       <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />

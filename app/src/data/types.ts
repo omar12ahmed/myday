@@ -256,13 +256,17 @@ export interface DecisionOption { id: string; text: string; pros: string[]; cons
 export interface DecisionHistoryEntry {
   id: string; text: string; on: DateKey;
   why: string | null; // null: an older choice's reason was not saved; '': no reason given
+  evidence?: OptionEvidence; // what the evidence said about it when chosen (specs/projects-evidence-decisions.md)
   [other: string]: unknown;
 }
+// An option's evidence: Research findings that support it or go against it (counts; specs/projects-evidence-decisions.md).
+export interface OptionEvidence { for: number; against: number; [other: string]: unknown }
 export interface Decision {
   id: string; question: string; options: DecisionOption[];
   chosen: string | null; why: string; decidedOn: DateKey | null;
   lastChoice?: { text: string; on: DateKey };
   history?: DecisionHistoryEntry[];
+  chosenEvidence?: OptionEvidence; // the chosen option's evidence when it was chosen (absent → none, or before 1.102)
   createdAt: DateTime; updatedAt: DateTime;
   [other: string]: unknown;
 }
@@ -558,6 +562,8 @@ export interface TaskItem {
   after?: string[];           // the tasks of its project it starts after, by id ("Starts after"; absent → none). Read through
                               // startsAfter (data/tasks.ts): one done, let go, deleted or in another project no longer counts
   deadline?: TaskDeadline;    // a dated task's deadline details (specs/projects-deadlines.md; absent → an ordinary date)
+  milestoneId?: string;       // the milestone of its project it's toward (specs/projects-evidence-decisions.md; absent →
+                              // none). Read through milestoneTasks (data/projectPlan.ts): one removed no longer counts
 }
 // A dated task's deadline details (specs/projects-deadlines.md): `kind` 'firm', or 'aim' (a date to aim for) — a string,
 // so a kind from a newer MyDay is kept as it is (shown as "Deadline"); where the date comes from; who checked it and

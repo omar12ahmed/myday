@@ -5,7 +5,7 @@
 // relates to; deciding whether something "looks true" stays yours. Words and counts only. Never sent to AI.
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
 import { tidyText } from './projectResources';
-import type { DateKey, MyDayData, Project, ResearchAbout, ResearchData, ResearchExperiment, ResearchFinding, ResearchItem, ResearchQuestion, ResearchSource, ResearchTest } from './types';
+import type { DateKey, MyDayData, OptionEvidence, Project, ResearchAbout, ResearchData, ResearchExperiment, ResearchFinding, ResearchItem, ResearchQuestion, ResearchSource, ResearchTest } from './types';
 import { isObj, listOf, uid } from './util';
 
 export const RESEARCH_LIMITS = { questions: 200, sources: 300, findings: 1000, experiments: 100, text: 1000, conclusion: 2000, limits: 500, title: 160, from: 160, sourcesPerFinding: 10, aboutPerFinding: 10, testsPerExperiment: 5 };
@@ -80,8 +80,8 @@ export function researchOf(d: MyDayData, projectId: string): ProjectResearch {
 export const itemOf = (d: MyDayData, id: string) => d.research.items.find(x => x.id === id);
 // Open questions first (in the order you added them), then answered ones (latest answer first).
 export const questionOrder = (qs: ResearchQuestion[]) => [...qs.filter(q => !q.answeredOn), ...qs.filter(q => q.answeredOn).sort((a, b) => (b.answeredOn ?? '').localeCompare(a.answeredOn ?? ''))];
-// The findings about something (a question or a thing that must be true), by how they bear on it.
-export function findingsAbout(d: MyDayData, projectId: string, kind: 'question' | 'assumption', id: string): Record<Stance, ResearchFinding[]> {
+// The findings about something (a question, a thing that must be true, or a decision's option), by how they bear on it.
+export function findingsAbout(d: MyDayData, projectId: string, kind: 'question' | 'assumption' | 'option', id: string): Record<Stance, ResearchFinding[]> {
   const out: Record<Stance, ResearchFinding[]> = { supports: [], contradicts: [], relates: [] };
   for (const f of researchOf(d, projectId).findings) {
     const a = f.about.find(x => x.kind === kind && x.id === id);
@@ -94,6 +94,24 @@ export function evidenceLine(e: Record<Stance, ResearchFinding[]>): string {
   const n = (k: number, verb: string) => (k ? `${k} finding${k === 1 ? '' : 's'} ${verb}` : '');
   return [n(e.supports.length, e.supports.length === 1 ? 'supports it' : 'support it'), n(e.contradicts.length, e.contradicts.length === 1 ? 'contradicts it' : 'contradict it'),
     n(e.relates.length, e.relates.length === 1 ? 'relates to it' : 'relate to it')].filter(Boolean).join(' · ');
+}
+// A decision's option (specs/projects-evidence-decisions.md): its evidence as counts, and in words ("2 findings for ·
+// 1 against"; '' when none). Never a score or a recommendation.
+export function optionEvidence(d: MyDayData, projectId: string, optionId: string): OptionEvidence {
+  const e = findingsAbout(d, projectId, 'option', optionId);
+  return { for: e.supports.length, against: e.contradicts.length };
+}
+export function optionEvidenceLine(e: Record<Stance, ResearchFinding[]>): string {
+  const n = e.supports.length + e.contradicts.length + e.relates.length;
+  if (!n) return '';
+  return [e.supports.length && `${e.supports.length} for`, e.contradicts.length && `${e.contradicts.length} against`, e.relates.length && `${e.relates.length} related`]
+    .filter(Boolean).join(' · ').replace(/^/, `${n === 1 ? '1 finding' : `${n} findings`}: `);
+}
+export const evidenceWords = (e: OptionEvidence) => (e.for || e.against ? [e.for && `${e.for} finding${e.for === 1 ? '' : 's'} for`, e.against && `${e.against} against`].filter(Boolean).join(', ') : '');
+// A decision's option in this project, with its decision (by the option's id).
+export function optionOf(p: Project | undefined, optionId: string): { option: { id: string; text: string }; decision: { id: string; question: string } } | null {
+  for (const x of p?.decisions ?? []) { const o = x.options.find(y => y.id === optionId); if (o) return { option: o, decision: x }; }
+  return null;
 }
 
 // What a source is called, and whether what it points to is still there. A link, file or note that has gone keeps
@@ -185,7 +203,7 @@ export function editSource(d: MyDayData, id: string, patch: { title?: string; fr
   return true;
 }
 
-export interface NewFinding { text: string; limits?: string; on?: DateKey | null; sourceIds?: string[]; about?: { kind: 'question' | 'assumption'; id: string; stance: Stance }[] }
+export interface NewFinding { text: string; limits?: string; on?: DateKey | null; sourceIds?: string[]; about?: { kind: 'question' | 'assumption' | 'option'; id: string; stance: Stance }[] }
 function cleanLinks(d: MyDayData, projectId: string, f: Pick<NewFinding, 'sourceIds' | 'about'>) {
   const mine = researchOf(d, projectId);
   const p = d.projects.items.find(x => x.id === projectId);
@@ -194,7 +212,7 @@ function cleanLinks(d: MyDayData, projectId: string, f: Pick<NewFinding, 'source
   const about: ResearchAbout[] = [];
   for (const a of f.about ?? []) {
     if (!(STANCES as readonly string[]).includes(a.stance) || about.some(b => b.kind === a.kind && b.id === a.id)) continue;
-    if (a.kind === 'question' ? mine.questions.some(q => q.id === a.id) : a.kind === 'assumption' && assumptions.some(x => x.id === a.id)) about.push({ kind: a.kind, id: a.id, stance: a.stance });
+    if (a.kind === 'question' ? mine.questions.some(q => q.id === a.id) : a.kind === 'assumption' ? assumptions.some(x => x.id === a.id) : a.kind === 'option' && !!optionOf(p, a.id)) about.push({ kind: a.kind, id: a.id, stance: a.stance });
   }
   return { sourceIds, about: about.slice(0, RESEARCH_LIMITS.aboutPerFinding) };
 }
@@ -217,7 +235,7 @@ export function editFinding(d: MyDayData, id: string, patch: Partial<NewFinding>
       : cleanLinks(d, f.projectId, { sourceIds: patch.sourceIds ?? f.sourceIds, about: (patch.about ?? f.about) as NewFinding['about'] })),
   };
   // An entry of a kind or stance this version doesn't know (from a newer MyDay) is kept as it is.
-  const foreign = f.about.filter(a => !['question', 'assumption'].includes(a.kind) || !(STANCES as readonly string[]).includes(a.stance));
+  const foreign = f.about.filter(a => !['question', 'assumption', 'option'].includes(a.kind) || !(STANCES as readonly string[]).includes(a.stance));
   next.about = [...next.about, ...foreign.filter(a => !next.about.some(b => b.kind === a.kind && b.id === a.id))];
   if (JSON.stringify(next) === JSON.stringify({ text: f.text, limits: f.limits, on: f.on, sourceIds: f.sourceIds, about: f.about })) return false;
   Object.assign(f, next, { updatedAt: now() });
@@ -249,6 +267,13 @@ export function forgetAssumption(d: MyDayData, projectId: string, assumptionId: 
   for (const f of mine.findings)
     if (f.about.some(a => a.kind === 'assumption' && a.id === assumptionId)) { f.about = f.about.filter(a => !(a.kind === 'assumption' && a.id === assumptionId)); f.updatedAt = now(); }
   for (const e of mine.experiments) forgetTest(e, 'assumption', assumptionId);
+}
+// When a decision's options are removed (or the decision): findings and experiments stop pointing at them.
+export function forgetOptions(d: MyDayData, projectId: string, optionIds: string[]) {
+  const mine = researchOf(d, projectId), gone = new Set(optionIds);
+  for (const f of mine.findings)
+    if (f.about.some(a => a.kind === 'option' && gone.has(a.id))) { f.about = f.about.filter(a => !(a.kind === 'option' && gone.has(a.id))); f.updatedAt = now(); }
+  for (const e of mine.experiments) for (const id of gone) forgetTest(e, 'option', id);
 }
 // When the project is deleted (here, or its deletion arriving from another device: sync/engine.ts), its research goes
 // with it.

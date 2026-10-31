@@ -69,7 +69,7 @@ function ExperimentForm({ data, p, e, tests, onDone, onRemove }: { data: MyDayDa
           {choices.map(t => (
             <label key={testKey(t)} className="flex items-start gap-2 min-h-11 py-2 text-[15px] cursor-pointer">
               <input type="checkbox" className="w-5 h-5 mt-0.5 flex-none" data-s="experiment-test" data-id={t.id} checked={on(t)} disabled={!on(t) && picked.length >= RESEARCH_LIMITS.testsPerExperiment} onChange={ev => toggle(t, ev.target.checked)} />
-              <span className="break-words">{t.kind === 'assumption' ? 'Must be true: ' : 'Question: '}{t.text}</span>
+              <span className="break-words">{t.kind === 'assumption' ? 'Must be true: ' : t.kind === 'option' ? 'Option: ' : 'Question: '}{t.text}</span>
             </label>
           ))}
         </fieldset>
@@ -162,7 +162,7 @@ function FindingOffer({ data, p, e }: { data: MyDayData; p: Project; e: Research
       <p className="m-0 text-sm text-fg-2">Its result becomes evidence in Research, from this experiment. Whether something looks true stays your call.</p>
       {tested.map(t => (
         <div key={testKey(t)} className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-center">
-          <span className="text-[15px] break-words">{t.kind === 'assumption' ? 'Must be true: ' : 'Question: '}{t.text}</span>
+          <span className="text-[15px] break-words">{t.kind === 'assumption' ? 'Must be true: ' : t.kind === 'option' ? 'Option: ' : 'Question: '}{t.text}</span>
           <Select aria-label={`How the result bears on “${t.text}”`} className="!w-auto" data-s="experiment-stance" data-id={t.id} value={stances[testKey(t)] ?? 'relates'} onChange={ev => setStances(s => ({ ...s, [testKey(t)]: ev.target.value as Stance }))}>
             {STANCES.map(s => <option key={s} value={s}>{STANCE_WORD[s]}</option>)}
           </Select>

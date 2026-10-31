@@ -15,6 +15,7 @@ import { addToTodaysPlan, editTask, isDone, isStuck, leaveTodaysPlanIfLater, mov
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { DeadlineCard } from './DeadlineCard';
+import { MilestoneCard } from './MilestoneCard';
 import { StepsCard } from './StepsCard';
 import { StuckCard } from './StuckCard';
 import { WaitingCard } from './WaitingCard';
@@ -91,6 +92,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
       <DeadlineCard data={data} t={t} />
       <StepsCard data={data} t={t} />
       <StartsAfterCard data={data} t={t} />
+      <MilestoneCard data={data} t={t} />
     </>
   );
 }

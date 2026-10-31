@@ -9,7 +9,7 @@ import { isDateKey, shortDate, todayKey } from '../data/dates';
 import { filesOf } from '../data/files';
 import { noteName } from '../data/notes';
 import {
-  addFinding, addQuestion, addSource, answerQuestion, editFinding, editQuestion, editSource, findingsAbout, questionOrder, removeResearch, reopenQuestion,
+  addFinding, addQuestion, addSource, optionOf, answerQuestion, editFinding, editQuestion, editSource, findingsAbout, questionOrder, removeResearch, reopenQuestion,
   RESEARCH_LIMITS, researchOf, sourceInfo, STANCES, type NewFinding, type Stance,
 } from '../data/research';
 import { resourceName } from '../data/projectResources';
@@ -145,6 +145,7 @@ function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFi
   const [editing, setEditing] = useState(false);
   const what = (a: { kind: string; id: string }) => {
     if (a.kind === 'question') return (data.research.items.find(x => x.id === a.id) as ResearchQuestion | undefined)?.text ?? 'a question';
+    if (a.kind === 'option') { const o = optionOf(p, a.id); return o ? `“${o.option.text}” (${o.decision.question})` : 'an option'; }
     return p.model?.assumptions.find(x => x.id === a.id)?.text ?? 'something that must be true';
   };
   async function remove() {
@@ -170,14 +171,16 @@ function FindingForm({ data, p, f, onDone }: { data: MyDayData; p: Project; f?: 
   const r = researchOf(data, p.id);
   const [text, setText] = useState(f?.text ?? ''), [limits, setLimits] = useState(f?.limits ?? ''), [on, setOn] = useState(f ? f.on ?? '' : todayKey());
   const [sources, setSources] = useState<string[]>(f?.sourceIds ?? []);
-  const [about, setAbout] = useState<About[]>((f?.about ?? []).filter(a => (a.kind === 'question' || a.kind === 'assumption') && (STANCES as readonly string[]).includes(a.stance)) as About[]);
+  const [about, setAbout] = useState<About[]>((f?.about ?? []).filter(a => (a.kind === 'question' || a.kind === 'assumption' || a.kind === 'option') && (STANCES as readonly string[]).includes(a.stance)) as About[]);
   const [newSource, setNewSource] = useState(false);
-  const targets: { kind: 'question' | 'assumption'; id: string; text: string }[] = [
+  // (A decision's options too — an open one's, or one this finding already bears on: specs/projects-evidence-decisions.md.)
+  const targets: { kind: 'question' | 'assumption' | 'option'; id: string; text: string }[] = [
     ...questionOrder(r.questions).map(q => ({ kind: 'question' as const, id: q.id, text: q.text })),
     ...(isBusiness(p) ? (p.model?.assumptions ?? []).map(a => ({ kind: 'assumption' as const, id: a.id, text: a.text })) : []),
+    ...(p.decisions ?? []).flatMap(x => x.options.filter(o => !x.chosen || about.some(a => a.kind === 'option' && a.id === o.id)).map(o => ({ kind: 'option' as const, id: o.id, text: `${o.text} — ${x.question}` }))),
   ];
   const stanceOf = (t: { kind: string; id: string }) => about.find(a => a.kind === t.kind && a.id === t.id)?.stance ?? '';
-  const setStance = (t: { kind: 'question' | 'assumption'; id: string }, s: string) => setAbout(list => [...list.filter(a => !(a.kind === t.kind && a.id === t.id)), ...(s ? [{ kind: t.kind, id: t.id, stance: s as Stance }] : [])]);
+  const setStance = (t: { kind: 'question' | 'assumption' | 'option'; id: string }, s: string) => setAbout(list => [...list.filter(a => !(a.kind === t.kind && a.id === t.id)), ...(s ? [{ kind: t.kind, id: t.id, stance: s as Stance }] : [])]);
   const idp = f ? `rfE-${f.id}` : 'rfN';
   function save() {
     const finding: NewFinding = { text, limits, on: isDateKey(on) ? on : null, sourceIds: sources, about };
@@ -209,7 +212,7 @@ function FindingForm({ data, p, f, onDone }: { data: MyDayData; p: Project; f?: 
           <legend className="text-sm text-fg-2 mb-1">What it bears on</legend>
           {targets.map(t => (
             <div key={t.kind + t.id} className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-center">
-              <span className="text-[15px] break-words">{t.kind === 'assumption' ? 'Must be true: ' : ''}{t.text}</span>
+              <span className="text-[15px] break-words">{t.kind === 'assumption' ? 'Must be true: ' : t.kind === 'option' ? 'Option: ' : ''}{t.text}</span>
               <Select aria-label={`How it bears on “${t.text}”`} className="!w-auto" value={stanceOf(t)} onChange={e => setStance(t, e.target.value)}>
                 <option value="">—</option>
                 {STANCES.map(s => <option key={s} value={s}>{STANCE_WORD[s]}</option>)}

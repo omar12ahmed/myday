@@ -84,6 +84,8 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
       report.dropped += all.length - after.length; // past 10: counted, as steps past 30 are
       if (after.length) item.after = after; else delete item.after;
     }
+    // The milestone of its project it's toward (specs/projects-evidence-decisions.md): an id, read through milestoneTasks.
+    if (typeof t.milestoneId !== 'string' || !t.milestoneId) delete item.milestoneId;
     // A deadline's details (specs/projects-deadlines.md): kept when it says what kind it is — a kind from a newer MyDay
     // as it is, with anything that MyDay keeps beside it; a shape this version can't read is counted.
     const dl = t.deadline;
@@ -463,6 +465,16 @@ export function setStartsAfter(data: MyDayData, id: string, otherId: string, on:
 // A task gone (deleted) or moved out of the project: no task starts after it any more.
 export function forgetStartsAfter(d: TasksData, id: string) {
   for (const x of d.items) if (x.after?.includes(id)) { x.after = x.after.filter(a => a !== id); if (!x.after.length) delete x.after; }
+}
+
+// ---------- Toward a milestone (specs/projects-evidence-decisions.md) ----------
+// Sets the milestone of its project a task is toward, or none. Returns whether anything changed.
+export function setMilestone(d: MyDayData, id: string, milestoneId: string | null): boolean {
+  const t = d.tasks.items.find(x => x.id === id), p = t?.projectId ? d.projects.items.find(x => x.id === t.projectId) : undefined;
+  if (!t || (milestoneId !== null && !p?.milestones?.some(m => m.id === milestoneId))) return false;
+  if ((t.milestoneId ?? null) === milestoneId) return false;
+  if (milestoneId) t.milestoneId = milestoneId; else delete t.milestoneId;
+  return true;
 }
 
 // ---------- Deadlines you can trust (specs/projects-deadlines.md) ----------

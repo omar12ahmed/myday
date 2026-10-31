@@ -11,12 +11,14 @@ import { parseKey, shortDate, todayKey } from '../data/dates';
 import { editProject } from '../data/projects';
 import {
   addDecision, addMilestone, addOption, addPoint, chosenOption, decide, decisionHistory, decisionsInOrder, editMilestone, editOption, editPoint, editQuestion,
-  milestoneProgress, moveMilestone, PLAN_LIMITS, removeDecision, removeMilestone, removeOption, setReached, thinkAgain, type Side,
+  milestoneProgress, milestoneTasks, moveMilestone, PLAN_LIMITS, removeDecision, removeMilestone, removeOption, setReached, thinkAgain, type Side,
 } from '../data/projectPlan';
+import { evidenceWords, findingsAbout, hasResearch, optionEvidenceLine } from '../data/research';
+import { isDone } from '../data/tasks';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { DateKey, Decision, DecisionOption, Milestone, MyDayData, Project } from '../data/types';
-import { aimText } from './planText';
+import { aimText, tabHref } from './planText';
 
 // A project's Milestones and Decisions tabs (1.31.0); their summaries are in At a glance. The rules are in
 // data/projectPlan.ts; this is only how they look and what the buttons do. No scores, no "late": dates are guidance.
@@ -30,7 +32,7 @@ function useDraft(key: string): [string, (v: string) => void] {
 
 
 // ---------- Milestones ----------
-export function MilestonesView({ p }: { p: Project }) {
+export function MilestonesView({ data, p }: { data: MyDayData; p: Project }) {
   const confirm = useConfirm();
   const list = p.milestones ?? [], { reached, total, next } = milestoneProgress(p), k = todayKey();
   const [title, setTitle] = useDraft(`ms-title:${p.id}`), [aim, setAim] = useDraft(`ms-aim:${p.id}`);
@@ -64,6 +66,7 @@ export function MilestonesView({ p }: { p: Project }) {
                   {m === next && <span className="ml-2 inline-block align-middle text-xs font-bold uppercase tracking-[.06em] px-1.5 py-0.5 rounded-md bg-primary-container text-on-primary-container" data-s="ms-next">Next</span>}
                 </p>
                 {(m.reachedOn || m.aim) && <p className="m-0 mt-0.5 text-sm text-fg-2" data-s="ms-when">{m.reachedOn ? `Reached ${shortDate(m.reachedOn)}` : aimText(m.aim!, k)}</p>}
+                <MilestoneTasks data={data} p={p} m={m} />
                 <div className="flex flex-wrap gap-2 mt-2">
                   {m.reachedOn
                     ? <Button inline variant="ghost" data-action="ms-unreach" onClick={() => { if (update(d => (setReached(d, p.id, m.id, false) ? undefined : false))) toast('Back to not reached yet.'); }}>Not yet</Button>
@@ -99,8 +102,30 @@ export function MilestonesView({ p }: { p: Project }) {
   );
 }
 
+// The tasks toward a milestone (specs/projects-evidence-decisions.md): "3 of 5 tasks done", which opens them; once it's
+// reached, what got you there. A task joins one from its own page ("Toward a milestone").
+function MilestoneTasks({ data, p, m }: { data: MyDayData; p: Project; m: Milestone }) {
+  const [open, setOpen] = useState(false), { all, done } = milestoneTasks(data, p, m.id);
+  if (!all.length) return null;
+  const list = m.reachedOn ? done : all;
+  return (
+    <div className="mt-1" data-s="ms-tasks">
+      <LinkButton className="text-[15px]" data-action="ms-tasks" aria-expanded={open} onClick={() => setOpen(!open)}>
+        {m.reachedOn ? `What got you there: ${done.length === 1 ? '1 task' : `${done.length} tasks`}` : `${done.length} of ${all.length} tasks done`}
+      </LinkButton>
+      {open && list.length > 0 && (
+        <ul className="list-none p-0 m-0" data-s="ms-task-list">{list.map(t => (
+          <li key={t.id}><a href={`#today/tasks/${encodeURIComponent(t.id)}`} className="flex items-start gap-2 min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words">
+            {isDone(data, t) ? <Check size={16} aria-label="Done" className="mt-1 flex-none text-done" /> : <span aria-hidden="true" className="mt-1.5 flex-none size-3 rounded-full border-2 border-outline-strong" />}
+            <span>{t.title}</span></a></li>
+        ))}</ul>
+      )}
+    </div>
+  );
+}
+
 // ---------- Decisions ----------
-export function DecisionsView({ p }: { p: Project }) {
+export function DecisionsView({ data, p }: { data: MyDayData; p: Project }) {
   const list = decisionsInOrder(p), full = (p.decisions?.length ?? 0) >= PLAN_LIMITS.decisions;
   const [q, setQ] = useDraft(`dc-q:${p.id}`);
   function add() {
@@ -121,18 +146,21 @@ export function DecisionsView({ p }: { p: Project }) {
           </form>
         )}
       </Card>
-      {list.map(x => <DecisionCard key={x.id} p={p} x={x} />)}
+      {list.map(x => <DecisionCard key={x.id} data={data} p={p} x={x} />)}
     </>
   );
 }
 
-function DecisionCard({ p, x }: { p: Project; x: Decision }) {
+function DecisionCard({ data, p, x }: { data: MyDayData; p: Project; x: Decision }) {
   const confirm = useConfirm();
   const [choosing, setChoosing] = useState<string | null>(null);
   const [why, setWhy] = useState('');
   const [editingQ, setEditingQ] = useState(false);
   const [opt, setOpt] = useDraft(`dc-opt:${p.id}:${x.id}`);
   const chosen = chosenOption(x), decided = !!chosen, history = decisionHistory(x);
+  // Each option's evidence from Research (specs/projects-evidence-decisions.md): words and counts, never a pick.
+  const evidence = (o: DecisionOption) => (hasResearch(p) ? optionEvidenceLine(findingsAbout(data, p.id, 'option', o.id)) : '');
+  const anyEvidence = x.options.some(o => evidence(o));
   const tooBig = () => toast('This decision is too large to save that change. Nothing changed. Export a backup before removing content.');
   // update() keeps the previous choice when the browser can't save, and still works in memory when saving is blocked.
   function saveChoice(change: (d: MyDayData) => boolean | 'big') {
@@ -180,7 +208,7 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
 
       {decided && (
         <div className="mt-3 rounded-tile bg-done-c text-on-done-c px-3 py-2.5" data-s="dc-decided">
-          <p className="m-0 font-semibold break-words">Decided {shortDate(x.decidedOn!)}: {chosen!.text}</p>
+          <p className="m-0 font-semibold break-words">Decided {shortDate(x.decidedOn!)}: {chosen!.text}{x.chosenEvidence && evidenceWords(x.chosenEvidence) && <span className="font-normal" data-s="dc-evidence"> — with {evidenceWords(x.chosenEvidence)}</span>}</p>
           {x.why && <p className="m-0 mt-1 text-[15px] whitespace-pre-line break-words" data-s="dc-why">{x.why}</p>}
           <div className="flex flex-wrap gap-2.5 mt-2">
             <Button inline variant="ghost" className="!border-on-done-c !text-on-done-c" data-action="dc-again" onClick={() => { if (saveChoice(d => thinkAgain(d, p.id, x.id))) toast('Open again — your options, pros, cons and reasons are all still here.'); }}>Think again</Button>
@@ -203,6 +231,7 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
               <li key={h.id} className="py-3 break-words" data-s="dc-history-entry">
                 <p className="m-0 font-semibold">{h.text}</p>
                 <time className="text-sm text-fg-2" dateTime={h.on}>{parseKey(h.on).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</time>
+                {h.evidence && evidenceWords(h.evidence) && <span className="text-sm text-fg-2" data-s="dc-history-evidence"> · with {evidenceWords(h.evidence)}</span>}
                 <p className="m-0 mt-1 text-[15px] whitespace-pre-line">{h.why === null ? 'The reason for this older choice was not saved.' : h.why || 'No reason given.'}</p>
               </li>
             ))}
@@ -223,9 +252,16 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
               {decided && o.id !== x.chosen && <p className="m-0 ml-2 text-xs text-fg-3" data-s="opt-not">Not chosen</p>}
               <Points p={p} x={x} o={o} side="pros" />
               <Points p={p} x={x} o={o} side="cons" />
+              {evidence(o) && <a href={tabHref(p, 'research')} className="inline-flex items-center min-h-11 ml-2 text-[15px] text-primary font-semibold no-underline hover:underline underline-offset-4" data-s="opt-evidence">{evidence(o)}</a>}
               {!decided && choosing !== o.id && <Button inline variant="tonal" className="mt-3 w-full" data-action="opt-choose" onClick={() => startChoosing(o)}>Choose this</Button>}
               {choosing === o.id && (
                 <div className="grid gap-2.5 mt-3" data-s="dc-choosing">
+                  {anyEvidence && (
+                    <div className="text-[15px]" data-s="dc-choosing-evidence">
+                      <p className="m-0 font-semibold">What the evidence says</p>
+                      <ul className="list-none p-0 m-0">{x.options.map(y => <li key={y.id} className="break-words">{y.text}: {evidence(y) || 'nothing yet'}</li>)}</ul>
+                    </div>
+                  )}
                   <Field label="Why this one? (optional)" htmlFor={`dcWhy-${x.id}`}><TextArea id={`dcWhy-${x.id}`} rows={3} maxLength={PLAN_LIMITS.why} value={why} onChange={e => setWhy(e.target.value)} /></Field>
                   <div className="flex flex-wrap gap-2.5">
                     <Button inline variant="primary" data-action="dc-decide" onClick={confirmChoice}>Decide</Button>

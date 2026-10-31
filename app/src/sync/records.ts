@@ -260,7 +260,8 @@ const MANY: Many[] = [
     summary: c => { const t = c as unknown as TaskItem; return `${t.title}${t.due ? ` · ${shortDate(t.due)}${t.time ? ` ${t.time}` : ''}` : ''}${t.done ? ' · done' : t.letGoOn ? ' · let go' : t.waiting ? ' · waiting' : ''}${t.steps?.length ? ` · ${stepsText(t)}` : ''}`; },
     // Its steps and how many tasks it starts after (specs/projects-steps.md), so two versions that differ only there can be told apart.
     lines: c => { const t = c as unknown as TaskItem, dl = t.deadline; return [...(t.steps ?? []).map(x => `${x.done ? '✓ ' : ''}${x.text}`), ...(t.after?.length ? [`Starts after ${plural(t.after.length, 'task')}`] : []),
-      // …and its deadline details (specs/projects-deadlines.md).
+      // …and the milestone it's toward (specs/projects-evidence-decisions.md), and its deadline details (specs/projects-deadlines.md).
+      ...(t.milestoneId ? ['Toward a milestone'] : []),
       ...(dl ? [[deadlineLabel(dl), dl.from ? `from ${dl.from}` : '', dl.checkedBy || dl.checkedOn ? `checked${dl.checkedBy ? ` by ${dl.checkedBy}` : ''}${dl.checkedOn ? ` on ${shortDate(dl.checkedOn)}` : ''}` : ''].filter(Boolean).join(' · ')] : [])]; } },
   { kind: 'session', label: 'Study session',
     items: d => d.study.sessions,
@@ -460,7 +461,7 @@ export function recordLines(key: string, content: Content | null): string[] {
       const options = (Array.isArray(v.options) ? v.options : []) as { id: string; text: string; pros: string[]; cons: string[] }[];
       // One wrapping row per option keeps all its points visible within Compare's eight-row preview.
       return [String(v.question), ...options.map(o => `${o.text} — Pros: ${words(o.pros) || 'None'} · Cons: ${words(o.cons) || 'None'}`),
-        v.chosen ? `Chosen: ${options.find(o => o.id === v.chosen)?.text ?? v.chosen}` : 'Open decision',
+        v.chosen ? `Chosen: ${options.find(o => o.id === v.chosen)?.text ?? v.chosen}${isObj(v.chosenEvidence) ? ` (${v.chosenEvidence.for} for, ${v.chosenEvidence.against} against)` : ''}` : 'Open decision',
         `Reason: ${v.why || 'No reason given'}`, ...(v.decidedOn ? [`Decided: ${v.decidedOn}`] : [])];
     }
     if (kind === 'project_model') {

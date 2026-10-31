@@ -6,7 +6,7 @@
 import { isBusiness } from './businessModel';
 import { localStamp, todayKey } from './dates';
 import { tidyText } from './projectResources';
-import { addFinding, hasResearch, isExperiment, itemOf, RESEARCH_LIMITS, researchOf, setResearch, type Stance } from './research';
+import { addFinding, hasResearch, isExperiment, itemOf, optionOf, RESEARCH_LIMITS, researchOf, setResearch, type Stance } from './research';
 import { addTask, isDone, TASK_LIMITS } from './tasks';
 import type { DateKey, MyDayData, Project, ResearchExperiment, TaskItem } from './types';
 import { uid } from './util';
@@ -15,7 +15,7 @@ export type ExperimentStatus = 'planned' | 'running' | 'done';
 export const STATUS_LABEL: Record<ExperimentStatus, string> = { planned: 'Planned', running: 'Running', done: 'Done' };
 // (A status from a newer MyDay reads as planned here, and is kept as it is until you change it.)
 export const statusOf = (e: ResearchExperiment): ExperimentStatus => (e.status === 'running' || e.status === 'done' ? e.status : 'planned');
-export type TestKind = 'assumption' | 'question';
+export type TestKind = 'assumption' | 'question' | 'option';
 export const testKey = (t: { kind: string; id: string }) => `${t.kind}:${t.id}`;
 
 // ---------- Looking at them ----------
@@ -41,14 +41,16 @@ export function testedThings(d: MyDayData, e: ResearchExperiment): Tested[] {
   return e.tests.flatMap((t): Tested[] => {
     if (t.kind === 'assumption') { const a = p?.model?.assumptions.find(x => x.id === t.id); return a ? [{ kind: 'assumption', id: a.id, text: a.text }] : []; }
     if (t.kind === 'question') { const q = questions.find(x => x.id === t.id); return q ? [{ kind: 'question', id: q.id, text: q.text }] : []; }
+    if (t.kind === 'option') { const o = optionOf(p, t.id); return o ? [{ kind: 'option', id: o.option.id, text: `${o.option.text} — ${o.decision.question}` }] : []; }
     return [];
   });
 }
-// What an experiment can test on this project: its things that must be true (a business idea's), and with Research
-// on its questions.
+// What an experiment can test on this project: its things that must be true (a business idea's), with Research on its
+// questions, and the options of its open decisions (specs/projects-evidence-decisions.md).
 export function testChoices(d: MyDayData, p: Project): { kind: TestKind; id: string; text: string }[] {
   return [...(isBusiness(p) ? (p.model?.assumptions ?? []).map(a => ({ kind: 'assumption' as const, id: a.id, text: a.text })) : []),
-    ...(hasResearch(p) ? researchOf(d, p.id).questions.map(q => ({ kind: 'question' as const, id: q.id, text: q.text })) : [])];
+    ...(hasResearch(p) ? researchOf(d, p.id).questions.map(q => ({ kind: 'question' as const, id: q.id, text: q.text })) : []),
+    ...(p.decisions ?? []).filter(x => !x.chosen).flatMap(x => x.options.map(o => ({ kind: 'option' as const, id: o.id, text: `${o.text} — ${x.question}` })))];
 }
 // Where experiments live on a project: a business idea's Model tab, otherwise its Research tab.
 export const experimentsHome = (p: Project) => `#projects/p/${encodeURIComponent(p.id)}/${isBusiness(p) ? 'model' : 'research'}`;
@@ -77,6 +79,7 @@ function cleanTests(d: MyDayData, projectId: string, tests: { kind: string; id: 
     if (out.some(x => x.kind === t.kind && x.id === t.id)) continue;
     if (t.kind === 'assumption' && p?.model?.assumptions.some(a => a.id === t.id)) out.push({ kind: 'assumption', id: t.id });
     else if (t.kind === 'question' && questions.some(q => q.id === t.id)) out.push({ kind: 'question', id: t.id });
+    else if (t.kind === 'option' && optionOf(p, t.id)) out.push({ kind: 'option', id: t.id });
   }
   return out.slice(0, RESEARCH_LIMITS.testsPerExperiment);
 }
@@ -97,7 +100,7 @@ export function editExperiment(d: MyDayData, id: string, patch: ExperimentPatch)
   const e = exp(d, id);
   if (!e) return false;
   // What it tests: a kind this version doesn't know (from a newer MyDay) is kept as it is.
-  const foreign = e.tests.filter(t => t.kind !== 'assumption' && t.kind !== 'question');
+  const foreign = e.tests.filter(t => t.kind !== 'assumption' && t.kind !== 'question' && t.kind !== 'option');
   const next = {
     title: patch.title === undefined ? e.title : tidyText(patch.title, RESEARCH_LIMITS.title) || e.title,
     tests: patch.tests === undefined ? e.tests : [...cleanTests(d, e.projectId, patch.tests), ...foreign],

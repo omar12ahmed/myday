@@ -7,7 +7,9 @@
 // Nothing here adds tasks, touches Today or moves the project on the board.
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
 import { projectRecordSizes, projectRecordsFit } from './projectSize';
-import type { DateKey, Decision, DecisionHistoryEntry, DecisionOption, Milestone, MyDayData, Project } from './types';
+import { forgetOptions, optionEvidence } from './research';
+import { isDone } from './tasks';
+import type { DateKey, Decision, DecisionHistoryEntry, DecisionOption, Milestone, MyDayData, OptionEvidence, Project, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
 export const PLAN_LIMITS = { milestones: 30, milestoneTitle: 120, decisions: 12, question: 200, options: 4, optionText: 120, points: 10, point: 160, why: 600 };
@@ -28,6 +30,14 @@ export function normalizeMilestones(raw: unknown, report: { dropped: number }): 
   return out.length ? out : undefined;
 }
 const points = (v: unknown) => listOf(v).map(x => text(x, PLAN_LIMITS.point)).filter(Boolean);
+// What the evidence said about a choice (specs/projects-evidence-decisions.md): two whole counts, else none; anything a
+// newer MyDay keeps beside them stays.
+const count = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? Math.min(v, 1000) : null);
+function evidenceOf(v: unknown): OptionEvidence | null {
+  if (!isObj(v)) return null;
+  const f = count(v.for), a = count(v.against);
+  return f === null || a === null ? null : { ...v, for: f, against: a };
+}
 export function normalizeHistory(raw: unknown, report: { dropped: number }): DecisionHistoryEntry[] | undefined {
   if (raw === undefined) return undefined;
   if (!Array.isArray(raw)) { report.dropped++; return undefined; }
@@ -37,7 +47,10 @@ export function normalizeHistory(raw: unknown, report: { dropped: number }): Dec
     if (!isObj(h) || typeof h.id !== 'string' || !h.id || !label || !isDateKey(h.on)) { report.dropped++; continue; }
     const id = seen.has(h.id) ? 'dh' + uid() : h.id;
     seen.add(id);
-    out.push({ ...h, id, text: label, on: h.on, why: typeof h.why === 'string' ? h.why.slice(0, PLAN_LIMITS.why) : null });
+    const e: DecisionHistoryEntry = { ...h, id, text: label, on: h.on, why: typeof h.why === 'string' ? h.why.slice(0, PLAN_LIMITS.why) : null };
+    const ev = evidenceOf(h.evidence);
+    if (ev) e.evidence = ev; else delete e.evidence;
+    out.push(e);
   }
   return out.length ? out : undefined;
 }
@@ -70,12 +83,21 @@ export function normalizeDecisions(raw: unknown, report: { dropped: number }): D
     else delete d.lastChoice;
     const history = normalizeHistory(x.history, report);
     if (history) d.history = history; else delete d.history;
+    const ev = evidenceOf(x.chosenEvidence);
+    if (ev && chosen) d.chosenEvidence = ev; else delete d.chosenEvidence;
     out.push(d);
   }
   return out.length ? out : undefined;
 }
 
 // ---------- Looking at them ----------
+// The tasks toward a milestone (specs/projects-evidence-decisions.md): this project's tasks that say so, not let go — a
+// milestone removed, or a task moved to another project, simply no longer counts. "3 of 5 done".
+export function milestoneTasks(data: MyDayData, p: Project, milestoneId: string): { all: TaskItem[]; done: TaskItem[] } {
+  if (!p.milestones?.some(m => m.id === milestoneId)) return { all: [], done: [] };
+  const all = data.tasks.items.filter(t => t.projectId === p.id && t.milestoneId === milestoneId && !t.letGoOn);
+  return { all, done: all.filter(t => isDone(data, t)) };
+}
 export function milestoneProgress(p: Project): { reached: number; total: number; next: Milestone | null } {
   const list = p.milestones ?? [];
   return { reached: list.filter(m => m.reachedOn).length, total: list.length, next: list.find(m => !m.reachedOn) ?? null };
@@ -120,8 +142,9 @@ function saveChoice(p: Project, x: Decision, change: (next: Decision) => void): 
 function keepPreviousChoice(x: Decision) {
   const o = chosenOption(x);
   if (!o || !x.decidedOn) return;
-  x.history = [...decisionHistory(x), { id: 'dh' + uid(), text: o.text, on: x.decidedOn, why: x.why }];
+  x.history = [...decisionHistory(x), { id: 'dh' + uid(), text: o.text, on: x.decidedOn, why: x.why, ...(x.chosenEvidence ? { evidence: x.chosenEvidence } : {}) }];
   x.lastChoice = { text: o.text, on: x.decidedOn };
+  delete x.chosenEvidence;
 }
 
 export function addMilestone(d: MyDayData, projectId: string, title: string, aim: DateKey | null = null): string | 'full' | null {
@@ -202,9 +225,11 @@ export function removeOption(d: MyDayData, projectId: string, id: string, option
   const wasChosen = x.chosen === optionId;
   if (wasChosen) {
     const saved = saveChoice(p, x, next => { reopen(next); next.options = next.options.filter(o => o.id !== optionId); });
+    if (saved !== 'big') forgetOptions(d, projectId, [optionId]);
     return saved === 'big' ? 'big' : 'reopened';
   }
   x.options = x.options.filter(o => o.id !== optionId);
+  forgetOptions(d, projectId, [optionId]); // findings and experiments stop pointing at it
   touchDecision(p, x);
   return 'removed';
 }
@@ -234,10 +259,13 @@ export function decide(d: MyDayData, projectId: string, id: string, optionId: st
   const w = why.trim().slice(0, PLAN_LIMITS.why);
   if (!p || !x || !isDateKey(k) || !x.options.some(o => o.id === optionId)) return false;
   if (x.chosen === optionId && x.decidedOn === k && x.why === w) return false;
+  // (What the evidence says about it now, kept with the choice — never used to choose.)
+  const ev = optionEvidence(d, projectId, optionId);
   return saveChoice(p, x, next => {
     if (next.chosen) keepPreviousChoice(next);
     else if (!next.history?.length && next.lastChoice) next.history = decisionHistory(next);
     next.chosen = optionId; next.decidedOn = k; next.why = w;
+    if (ev.for || ev.against) next.chosenEvidence = ev; else delete next.chosenEvidence;
   });
 }
 export function editWhy(d: MyDayData, projectId: string, id: string, why: string): boolean {
@@ -259,8 +287,10 @@ export function thinkAgain(d: MyDayData, projectId: string, id: string): boolean
 }
 export function removeDecision(d: MyDayData, projectId: string, id: string): boolean {
   const p = proj(d, projectId);
-  if (!p || !dc(p, id)) return false;
-  p.decisions = p.decisions!.filter(x => x.id !== id);
+  const x = dc(p, id);
+  if (!p || !x) return false;
+  p.decisions = p.decisions!.filter(y => y.id !== id);
+  forgetOptions(d, projectId, x.options.map(o => o.id)); // findings and experiments stop pointing at its options
   tidy(p); touch(p);
   return true;
 }
