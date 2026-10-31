@@ -4587,6 +4587,10 @@
      {
       "id": "explainer.arabic-taking-words-apart",
       "en": "الْـ is one of several pieces written joined to a word."
+     },
+     {
+      "id": "explainer.arabic-words-run-together",
+      "en": "How الْـ joins the word before it when you speak."
      }
     ]
    }
@@ -11502,6 +11506,10 @@
      {
       "id": "explainer.arabic-word-records",
       "en": "Recording a word you looked up so you can use it."
+     },
+     {
+      "id": "explainer.arabic-one-spelling-several-words",
+      "en": "Choosing between words that share a spelling."
      }
     ]
    }
@@ -11868,7 +11876,13 @@
       "why_en": "\"A card\" is بِطَاقَة, and \"vocabulary\" مُفْرَدَات."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-word-partners",
+      "en": "Recording a word with the words it usually goes with."
+     }
+    ]
    }
   ],
   "lesson.arabic-a2-listening": [
@@ -12046,6 +12060,12 @@
      "لَمْ نَزُرْ",
      "بَعْدَ زِيَارَةِ الْمَتْحَفِ",
      "لَمْ نَزُرِ الْقَلْعَةَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-listening-in-passes",
+      "en": "Listening in several passes, each with its own aim."
+     }
     ]
    }
   ],
@@ -12216,6 +12236,12 @@
     "phrases_ar": [
      "يَبْدَأُ الدَّرْسُ",
      "تَبْدَأُ الدَّوْرَةُ يَوْمَ الْخَمِيسِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-following-a-paragraph",
+      "en": "Following a whole paragraph: its main point and its links."
+     }
     ]
    }
   ],
@@ -12410,6 +12436,12 @@
      "هَلْ تَعْنِي",
      "غُرْفَةٌ أَكْبَرُ",
      "فِي غُرْفَةٍ أَكْبَرَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-follow-up",
+      "en": "Questions that build on what someone has just said."
+     }
     ]
    }
   ],
@@ -12792,6 +12824,1838 @@
      "أَفْهَمُ الْأَخْبَارَ الْقَصِيرَةَ بِمُسَاعَدَةِ الْقَامُوسِ",
      "الْخُطْوَةُ التَّالِيَةُ هِيَ الِاسْتِمَاعُ"
     ]
+   }
+  ],
+  "lesson.arabic-diacritics-taper": [
+   {
+    "id": "explainer.arabic-reading-without-marks",
+    "title_en": "Reading without the vowel marks: the marks, and the clues",
+    "family_en": "What each mark is called, and how a sentence settles a word without them",
+    "course_words": [
+     "lexeme.arabic-diacritics-taper-1",
+     "lexeme.arabic-diacritics-taper-2",
+     "lexeme.arabic-diacritics-taper-3",
+     "lexeme.arabic-diacritics-taper-4",
+     "lexeme.arabic-diacritics-taper-5",
+     "lexeme.arabic-diacritics-taper-6",
+     "lexeme.arabic-diacritics-taper-7",
+     "lexeme.arabic-diacritics-taper-8"
+    ],
+    "table": [
+     {
+      "form_en": "written above: a",
+      "ar": "فَتْحَة",
+      "en": "the short-a mark"
+     },
+     {
+      "form_en": "written above: u",
+      "ar": "ضَمَّة",
+      "en": "the short-u mark"
+     },
+     {
+      "form_en": "written below: i",
+      "ar": "كَسْرَة",
+      "en": "the short-i mark"
+     },
+     {
+      "form_en": "written above: no vowel",
+      "ar": "سُكُون",
+      "en": "the no-vowel mark"
+     },
+     {
+      "form_en": "written above: a doubled letter",
+      "ar": "شَدَّة",
+      "en": "the doubling mark"
+     },
+     {
+      "form_en": "all the marks",
+      "ar": "تَشْكِيل",
+      "en": "vowel marking"
+     },
+     {
+      "form_en": "the letters د-ر-س as a verb",
+      "ar": "دَرَسَ",
+      "en": "he studied"
+     },
+     {
+      "form_en": "…as a noun",
+      "ar": "دَرْس",
+      "en": "a lesson"
+     },
+     {
+      "form_en": "…with a شَدَّة",
+      "ar": "دَرَّسَ",
+      "en": "he taught"
+     }
+    ],
+    "steps": [
+     "Fully vowelled text marks every short vowel: that's the تَشْكِيل. Most Arabic you'll read leaves the marks out.",
+     "Each mark has a name: فَتْحَة for a, ضَمَّة for u, كَسْرَة for i, سُكُون for no vowel, and شَدَّة for a doubled letter.",
+     "Without marks, one spelling can be several words: the letters د-ر-س can be دَرَسَ, he studied; دَرْس, a lesson; or دَرَّسَ, he taught.",
+     "The sentence settles it: after الْـ or فِي it's a noun, and a verb is followed by who did it.",
+     "Take the marks away gradually, and keep only the ones you still need to settle a word."
+    ],
+    "examples": [
+     {
+      "ar": "حَضَرْتُ الدَّرْسَ الْأَوَّلَ.",
+      "en": "I went to the first lesson.",
+      "words": [
+       {
+        "ar": "حَضَرْتُ",
+        "en": "I attended"
+       },
+       {
+        "ar": "الدَّرْسَ",
+        "en": "the lesson (with الْـ: a noun)"
+       },
+       {
+        "ar": "الْأَوَّلَ",
+        "en": "the first"
+       }
+      ]
+     },
+     {
+      "ar": "دَرَّسَتْ لَيْلَى الْعَرَبِيَّةَ سَنَتَيْنِ.",
+      "en": "Laylā taught Arabic for two years.",
+      "words": [
+       {
+        "ar": "دَرَّسَتْ",
+        "en": "taught (with a شَدَّة)"
+       },
+       {
+        "ar": "لَيْلَى",
+        "en": "Laylā"
+       },
+       {
+        "ar": "الْعَرَبِيَّةَ",
+        "en": "Arabic"
+       },
+       {
+        "ar": "سَنَتَيْنِ",
+        "en": "for two years"
+       }
+      ]
+     },
+     {
+      "ar": "دَرَسْنَا هَذَا الْمَوْضُوعَ فِي الصَّفِّ.",
+      "en": "We studied this topic in class.",
+      "words": [
+       {
+        "ar": "دَرَسْنَا",
+        "en": "we studied"
+       },
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "الْمَوْضُوعَ",
+        "en": "topic"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الصَّفِّ",
+        "en": "class"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Without its marks, how can I tell which word د-ر-س is?",
+     "a_en": "From its neighbours. After الْـ or فِي it's the noun, دَرْس. With a doer and something studied after it, it's a verb. If both still fit, keep both in mind and read on: the next words usually decide."
+    },
+    "selftest": [
+     {
+      "q_en": "Which mark shows a short u?",
+      "choices": [
+       "ضَمَّة",
+       "فَتْحَة",
+       "كَسْرَة"
+      ],
+      "answer": "ضَمَّة",
+      "why_en": "فَتْحَة is a, and كَسْرَة i."
+     },
+     {
+      "q_en": "What does a شَدَّة show?",
+      "choices": [
+       "a doubled letter",
+       "no vowel",
+       "a short a"
+      ],
+      "answer": "a doubled letter",
+      "why_en": "\"No vowel\" is سُكُون, and a short a فَتْحَة."
+     },
+     {
+      "q_en": "In \"in the lesson\", which reading of د-ر-س fits?",
+      "choices": [
+       "دَرْس, a lesson",
+       "دَرَسَ, he studied",
+       "دَرَّسَ, he taught"
+      ],
+      "answer": "دَرْس, a lesson",
+      "why_en": "After فِي and الْـ, only a noun fits."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-context-ambiguity": [
+   {
+    "id": "explainer.arabic-one-spelling-several-words",
+    "title_en": "One spelling, several words: ذَهَب, ذَهَبَ, شَعْر, شِعْر",
+    "family_en": "Words that look alike without their marks, and how the sentence chooses",
+    "course_words": [
+     "lexeme.arabic-context-ambiguity-1",
+     "lexeme.arabic-context-ambiguity-2",
+     "lexeme.arabic-context-ambiguity-3",
+     "lexeme.arabic-context-ambiguity-4",
+     "lexeme.arabic-context-ambiguity-5",
+     "lexeme.arabic-context-ambiguity-6",
+     "lexeme.arabic-context-ambiguity-7"
+    ],
+    "table": [
+     {
+      "form_en": "a noun",
+      "ar": "ذَهَب",
+      "en": "gold"
+     },
+     {
+      "form_en": "a verb",
+      "ar": "ذَهَبَ",
+      "en": "he went"
+     },
+     {
+      "form_en": "a noun",
+      "ar": "شَعْر",
+      "en": "hair"
+     },
+     {
+      "form_en": "another noun",
+      "ar": "شِعْر",
+      "en": "poetry"
+     },
+     {
+      "form_en": "a noun: a person",
+      "ar": "مَلِك",
+      "en": "a king"
+     },
+     {
+      "form_en": "a verb",
+      "ar": "مَلَكَ",
+      "en": "he owned"
+     },
+     {
+      "form_en": "a noun: family",
+      "ar": "جَدّ",
+      "en": "grandfather"
+     },
+     {
+      "form_en": "a word for \"very\"",
+      "ar": "جِدًّا",
+      "en": "very"
+     },
+     {
+      "form_en": "with a شَدَّة",
+      "ar": "حَمَّام",
+      "en": "a bathroom"
+     },
+     {
+      "form_en": "without one",
+      "ar": "حَمَام",
+      "en": "pigeons, doves"
+     }
+    ],
+    "steps": [
+     "Without marks, different words can share a spelling: ذَهَب, gold, and ذَهَبَ, he went, look the same on the page.",
+     "Test each reading: is a verb or a noun needed here? Does it agree with the words around it? Does the meaning make sense?",
+     "Neighbours help. A small word like مِنْ or فِي, or الْـ, points to a noun: خَاتَمٌ مِنْ ذَهَبٍ, a gold ring. A doer after it points to a verb.",
+     "A dictionary lists the possible senses; the sentence chooses among them.",
+     "If the evidence doesn't settle it yet, note each اِحْتِمَال, possibility, and read on."
+    ],
+    "examples": [
+     {
+      "ar": "اِشْتَرَتْ خَاتَمًا مِنْ ذَهَبٍ.",
+      "en": "She bought a gold ring.",
+      "words": [
+       {
+        "ar": "اِشْتَرَتْ",
+        "en": "she bought"
+       },
+       {
+        "ar": "خَاتَمًا",
+        "en": "a ring"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "of, made of"
+       },
+       {
+        "ar": "ذَهَبٍ",
+        "en": "gold (after مِنْ: a noun)"
+       }
+      ]
+     },
+     {
+      "ar": "ذَهَبَ جَدِّي إِلَى السُّوقِ.",
+      "en": "My grandfather went to the market.",
+      "words": [
+       {
+        "ar": "ذَهَبَ",
+        "en": "went (a doer follows: a verb)"
+       },
+       {
+        "ar": "جَدِّي",
+        "en": "my grandfather"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "السُّوقِ",
+        "en": "the market"
+       }
+      ]
+     },
+     {
+      "ar": "شَعْرُهَا طَوِيلٌ جِدًّا.",
+      "en": "Her hair is very long.",
+      "words": [
+       {
+        "ar": "شَعْرُهَا",
+        "en": "her hair"
+       },
+       {
+        "ar": "طَوِيلٌ",
+        "en": "long"
+       },
+       {
+        "ar": "جِدًّا",
+        "en": "very"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "If ذَهَب and ذَهَبَ look the same, why don't readers get lost?",
+     "a_en": "Because a sentence rarely leaves room for both. After مِنْ, only the noun fits: مِنْ ذَهَبٍ, of gold. Before a person and a place, only the verb fits: ذَهَبَ جَدِّي إِلَى السُّوقِ."
+    },
+    "selftest": [
+     {
+      "q_en": "In شَعْرُهَا طَوِيلٌ, which word is شَعْر?",
+      "choices": [
+       "hair",
+       "poetry",
+       "he felt"
+      ],
+      "answer": "hair",
+      "why_en": "\"Her … is long\" needs something that can be long: hair. Poetry is شِعْر."
+     },
+     {
+      "q_en": "Which reading fits مِنْ ذَهَبٍ?",
+      "choices": [
+       "of gold",
+       "he went from",
+       "he will go"
+      ],
+      "answer": "of gold",
+      "why_en": "After مِنْ comes a noun, ending in -in: gold."
+     },
+     {
+      "q_en": "The sentence doesn't settle a word yet. What do you do?",
+      "choices": [
+       "note both readings and read on",
+       "choose the first meaning you know",
+       "stop reading"
+      ],
+      "answer": "note both readings and read on",
+      "why_en": "Keep both possibilities until the text decides."
+     }
+    ],
+    "phrases_ar": [
+     "خَاتَمٌ مِنْ ذَهَبٍ",
+     "مِنْ ذَهَبٍ",
+     "شَعْرُهَا طَوِيلٌ"
+    ]
+   }
+  ],
+  "lesson.arabic-paragraph-mapping": [
+   {
+    "id": "explainer.arabic-following-a-paragraph",
+    "title_en": "Following a paragraph: its main point, and the words that link it",
+    "family_en": "Words that add, contrast and sum up, and pronouns that point back",
+    "course_words": [
+     "lexeme.arabic-paragraph-mapping-1",
+     "lexeme.arabic-paragraph-mapping-2",
+     "lexeme.arabic-paragraph-mapping-3",
+     "lexeme.arabic-paragraph-mapping-4",
+     "lexeme.arabic-paragraph-mapping-5",
+     "lexeme.arabic-paragraph-mapping-6",
+     "lexeme.arabic-paragraph-mapping-7"
+    ],
+    "table": [
+     {
+      "form_en": "the topic",
+      "ar": "الْمَوْضُوعُ الرَّئِيسِيُّ",
+      "en": "the main topic"
+     },
+     {
+      "form_en": "adding a point",
+      "ar": "بِالْإِضَافَةِ إِلَى ذَلِكَ",
+      "en": "in addition to that"
+     },
+     {
+      "form_en": "adding, too",
+      "ar": "كَذَلِكَ",
+      "en": "also, likewise"
+     },
+     {
+      "form_en": "a second point",
+      "ar": "ثَانِيًا",
+      "en": "secondly"
+     },
+     {
+      "form_en": "the other side",
+      "ar": "مِنْ نَاحِيَةٍ أُخْرَى",
+      "en": "on the other hand"
+     },
+     {
+      "form_en": "summing up",
+      "ar": "بِاخْتِصَارٍ",
+      "en": "in short"
+     }
+    ],
+    "steps": [
+     "A paragraph has a main point, and the rest supports it, gives examples, or sets something against it. The main point isn't always the first sentence.",
+     "Linking words show the relation: بِالْإِضَافَةِ إِلَى ذَلِكَ and كَذَلِكَ add; ثَانِيًا lists; مِنْ نَاحِيَةٍ أُخْرَى sets against; بِاخْتِصَارٍ sums up.",
+     "Track each pronoun back to what it means: هِيَ or ـهَا points to a feminine noun, هُوَ or ـهُ to a masculine one, usually the nearest that fits.",
+     "Check the match before you move on: a sentence can be understood word by word and still be misread if \"it\" is pinned to the wrong noun."
+    ],
+    "examples": [
+     {
+      "ar": "الْمَدِينَةُ صَغِيرَةٌ، وَلَكِنَّهَا جَمِيلَةٌ.",
+      "en": "The town is small, but it's beautiful.",
+      "words": [
+       {
+        "ar": "الْمَدِينَةُ",
+        "en": "the town"
+       },
+       {
+        "ar": "صَغِيرَةٌ",
+        "en": "small"
+       },
+       {
+        "ar": "وَلَكِنَّهَا",
+        "en": "but it (ـهَا: the town)"
+       },
+       {
+        "ar": "جَمِيلَةٌ",
+        "en": "beautiful"
+       }
+      ]
+     },
+     {
+      "ar": "بِالْإِضَافَةِ إِلَى ذَلِكَ، الْمُوَاصَلَاتُ فِيهَا رَخِيصَةٌ.",
+      "en": "In addition to that, transport there is cheap.",
+      "words": [
+       {
+        "ar": "بِالْإِضَافَةِ",
+        "en": "in addition"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "ذَلِكَ",
+        "en": "that"
+       },
+       {
+        "ar": "الْمُوَاصَلَاتُ",
+        "en": "transport"
+       },
+       {
+        "ar": "فِيهَا",
+        "en": "in it (ـهَا: the town)"
+       },
+       {
+        "ar": "رَخِيصَةٌ",
+        "en": "cheap"
+       }
+      ]
+     },
+     {
+      "ar": "بِاخْتِصَارٍ، هِيَ مَكَانٌ مُنَاسِبٌ لِلدِّرَاسَةِ.",
+      "en": "In short, it's a good place to study.",
+      "words": [
+       {
+        "ar": "بِاخْتِصَارٍ",
+        "en": "in short"
+       },
+       {
+        "ar": "هِيَ",
+        "en": "it (the town)"
+       },
+       {
+        "ar": "مَكَانٌ",
+        "en": "a place"
+       },
+       {
+        "ar": "مُنَاسِبٌ",
+        "en": "suitable"
+       },
+       {
+        "ar": "لِلدِّرَاسَةِ",
+        "en": "for studying"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "How do I know what ـهَا points to?",
+     "a_en": "Look back for the nearest noun that fits: feminine for ـهَا and هِيَ, masculine for ـهُ and هُوَ, and one that makes sense. In الْمَدِينَةُ صَغِيرَةٌ، وَلَكِنَّهَا جَمِيلَةٌ, the ـهَا is the town."
+    },
+    "selftest": [
+     {
+      "q_en": "Which phrase sums up?",
+      "choices": [
+       "بِاخْتِصَارٍ",
+       "كَذَلِكَ",
+       "ثَانِيًا"
+      ],
+      "answer": "بِاخْتِصَارٍ",
+      "why_en": "كَذَلِكَ adds, and ثَانِيًا lists a second point."
+     },
+     {
+      "q_en": "Which phrase brings in the other side?",
+      "choices": [
+       "مِنْ نَاحِيَةٍ أُخْرَى",
+       "بِالْإِضَافَةِ إِلَى ذَلِكَ",
+       "كَذَلِكَ"
+      ],
+      "answer": "مِنْ نَاحِيَةٍ أُخْرَى",
+      "why_en": "The other two add a point on the same side."
+     },
+     {
+      "q_en": "In الْمَدِينَةُ صَغِيرَةٌ، وَلَكِنَّهَا جَمِيلَةٌ, what does ـهَا mean?",
+      "choices": [
+       "the town",
+       "someone new",
+       "the paragraph"
+      ],
+      "answer": "the town",
+      "why_en": "It points back to the nearest feminine noun that fits: الْمَدِينَة."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-extensive-reading": [
+   {
+    "id": "explainer.arabic-reading-at-length",
+    "title_en": "Reading at length: the gist, and talking about what you read",
+    "family_en": "Words for books and reading, and how to read for the main thread",
+    "course_words": [
+     "lexeme.arabic-extensive-reading-1",
+     "lexeme.arabic-extensive-reading-2",
+     "lexeme.arabic-extensive-reading-3",
+     "lexeme.arabic-extensive-reading-4",
+     "lexeme.arabic-extensive-reading-5",
+     "lexeme.arabic-extensive-reading-6",
+     "lexeme.arabic-extensive-reading-7"
+    ],
+    "table": [
+     {
+      "form_en": "a novel",
+      "ar": "رِوَايَة",
+      "en": "a novel"
+     },
+     {
+      "form_en": "a magazine",
+      "ar": "مَجَلَّة",
+      "en": "a magazine"
+     },
+     {
+      "form_en": "a page",
+      "ar": "صَفْحَة",
+      "en": "a page"
+     },
+     {
+      "form_en": "the gist",
+      "ar": "الْفِكْرَةُ الْعَامَّةُ",
+      "en": "the general idea, the gist"
+     },
+     {
+      "form_en": "enjoyable",
+      "ar": "قِصَّةٌ مُمْتِعَةٌ",
+      "en": "an enjoyable story"
+     },
+     {
+      "form_en": "without",
+      "ar": "بِدُونِ قَامُوسٍ",
+      "en": "without a dictionary"
+     },
+     {
+      "form_en": "I finished",
+      "ar": "أَنْهَيْتُ الْفَصْلَ",
+      "en": "I finished the chapter"
+     }
+    ],
+    "steps": [
+     "For reading at length, choose something you mostly understand and want to finish: a short رِوَايَة, or an article in a مَجَلَّة.",
+     "Read for the main thread, الْفِكْرَةُ الْعَامَّةُ, and stop only for words the story can't do without.",
+     "If almost every line needs the dictionary, choose something easier or shorter.",
+     "When you finish a section, say its main event in one sentence, then pick a few words worth learning.",
+     "أَنْهَى, to finish, takes what you finish straight after it: أَنْهَيْتُ الْكِتَابَ, I finished the book."
+    ],
+    "examples": [
+     {
+      "ar": "أَقْرَأُ عَشْرَ صَفَحَاتٍ كُلَّ يَوْمٍ بِدُونِ قَامُوسٍ.",
+      "en": "I read ten pages a day without a dictionary.",
+      "words": [
+       {
+        "ar": "أَقْرَأُ",
+        "en": "I read"
+       },
+       {
+        "ar": "عَشْرَ",
+        "en": "ten"
+       },
+       {
+        "ar": "صَفَحَاتٍ",
+        "en": "pages"
+       },
+       {
+        "ar": "كُلَّ",
+        "en": "every"
+       },
+       {
+        "ar": "يَوْمٍ",
+        "en": "day"
+       },
+       {
+        "ar": "بِدُونِ",
+        "en": "without"
+       },
+       {
+        "ar": "قَامُوسٍ",
+        "en": "a dictionary"
+       }
+      ]
+     },
+     {
+      "ar": "كَانَتِ الرِّوَايَةُ مُمْتِعَةً، فَأَنْهَيْتُهَا فِي أُسْبُوعٍ.",
+      "en": "The novel was enjoyable, so I finished it in a week.",
+      "words": [
+       {
+        "ar": "كَانَتِ",
+        "en": "was"
+       },
+       {
+        "ar": "الرِّوَايَةُ",
+        "en": "the novel"
+       },
+       {
+        "ar": "مُمْتِعَةً",
+        "en": "enjoyable"
+       },
+       {
+        "ar": "فَأَنْهَيْتُهَا",
+        "en": "so I finished it"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "أُسْبُوعٍ",
+        "en": "a week"
+       }
+      ]
+     },
+     {
+      "ar": "فَهِمْتُ الْفِكْرَةَ الْعَامَّةَ مَعَ أَنَّنِي لَمْ أَعْرِفْ كُلَّ الْكَلِمَاتِ.",
+      "en": "I understood the gist, although I didn't know every word.",
+      "words": [
+       {
+        "ar": "فَهِمْتُ",
+        "en": "I understood"
+       },
+       {
+        "ar": "الْفِكْرَةَ",
+        "en": "the idea"
+       },
+       {
+        "ar": "الْعَامَّةَ",
+        "en": "general"
+       },
+       {
+        "ar": "مَعَ",
+        "en": "although (with أَنَّ)"
+       },
+       {
+        "ar": "أَنَّنِي",
+        "en": "that I"
+       },
+       {
+        "ar": "لَمْ",
+        "en": "didn't"
+       },
+       {
+        "ar": "أَعْرِفْ",
+        "en": "know"
+       },
+       {
+        "ar": "كُلَّ",
+        "en": "all (of)"
+       },
+       {
+        "ar": "الْكَلِمَاتِ",
+        "en": "the words"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أَنْهَيْتُ, with يْ, from أَنْهَى?",
+     "a_en": "Verbs ending in ى change it to يْ before endings like ـتُ: أَنْهَى, he finished; أَنْهَيْتُ, I finished. It's the same change as مَشَى, مَشَيْتُ."
+    },
+    "selftest": [
+     {
+      "q_en": "What is الْفِكْرَةُ الْعَامَّةُ?",
+      "choices": [
+       "the gist, the general idea",
+       "the first page",
+       "a difficult word"
+      ],
+      "answer": "the gist, the general idea",
+      "why_en": "فِكْرَة is an idea, and عَامّ general."
+     },
+     {
+      "q_en": "How do you say \"I finished the novel\"?",
+      "choices": [
+       "أَنْهَيْتُ الرِّوَايَةَ",
+       "أَنْهَيْتُ إِلَى الرِّوَايَةِ",
+       "أَنْهَتُ الرِّوَايَةَ"
+      ],
+      "answer": "أَنْهَيْتُ الرِّوَايَةَ",
+      "why_en": "أَنْهَى takes what you finish straight after it, and its ى becomes يْ before ـتُ."
+     },
+     {
+      "q_en": "Nearly every line needs the dictionary. What do you do?",
+      "choices": [
+       "choose an easier or shorter text",
+       "look up every word",
+       "read faster"
+      ],
+      "answer": "choose an easier or shorter text",
+      "why_en": "Reading at length works when most of the text is already within reach."
+     }
+    ],
+    "phrases_ar": [
+     "أَنْهَيْتُ الْكِتَابَ"
+    ]
+   }
+  ],
+  "lesson.arabic-collocation-growth": [
+   {
+    "id": "explainer.arabic-word-partners",
+    "title_en": "Words that go together: طَرَحَ سُؤَالًا, حَصَلَ عَلَى",
+    "family_en": "Verbs and nouns with their usual partners, which a word-for-word translation misses",
+    "course_words": [
+     "lexeme.arabic-collocation-growth-1",
+     "lexeme.arabic-collocation-growth-2",
+     "lexeme.arabic-collocation-growth-3",
+     "lexeme.arabic-collocation-growth-4",
+     "lexeme.arabic-collocation-growth-5",
+     "lexeme.arabic-collocation-growth-6",
+     "lexeme.arabic-collocation-growth-7"
+    ],
+    "table": [
+     {
+      "form_en": "literally \"put forward a question\"",
+      "ar": "طَرَحَ سُؤَالًا",
+      "en": "he asked a question"
+     },
+     {
+      "form_en": "literally \"delivered a lecture\"",
+      "ar": "أَلْقَى مُحَاضَرَةً",
+      "en": "he gave a lecture"
+     },
+     {
+      "form_en": "literally \"undertook a visit\"",
+      "ar": "قَامَ بِزِيَارَةٍ",
+      "en": "he paid a visit"
+     },
+     {
+      "form_en": "with عَلَى",
+      "ar": "حَصَلَ عَلَى جَائِزَةٍ",
+      "en": "he won a prize"
+     },
+     {
+      "form_en": "with فِي",
+      "ar": "شَارَكَ فِي الْمُسَابَقَةِ",
+      "en": "he took part in the competition"
+     },
+     {
+      "form_en": "literally \"picked up a picture\"",
+      "ar": "اِلْتَقَطَ صُورَةً",
+      "en": "he took a photo"
+     },
+     {
+      "form_en": "literally \"spent time\"",
+      "ar": "قَضَى وَقْتًا مُمْتِعًا",
+      "en": "he had a good time"
+     }
+    ],
+    "steps": [
+     "Words have usual partners. \"Take a photo\" is اِلْتَقَطَ صُورَةً, literally \"pick up a picture\": translating \"take\" on its own would sound odd.",
+     "So learn a noun with its verb, and a verb with its small word: حَصَلَ عَلَى, to get; شَارَكَ فِي, to take part in.",
+     "Look for the pair in a dictionary example or a text, rather than putting it together from English.",
+     "Note where a pair belongs: أَلْقَى مُحَاضَرَةً is formal, and fits a talk or a report better than a quick message."
+    ],
+    "examples": [
+     {
+      "ar": "طَرَحَتْ سَلْمَى سُؤَالًا مُهِمًّا فِي الِاجْتِمَاعِ.",
+      "en": "Salmā asked an important question at the meeting.",
+      "words": [
+       {
+        "ar": "طَرَحَتْ",
+        "en": "put forward (she)"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       },
+       {
+        "ar": "سُؤَالًا",
+        "en": "a question"
+       },
+       {
+        "ar": "مُهِمًّا",
+        "en": "important"
+       },
+       {
+        "ar": "فِي",
+        "en": "in, at"
+       },
+       {
+        "ar": "الِاجْتِمَاعِ",
+        "en": "the meeting"
+       }
+      ]
+     },
+     {
+      "ar": "قَضَيْنَا وَقْتًا مُمْتِعًا عَلَى الشَّاطِئِ.",
+      "en": "We had a lovely time on the beach.",
+      "words": [
+       {
+        "ar": "قَضَيْنَا",
+        "en": "we spent"
+       },
+       {
+        "ar": "وَقْتًا",
+        "en": "time"
+       },
+       {
+        "ar": "مُمْتِعًا",
+        "en": "enjoyable"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "الشَّاطِئِ",
+        "en": "the beach"
+       }
+      ]
+     },
+     {
+      "ar": "حَصَلَ أَخِي عَلَى عَمَلٍ جَدِيدٍ.",
+      "en": "My brother got a new job.",
+      "words": [
+       {
+        "ar": "حَصَلَ",
+        "en": "got (with عَلَى)"
+       },
+       {
+        "ar": "أَخِي",
+        "en": "my brother"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(the partner of حَصَلَ)"
+       },
+       {
+        "ar": "عَمَلٍ",
+        "en": "a job"
+       },
+       {
+        "ar": "جَدِيدٍ",
+        "en": "new"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does حَصَلَ need عَلَى?",
+     "a_en": "On its own, حَصَلَ means \"it happened\". With عَلَى it means \"to get, to obtain\": حَصَلَ عَلَى عَمَلٍ, he got a job. The small word changes the meaning, so learn the verb with it."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you say \"he took part in the race\"?",
+      "choices": [
+       "شَارَكَ فِي السِّبَاقِ",
+       "شَارَكَ عَلَى السِّبَاقِ",
+       "شَارَكَ عَنِ السِّبَاقِ"
+      ],
+      "answer": "شَارَكَ فِي السِّبَاقِ",
+      "why_en": "شَارَكَ takes فِي for what you take part in."
+     },
+     {
+      "q_en": "What does أَلْقَى مُحَاضَرَةً mean?",
+      "choices": [
+       "gave a lecture",
+       "threw a lecture away",
+       "went to a lecture"
+      ],
+      "answer": "gave a lecture",
+      "why_en": "أَلْقَى is \"to throw\" on its own, but with مُحَاضَرَة it's \"to give\" a lecture."
+     },
+     {
+      "q_en": "What does حَصَلَ mean without عَلَى?",
+      "choices": [
+       "it happened",
+       "he got",
+       "he won"
+      ],
+      "answer": "it happened",
+      "why_en": "With عَلَى it means \"to get\"."
+     }
+    ],
+    "phrases_ar": [
+     "حَصَلَ عَلَى",
+     "شَارَكَ فِي",
+     "حَصَلَ عَلَى عَمَلٍ"
+    ]
+   }
+  ],
+  "lesson.arabic-listening-passes": [
+   {
+    "id": "explainer.arabic-listening-in-passes",
+    "title_en": "Listening in passes: سَمِعَ and اِسْتَمَعَ إِلَى",
+    "family_en": "Hearing and listening, and the words for each pass",
+    "course_words": [
+     "lexeme.arabic-listening-passes-1",
+     "lexeme.arabic-listening-passes-2",
+     "lexeme.arabic-listening-passes-3",
+     "lexeme.arabic-listening-passes-4",
+     "lexeme.arabic-listening-passes-5",
+     "lexeme.arabic-listening-passes-6"
+    ],
+    "table": [
+     {
+      "form_en": "to hear",
+      "ar": "سَمِعَ",
+      "en": "he heard"
+     },
+     {
+      "form_en": "to listen to",
+      "ar": "اِسْتَمَعَ إِلَى",
+      "en": "he listened to"
+     },
+     {
+      "form_en": "a clip, a passage",
+      "ar": "مَقْطَع",
+      "en": "a clip, a passage"
+     },
+     {
+      "form_en": "the details",
+      "ar": "التَّفَاصِيل",
+      "en": "the details"
+     },
+     {
+      "form_en": "I paused",
+      "ar": "أَوْقَفْتُ التَّسْجِيلَ",
+      "en": "I paused the recording"
+     },
+     {
+      "form_en": "on my own",
+      "ar": "بِمُفْرَدِي",
+      "en": "on my own, unaided"
+     },
+     {
+      "form_en": "understanding",
+      "ar": "فَهْم",
+      "en": "understanding"
+     }
+    ],
+    "steps": [
+     "سَمِعَ is to hear; اِسْتَمَعَ is to listen, on purpose, and it takes إِلَى before what you listen to.",
+     "Give each pass its own aim: first the topic, then the details you need, then the language, such as one phrase you missed.",
+     "If something is lost, replay that short مَقْطَع, not the whole recording.",
+     "Keep apart what you understood بِمُفْرَدِي, on your own, and what you understood with the text in front of you."
+    ],
+    "examples": [
+     {
+      "ar": "اِسْتَمَعْتُ إِلَى الْمَقْطَعِ ثَلَاثَ مَرَّاتٍ.",
+      "en": "I listened to the clip three times.",
+      "words": [
+       {
+        "ar": "اِسْتَمَعْتُ",
+        "en": "I listened"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "الْمَقْطَعِ",
+        "en": "the clip"
+       },
+       {
+        "ar": "ثَلَاثَ",
+        "en": "three"
+       },
+       {
+        "ar": "مَرَّاتٍ",
+        "en": "times"
+       }
+      ]
+     },
+     {
+      "ar": "فِي الْمَرَّةِ الثَّانِيَةِ، كَتَبْتُ التَّفَاصِيلَ الْمُهِمَّةَ.",
+      "en": "The second time, I wrote down the important details.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in, at"
+       },
+       {
+        "ar": "الْمَرَّةِ",
+        "en": "the time"
+       },
+       {
+        "ar": "الثَّانِيَةِ",
+        "en": "second"
+       },
+       {
+        "ar": "كَتَبْتُ",
+        "en": "I wrote"
+       },
+       {
+        "ar": "التَّفَاصِيلَ",
+        "en": "the details"
+       },
+       {
+        "ar": "الْمُهِمَّةَ",
+        "en": "important"
+       }
+      ]
+     },
+     {
+      "ar": "فَهِمْتُ الْمَوْضُوعَ بِمُفْرَدِي، ثُمَّ قَرَأْتُ النَّصَّ.",
+      "en": "I understood the topic on my own, then read the text.",
+      "words": [
+       {
+        "ar": "فَهِمْتُ",
+        "en": "I understood"
+       },
+       {
+        "ar": "الْمَوْضُوعَ",
+        "en": "the topic"
+       },
+       {
+        "ar": "بِمُفْرَدِي",
+        "en": "on my own"
+       },
+       {
+        "ar": "ثُمَّ",
+        "en": "then"
+       },
+       {
+        "ar": "قَرَأْتُ",
+        "en": "I read"
+       },
+       {
+        "ar": "النَّصَّ",
+        "en": "the text"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why اِسْتَمَعْتُ إِلَى, but سَمِعْتُ with no small word?",
+     "a_en": "سَمِعَ takes what you hear straight after it: سَمِعْتُ صَوْتًا, I heard a sound. اِسْتَمَعَ, listening on purpose, takes إِلَى: اِسْتَمَعْتُ إِلَى الْأَخْبَارِ. Learn each verb with its partner."
+    },
+    "selftest": [
+     {
+      "q_en": "Which means \"I listened to the news\"?",
+      "choices": [
+       "اِسْتَمَعْتُ إِلَى الْأَخْبَارِ",
+       "اِسْتَمَعْتُ عَنِ الْأَخْبَارِ",
+       "اِسْتَمَعْتُ مِنَ الْأَخْبَارِ"
+      ],
+      "answer": "اِسْتَمَعْتُ إِلَى الْأَخْبَارِ",
+      "why_en": "اِسْتَمَعَ takes إِلَى."
+     },
+     {
+      "q_en": "What is a مَقْطَع?",
+      "choices": [
+       "a short clip or passage",
+       "a whole programme",
+       "a transcript"
+      ],
+      "answer": "a short clip or passage",
+      "why_en": "Replay a short مَقْطَع rather than the whole recording."
+     },
+     {
+      "q_en": "What is the first pass for?",
+      "choices": [
+       "the topic",
+       "every word",
+       "the spelling"
+      ],
+      "answer": "the topic",
+      "why_en": "Details come on the next pass, and the language after that."
+     }
+    ],
+    "phrases_ar": [
+     "اِسْتَمَعْتُ إِلَى",
+     "سَمِعْتُ صَوْتًا",
+     "اِسْتَمَعْتُ إِلَى الْأَخْبَارِ"
+    ]
+   }
+  ],
+  "lesson.arabic-connected-listening": [
+   {
+    "id": "explainer.arabic-words-run-together",
+    "title_en": "Words that run together: هَمْزَةُ الْوَصْلِ",
+    "family_en": "Why a phrase sounds different from its words read one by one",
+    "course_words": [
+     "lexeme.arabic-connected-listening-1",
+     "lexeme.arabic-connected-listening-3",
+     "lexeme.arabic-connected-listening-4",
+     "lexeme.arabic-connected-listening-5",
+     "lexeme.arabic-connected-listening-7"
+    ],
+    "table": [
+     {
+      "form_en": "on its own",
+      "ar": "اِسْمِي",
+      "en": "my name"
+     },
+     {
+      "form_en": "after a word: the alif is silent",
+      "ar": "مَا اسْمُكَ؟",
+      "en": "what's your name?"
+     },
+     {
+      "form_en": "the article on its own",
+      "ar": "الْبَيْت",
+      "en": "the house"
+     },
+     {
+      "form_en": "the article after a word",
+      "ar": "فِي الْبَيْتِ",
+      "en": "in the house"
+     },
+     {
+      "form_en": "before a sun letter",
+      "ar": "فِي الشَّارِعِ",
+      "en": "in the street"
+     },
+     {
+      "form_en": "a command on its own",
+      "ar": "اُكْتُبْ",
+      "en": "write!"
+     },
+     {
+      "form_en": "a command after a word",
+      "ar": "ثُمَّ اكْتُبْ",
+      "en": "then write"
+     }
+    ],
+    "steps": [
+     "In speech, the words of a phrase run together: a space on the page isn't a pause.",
+     "The alif at the start of الْـ, of اِسْم and of many commands is هَمْزَةُ الْوَصْلِ, a joining alif. It's said only when you start speaking with it; after another word it's silent, and the words join: فِي الْبَيْتِ.",
+     "Before a sun letter, the ل of الْـ is said as that letter: فِي الشَّارِعِ.",
+     "Listen to a short phrase at natural speed, look at its words, then say it along with the speaker.",
+     "Slowed-down audio helps at first, but aim for natural سُرْعَة, speed."
+    ],
+    "examples": [
+     {
+      "ar": "كَرَّرَ الْمُتَحَدِّثُ الْجُمْلَةَ مَرَّتَيْنِ.",
+      "en": "The speaker repeated the sentence twice.",
+      "words": [
+       {
+        "ar": "كَرَّرَ",
+        "en": "repeated"
+       },
+       {
+        "ar": "الْمُتَحَدِّثُ",
+        "en": "the speaker (its alif silent after كَرَّرَ)"
+       },
+       {
+        "ar": "الْجُمْلَةَ",
+        "en": "the sentence"
+       },
+       {
+        "ar": "مَرَّتَيْنِ",
+        "en": "twice"
+       }
+      ]
+     },
+     {
+      "ar": "كَلَامُهُ سَرِيعٌ، لَكِنَّهُ وَاضِحٌ.",
+      "en": "He speaks fast, but clearly.",
+      "words": [
+       {
+        "ar": "كَلَامُهُ",
+        "en": "his speech"
+       },
+       {
+        "ar": "سَرِيعٌ",
+        "en": "fast"
+       },
+       {
+        "ar": "لَكِنَّهُ",
+        "en": "but it"
+       },
+       {
+        "ar": "وَاضِحٌ",
+        "en": "clear"
+       }
+      ]
+     },
+     {
+      "ar": "اِسْتَمِعْ ثُمَّ اقْرَأِ النَّصَّ.",
+      "en": "Listen, then read the text.",
+      "words": [
+       {
+        "ar": "اِسْتَمِعْ",
+        "en": "listen"
+       },
+       {
+        "ar": "ثُمَّ",
+        "en": "then"
+       },
+       {
+        "ar": "اقْرَأِ",
+        "en": "read (its alif silent after ثُمَّ)"
+       },
+       {
+        "ar": "النَّصَّ",
+        "en": "the text"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why isn't the alif of اِسْمُكَ said in مَا اسْمُكَ؟?",
+     "a_en": "It's a joining alif: it only helps you start a word from silence. After مَا there's already a vowel to carry you in, so the alif drops out of speech and the two words join."
+    },
+    "selftest": [
+     {
+      "q_en": "In فِي الْبَيْتِ, is the alif of الْـ said?",
+      "choices": [
+       "no: after a word it's silent",
+       "yes, always",
+       "only in poetry"
+      ],
+      "answer": "no: after a word it's silent",
+      "why_en": "It's a joining alif, said only at the start of speech."
+     },
+     {
+      "q_en": "What is هَمْزَةُ الْوَصْلِ?",
+      "choices": [
+       "an alif said only at the start of speech",
+       "a hamza that is always said",
+       "a mark for a doubled letter"
+      ],
+      "answer": "an alif said only at the start of speech",
+      "why_en": "The doubling mark is the شَدَّة."
+     },
+     {
+      "q_en": "What should listening practice aim for in the end?",
+      "choices": [
+       "natural speed",
+       "slowed-down audio",
+       "word by word, with pauses"
+      ],
+      "answer": "natural speed",
+      "why_en": "Slow audio is a support on the way."
+     }
+    ],
+    "phrases_ar": [
+     "هَمْزَةُ الْوَصْلِ"
+    ]
+   }
+  ],
+  "lesson.arabic-follow-up-questions": [
+   {
+    "id": "explainer.arabic-follow-up",
+    "title_en": "Following up what someone says: مُنْذُ مَتَى؟, مَاذَا تَقْصِدُ؟",
+    "family_en": "Questions that build on the answer you've just heard",
+    "course_words": [
+     "lexeme.arabic-follow-up-questions-1",
+     "lexeme.arabic-follow-up-questions-2",
+     "lexeme.arabic-follow-up-questions-3",
+     "lexeme.arabic-follow-up-questions-4",
+     "lexeme.arabic-follow-up-questions-5",
+     "lexeme.arabic-follow-up-questions-6",
+     "lexeme.arabic-follow-up-questions-7"
+    ],
+    "table": [
+     {
+      "form_en": "for a reason",
+      "ar": "لِمَاذَا؟",
+      "en": "why?"
+     },
+     {
+      "form_en": "for a time",
+      "ar": "مُنْذُ مَتَى؟",
+      "en": "since when? how long?"
+     },
+     {
+      "form_en": "for an example",
+      "ar": "هَلْ لَدَيْكَ مِثَالٌ؟",
+      "en": "have you got an example?"
+     },
+     {
+      "form_en": "to check the meaning",
+      "ar": "مَاذَا تَقْصِدُ؟",
+      "en": "what do you mean?"
+     },
+     {
+      "form_en": "to show interest",
+      "ar": "حَقًّا؟",
+      "en": "really?"
+     },
+     {
+      "form_en": "for how",
+      "ar": "كَيْفَ ذَلِكَ؟",
+      "en": "how's that?"
+     },
+     {
+      "form_en": "for which",
+      "ar": "أَيُّ كِتَابٍ؟",
+      "en": "which book?"
+     }
+    ],
+    "steps": [
+     "A follow-up question builds on what the other person has just said, rather than moving on to your next prepared question.",
+     "Pick the gap: a reason, لِمَاذَا؟; a time, مُنْذُ مَتَى؟; an example; or what they meant, مَاذَا تَقْصِدُ؟",
+     "Keep their words and change \"I\" to \"you\": أَعْمَلُ فِي مُسْتَشْفًى, so مُنْذُ مَتَى تَعْمَلُ هُنَاكَ؟",
+     "أَيّ, which, goes before a noun ending in -in: أَيُّ كِتَابٍ؟, which book?",
+     "If you didn't follow, sort that out first with مَاذَا تَقْصِدُ؟. They may answer with يَعْنِي, \"I mean\", before explaining."
+    ],
+    "examples": [
+     {
+      "ar": "مُنْذُ مَتَى تَعْمَلُ فِي الْمُسْتَشْفَى؟",
+      "en": "How long have you worked at the hospital?",
+      "words": [
+       {
+        "ar": "مُنْذُ",
+        "en": "since"
+       },
+       {
+        "ar": "مَتَى",
+        "en": "when"
+       },
+       {
+        "ar": "تَعْمَلُ",
+        "en": "you work"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "الْمُسْتَشْفَى",
+        "en": "the hospital"
+       }
+      ]
+     },
+     {
+      "ar": "قُلْتَ إِنَّكَ سَافَرْتَ كَثِيرًا، أَيُّ بَلَدٍ أَعْجَبَكَ أَكْثَرَ؟",
+      "en": "You said you've travelled a lot: which country did you like most?",
+      "words": [
+       {
+        "ar": "قُلْتَ",
+        "en": "you said"
+       },
+       {
+        "ar": "إِنَّكَ",
+        "en": "that you"
+       },
+       {
+        "ar": "سَافَرْتَ",
+        "en": "travelled"
+       },
+       {
+        "ar": "كَثِيرًا",
+        "en": "a lot"
+       },
+       {
+        "ar": "أَيُّ",
+        "en": "which"
+       },
+       {
+        "ar": "بَلَدٍ",
+        "en": "country"
+       },
+       {
+        "ar": "أَعْجَبَكَ",
+        "en": "pleased you"
+       },
+       {
+        "ar": "أَكْثَرَ",
+        "en": "most"
+       }
+      ]
+     },
+     {
+      "ar": "مَاذَا تَقْصِدُ بِذَلِكَ؟",
+      "en": "What do you mean by that?",
+      "words": [
+       {
+        "ar": "مَاذَا",
+        "en": "what"
+       },
+       {
+        "ar": "تَقْصِدُ",
+        "en": "do you mean"
+       },
+       {
+        "ar": "بِذَلِكَ",
+        "en": "by that"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why مُنْذُ مَتَى تَعْمَلُ, a present verb, for \"how long have you worked\"?",
+     "a_en": "With مُنْذُ, Arabic uses the present for something still going on: مُنْذُ مَتَى تَعْمَلُ هُنَا؟, how long have you been working here? English needs \"have been\"; Arabic doesn't."
+    },
+    "selftest": [
+     {
+      "q_en": "Your partner says أَعْمَلُ فِي مَصْنَعٍ. Which question builds on it?",
+      "choices": [
+       "مُنْذُ مَتَى تَعْمَلُ هُنَاكَ؟",
+       "مَا لَوْنُكَ الْمُفَضَّلُ؟",
+       "أَيْنَ تَسْكُنُ؟"
+      ],
+      "answer": "مُنْذُ مَتَى تَعْمَلُ هُنَاكَ؟",
+      "why_en": "It asks about the job they've just mentioned."
+     },
+     {
+      "q_en": "How do you ask \"Which book?\"",
+      "choices": [
+       "أَيُّ كِتَابٍ؟",
+       "أَيُّ الْكِتَابُ؟",
+       "أَيْنَ كِتَابٌ؟"
+      ],
+      "answer": "أَيُّ كِتَابٍ؟",
+      "why_en": "أَيّ goes before a noun ending in -in. أَيْنَ is \"where\"."
+     },
+     {
+      "q_en": "You didn't follow what they said. What do you ask first?",
+      "choices": [
+       "مَاذَا تَقْصِدُ؟",
+       "مُنْذُ مَتَى؟",
+       "حَقًّا؟"
+      ],
+      "answer": "مَاذَا تَقْصِدُ؟",
+      "why_en": "Sort out the meaning before asking anything new."
+     }
+    ],
+    "phrases_ar": [
+     "أَعْمَلُ فِي مُسْتَشْفًى",
+     "مُنْذُ مَتَى تَعْمَلُ هُنَاكَ؟",
+     "مُنْذُ مَتَى تَعْمَلُ",
+     "مُنْذُ مَتَى تَعْمَلُ هُنَا؟",
+     "أَعْمَلُ فِي مَصْنَعٍ"
+    ]
+   }
+  ],
+  "lesson.arabic-opinion-repair": [
+   {
+    "id": "explainer.arabic-giving-an-opinion",
+    "title_en": "Giving an opinion, and putting it another way: فِي رَأْيِي, أَقْصِدُ",
+    "family_en": "A view, a reason and a limit, and how to rephrase when a word won't come",
+    "course_words": [
+     "lexeme.arabic-opinion-repair-1",
+     "lexeme.arabic-opinion-repair-2",
+     "lexeme.arabic-opinion-repair-3",
+     "lexeme.arabic-opinion-repair-4",
+     "lexeme.arabic-opinion-repair-5",
+     "lexeme.arabic-opinion-repair-6",
+     "lexeme.arabic-opinion-repair-7"
+    ],
+    "table": [
+     {
+      "form_en": "my view",
+      "ar": "فِي رَأْيِي",
+      "en": "in my opinion"
+     },
+     {
+      "form_en": "agreeing",
+      "ar": "هَذَا صَحِيحٌ",
+      "en": "that's right"
+     },
+     {
+      "form_en": "disagreeing",
+      "ar": "لَا أُوَافِقُ",
+      "en": "I don't agree"
+     },
+     {
+      "form_en": "limiting it",
+      "ar": "عَلَى الْأَقَلِّ",
+      "en": "at least"
+     },
+     {
+      "form_en": "roughly",
+      "ar": "تَقْرِيبًا",
+      "en": "roughly, almost"
+     },
+     {
+      "form_en": "I mean",
+      "ar": "أَقْصِدُ",
+      "en": "I mean"
+     },
+     {
+      "form_en": "putting it another way",
+      "ar": "بِعِبَارَةٍ أُخْرَى",
+      "en": "in other words"
+     }
+    ],
+    "steps": [
+     "An opinion has three parts: your view, a reason, and how far it goes. Start the view with فِي رَأْيِي, in my opinion, and the reason with لِأَنَّ.",
+     "Limit it when you need to: تَقْرِيبًا, roughly; عَلَى الْأَقَلِّ, at least.",
+     "To disagree politely, say what you agree with first: هَذَا صَحِيحٌ, that's right, then لَكِنْ and your point.",
+     "When a word won't come, describe it with words you know, then add أَقْصِدُ, I mean, or بِعِبَارَةٍ أُخْرَى, in other words.",
+     "A pause to find words isn't a failure. Describing is better than guessing a word you're unsure of."
+    ],
+    "examples": [
+     {
+      "ar": "فِي رَأْيِي، الْمَشْيُ أَفْضَلُ مِنَ السَّيَّارَةِ فِي الْمَدِينَةِ.",
+      "en": "In my opinion, walking is better than the car in town.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "رَأْيِي",
+        "en": "my opinion"
+       },
+       {
+        "ar": "الْمَشْيُ",
+        "en": "walking"
+       },
+       {
+        "ar": "أَفْضَلُ",
+        "en": "better"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "than"
+       },
+       {
+        "ar": "السَّيَّارَةِ",
+        "en": "the car"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْمَدِينَةِ",
+        "en": "town"
+       }
+      ]
+     },
+     {
+      "ar": "لَا أُوَافِقُ تَمَامًا، فَالْمَسَافَاتُ طَوِيلَةٌ أَحْيَانًا.",
+      "en": "I don't quite agree: the distances are sometimes long.",
+      "words": [
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "أُوَافِقُ",
+        "en": "I agree"
+       },
+       {
+        "ar": "تَمَامًا",
+        "en": "completely"
+       },
+       {
+        "ar": "فَالْمَسَافَاتُ",
+        "en": "for the distances"
+       },
+       {
+        "ar": "طَوِيلَةٌ",
+        "en": "long"
+       },
+       {
+        "ar": "أَحْيَانًا",
+        "en": "sometimes"
+       }
+      ]
+     },
+     {
+      "ar": "أَقْصِدُ الْأَحْيَاءَ الْقَرِيبَةَ عَلَى الْأَقَلِّ.",
+      "en": "I mean the nearby neighbourhoods, at least.",
+      "words": [
+       {
+        "ar": "أَقْصِدُ",
+        "en": "I mean"
+       },
+       {
+        "ar": "الْأَحْيَاءَ",
+        "en": "the neighbourhoods"
+       },
+       {
+        "ar": "الْقَرِيبَةَ",
+        "en": "nearby"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "at"
+       },
+       {
+        "ar": "الْأَقَلِّ",
+        "en": "the least"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why لَا أُوَافِقُ, with لَا, and not لَمْ أُوَافِقْ?",
+     "a_en": "لَا with a present verb says what's true now: I don't agree. لَمْ أُوَافِقْ is the past: I didn't agree, at some earlier time."
+    },
+    "selftest": [
+     {
+      "q_en": "Which phrase gives your view?",
+      "choices": [
+       "فِي رَأْيِي",
+       "تَقْرِيبًا",
+       "بِعِبَارَةٍ أُخْرَى"
+      ],
+      "answer": "فِي رَأْيِي",
+      "why_en": "تَقْرِيبًا is \"roughly\", and بِعِبَارَةٍ أُخْرَى \"in other words\"."
+     },
+     {
+      "q_en": "What does بِعِبَارَةٍ أُخْرَى bring in?",
+      "choices": [
+       "the same idea in other words",
+       "the opposite view",
+       "an example"
+      ],
+      "answer": "the same idea in other words",
+      "why_en": "عِبَارَة is a phrase or expression: \"in another expression\"."
+     },
+     {
+      "q_en": "You can't remember a word. What's the best move?",
+      "choices": [
+       "describe it with words you know",
+       "guess a word confidently",
+       "stop talking"
+      ],
+      "answer": "describe it with words you know",
+      "why_en": "Then add أَقْصِدُ, I mean, if it helps."
+     }
+    ],
+    "phrases_ar": [
+     "لَمْ أُوَافِقْ"
+    ]
+   }
+  ],
+  "lesson.arabic-speaker-variety": [
+   {
+    "id": "explainer.arabic-standard-and-accents",
+    "title_en": "Standard Arabic, dialects and accents: الْفُصْحَى, الْعَامِّيَّة, لُكْنَة",
+    "family_en": "The words for the kinds of Arabic you'll hear, and how to treat a difference",
+    "course_words": [
+     "lexeme.arabic-speaker-variety-1",
+     "lexeme.arabic-speaker-variety-2",
+     "lexeme.arabic-speaker-variety-3",
+     "lexeme.arabic-speaker-variety-4",
+     "lexeme.arabic-speaker-variety-5",
+     "lexeme.arabic-speaker-variety-6",
+     "lexeme.arabic-speaker-variety-7"
+    ],
+    "table": [
+     {
+      "form_en": "Standard Arabic",
+      "ar": "الْفُصْحَى",
+      "en": "Standard Arabic"
+     },
+     {
+      "form_en": "everyday speech",
+      "ar": "الْعَامِّيَّة",
+      "en": "everyday spoken Arabic"
+     },
+     {
+      "form_en": "a dialect",
+      "ar": "لَهْجَة",
+      "en": "a dialect"
+     },
+     {
+      "form_en": "an accent",
+      "ar": "لُكْنَة",
+      "en": "an accent"
+     },
+     {
+      "form_en": "formal",
+      "ar": "رَسْمِيّ",
+      "en": "formal"
+     },
+     {
+      "form_en": "a newsreader",
+      "ar": "مُذِيع",
+      "en": "a newsreader, a presenter"
+     },
+     {
+      "form_en": "a difference",
+      "ar": "اِخْتِلَاف",
+      "en": "a difference"
+     }
+    ],
+    "steps": [
+     "الْفُصْحَى, Standard Arabic, is shared across the Arab world in writing, the news and formal speech. Each region also has its everyday speech, الْعَامِّيَّة, in its own لَهْجَة.",
+     "A لُكْنَة, an accent, is how someone pronounces: two newsreaders from different countries can both speak الْفُصْحَى, each with their own accent.",
+     "So a sound you didn't expect isn't necessarily a mistake: note it and check it before you call it wrong.",
+     "Listen to several speakers at different speeds: one familiar voice can hide gaps."
+    ],
+    "examples": [
+     {
+      "ar": "يَتَكَلَّمُ الْمُذِيعُ الْفُصْحَى بِلُكْنَةٍ مِصْرِيَّةٍ.",
+      "en": "The newsreader speaks Standard Arabic with an Egyptian accent.",
+      "words": [
+       {
+        "ar": "يَتَكَلَّمُ",
+        "en": "speaks"
+       },
+       {
+        "ar": "الْمُذِيعُ",
+        "en": "the newsreader"
+       },
+       {
+        "ar": "الْفُصْحَى",
+        "en": "Standard Arabic"
+       },
+       {
+        "ar": "بِلُكْنَةٍ",
+        "en": "with an accent"
+       },
+       {
+        "ar": "مِصْرِيَّةٍ",
+        "en": "Egyptian"
+       }
+      ]
+     },
+     {
+      "ar": "هَذَا اخْتِلَافٌ فِي النُّطْقِ، وَلَيْسَ خَطَأً.",
+      "en": "This is a difference in pronunciation, not a mistake.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "اخْتِلَافٌ",
+        "en": "a difference"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "النُّطْقِ",
+        "en": "pronunciation"
+       },
+       {
+        "ar": "وَلَيْسَ",
+        "en": "and isn't"
+       },
+       {
+        "ar": "خَطَأً",
+        "en": "a mistake"
+       }
+      ]
+     },
+     {
+      "ar": "فِي الْمَوَاقِفِ الرَّسْمِيَّةِ نَسْتَعْمِلُ الْفُصْحَى.",
+      "en": "In formal situations we use Standard Arabic.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْمَوَاقِفِ",
+        "en": "the situations"
+       },
+       {
+        "ar": "الرَّسْمِيَّةِ",
+        "en": "formal"
+       },
+       {
+        "ar": "نَسْتَعْمِلُ",
+        "en": "we use"
+       },
+       {
+        "ar": "الْفُصْحَى",
+        "en": "Standard Arabic"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why learn الْفُصْحَى when people speak الْعَامِّيَّة at home?",
+     "a_en": "الْفُصْحَى is the Arabic every country shares in books, the news and formal talk, while everyday speech changes from region to region. It gives you the common core."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a مُذِيع?",
+      "choices": [
+       "a newsreader, a presenter",
+       "a dialect",
+       "a teacher"
+      ],
+      "answer": "a newsreader, a presenter",
+      "why_en": "A dialect is لَهْجَة."
+     },
+     {
+      "q_en": "Where is الْفُصْحَى used?",
+      "choices": [
+       "in writing, the news and formal speech",
+       "only at home",
+       "only in one country"
+      ],
+      "answer": "in writing, the news and formal speech",
+      "why_en": "Everyday speech, الْعَامِّيَّة, is what changes from region to region."
+     },
+     {
+      "q_en": "A speaker pronounces a sound differently from your course. What do you do first?",
+      "choices": [
+       "note it and check it",
+       "mark it as a mistake",
+       "stop listening"
+      ],
+      "answer": "note it and check it",
+      "why_en": "It may be an accent, not an error."
+     }
+    ],
+    "phrases_ar": []
    }
   ]
  }

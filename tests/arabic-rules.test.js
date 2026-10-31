@@ -422,7 +422,7 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const expPath = path.join(ROOT, 'content/teaching/arabic/explainers.json');
   const runExp = (file, extra = []) => { try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'app/scripts/validate-explainers.mjs'), ...(file ? [file] : []), ...extra], { stdio: 'pipe' }).toString() }; } catch (e) { return { code: e.status || 1, out: `${e.stdout || ''}${e.stderr || ''}` }; } };
   const realExp = runExp(expPath, ['--readings']);
-  check('the real explainers file passes with its readings: 74 explainers in 58 lessons (modules 4 to 15)', realExp.code === 0 && realExp.out.includes('74 explainers in 58 lessons'));
+  check('the real explainers file passes with its readings: 84 explainers in 68 lessons (modules 4 to 17)', realExp.code === 0 && realExp.out.includes('84 explainers in 68 lessons'));
   check('the build checks the explainers: curriculum:prepare runs validate-explainers.mjs', (JSON.parse(read(path.join(ROOT, 'app/package.json'))).scripts['curriculum:prepare'] || '').includes('node scripts/validate-explainers.mjs'));
   const expSource = JSON.parse(read(expPath));
   const expTemp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-explainers-'));
@@ -458,10 +458,11 @@ check('vowelled and unvowelled versions are both kept where the package has them
   badExp('lead-no-en', f => { delete sayOf(f).leads_to[0].en; }, 'say how it builds on this one', 'a "Where this leads" entry without its English line');
   badExp('hint-vowel', f => { sayOf(f).selftest[0].hint_en = 'Think of قل here.'; }, 'is not fully vowelled', 'a self-test hint holding unvowelled Arabic');
   badExp('lead-title-secret', f => { leadOf(f, 'lesson.arabic-plans-dialogue', 'explainer.arabic-making-plans').leads_to = [{ id: 'explainer.arabic-sorting-it-out', en: 'Sorting something out.' }]; }, 'its link shows', 'a "Where this leads" link whose target title (هَلْ يُنَاسِبُكَ؟) gives away the source lesson\'s check');
+  badExp('long-vowel-bare', f => { sayOf(f).steps[0] += ' Compare ذَهَبَ جَدّي إِلَى السُّوقِ here.'; sayOf(f).phrases_ar.push('ذَهَبَ جَدّي إِلَى السُّوقِ'); }, 'the ending of', 'a long ī with no kasra before it (جَدّي, a shadda alone)');
   badExp('lead-twice', f => { sayOf(f).leads_to = [{ id: 'explainer.arabic-reporting', en: 'One.' }, { id: 'explainer.arabic-reporting', en: 'Two.' }]; }, 'is listed twice', 'the same "Where this leads" target listed twice');
   badExp('lead-vowel', f => { sayOf(f).leads_to[0].en = 'قال in reporting.'; }, 'is not fully vowelled', 'a "Where this leads" line holding unvowelled Arabic');
   badExp('hint-answer', f => { const q = sayOf(f).selftest[0]; q.hint_en = `Think of ${q.answer} here.`; }, 'the hint gives away its own answer', 'a self-test hint containing its own question\'s answer');
-  check('the real explainers file reports how many cards lead on to a later explainer: 49', realExp.out.includes('; 49 lead on to a later explainer.'), realExp.out);
+  check('the real explainers file reports how many cards lead on to a later explainer: 53', realExp.out.includes('; 53 lead on to a later explainer.'), realExp.out);
   fs.rmSync(expTemp, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);

@@ -42,8 +42,9 @@ const endingWritten = word => {
   if (/[\u064B-\u0650]/.test(marks)) return true;
   if (marks.includes('\u0652')) return !(NOUN.test(w) || base.endsWith('\u0629'));
   if (marks) return false; // a shadda alone isn't an ending
-  const last = base.at(-1), before = base.at(-2);
-  return '\u0627\u0649\u0622'.includes(last) || (last === '\u0648' && before === '\u064F') || (last === '\u064A' && before === '\u0650');
+  // A long vowel: the marks on the letter before (a shadda may sit with them, as in جَدِّي) hold its short vowel.
+  const last = base.at(-1), before = base.slice(0, -1).match(/[\u064B-\u0652]*$/)[0];
+  return '\u0627\u0649\u0622'.includes(last) || (last === '\u0648' && before.includes('\u064F')) || (last === '\u064A' && before.includes('\u0650'));
 };
 // The house spelling: hamzat al-waṣl written اِ or اُ only where a piece or sentence starts with it, the article's alif
 // bare, no ٱ, and هَذَا, هَذِهِ, ذَلِكَ, لَكِنَّ without the dagger alif (also after وَ, فَ, بِ, لِ, كَ). The article's ل is
