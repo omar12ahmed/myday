@@ -82,20 +82,23 @@ const voiceScripts = root => {
 export const scriptedReadings = root => Object.keys(voiceScripts(root).readings ?? {});
 // Short pieces ("pieces": the exact Arabic shown inside English, such as a check's question or answer) and the ones kept
 // without a voice on purpose ("left_out", each with its reason). Each piece's script must have its letters, keep its
-// marks and be marked all through, like a reading script. A script may add an Arabic comma between the words of a list
-// (مَنْ، مَا، أَيْنَ، هَلْ), so the voice pauses between them; nothing else may differ.
+// marks and be marked all through, like a reading script. A script may add an Arabic comma before a space, a pause
+// between words (a list: مَنْ، مَا، أَيْنَ، هَلْ), and keeps every comma the course shows; its letters and marks can't differ.
 const listPauses = s => s.replace(/\u060C(?= )/g, '');
+const keepsCommas = (text, script) => { const t = text.split(' '), s = script.split(' '); return t.length === s.length && t.every((w, i) => !w.endsWith('\u060C') || s[i].endsWith('\u060C')); };
 export function voicePieces(root) {
-  const { pieces = {}, left_out = {} } = voiceScripts(root);
+  const { pieces = {}, left_out = {}, checked_in = {} } = voiceScripts(root);
   for (const [text, script] of Object.entries(pieces)) {
     const where = `Arabic voice script for “${text}”`;
     if (left_out[text]) throw new Error(`${where}: it is also listed as left out`);
     if (voiceable(text)) throw new Error(`${where}: the course already gives it with vowel marks`);
     if (unmarked(listPauses(script)) !== unmarked(listPauses(text))) throw new Error(`${where} has other letters than the course text`);
+    if (!keepsCommas(text, script)) throw new Error(`${where} drops a comma the course shows`);
     if (!keepsMarks(listPauses(text), listPauses(script))) throw new Error(`${where} contradicts a vowel mark the course shows`);
     if (!markedThrough(script)) throw new Error(`${where} is not fully vowelled`);
   }
-  return { pieces, left_out };
+  for (const text of Object.keys(checked_in)) if (!pieces[text]) throw new Error(`Arabic voice script “${text}”: "checked_in" names a piece with no script`);
+  return { pieces, left_out, checked_in };
 }
 const clusters = s => [...s.matchAll(/([^\u064B-\u0652\u0670])([\u064B-\u0652\u0670]*)/gu)].map(m => [m[1], m[2]]);
 const keepsMarks = (course, script) => {

@@ -36,7 +36,7 @@ export function voiceSources(root) {
   // (voice-scripts.json "pieces": the lesson checks from round eleven; teaching, key concepts and objectives, tasks and the
   // timetable from round twelve), also each run that has a voice script. Sound pairs, word families and course-word notes
   // show none: a script appearing there stops the build until it has been checked there.
-  const { pieces, left_out } = voicePieces(root);
+  const { pieces, left_out, checked_in } = voicePieces(root);
   const runsOf = values => uniq(values.filter(v => typeof v === 'string').flatMap(v => arabicRuns(v).map(p => p.text.trim())));
   const mixed = (values, withPieces = false) => runsOf(values).filter(t => voiceable(t) || (withPieces && pieces[t]));
   const teachingValues = Object.values(teaching.lessons).flatMap(l => [l.example, l.practice, l.solution, l.explanation]);
@@ -76,10 +76,18 @@ export function voiceSources(root) {
     // Round ten: each reading text read in one go, for “Listen to the whole text”.
     { id: 'reading-wholes', round: 10, label: 'reading texts, whole', texts: uniq(Object.values(readingPassages(root)).map(wholeText)) },
   ];
-  const inVoiced = new Set(runsOf([...checkValues, ...teachingValues, ...keyValues, ...taskValues, ...timetableValues]));
-  const elsewhere = [['sound pairs and word families', familyValues], ['course-word notes', noteValues]].map(([where, values]) => [where, new Set(runsOf(values))]);
+  // A piece is voiced wherever its exact text is shown, so its script is checked place by place (voice-scripts.json
+  // "checked_in"): shown in a voiced place its list doesn't name, or no longer in one it does, the build stops until
+  // it's been read there (درس, read دَرَسَ in a check, would be wrong as "lesson" in an objective).
+  const places = [['lesson-checks', checkValues], ['teaching', teachingValues], ['key-ideas', keyValues], ['tasks', taskValues], ['timetable', timetableValues]].map(([id, values]) => [id, new Set(runsOf(values))]);
+  const inVoiced = new Set(places.flatMap(([, runs]) => [...runs]));
+  const comprehension = course.assets.flatMap(a => (a.comprehension_questions || []).map(q => q.prompt));
+  const elsewhere = [['sound pairs and word families', familyValues], ['course-word notes', noteValues], ['reading-text questions', comprehension]].map(([where, values]) => [where, new Set(runsOf(values))]);
   for (const text of Object.keys(pieces)) {
-    if (!inVoiced.has(text)) throw new Error(`Arabic voice script for “${text}”: no voiced place in the course shows it`);
+    const shownIn = places.filter(([, runs]) => runs.has(text)).map(([id]) => id), checked = checked_in[text] ?? [];
+    if (!shownIn.length) throw new Error(`Arabic voice script for “${text}”: no voiced place in the course shows it`);
+    for (const id of shownIn) if (!checked.includes(id)) throw new Error(`Arabic voice script for “${text}”: it is shown in ${id}, where its script hasn't been checked; read it there, then add "${id}" to its "checked_in"`);
+    for (const id of checked) if (!shownIn.includes(id)) throw new Error(`Arabic voice script for “${text}”: its "checked_in" names ${id}, which no longer shows it`);
     for (const [where, runs] of elsewhere) if (runs.has(text)) throw new Error(`Arabic voice script for “${text}”: it is also shown in ${where}, where its script hasn't been checked`);
   }
   for (const text of Object.keys(left_out)) if (!inVoiced.has(text)) throw new Error(`Arabic voice script left out “${text}”: no voiced place shows it any more`);

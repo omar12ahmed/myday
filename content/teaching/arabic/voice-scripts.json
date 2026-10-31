@@ -1,7 +1,7 @@
 {
- "about": "Voice scripts: MyDay’s own fully vowelled copy of course text the course leaves without vowel marks, for the synthesised voice to read (owner’s decision, 25 October 2026). The course text itself never changes and the app shows it as the course has it; the build refuses a script whose letters differ from the course text, that drops a mark the course shows, or that isn’t vowelled all through. Each script is cross-checked by an independent reviewer and by a fluent checker before its clips are made. \"readings\": whole reading texts, by asset id. \"pieces\": short Arabic the course shows inside English (checks, answers and so on), by the exact text shown. \"left_out\": pieces kept without a voice on purpose, with the reason.",
- "status": "readings: the six B1–B2 reading passages, cross-checked (one change) and approved by the owner’s fluent checker on 2026-10-25, voiced in 1.94.0. pieces: the lesson checks and answers (batch one of the short pieces), cross-checked by an independent reviewer (no errors; one optional change) and approved by the owner’s fluent checker on 2026-10-30, with the 12 left out; شعري was left out after listening (13 in all). Batch two (key concepts, objectives, teaching pieces, tasks, the timetable): cross-checked (no errors) and approved by the owner’s fluent checker on 2026-10-30, with 9 more left out",
- "version": "1.2",
+ "about": "Voice scripts: MyDay’s own fully vowelled copy of course text the course leaves without vowel marks, for the synthesised voice to read (owner’s decision, 25 October 2026). The course text itself never changes and the app shows it as the course has it; the build refuses a script whose letters differ from the course text, that drops a mark the course shows, or that isn’t vowelled all through. Each script is cross-checked by an independent reviewer and by a fluent checker before its clips are made. \"readings\": whole reading texts, by asset id. \"pieces\": short Arabic the course shows inside English (checks, answers and so on), by the exact text shown. \"left_out\": pieces kept without a voice on purpose, with the reason. \"checked_in\": for each piece, the voiced places whose context its script was checked in (lesson-checks, teaching, key-ideas, tasks, timetable); the build stops when a piece appears in a voiced place its list doesn’t name, or its list names a place that no longer shows it, so a script is never voiced in a context nobody has read it in.",
+ "status": "readings: the six B1–B2 reading passages, cross-checked (one change) and approved by the owner’s fluent checker on 2026-10-25, voiced in 1.94.0. pieces: the lesson checks and answers (batch one of the short pieces), cross-checked by an independent reviewer (no errors; one optional change) and approved by the owner’s fluent checker on 2026-10-30, with the 12 left out; شعري was left out after listening (13 in all). Batch two (key concepts, objectives, teaching pieces, tasks, the timetable): cross-checked (no errors) and approved by the owner’s fluent checker on 2026-10-30, with 9 more left out. \"checked_in\" (31 October 2026) records each batch’s places; 23 batch-one scripts also shown in a task or the timetable (درس, قلت, البيت, المكتبة and others) were read in those contexts by the independent review, and 14 batch-two scripts also shown in a lesson check (لا, كان, قد, من فضلك and others) by the main session: all fit.",
+ "version": "1.3",
  "readings": {
   "asset.arabic-study-method": "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءٍ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَةٍ. لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهُ. بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا. لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقٍ. فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهِ. وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَةٍ، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ. لَمْ يَعْتَبِرْ ذَلِكَ فَشَلًا؛ فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.",
   "asset.arabic-community-library": "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارِ. سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا. وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ، بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهُ. يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتْرُونِيَّةً، كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّةٍ. لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبِ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلِّ. وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرٍ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهِ. لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلِ.",
@@ -416,5 +416,1192 @@
   "كتب": "Unmarked كتب can be كُتُب (books) or كَتَبَ (wrote); the course uses it to teach exactly that, so one voicing would settle what it leaves open.",
   "كتب، كاتب، مكتوب، كتاب، مكتبة": "Its first word, كتب, can be read كَتَبَ or كُتُب, and the task leaves it open.",
   "ارتفعت النسبة من ٢٠٪ إلى ٣٠٪": "It has digits and percent signs: the voice would choose the number words and their endings itself, unchecked."
+ },
+ "checked_in": {
+  "باب": [
+   "lesson-checks"
+  ],
+  "مدرسة": [
+   "lesson-checks"
+  ],
+  "على": [
+   "lesson-checks"
+  ],
+  "هو": [
+   "lesson-checks"
+  ],
+  "قمر": [
+   "lesson-checks"
+  ],
+  "القمر": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "الشمس": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "أنتَ": [
+   "lesson-checks"
+  ],
+  "أنتِ": [
+   "lesson-checks"
+  ],
+  "ما اسمكِ؟": [
+   "lesson-checks"
+  ],
+  "اسمكَ": [
+   "lesson-checks"
+  ],
+  "هو طالب": [
+   "lesson-checks"
+  ],
+  "هي": [
+   "lesson-checks"
+  ],
+  "طالبة": [
+   "lesson-checks"
+  ],
+  "هي طالبة": [
+   "lesson-checks"
+  ],
+  "أين": [
+   "lesson-checks"
+  ],
+  "هل": [
+   "lesson-checks"
+  ],
+  "الكتاب؟": [
+   "lesson-checks"
+  ],
+  "على المكتب": [
+   "lesson-checks"
+  ],
+  "أين الكتاب؟ الكتاب على المكتب": [
+   "lesson-checks"
+  ],
+  "في": [
+   "lesson-checks"
+  ],
+  "أنا من مصر": [
+   "lesson-checks"
+  ],
+  "أنا في مصر": [
+   "lesson-checks"
+  ],
+  "لم أفهم": [
+   "lesson-checks"
+  ],
+  "من فضلك، أعد ببطء": [
+   "lesson-checks"
+  ],
+  "كتاب": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "شمس": [
+   "lesson-checks"
+  ],
+  "الكتاب": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "البيت الكبير": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "البيت كبير": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "جديد": [
+   "lesson-checks"
+  ],
+  "كتب جديدة": [
+   "lesson-checks"
+  ],
+  "هذه": [
+   "lesson-checks"
+  ],
+  "هذا البيت": [
+   "lesson-checks"
+  ],
+  "هذا بيت": [
+   "lesson-checks"
+  ],
+  "هؤلاء": [
+   "lesson-checks"
+  ],
+  "الكتب جديدة؛": [
+   "lesson-checks"
+  ],
+  "الطلاب هنا": [
+   "lesson-checks"
+  ],
+  "هذه الكتب جديدة؛ هؤلاء الطلاب هنا": [
+   "lesson-checks"
+  ],
+  "كتاب الطالب": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "كتاب الطالب؛ كتابي": [
+   "lesson-checks"
+  ],
+  "أنا": [
+   "lesson-checks"
+  ],
+  "العربية": [
+   "lesson-checks"
+  ],
+  "درس": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "أنا أدرس العربية؛ هي تدرس العربية": [
+   "lesson-checks"
+  ],
+  "ندرس": [
+   "lesson-checks"
+  ],
+  "هو يدرس": [
+   "lesson-checks"
+  ],
+  "نحن ندرس؛ هم يدرسون": [
+   "lesson-checks"
+  ],
+  "أذهب": [
+   "lesson-checks"
+  ],
+  "المدرسة": [
+   "lesson-checks"
+  ],
+  "أقرأ": [
+   "lesson-checks"
+  ],
+  "أذهب إلى المدرسة؛ أقرؤه": [
+   "lesson-checks"
+  ],
+  "أقرأه": [
+   "lesson-checks"
+  ],
+  "عندي": [
+   "lesson-checks"
+  ],
+  "لدي": [
+   "lesson-checks"
+  ],
+  "أريد": [
+   "lesson-checks"
+  ],
+  "عندي كتاب؛ أريد ماءً": [
+   "lesson-checks"
+  ],
+  "ماء": [
+   "lesson-checks"
+  ],
+  "ثم": [
+   "lesson-checks"
+  ],
+  "أقرأ ثم أكتب": [
+   "lesson-checks"
+  ],
+  "متى المحادثة؟": [
+   "lesson-checks"
+  ],
+  "المحادثة يوم الثلاثاء في الساعة الثالثة بعد الظهر": [
+   "lesson-checks"
+  ],
+  "المكتبة بجانب المدرسة": [
+   "lesson-checks"
+  ],
+  "المكتبة": [
+   "lesson-checks",
+   "timetable"
+  ],
+  "أريد ماءً، من فضلك": [
+   "lesson-checks"
+  ],
+  "أريد ماء، من فضلك": [
+   "lesson-checks"
+  ],
+  "موعدنا يوم الثلاثاء في المكتبة": [
+   "lesson-checks"
+  ],
+  "يوم الثلاثاء؛ في المكتبة": [
+   "lesson-checks"
+  ],
+  "أنا ليلى": [
+   "lesson-checks"
+  ],
+  "أدرس العربية في الصباح": [
+   "lesson-checks"
+  ],
+  "ما اسم المتحدثة؟": [
+   "lesson-checks"
+  ],
+  "متى تدرس العربية؟": [
+   "lesson-checks"
+  ],
+  "ليلى؛ في الصباح": [
+   "lesson-checks"
+  ],
+  "المتحدثة": [
+   "lesson-checks"
+  ],
+  "هل أنت طالب؟": [
+   "lesson-checks"
+  ],
+  "هل أنتَ طالبٌ؟": [
+   "lesson-checks"
+  ],
+  "أسكن في": [
+   "lesson-checks"
+  ],
+  "أنا طالب": [
+   "lesson-checks"
+  ],
+  "أسكن في لندن": [
+   "lesson-checks"
+  ],
+  "قرأ سامي كتابًا أمس": [
+   "lesson-checks"
+  ],
+  "ماذا قرأ سامي؟": [
+   "lesson-checks"
+  ],
+  "ما الذي قرأه سامي؟": [
+   "lesson-checks"
+  ],
+  "كتابًا": [
+   "lesson-checks"
+  ],
+  "الجو جميل": [
+   "lesson-checks"
+  ],
+  "جميل": [
+   "lesson-checks"
+  ],
+  "زرت المكتبة": [
+   "lesson-checks"
+  ],
+  "عدت إلى البيت": [
+   "lesson-checks"
+  ],
+  "زرت المكتبة ثم عدت إلى البيت": [
+   "lesson-checks"
+  ],
+  "بعد ذلك": [
+   "lesson-checks"
+  ],
+  "زارت ليلى المكتبة، لكنها لم تجد الكتاب": [
+   "lesson-checks"
+  ],
+  "زارت ليلى المكتبة؛ لم تجد الكتاب": [
+   "lesson-checks"
+  ],
+  "سأدرس": [
+   "lesson-checks"
+  ],
+  "سوف أدرس": [
+   "lesson-checks"
+  ],
+  "أدرس اليوم": [
+   "lesson-checks"
+  ],
+  "سأدرس غدًا": [
+   "lesson-checks"
+  ],
+  "سأدرس غدا": [
+   "lesson-checks"
+  ],
+  "لم": [
+   "lesson-checks"
+  ],
+  "لم أدرسْ أمس": [
+   "lesson-checks"
+  ],
+  "لم أدرس أمس": [
+   "lesson-checks"
+  ],
+  "أدرس": [
+   "lesson-checks"
+  ],
+  "لا تكتبون": [
+   "lesson-checks"
+  ],
+  "لا تكتبوا": [
+   "lesson-checks"
+  ],
+  "لا تكتبين": [
+   "lesson-checks"
+  ],
+  "لا تكتبي": [
+   "lesson-checks"
+  ],
+  "اكتب؛ لا تكتب": [
+   "lesson-checks"
+  ],
+  "أريد أن أدرس": [
+   "lesson-checks"
+  ],
+  "أتعلم": [
+   "lesson-checks"
+  ],
+  "أريد أن أَتَعَلَّمَ العربية": [
+   "lesson-checks"
+  ],
+  "هل تستطيع أن تحضر يوم الثلاثاء؟": [
+   "lesson-checks"
+  ],
+  "لا أستطيع أن أحضر يوم الثلاثاء": [
+   "lesson-checks"
+  ],
+  "هل يناسبك يوم الأربعاء؟": [
+   "lesson-checks"
+  ],
+  "قرأها": [
+   "lesson-checks"
+  ],
+  "الرسالة": [
+   "lesson-checks"
+  ],
+  "مدرستها": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "قرأ الطالبُ الكتابَ في البيتِ": [
+   "lesson-checks"
+  ],
+  "الطالب": [
+   "lesson-checks"
+  ],
+  "البيت": [
+   "lesson-checks",
+   "timetable"
+  ],
+  "باب بيت الطالب": [
+   "lesson-checks"
+  ],
+  "كتابان": [
+   "lesson-checks"
+  ],
+  "كتابين": [
+   "lesson-checks"
+  ],
+  "رأيت": [
+   "lesson-checks"
+  ],
+  "كتابان؛ رأيت كتابين": [
+   "lesson-checks"
+  ],
+  "ثلاثة كتب": [
+   "lesson-checks"
+  ],
+  "كاتب": [
+   "lesson-checks"
+  ],
+  "مكتوب": [
+   "lesson-checks"
+  ],
+  "مكتبة": [
+   "lesson-checks"
+  ],
+  "وبالكتاب": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "عين": [
+   "lesson-checks"
+  ],
+  "كتابة": [
+   "lesson-checks",
+   "timetable"
+  ],
+  "قرأ": [
+   "lesson-checks"
+  ],
+  "يقرأ كتابًا": [
+   "lesson-checks"
+  ],
+  "المكتبة مغلقة يوم السبت": [
+   "lesson-checks"
+  ],
+  "تفتح يوم الأحد": [
+   "lesson-checks"
+  ],
+  "يوم السبت؛ يوم الأحد": [
+   "lesson-checks"
+  ],
+  "لا أستطيع يوم الثلاثاء": [
+   "lesson-checks"
+  ],
+  "أستطيع يوم الأربعاء": [
+   "lesson-checks"
+  ],
+  "هل تناسبك الساعة الثالثة؟": [
+   "lesson-checks"
+  ],
+  "قرأت كتابًا أمس، وسأكتب رسالة غدًا": [
+   "lesson-checks"
+  ],
+  "قال": [
+   "lesson-checks"
+  ],
+  "قلت": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "يدعو": [
+   "lesson-checks"
+  ],
+  "قلت؛ لم يدع": [
+   "lesson-checks"
+  ],
+  "وعد": [
+   "lesson-checks"
+  ],
+  "يدرسون": [
+   "lesson-checks"
+  ],
+  "لن": [
+   "lesson-checks"
+  ],
+  "يدرسوا": [
+   "lesson-checks"
+  ],
+  "هم يدرسون": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "هم لن يدرسوا": [
+   "lesson-checks"
+  ],
+  "الذي": [
+   "lesson-checks"
+  ],
+  "كتاب قرأته": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "الكتاب الذي قرأته": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "إنّ": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "الطالبُ مجتهدٌ": [
+   "lesson-checks"
+  ],
+  "أنّ": [
+   "lesson-checks"
+  ],
+  "أنا متعب": [
+   "lesson-checks"
+  ],
+  "قال إنه متعب": [
+   "lesson-checks"
+  ],
+  "إذا": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "إذا درستَ، فستفهم": [
+   "lesson-checks"
+  ],
+  "أقرأ لأن الكتاب مفيد": [
+   "lesson-checks"
+  ],
+  "أقرأ لكي أتعلم": [
+   "lesson-checks"
+  ],
+  "هذا": [
+   "lesson-checks"
+  ],
+  "سامي بالخبر": [
+   "lesson-checks"
+  ],
+  "لم يجد سامي الكتاب في المكتبة": [
+   "lesson-checks"
+  ],
+  "لذلك اشتراه": [
+   "lesson-checks"
+  ],
+  "اتخذ": [
+   "lesson-checks"
+  ],
+  "اتخذ قرارًا": [
+   "lesson-checks"
+  ],
+  "اتخذ سامي قرارًا جديدًا": [
+   "lesson-checks"
+  ],
+  "أدرس العربية لأنني أحب القراءة": [
+   "lesson-checks"
+  ],
+  "ماذا تحب أن تقرأ؟": [
+   "lesson-checks"
+  ],
+  "مكان نقرأ فيه الكتب أو نستعيرها": [
+   "lesson-checks"
+  ],
+  "القراءة مفيدة": [
+   "lesson-checks"
+  ],
+  "على سبيل المثال": [
+   "lesson-checks"
+  ],
+  "على سبيل المثال، أتعلم كلمات جديدة عندما أقرأ": [
+   "lesson-checks"
+  ],
+  "هل يمكنكم": [
+   "lesson-checks"
+  ],
+  "هل يمكنكم توضيح مواعيد الدروس؟": [
+   "lesson-checks"
+  ],
+  "ستبدأ الدورة يوم الاثنين": [
+   "lesson-checks"
+  ],
+  "سيشارك فيها عشرة طلاب": [
+   "lesson-checks"
+  ],
+  "تبدأ الدورة يوم الاثنين بمشاركة عشرة طلاب": [
+   "lesson-checks"
+  ],
+  "هذه مدرسة جميلة": [
+   "lesson-checks"
+  ],
+  "هذا كتاب جديد": [
+   "lesson-checks"
+  ],
+  "هذه مدرسة جديدة": [
+   "lesson-checks"
+  ],
+  "أولًا": [
+   "lesson-checks"
+  ],
+  "ثانيًا": [
+   "lesson-checks"
+  ],
+  "في البداية": [
+   "lesson-checks"
+  ],
+  "لست متأكدًا": [
+   "lesson-checks"
+  ],
+  "لست متأكدة": [
+   "lesson-checks"
+  ],
+  "لست متأكدًا من المقصود": [
+   "lesson-checks"
+  ],
+  "هل يمكنك أن توضح السؤال؟": [
+   "lesson-checks"
+  ],
+  "أفاد مسؤول": [
+   "lesson-checks"
+  ],
+  "بحسب التقرير": [
+   "lesson-checks"
+  ],
+  "بحسب التقرير، ارتفع العدد": [
+   "lesson-checks"
+  ],
+  "لم نحدد الموعد بعد": [
+   "lesson-checks"
+  ],
+  "الموعد لم يُحدَّد بعد": [
+   "lesson-checks"
+  ],
+  "لم يحددوا الموعد بعد": [
+   "lesson-checks"
+  ],
+  "سيبدأ المشروع في يناير": [
+   "lesson-checks"
+  ],
+  "لم يحدد الموعد بعد": [
+   "lesson-checks"
+  ],
+  "يقول المصدر الأول إن المشروع سيبدأ في يناير، بينما يقول المصدر الثاني إن الموعد لم يحدد بعد": [
+   "lesson-checks"
+  ],
+  "القراءة اليومية مفيدة؛ فقد ساعدتني على تعلم كلمات جديدة": [
+   "lesson-checks"
+  ],
+  "بالتأكيد": [
+   "lesson-checks"
+  ],
+  "سيبدأ المشروع غدًا": [
+   "lesson-checks"
+  ],
+  "ربما يبدأ المشروع غدًا": [
+   "lesson-checks"
+  ],
+  "ربما سيبدأ المشروع غدًا": [
+   "lesson-checks"
+  ],
+  "لم يجب عن السؤال، بل غيّر الموضوع": [
+   "lesson-checks"
+  ],
+  "الكتب الإلكترونية مريحة": [
+   "lesson-checks"
+  ],
+  "قد تشتت الإشعارات الانتباه": [
+   "lesson-checks"
+  ],
+  "الكتب الإلكترونية مريحة، لكن الإشعارات قد تشتت الانتباه": [
+   "lesson-checks"
+  ],
+  "أتفهم وجهة النظر هذه، ولكنني أرى أن القراءة الورقية أنسب لهذه المهمة": [
+   "lesson-checks"
+  ],
+  "حضر الطلاب": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "الطلاب حضروا": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "متعبا": [
+   "lesson-checks"
+  ],
+  "عاد الطالب متعبا": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "عاد الطالب متعبًا": [
+   "lesson-checks"
+  ],
+  "عشرون كتابًا": [
+   "lesson-checks"
+  ],
+  "متعبًا": [
+   "lesson-checks"
+  ],
+  "في المساجدِ": [
+   "lesson-checks"
+  ],
+  "في مساجدَ": [
+   "lesson-checks"
+  ],
+  "رسالة": [
+   "lesson-checks"
+  ],
+  "ثلاثة عشر كتابًا؛ ثلاث عشرة رسالة": [
+   "lesson-checks"
+  ],
+  "لم يقرأ إلا كتابًا واحدًا": [
+   "lesson-checks"
+  ],
+  "قرأ كتابًا واحدًا فقط": [
+   "lesson-checks"
+  ],
+  "الطلاب يدرسون العربية": [
+   "lesson-checks"
+  ],
+  "يدرس الطلابُ العربية": [
+   "lesson-checks"
+  ],
+  "في الختام": [
+   "lesson-checks"
+  ],
+  "في الختام، أرى أن اختيار وسيلة القراءة ينبغي أن يعتمد على هدف القارئ": [
+   "lesson-checks"
+  ],
+  "سأتناول": [
+   "lesson-checks"
+  ],
+  "سأتناول ثلاث نقاط": [
+   "lesson-checks"
+  ],
+  "نقطة": [
+   "lesson-checks"
+  ],
+  "ثلاث": [
+   "lesson-checks"
+  ],
+  "هل تقصد أن": [
+   "lesson-checks"
+  ],
+  "هل تقصد أن الموعد قد تغير؟": [
+   "lesson-checks"
+  ],
+  "ينبغي التحقق من المعلومات قبل نشرها": [
+   "lesson-checks"
+  ],
+  "يجب أن نتأكد من صحة المعلومات قبل أن ننشرها": [
+   "lesson-checks"
+  ],
+  "تشير النتائج الأولية إلى تحسن محتمل": [
+   "lesson-checks"
+  ],
+  "سأعرض أولًا تعريف المصطلح، ثم مثالين": [
+   "lesson-checks"
+  ],
+  "مثالان": [
+   "lesson-checks"
+  ],
+  "اتفق الباحثان على النتيجة": [
+   "lesson-checks"
+  ],
+  "اختلفا في تفسيرها": [
+   "lesson-checks"
+  ],
+  "اتفق الباحثان على النتيجة، لكنهما اختلفا في تفسيرها": [
+   "lesson-checks"
+  ],
+  "أوصي بتجربة الخطة لمدة أسبوع لأنها تسمح لنا بجمع الملاحظات": [
+   "lesson-checks"
+  ],
+  "قالت ليلى": [
+   "lesson-checks"
+  ],
+  "هذه المدينة جميلة": [
+   "lesson-checks"
+  ],
+  "المعرفة نور": [
+   "lesson-checks"
+  ],
+  "بيت": [
+   "lesson-checks"
+  ],
+  "وكتابها": [
+   "lesson-checks",
+   "tasks"
+  ],
+  "لم يبدأ المشروع بعد": [
+   "lesson-checks"
+  ],
+  "قد يتغير الموعد": [
+   "lesson-checks"
+  ],
+  "حضر عشرون طالبًا": [
+   "lesson-checks"
+  ],
+  "عشرون": [
+   "lesson-checks"
+  ],
+  "الاجتماع يوم الأربعاء في الساعة الرابعة": [
+   "lesson-checks"
+  ],
+  "أمن المعلومات": [
+   "lesson-checks"
+  ],
+  "أمن المعلومات هو حماية المعلومات من الوصول أو الاستخدام غير المصرح به": [
+   "lesson-checks"
+  ],
+  "احفظ الملف قبل إغلاق النافذة": [
+   "lesson-checks"
+  ],
+  "المصادقة متعددة العوامل": [
+   "lesson-checks"
+  ],
+  "تستخدم المصادقة متعددة العوامل أكثر من نوع من الأدلة للتحقق من هوية المستخدم": [
+   "lesson-checks"
+  ],
+  "لم تتوفر بعد معلومات كافية لمعرفة السبب": [
+   "lesson-checks"
+  ],
+  "سبب الحادثة غير معروف بعد لعدم توفر معلومات كافية": [
+   "lesson-checks"
+  ],
+  "أحتاج إلى التحقق من هذه المعلومة قبل أن أجيب": [
+   "lesson-checks"
+  ],
+  "لا": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "أنتَ أنتِ": [
+   "key-ideas"
+  ],
+  "مَن ما أين هل": [
+   "key-ideas"
+  ],
+  "مِن في إلى": [
+   "key-ideas"
+  ],
+  "هذا هذه هؤلاء": [
+   "key-ideas"
+  ],
+  "كتابي كتابك": [
+   "key-ideas"
+  ],
+  "نحن أنتم هم": [
+   "key-ideas"
+  ],
+  "أقرؤه": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "أحب أريد": [
+   "key-ideas"
+  ],
+  "عندي لدي": [
+   "key-ideas"
+  ],
+  "و ثم": [
+   "key-ideas"
+  ],
+  "أمام خلف بجانب": [
+   "key-ideas"
+  ],
+  "يمين يسار": [
+   "key-ideas"
+  ],
+  "كان": [
+   "lesson-checks",
+   "key-ideas",
+   "tasks"
+  ],
+  "كان يدرس": [
+   "key-ideas"
+  ],
+  "أولا ثم بعد ذلك": [
+   "key-ideas"
+  ],
+  "لأن": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "سوف": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "لا ما لم لن": [
+   "key-ideas"
+  ],
+  "ليس": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "لا الناهية": [
+   "key-ideas"
+  ],
+  "من فضلك": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "أريد أن": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "أستطيع أن": [
+   "key-ideas"
+  ],
+  "يجب أن": [
+   "key-ideas"
+  ],
+  "أن": [
+   "lesson-checks",
+   "key-ideas",
+   "tasks"
+  ],
+  "أكبر من": [
+   "key-ideas"
+  ],
+  "أكثر": [
+   "key-ideas"
+  ],
+  "جذر": [
+   "key-ideas"
+  ],
+  "وزن": [
+   "key-ideas"
+  ],
+  "اسم فاعل": [
+   "key-ideas"
+  ],
+  "اسم مفعول": [
+   "key-ideas"
+  ],
+  "مصدر": [
+   "key-ideas"
+  ],
+  "قال يقول": [
+   "key-ideas"
+  ],
+  "كان يكون": [
+   "key-ideas"
+  ],
+  "دعا يدعو": [
+   "key-ideas"
+  ],
+  "رمى يرمي": [
+   "key-ideas"
+  ],
+  "وعد يعد": [
+   "key-ideas"
+  ],
+  "مدّ": [
+   "key-ideas"
+  ],
+  "أخذ": [
+   "key-ideas",
+   "tasks"
+  ],
+  "مرفوع منصوب مجزوم": [
+   "key-ideas"
+  ],
+  "أن لن لم": [
+   "key-ideas"
+  ],
+  "نون": [
+   "key-ideas"
+  ],
+  "نائب فاعل": [
+   "key-ideas"
+  ],
+  "الذي التي": [
+   "key-ideas"
+  ],
+  "إنّ أنّ": [
+   "key-ideas"
+  ],
+  "اسم وخبر": [
+   "key-ideas"
+  ],
+  "قال إنّ": [
+   "key-ideas"
+  ],
+  "ذكر أنّ": [
+   "key-ideas"
+  ],
+  "إذا إن": [
+   "key-ideas"
+  ],
+  "لو": [
+   "lesson-checks",
+   "key-ideas",
+   "tasks"
+  ],
+  "لأنّ": [
+   "key-ideas"
+  ],
+  "لكي": [
+   "key-ideas"
+  ],
+  "لذلك": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "لكنّ": [
+   "key-ideas"
+  ],
+  "مع أنّ": [
+   "key-ideas"
+  ],
+  "أعلن أفاد بحسب": [
+   "key-ideas"
+  ],
+  "قد": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "ربما": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "من المحتمل": [
+   "key-ideas"
+  ],
+  "يبدو": [
+   "key-ideas"
+  ],
+  "حال": [
+   "key-ideas"
+  ],
+  "تمييز": [
+   "key-ideas"
+  ],
+  "ممنوع من الصرف": [
+   "key-ideas"
+  ],
+  "إلا": [
+   "lesson-checks",
+   "key-ideas"
+  ],
+  "إنما": [
+   "key-ideas"
+  ],
+  "لا النافية للجنس": [
+   "key-ideas"
+  ],
+  "نائب الفاعل": [
+   "teaching"
+  ],
+  "هذه كتب جديدة": [
+   "teaching"
+  ],
+  "هذه كتب": [
+   "teaching"
+  ],
+  "كتب سامر رسالة": [
+   "teaching"
+  ],
+  "في عين ماء": [
+   "teaching"
+  ],
+  "افتتاح مكتبة جديدة": [
+   "lesson-checks",
+   "teaching"
+  ],
+  "هذا الأسلوب مفيد لأنني نجحت به": [
+   "teaching"
+  ],
+  "وصل متأخرًا مرة أخرى": [
+   "teaching"
+  ],
+  "مرة أخرى": [
+   "teaching"
+  ],
+  "قد تكون الدراسة الفردية مرنة، لكنها لا توفر دائمًا تفاعلًا مباشرًا": [
+   "teaching"
+  ],
+  "المصادقة تتحقق من الهوية": [
+   "teaching"
+  ],
+  "أي إنها تساعد النظام على معرفة من يحاول الدخول": [
+   "teaching"
+  ],
+  "تشير النتائج إلى احتمال وجود علاقة": [
+   "teaching"
+  ],
+  "قال سامر": [
+   "teaching"
+  ],
+  "سأعود غدًا": [
+   "teaching"
+  ],
+  "لكن الراوي يذكر أنه لم يعد": [
+   "teaching"
+  ],
+  "ابتلعت المدينةُ صوته": [
+   "teaching"
+  ],
+  "المصادقة": [
+   "teaching"
+  ],
+  "التخويل": [
+   "teaching"
+  ],
+  "التفويض": [
+   "teaching"
+  ],
+  "كلمة المرور تساعد على التحقق من هويتك، لكن صلاحيات الحساب تحدد ما يمكنك فعله": [
+   "teaching"
+  ],
+  "باب، بيت، ولد، درس، كتاب": [
+   "tasks"
+  ],
+  "قلب": [
+   "tasks"
+  ],
+  "كلب": [
+   "tasks"
+  ],
+  "أنا، هو، هي": [
+   "tasks"
+  ],
+  "طالب": [
+   "tasks"
+  ],
+  "طلاب": [
+   "tasks"
+  ],
+  "هذه الكتب": [
+   "tasks"
+  ],
+  "هؤلاء الطلاب": [
+   "tasks"
+  ],
+  "كتابي": [
+   "tasks"
+  ],
+  "أدرس، تدرس، يدرس، تدرسين": [
+   "tasks"
+  ],
+  "نحن ندرس": [
+   "tasks"
+  ],
+  "أقرأ الكتاب": [
+   "tasks"
+  ],
+  "أذهب إلى المدرسة": [
+   "tasks"
+  ],
+  "هو متعب": [
+   "tasks"
+  ],
+  "كان متعبا": [
+   "tasks"
+  ],
+  "لا أدرس، لم أدرس، لن أدرس": [
+   "tasks"
+  ],
+  "لست طالبا": [
+   "tasks"
+  ],
+  "كتابها، قرأتها، لها": [
+   "tasks"
+  ],
+  "كاتب، مكتوب، كتابة": [
+   "tasks"
+  ],
+  "قال، زار": [
+   "tasks"
+  ],
+  "دعا": [
+   "tasks"
+  ],
+  "لم يدع": [
+   "tasks"
+  ],
+  "وعد، مدّ": [
+   "tasks"
+  ],
+  "يدرسون، لن يدرسوا، لم يدرسوا": [
+   "tasks"
+  ],
+  "عشرون كتابا": [
+   "tasks"
+  ],
+  "مررت بأحمدَ": [
+   "tasks"
+  ],
+  "الاثنين": [
+   "timetable"
+  ],
+  "قراءة": [
+   "timetable"
+  ],
+  "الثلاثاء": [
+   "timetable"
+  ],
+  "محادثة": [
+   "timetable"
+  ],
+  "الأربعاء": [
+   "timetable"
+  ],
+  "دراسة": [
+   "timetable"
+  ],
+  "الخميس": [
+   "timetable"
+  ],
+  "الجمعة": [
+   "timetable"
+  ],
+  "مراجعة": [
+   "timetable"
+  ],
+  "إذا انتهت صلاحية الرمز، تُرفَضُ الطَّلَباتُ": [
+   "teaching"
+  ]
  }
 }

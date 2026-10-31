@@ -131,17 +131,22 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   const fixtureSources = sourceMod.voiceSources(pathToFileURL(fixtureRoot + path.sep));
   const strayRoot = path.join(temp, 'voice-sources-stray'); fs.cpSync(fixtureRoot, strayRoot, { recursive: true });
   const strayJson = value => { const at = path.join(strayRoot, 'content/teaching/arabic/voice-scripts.json'); fs.mkdirSync(path.dirname(at), { recursive: true }); fs.writeFileSync(at, JSON.stringify(value)); };
-  strayJson({ pieces: { 'إنّ': 'إِنَّ' } });
+  strayJson({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks'] } });
   check('a piece with a script joins the voiced source of the place that shows it', sourceMod.voiceSources(pathToFileURL(strayRoot + path.sep)).find(x => x.id === 'lesson-checks').texts.includes('إنّ'));
   strayJson({ pieces: { 'قلم': 'قَلَم' } });
   check('a piece script no voiced place shows stops the build', (() => { try { sourceMod.voiceSources(pathToFileURL(strayRoot + path.sep)); return false; } catch (e) { return e.message.includes('no voiced place in the course shows it'); } })());
   const strayThrows = (value, message) => { strayJson(value); try { sourceMod.voiceSources(pathToFileURL(strayRoot + path.sep)); return false; } catch (e) { return e.message.includes(message); } };
   check('a left-out entry no voiced place shows any more stops the build', strayThrows({ pieces: {}, left_out: { 'قلم': 'gone from the course' } }, 'no voiced place shows it any more'));
   fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic-fusha.json'), JSON.stringify({ lessons: { example: { explanation: 'See إنّ here.', example: '', practice: '', solution: '' } } }));
-  strayJson({ pieces: { 'إنّ': 'إِنَّ' } });
+  check('a piece shown in a voiced place its script wasn\'t checked in (here teaching) stops the build: its script is checked place by place', strayThrows({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks'] } }, 'it is shown in teaching, where its script hasn\'t been checked'));
+  check('a piece whose "checked_in" names a place that no longer shows it stops the build', strayThrows({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks', 'teaching', 'tasks'] } }, 'its "checked_in" names tasks, which no longer shows it'));
+  strayJson({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks', 'teaching'] } });
   check('a piece shown in teaching as well as in a check (round twelve) joins both voiced sources', ['teaching', 'lesson-checks'].every(id => sourceMod.voiceSources(pathToFileURL(strayRoot + path.sep)).find(x => x.id === id).texts.includes('إنّ')));
   fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/word-families.json'), JSON.stringify({ families: [{ pattern_en: 'Compare إنّ.', word_notes: {}, also_in_examples: [] }] }));
-  check('a piece also shown in word families or course-word notes stops the build: those places voice only what the course marks', strayThrows({ pieces: { 'إنّ': 'إِنَّ' } }, 'also shown in sound pairs and word families'));
+  check('a piece also shown in word families stops the build: that place voices only what the course marks', strayThrows({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks', 'teaching'] } }, 'also shown in sound pairs and word families'));
+  fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/word-families.json'), JSON.stringify({ families: [] }));
+  fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/course-words.json'), JSON.stringify({ lessons: { 'lesson.arabic-example': { words: [{ form_ar: 'كِتَاب', example_ar: 'هَذَا كِتَابٌ.', note: 'Compare إنّ.' }] } } }));
+  check('a piece also shown in a course-word note stops the build', strayThrows({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks', 'teaching'] } }, 'also shown in course-word notes'));
   // Round twelve: a lesson's key concepts and objectives, its task and challenge instructions (not how they're judged),
   // and the timetable's Arabic.
   const twelveRoot = path.join(temp, 'voice-sources-twelve'); fs.cpSync(fixtureRoot, twelveRoot, { recursive: true });
@@ -149,8 +154,9 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   twelveJson('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json', { lexicon_seed: [], assessments: [], lessons: [{ key_concepts: ['لا'], learning_objectives: ['Ask with هل and مَنْ.'] }],
     exercises: [{ instruction: 'Compare قلب and كلب.', rubric: [{ criterion: 'Sound', weight: 50, pass_evidence: 'Says جذر.' }] }],
     assets: [{ rows: [{ day_ar: 'الخميس', time: '10:00', activity_ar: 'كِتَابَة', place_ar: 'البيت' }] }] });
-  const twelve = pieces => { twelveJson('content/teaching/arabic/voice-scripts.json', { pieces }); try { return sourceMod.voiceSources(pathToFileURL(twelveRoot + path.sep)); } catch (e) { return e.message; } };
-  const twelveSources = twelve({ 'لا': 'لَا', 'هل': 'هَلْ', 'قلب': 'قَلْب', 'كلب': 'كَلْب', 'الخميس': 'الْخَمِيس', 'البيت': 'الْبَيْت' });
+  const twelve = (pieces, checked_in = {}) => { twelveJson('content/teaching/arabic/voice-scripts.json', { pieces, checked_in }); try { return sourceMod.voiceSources(pathToFileURL(twelveRoot + path.sep)); } catch (e) { return e.message; } };
+  const twelveSources = twelve({ 'لا': 'لَا', 'هل': 'هَلْ', 'قلب': 'قَلْب', 'كلب': 'كَلْب', 'الخميس': 'الْخَمِيس', 'البيت': 'الْبَيْت' },
+    { 'لا': ['key-ideas'], 'هل': ['key-ideas'], 'قلب': ['tasks'], 'كلب': ['tasks'], 'الخميس': ['timetable'], 'البيت': ['timetable'] });
   const twelveOf = id => typeof twelveSources === 'string' ? twelveSources : twelveSources.find(x => x.id === id)?.texts;
   check('round twelve voices a lesson\'s key concepts and objectives, from a script or as the course marks them', JSON.stringify(twelveOf('key-ideas')) === JSON.stringify(['لا', 'هل', 'مَنْ']), twelveOf('key-ideas'));
   check('round twelve voices the instructions of practical tasks and mini challenges', JSON.stringify(twelveOf('tasks')) === JSON.stringify(['قلب', 'كلب']), twelveOf('tasks'));
@@ -250,11 +256,13 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   check('a voice script for a text the course already vowels, or for no such text, stops the build', String(scriptPassages({ 'asset.marked': 'كَتَبَ سَامِي رِسَالَةً.' })).includes('already gives this text with vowel marks') && String(scriptPassages({ 'asset.none': 'كَتَبَ.' })).includes('no reading text with that id'));
   // Round eleven: short pieces ("pieces" in voice-scripts.json) are checked like reading scripts.
   const { voicePieces, markedThrough } = await import(pathToFileURL(path.join(ROOT, 'app/scripts/arabic-reading-sentences.mjs')));
-  const pieceCheck = (pieces, left_out = {}) => { scriptJson('content/teaching/arabic/voice-scripts.json', { pieces, left_out }); try { return voicePieces(pathToFileURL(scriptRoot + path.sep)); } catch (e) { return e.message; } };
+  const pieceCheck = (pieces, left_out = {}, checked_in = {}) => { scriptJson('content/teaching/arabic/voice-scripts.json', { pieces, left_out, checked_in }); try { return voicePieces(pathToFileURL(scriptRoot + path.sep)); } catch (e) { return e.message; } };
   check('a piece script with the same letters, every course mark kept and marked all through is accepted', typeof pieceCheck({ 'أنا متعب': 'أَنَا مُتْعَبٌ', 'إنّ': 'إِنَّ' }) === 'object');
   check('a piece script with other letters, a contradicted mark, missing marks, or also left out stops the build', String(pieceCheck({ 'أنا متعب': 'أَنْتَ مُتْعَبٌ' })).includes('other letters') && String(pieceCheck({ 'أنتَ': 'أَنْتِ' })).includes('contradicts a vowel mark') && String(pieceCheck({ 'أنا متعب': 'أَنَا متعب' })).includes('not fully vowelled') && String(pieceCheck({ 'علم': 'عَلَم' }, { 'علم': 'two readings' })).includes('also listed as left out'));
   check('marked all through accepts the article\'s silent ل after لِ, with وَ or فَ before it or not, and nothing looser', markedThrough('لِلتَّحَقُّقِ') && markedThrough('وَلِلشَّمْسِ') && markedThrough('فَلِلشَّمْسِ') && !markedThrough('لْلتَّحَقُّقِ') && !markedThrough('لُلتَّحَقُّقِ') && !markedThrough('لِلكِتَابِ') && !markedThrough('لتَّحَقُّقِ') && !markedThrough('لِلتحَقُّقِ'));
   check('a piece script may add list-pause commas between words (، then a space), and no other punctuation', typeof pieceCheck({ 'أحب أريد': 'أُحِبُّ، أُرِيدُ' }) === 'object' && String(pieceCheck({ 'أحب أريد': 'أُحِبُّ. أُرِيدُ' })).includes('other letters') && String(pieceCheck({ 'أحب أريد': 'أُحِبُّ،أُرِيدُ' })).includes('other letters'));
+  check('a piece script that drops a comma the course shows stops the build', String(pieceCheck({ 'كتابها، قرأتها، لها': 'كِتَابُهَا قَرَأْتُهَا، لَهَا' })).includes('drops a comma the course shows') && typeof pieceCheck({ 'كتابها، قرأتها، لها': 'كِتَابُهَا، قَرَأْتُهَا، لَهَا' }) === 'object');
+  check('a "checked_in" entry for a text with no script stops the build', String(pieceCheck({ 'إنّ': 'إِنَّ' }, {}, { 'أنّ': ['lesson-checks'] })).includes('"checked_in" names a piece with no script'));
   check('a piece the course already gives with vowel marks is refused (it needs no script)', String(pieceCheck({ 'أَنَا طَالِبٌ': 'أَنَا طَالِبٌ' })).includes('already gives it with vowel marks'));
   scriptJson('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json', { assets: [{ id: 'asset.bare', type: 'original_text', text_ar: 'كتب سامي رسالة. قرأها صديقه.' }, { id: 'asset.some', type: 'original_text', text_ar: 'كَتَبَ سامي رسالة.' }, { id: 'asset.box', type: 'original_text', text_ar: 'في الصندوق ثلاثة أشياء: قلم وكتاب.' }] });
   check('a voice script that contradicts a vowel mark the course shows, or leaves words unmarked, or adds a line, stops the build', String(scriptPassages({ 'asset.some': 'كُتِبَ سَامِي رِسَالَةً.' })).includes('contradicts a vowel mark the course shows') && String(scriptPassages({ 'asset.bare': 'كَتَبَ سَامِي رِسَالَةً. قرأها صديقه.' })).includes('is not fully vowelled') && String(scriptPassages({ 'asset.bare': 'كَتَبَ سَامِي رِسَالَةً.\nقَرَأَهَا صَدِيقُهُ.' })).includes('its lines do not match'));
