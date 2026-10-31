@@ -3611,6 +3611,156 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…and the five step buttons and both Choose this buttons are at least 44 px tall', stepH.length === 5 && stepH.every(h => h >= 44) && chooseH.length === 2 && chooseH.every(h => h >= 44), [stepH, chooseH]);
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[55] Exploring a while, and comparing the options (specs/projects-exploring.md)');
+  const exAsked = () => ev(`JSON.parse(localStorage.getItem('myday.projects.compareAsked') || '{}')`);
+  const exOpen = async (id, sub = '', wait = '#projectTitle', m = 5) => { await go(`projects/p/${id}${sub}`, 2026, 10, 15, 12, m); await until(`!!document.querySelector(${JSON.stringify(wait)})`, 10000); await sleep(200); };
+  const exCard = () => exists('#projectExploring');
+  const exOne = (id, stage, stageOn, extra = {}) => pjObj(id, 'Choose a venue ' + id, stage, { ...(stageOn ? { columnSince: { column: 'exploring', on: stageOn } } : {}), ...extra });
+  const exOpt = (id, text, pros = [], cons = []) => ({ id, text, pros, cons });
+  const exFinding = (id, text, optId, stance) => ({ id, projectId: 'exC', type: 'finding', text, limits: '', on: '2026-10-12', sourceIds: [], about: [{ kind: 'option', id: optId, stance }], createdAt: '2026-10-12T09:00', updatedAt: '2026-10-12T09:00' });
+  const exQ = (id, text, answeredOn = null) => ({ id, projectId: 'exC', type: 'question', text, conclusion: answeredOn ? 'Done' : '', answeredOn, createdAt: '2026-10-11T09:00', updatedAt: '2026-10-11T09:00' });
+  const exResearch = list => editStorage(`s => { s.research = s.research || { items: [] }; s.research.items.push(...${JSON.stringify(list)}); }`);
+  const exHeights = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].filter(b => b.getBoundingClientRect().height > 0).map(b => Math.round(b.getBoundingClientRect().height))`);
+  const exRich = (id, extra = {}) => pjObj(id, 'Compare venues ' + id, 'explore', { columnSince: { column: 'exploring', on: '2026-10-01' }, tools: ['research'], ...extra, decisions: [
+    dcObj('dcOpen', 'Which hall should we hire?', [exOpt('oA', 'Village hall', ['Cheap to hire'], ['Far from the station']), exOpt('oB', 'Library room', ['Central'], []), exOpt('oC', 'Pub function room', [], ['Noisy'])]),
+    dcObj('dcDone', 'Which caterer?', [exOpt('oX', 'Baker Street', [], []), exOpt('oY', 'Corner Cafe', [], [])], 'oX', 'Best price', '2026-10-05')] });
+  const exRichResearch = () => exResearch([exFinding('exF1', 'Hall has 80 seats', 'oA', 'supports'), exFinding('exF2', 'Hall is booked most weekends', 'oA', 'contradicts'), exFinding('exF3', 'Library has a step-free door', 'oB', 'relates'),
+    exQ('exQ1', 'Is parking free near the hall?'), exQ('exQ2', 'What does the library charge?', '2026-10-10')]);
+  const exFreshRich = async (extra) => { await pwFresh(); await seed([exRich('exC', extra)]); await exRichResearch(); };
+
+  console.log('  The card on the Overview');
+  await pwFresh();
+  await seed([exOne('exA', 'explore', '2026-09-24'), exOne('exB', 'decide', '2026-09-24'), exOne('exD', 'explore', '2026-09-17'), exOne('exE', 'explore', '2026-09-25'),
+    exOne('exF', 'act', '2026-09-01'), exOne('exG', 'explore', '2026-09-01', { status: 'paused' }), exOne('exH', 'explore', null)]);
+  await exOpen('exA');
+  check('an active project in Explore for 21 days shows the card, "You’ve been exploring this for 3 weeks"', (await exCard()) && (await text('#exploringH')) === 'You’ve been exploring this for 3 weeks', await text('#projectExploring'));
+  check('…which asks whether it would help to compare the strongest options and see what’s still missing', (await text('#projectExploring')).includes('Would it help to compare the strongest options and see what’s still missing?'), await text('#projectExploring'));
+  await exOpen('exB');
+  check('a project in Decide says "You’ve been deciding on this for 3 weeks"', (await text('#exploringH')) === 'You’ve been deciding on this for 3 weeks', await text('#projectExploring'));
+  await exOpen('exD');
+  check('after 28 days it says "4 weeks"', (await text('#exploringH')) === 'You’ve been exploring this for 4 weeks', await text('#projectExploring'));
+  for (const [id, why] of [['exE', 'only 20 days in Explore'], ['exF', 'in the Act stage'], ['exG', 'paused'], ['exH', 'with no day recorded for its column']]) {
+    await exOpen(id);
+    check(`a project ${why} does not show the card`, !(await exCard()), await text('#projectHead'));
+  }
+
+  console.log('  Answering it');
+  await exOpen('exA');
+  await click('[data-action=explore-not-now]');
+  check('"Not now" takes the card away and moves focus to the project title', await until(`!document.getElementById('projectExploring') && document.activeElement && document.activeElement.id === 'projectTitle'`), [await exCard(), await ev(`document.activeElement && document.activeElement.id`)]);
+  check('…and remembers the answer against the day it entered the Exploring column', eq(await exAsked(), { exA: '2026-09-24' }), await exAsked());
+  await exOpen('exA', '', '#projectTitle', 6);
+  check('after a reload the card stays gone', !(await exCard()), await exAsked());
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'exA').columnSince = { column: 'exploring', on: '2026-09-20' }; }`);
+  await exOpen('exA', '', '#projectTitle', 7);
+  check('after it leaves the column and stays three weeks more (a new day, 25 days back) it asks again, "3 weeks"', (await exCard()) && (await text('#exploringH')) === 'You’ve been exploring this for 3 weeks', await text('#projectHead'));
+  await exOpen('exB');
+  await click('[data-action=explore-compare]');
+  check('"Compare them" opens the compare page', await until(`location.hash === '#projects/p/exB/compare' && !!document.querySelector('[data-s=compare]')`), await hash());
+  check('…and records the answer the same way', eq(await exAsked(), { exA: '2026-09-24', exB: '2026-09-24' }), await exAsked());
+  await exOpen('exB', '', '#projectTitle', 8);
+  check('…so the card does not come back on the Overview', !(await exCard()), await exAsked());
+
+  console.log('  The day a project enters its board column is recorded');
+  await pwFresh();
+  await type('#projectNew', 'Plan a street party'); await click('[data-action=project-add]');
+  check('starting a project saves columnSince as the Ideas column and today', await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.title === 'Plan a street party' && p.columnSince?.column === 'ideas' && p.columnSince?.on === '2026-10-15')`), await project('Plan a street party'));
+  await seed([pjObj('exM', 'Board: move me', 'organise', { columnSince: { column: 'ideas', on: '2026-08-01' } })]);
+  await go('projects', 2026, 10, 15, 13, 0); await until(`!!document.querySelector('.project-card[data-id=exM]')`, 10000);
+  await click('.project-card[data-id=exM] [data-action=project-on]');
+  check('moving a project from Ideas into Exploring on the board saves the new stage with columnSince as Exploring and today', await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === 'exM' && p.stage === 'explore' && p.columnSince?.column === 'exploring' && p.columnSince?.on === '2026-10-15')`), await pAt('exM'));
+  await seed([pjObj('exS', 'Stage editor project', 'capture', { columnSince: { column: 'ideas', on: '2026-08-01' } })]);
+  await exOpen('exS', '', '#projectHead [data-s=stage][data-id=decide]', 9);
+  await click('#projectHead [data-s=stage][data-id=decide]');
+  check('choosing a step on the progression that changes column saves the new stage with columnSince as Exploring and today', await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === 'exS' && p.stage === 'decide' && p.columnSince?.column === 'exploring' && p.columnSince?.on === '2026-10-15')`), await pAt('exS'));
+
+  await pwFresh();
+  await seed([exOne('exK', 'explore', '2026-09-24'), exOne('exMis', 'explore', null, { columnSince: { column: 'ideas', on: '2026-08-16' } }),
+    exOne('exPz', 'explore', '2026-09-01', { status: 'paused' }), exOne('exAr', 'explore', '2026-09-01', { status: 'done' })]);
+  await exOpen('exK', '', '#projectHead [data-s=stage][data-id=decide]', 12);
+  await click('#projectHead [data-s=stage][data-id=decide]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === 'exK' && p.stage === 'decide')`);
+  check('moving from Explore to Decide stays in Exploring, so the day is kept', eq((await pAt('exK')).columnSince, { column: 'exploring', on: '2026-09-24' }), await pAt('exK'));
+  check('…and the card now says "deciding on this for 3 weeks"', await until(`(document.getElementById('exploringH')?.textContent || '') === 'You’ve been deciding on this for 3 weeks'`), await text('#projectHead'));
+  await exOpen('exMis');
+  check('a project in Explore whose record is for another column (Ideas, 60 days back) shows no card', !(await exCard()), await pAt('exMis'));
+  await exOpen('exPz', '', '[data-action=project-resume]', 13);
+  await click('[data-action=project-resume]');
+  check('bringing a paused project back (Pick it up again) resets the day to today', await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === 'exPz' && p.status === 'active' && p.columnSince?.column === 'exploring' && p.columnSince?.on === '2026-10-15')`), await pAt('exPz'));
+  await go('projects', 2026, 10, 15, 12, 14); await until(`!!document.querySelector('#projects-archive')`, 10000);
+  await ev(`document.querySelector('#projects-archive details').open = true`);
+  await click('[data-s=archive-row][data-id=exAr] [data-action=archive-back]');
+  check('bringing a project back from the archive resets the day to today', await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === 'exAr' && p.status === 'active' && p.columnSince?.column === 'exploring' && p.columnSince?.on === '2026-10-15')`), await pAt('exAr'));
+
+  console.log('  The compare page');
+  await exFreshRich({ template: 'business', model: { problem: '', who: '', how: '', assumptions: [asObj('exAs1', 'Locals would pay to attend'), asObj('exAs2', 'The hall can seat eighty', 'looks-true')] } });
+  await exOpen('exC', '/compare', '[data-s=compare]');
+  check('the page opens with "Compare the options" focused', (await text('#compareH')) === 'Compare the options' && await until(`document.activeElement && document.activeElement.id === 'compareH'`), await ev(`document.activeElement && document.activeElement.id`));
+  const exDec = await ev(`[...document.querySelectorAll('[data-s=compare-decision]')].map(d => d.dataset.id)`);
+  check('only the open decision is compared, not the chosen one', eq(exDec, ['dcOpen']) && (await text('[data-s=compare]')).includes('Which hall should we hire?') && !(await text('[data-s=compare]')).includes('Which caterer?'), exDec);
+  const exOpts = await ev(`[...document.querySelectorAll('[data-s=compare-decision] [data-s=compare-option]')].map(o => o.dataset.id)`);
+  check('its options are in the order they were added: Village hall, Library room, Pub function room', eq(exOpts, ['oA', 'oB', 'oC']), exOpts);
+  const exOT = id => text(`[data-s=compare-option][data-id=${id}]`);
+  const exA = await exOT('oA');
+  check('an option shows its text and its "For it" and "Against it" lists', exA.includes('Village hall') && /For it\s*Cheap to hire/.test(exA) && /Against it\s*Far from the station/.test(exA), exA);
+  check('…an option with only pros has no "Against it" list, and one with only cons has no "For it" list', !(await exOT('oB')).includes('Against it') && (await exOT('oB')).includes('For it') && !(await exOT('oC')).includes('For it') && (await exOT('oC')).includes('Against it'), [await exOT('oB'), await exOT('oC')]);
+  const exEv = id => text(`[data-s=compare-option][data-id=${id}] [data-s=compare-evidence]`);
+  check('the evidence reads "1 for · 1 against" for A, "1 related" for B and "Nothing found yet" for C', (await exEv('oA')) === '1 for · 1 against' && (await exEv('oB')) === '1 related' && (await exEv('oC')) === 'Nothing found yet', [await exEv('oA'), await exEv('oB'), await exEv('oC')]);
+  const exUnk = kind => ev(`[...document.querySelectorAll('[data-s=compare-unknown] [data-kind=${kind}]')].map(l => l.textContent.replace(/\\s+/g, ' ').trim())`);
+  const exUq = await exUnk('question'), exUa = await exUnk('assumption'), exUo = await exUnk('option');
+  check('what is still unknown lists the unanswered research question only', exUq.length === 1 && exUq[0].includes('Is parking free near the hall?'), exUq);
+  check('…the open must-be-true item only (not the one that looks true)', exUa.length === 1 && exUa[0].includes('Locals would pay to attend'), exUa);
+  check('…and the option with nothing found, “No findings yet about Pub function room”', exUo.length === 1 && /^No findings yet about\s*Pub function room$/.test(exUo[0]), exUo);
+  check('an option’s unknown link goes to the Research tab when research is on', (await ev(`document.querySelector('[data-s=compare-unknown] [data-kind=option] a').getAttribute('href')`)) === '#projects/p/exC/research', await ev(`document.querySelector('[data-s=compare-unknown] [data-kind=option] a').getAttribute('href')`));
+  await click('[data-action=compare-decide]');
+  check('"choose in Decisions" goes to the Decisions tab', await until(`location.hash === '#projects/p/exC/decisions'`) && (await tabOf()) === 'decisions', [await hash(), await tabOf()]);
+  await exOpen('exC', '/compare', '[data-s=compare]');
+  const exSel = await ev(`({ dec: document.querySelector('[data-s=project-tabs] [data-tab=decisions]').getAttribute('aria-selected'), ov: document.querySelector('[data-s=project-tabs] [data-tab=overview]').getAttribute('aria-selected') })`);
+  check('on the compare page the Decisions tab is marked selected and the Overview is not', exSel.dec === 'true' && exSel.ov === 'false', exSel);
+
+  await pwFresh();
+  await seed([exOne('exN', 'explore', '2026-09-01', { decisions: [dcObj('dcAll', 'Which one?', [exOpt('nA', 'First'), exOpt('nB', 'Second')], 'nA', 'Simplest', '2026-10-05')] })]);
+  await exOpen('exN', '/compare', '[data-s=compare]');
+  check('with no open decision it says "There’s no open decision yet — what are you choosing between?"', (await text('[data-s=compare-none]')) .includes('There’s no open decision yet — what are you choosing between?') && !(await exists('[data-s=compare-decision]')), await text('[data-s=compare]'));
+  await click('[data-action=compare-add-decision]');
+  check('…and "Open Decisions" opens the Decisions tab', await until(`location.hash === '#projects/p/exN/decisions'`), await hash());
+
+  await pwFresh();
+  await seed([exRich('exC', { tools: [], template: 'business', model: { problem: '', who: '', how: '', assumptions: [asObj('exAs1', 'Locals would pay to attend'), asObj('exAs2', 'The hall can seat eighty', 'looks-true')] } })]);
+  await exRichResearch();
+  await exOpen('exC', '/compare', '[data-s=compare]');
+  const exOff = await ev(`({ ev: document.querySelectorAll('[data-s=compare-evidence]').length, q: document.querySelectorAll('[data-s=compare-unknown] [data-kind=question]').length, o: document.querySelectorAll('[data-s=compare-unknown] [data-kind=option]').length, a: [...document.querySelectorAll('[data-s=compare-unknown] [data-kind=assumption]')].map(l => l.textContent.replace(/\\s+/g, ' ').trim()), opts: document.querySelectorAll('[data-s=compare-option]').length })`);
+  check('with research off, the options show no evidence line', exOff.opts === 3 && exOff.ev === 0, exOff);
+  check('…and what is still unknown lists no research questions and no options with nothing found', exOff.q === 0 && exOff.o === 0, exOff);
+  check('…but the business idea’s open must-be-true item is still listed', exOff.a.length === 1 && exOff.a[0].includes('Locals would pay to attend'), exOff);
+
+  console.log('  The Decisions tab');
+  await pwFresh();
+  await seed([exOne('exT2', 'explore', null, { decisions: [dcObj('d2', 'Two options?', [exOpt('a', 'One'), exOpt('b', 'Two')])] }),
+    exOne('exT1', 'explore', null, { decisions: [dcObj('d1', 'One option?', [exOpt('a', 'Only')])] }),
+    exOne('exT0', 'explore', null, { decisions: [dcObj('d0', 'All chosen?', [exOpt('a', 'One'), exOpt('b', 'Two')], 'a', 'Yes', '2026-10-05')] })]);
+  await exOpen('exT2', '/decisions', '#projectDecisions');
+  check('with an open decision of two options, "Compare side by side" appears', (await text('[data-action=dc-compare]')) === 'Compare side by side', await exists('[data-action=dc-compare]'));
+  await click('[data-action=dc-compare]');
+  check('…and opens the compare page', await until(`location.hash === '#projects/p/exT2/compare' && !!document.querySelector('[data-s=compare]')`), await hash());
+  await exOpen('exT1', '/decisions', '#projectDecisions');
+  check('with only one option there is no "Compare side by side"', !(await exists('[data-action=dc-compare]')));
+  await exOpen('exT0', '/decisions', '#projectDecisions');
+  check('when every decision is chosen there is no "Compare side by side"', !(await exists('[data-action=dc-compare]')));
+
+  console.log('  On a phone');
+  await exFreshRich();
+  await seed([exOne('exPh', 'explore', '2026-09-24')]);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 2, mobile: true });
+  await exOpen('exPh', '', '#projectExploring', 10);
+  const exBtn = await exHeights('#projectExploring button');
+  check('phone 390 px: the card’s Compare them and Not now are each at least 44 px tall', exBtn.length === 2 && exBtn.every(h => h >= 44), exBtn);
+  await exOpen('exC', '/compare', '[data-s=compare]', 11);
+  check('phone 390 px: the compare page does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  const exGeo = await ev(`(() => { const c = document.querySelector('[data-s=compare-decision]').getBoundingClientRect(); return { card: Math.round(c.width), opts: [...document.querySelectorAll('[data-s=compare-option]')].map(o => { const r = o.getBoundingClientRect(); return { w: Math.round(r.width), l: Math.round(r.left), t: Math.round(r.top) }; }) }; })()`);
+  check('…and the options stack, each about as wide as its card', exGeo.opts.length === 3 && exGeo.opts.every(o => o.w >= exGeo.card - 60 && o.l === exGeo.opts[0].l) && exGeo.opts[1].t > exGeo.opts[0].t && exGeo.opts[2].t > exGeo.opts[1].t, exGeo);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
