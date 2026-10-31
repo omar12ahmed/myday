@@ -8833,6 +8833,1893 @@
      "اِسْتِمَاعِي ضَعِيفٌ"
     ]
    }
+  ],
+  "lesson.arabic-future-plans": [
+   {
+    "id": "explainer.arabic-future",
+    "title_en": "Talking about the future: سَـ and سَوْفَ",
+    "family_en": "\"Will\" goes in front of a present verb",
+    "course_words": [
+     "lexeme.arabic-future-plans-1",
+     "lexeme.arabic-future-plans-2",
+     "lexeme.arabic-future-plans-3",
+     "lexeme.arabic-future-plans-4",
+     "lexeme.arabic-future-plans-5",
+     "lexeme.arabic-future-plans-6"
+    ],
+    "table": [
+     {
+      "form_en": "I will go",
+      "ar": "سَأَذْهَبُ",
+      "en": "I'll go"
+     },
+     {
+      "form_en": "you will go (to a man)",
+      "ar": "سَتَذْهَبُ",
+      "en": "you'll go"
+     },
+     {
+      "form_en": "he will go",
+      "ar": "سَيَذْهَبُ",
+      "en": "he'll go"
+     },
+     {
+      "form_en": "we will go",
+      "ar": "سَنَذْهَبُ",
+      "en": "we'll go"
+     },
+     {
+      "form_en": "with سَوْفَ",
+      "ar": "سَوْفَ أَذْهَبُ",
+      "en": "I'll go"
+     },
+     {
+      "form_en": "next week",
+      "ar": "الْأُسْبُوعَ الْقَادِمَ",
+      "en": "next week"
+     },
+     {
+      "form_en": "the day after tomorrow",
+      "ar": "بَعْدَ غَدٍ",
+      "en": "the day after tomorrow"
+     },
+     {
+      "form_en": "I intend to",
+      "ar": "أَنْوِي أَنْ أُسَافِرَ",
+      "en": "I intend to travel"
+     }
+    ],
+    "steps": [
+     "For the future, put سَـ on the front of a present verb: أَذْهَبُ, I go; سَأَذْهَبُ, I'll go.",
+     "سَوْفَ does the same as a separate word before the verb: سَوْفَ أَذْهَبُ. Both mean \"will\".",
+     "The verb doesn't change: سَـ goes in front of whichever present form you need: سَنَذْهَبُ, we'll go; سَتَذْهَبِينَ, you'll go (to a woman).",
+     "Add a time to make the plan clear: سَأُسَافِرُ الْأُسْبُوعَ الْقَادِمَ, I'll travel next week. Like صَبَاحًا, a time like this ends in -a.",
+     "A plan isn't a promise, and it isn't a wish either: أُرِيدُ أَنْ أُسَافِرَ, I want to travel, says only what you'd like."
+    ],
+    "examples": [
+     {
+      "ar": "سَنَزُورُ جَدَّتِي بَعْدَ غَدٍ.",
+      "en": "We'll visit my grandmother the day after tomorrow.",
+      "words": [
+       {
+        "ar": "سَنَزُورُ",
+        "en": "we'll visit (سَـ: will)"
+       },
+       {
+        "ar": "جَدَّتِي",
+        "en": "my grandmother"
+       },
+       {
+        "ar": "بَعْدَ",
+        "en": "after"
+       },
+       {
+        "ar": "غَدٍ",
+        "en": "tomorrow"
+       }
+      ]
+     },
+     {
+      "ar": "هَلْ سَتَعْمَلِينَ يَوْمَ السَّبْتِ؟",
+      "en": "Will you work on Saturday? (to a woman)",
+      "words": [
+       {
+        "ar": "هَلْ",
+        "en": "(starts a yes/no question)"
+       },
+       {
+        "ar": "سَتَعْمَلِينَ",
+        "en": "will you work (to a woman)"
+       },
+       {
+        "ar": "يَوْمَ",
+        "en": "on"
+       },
+       {
+        "ar": "السَّبْتِ",
+        "en": "Saturday"
+       }
+      ]
+     },
+     {
+      "ar": "أَنْوِي أَنْ أَزُورَ مِصْرَ هَذَا الصَّيْفَ.",
+      "en": "I intend to visit Egypt this summer.",
+      "words": [
+       {
+        "ar": "أَنْوِي",
+        "en": "I intend"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "to"
+       },
+       {
+        "ar": "أَزُورَ",
+        "en": "visit"
+       },
+       {
+        "ar": "مِصْرَ",
+        "en": "Egypt"
+       },
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "الصَّيْفَ",
+        "en": "summer"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is سَـ joined to the verb, but سَوْفَ written apart?",
+     "a_en": "سَـ is a single letter, and one-letter words in Arabic join the next word, like وَ and بِـ. سَوْفَ is a whole word, so it stands on its own. They mean the same."
+    },
+    "selftest": [
+     {
+      "q_en": "Which means \"I'll travel\"?",
+      "choices": [
+       "سَأُسَافِرُ",
+       "سَافَرْتُ",
+       "أُسَافِرُ"
+      ],
+      "answer": "سَأُسَافِرُ",
+      "why_en": "سَـ in front makes it future. سَافَرْتُ is \"I travelled\", and أُسَافِرُ \"I travel\"."
+     },
+     {
+      "q_en": "What does الْأُسْبُوعَ الْقَادِمَ mean?",
+      "choices": [
+       "next week",
+       "last week",
+       "every week"
+      ],
+      "answer": "next week",
+      "why_en": "الْقَادِم is \"the coming one\". \"Every week\" is كُلَّ أُسْبُوعٍ."
+     },
+     {
+      "q_en": "Which says \"We'll go\"?",
+      "choices": [
+       "سَوْفَ نَذْهَبُ",
+       "سَوْفَ ذَهَبْنَا",
+       "سَذَهَبْنَا"
+      ],
+      "answer": "سَوْفَ نَذْهَبُ",
+      "why_en": "سَوْفَ and سَـ go with the present form, نَذْهَبُ, never the past."
+     }
+    ],
+    "phrases_ar": [
+     "سَأُسَافِرُ الْأُسْبُوعَ الْقَادِمَ",
+     "أُرِيدُ أَنْ أُسَافِرَ",
+     "كُلَّ أُسْبُوعٍ"
+    ]
+   }
+  ],
+  "lesson.arabic-negation-system": [
+   {
+    "id": "explainer.arabic-negation",
+    "title_en": "Saying \"not\": لَا, لَمْ, لَنْ, لَيْسَ",
+    "family_en": "Four words for \"not\", each with its own time and its own verb ending",
+    "course_words": [
+     "lexeme.arabic-negation-system-1",
+     "lexeme.arabic-negation-system-2",
+     "lexeme.arabic-negation-system-3",
+     "lexeme.arabic-negation-system-4",
+     "lexeme.arabic-negation-system-5",
+     "lexeme.arabic-negation-system-6"
+    ],
+    "table": [
+     {
+      "form_en": "not, now",
+      "ar": "لَا أُسَافِرُ",
+      "en": "I don't travel, I'm not travelling"
+     },
+     {
+      "form_en": "didn't, in the past",
+      "ar": "لَمْ أُسَافِرْ",
+      "en": "I didn't travel"
+     },
+     {
+      "form_en": "won't, in the future",
+      "ar": "لَنْ أُسَافِرَ",
+      "en": "I won't travel"
+     },
+     {
+      "form_en": "isn't, with no verb",
+      "ar": "لَيْسَ الْمَطْعَمُ مَفْتُوحًا",
+      "en": "The restaurant isn't open"
+     },
+     {
+      "form_en": "I'm not",
+      "ar": "لَسْتُ مُتْعَبًا",
+      "en": "I'm not tired (a man)"
+     },
+     {
+      "form_en": "never",
+      "ar": "لَنْ أَتَأَخَّرَ أَبَدًا",
+      "en": "I'll never be late"
+     },
+     {
+      "form_en": "nothing",
+      "ar": "لَمْ أَفْهَمْ شَيْئًا",
+      "en": "I didn't understand anything"
+     }
+    ],
+    "steps": [
+     "Arabic has several words for \"not\", and each goes with its own time: لَا for now, لَمْ for the past, لَنْ for the future.",
+     "After لَمْ and لَنْ, use the present form of the verb, even for the past: لَمْ أُسَافِرْ, I didn't travel.",
+     "The verb's last vowel changes: after لَمْ it becomes a sukūn, أُسَافِرْ; after لَنْ it becomes -a, أُسَافِرَ.",
+     "لَيْسَ is for sentences with no verb: الْمَطْعَمُ مَفْتُوحٌ, the restaurant is open; لَيْسَ الْمَطْعَمُ مَفْتُوحًا, it isn't open. Like كَانَ, it gives the describing word -an.",
+     "لَيْسَ changes for who: لَسْتُ, I'm not; لَسْتَ, you're not (to a man); لَيْسَتْ, she isn't."
+    ],
+    "examples": [
+     {
+      "ar": "لَمْ آكُلْ شَيْئًا الْيَوْمَ.",
+      "en": "I haven't eaten anything today.",
+      "words": [
+       {
+        "ar": "لَمْ",
+        "en": "didn't, haven't"
+       },
+       {
+        "ar": "آكُلْ",
+        "en": "eat (sukūn after لَمْ)"
+       },
+       {
+        "ar": "شَيْئًا",
+        "en": "anything"
+       },
+       {
+        "ar": "الْيَوْمَ",
+        "en": "today"
+       }
+      ]
+     },
+     {
+      "ar": "لَنْ نُسَافِرَ هَذَا الصَّيْفَ.",
+      "en": "We won't travel this summer.",
+      "words": [
+       {
+        "ar": "لَنْ",
+        "en": "won't"
+       },
+       {
+        "ar": "نُسَافِرَ",
+        "en": "we travel (-a after لَنْ)"
+       },
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "الصَّيْفَ",
+        "en": "summer"
+       }
+      ]
+     },
+     {
+      "ar": "هِيَ لَيْسَتْ فِي الْبَيْتِ الْآنَ.",
+      "en": "She isn't at home now.",
+      "words": [
+       {
+        "ar": "هِيَ",
+        "en": "she"
+       },
+       {
+        "ar": "لَيْسَتْ",
+        "en": "isn't (لَيْسَ for \"she\")"
+       },
+       {
+        "ar": "فِي",
+        "en": "in, at"
+       },
+       {
+        "ar": "الْبَيْتِ",
+        "en": "home"
+       },
+       {
+        "ar": "الْآنَ",
+        "en": "now"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أُسَافِرْ, a present form, after لَمْ, when the meaning is past?",
+     "a_en": "That's how Arabic says \"didn't\": لَمْ takes the present form, drops its last vowel, and turns the meaning into the past. لَمْ never goes with a past verb."
+    },
+    "selftest": [
+     {
+      "q_en": "Which means \"I won't travel\"?",
+      "choices": [
+       "لَنْ أُسَافِرَ",
+       "لَمْ أُسَافِرْ",
+       "لَا أُسَافِرُ"
+      ],
+      "answer": "لَنْ أُسَافِرَ",
+      "why_en": "لَنْ is for the future. لَمْ أُسَافِرْ is \"I didn't travel\", and لَا أُسَافِرُ \"I don't travel\"."
+     },
+     {
+      "q_en": "Which word says \"not\" in a sentence with no verb?",
+      "choices": [
+       "لَيْسَ",
+       "لَمْ",
+       "لَنْ"
+      ],
+      "answer": "لَيْسَ",
+      "why_en": "لَيْسَ goes with sentences like الْبَيْتُ كَبِيرٌ. لَمْ and لَنْ need a verb."
+     },
+     {
+      "q_en": "A man says \"I'm not tired\". Which is right?",
+      "choices": [
+       "لَسْتُ مُتْعَبًا",
+       "لَيْسَ مُتْعَبًا",
+       "لَسْتُ مُتْعَبٌ"
+      ],
+      "answer": "لَسْتُ مُتْعَبًا",
+      "why_en": "لَسْتُ is \"I'm not\", and the describing word takes -an. لَيْسَ مُتْعَبًا is \"he isn't tired\"."
+     }
+    ],
+    "phrases_ar": [
+     "الْمَطْعَمُ مَفْتُوحٌ",
+     "الْبَيْتُ كَبِيرٌ",
+     "لَيْسَ مُتْعَبًا"
+    ]
+   }
+  ],
+  "lesson.arabic-requests-imperatives": [
+   {
+    "id": "explainer.arabic-commands",
+    "title_en": "Telling someone what to do: اِفْتَحْ, اُدْخُلْ, لَا تَتَأَخَّرْ",
+    "family_en": "Commands come from the present verb; \"don't\" comes from لَا",
+    "course_words": [
+     "lexeme.arabic-requests-imperatives-1",
+     "lexeme.arabic-requests-imperatives-2",
+     "lexeme.arabic-requests-imperatives-3",
+     "lexeme.arabic-requests-imperatives-4",
+     "lexeme.arabic-requests-imperatives-5",
+     "lexeme.arabic-requests-imperatives-6",
+     "lexeme.arabic-requests-imperatives-7"
+    ],
+    "table": [
+     {
+      "form_en": "open! (to a man)",
+      "ar": "اِفْتَحْ",
+      "en": "open!"
+     },
+     {
+      "form_en": "open! (to a woman)",
+      "ar": "اِفْتَحِي",
+      "en": "open!"
+     },
+     {
+      "form_en": "open! (to a group)",
+      "ar": "اِفْتَحُوا",
+      "en": "open!"
+     },
+     {
+      "form_en": "come in! (to a man)",
+      "ar": "اُدْخُلْ",
+      "en": "come in!"
+     },
+     {
+      "form_en": "sit down! (to a man)",
+      "ar": "اِجْلِسْ",
+      "en": "sit down!"
+     },
+     {
+      "form_en": "close! (to a man)",
+      "ar": "أَغْلِقْ",
+      "en": "close!"
+     },
+     {
+      "form_en": "don't! (to a man)",
+      "ar": "لَا تَتَأَخَّرْ",
+      "en": "don't be late!"
+     },
+     {
+      "form_en": "don't! (to a woman)",
+      "ar": "لَا تَتَأَخَّرِي",
+      "en": "don't be late!"
+     }
+    ],
+    "steps": [
+     "A command starts from the \"you\" present verb: drop the تَـ in front and the last vowel. تَفْتَحُ, you open, becomes اِفْتَحْ, open!",
+     "If the word would then start with two consonants, add a helping اُ or اِ: اُ when the present has u in the middle (تَدْخُلُ, اُدْخُلْ), otherwise اِ (اِفْتَحْ, اِجْلِسْ). A few verbs take أَ instead: أَغْلِقْ, close!",
+     "The ending changes with who you're telling: ـِي to a woman (اِفْتَحِي), ـُوا to a group (اِفْتَحُوا).",
+     "\"Don't\" is لَا with the \"you\" present form, its last vowel dropped: لَا تَتَأَخَّرْ, don't be late. It is never لَا with the command.",
+     "A bare command can sound abrupt. Add مِنْ فَضْلِكَ, please, or ask instead: هَلْ يُمْكِنُ أَنْ تَفْتَحَ الْبَابَ؟, could you open the door?"
+    ],
+    "examples": [
+     {
+      "ar": "اُدْخُلْ وَاجْلِسْ، مِنْ فَضْلِكَ.",
+      "en": "Come in and sit down, please.",
+      "words": [
+       {
+        "ar": "اُدْخُلْ",
+        "en": "come in"
+       },
+       {
+        "ar": "وَاجْلِسْ",
+        "en": "and sit down"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "فَضْلِكَ",
+        "en": "your kindness; with مِنْ, \"please\""
+       }
+      ]
+     },
+     {
+      "ar": "أَغْلِقِي النَّافِذَةَ، مِنْ فَضْلِكِ.",
+      "en": "Close the window, please. (to a woman)",
+      "words": [
+       {
+        "ar": "أَغْلِقِي",
+        "en": "close (to a woman)"
+       },
+       {
+        "ar": "النَّافِذَةَ",
+        "en": "the window"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "فَضْلِكِ",
+        "en": "your kindness (to a woman)"
+       }
+      ]
+     },
+     {
+      "ar": "لَا تَنْتَظِرُوا هُنَا.",
+      "en": "Don't wait here. (to a group)",
+      "words": [
+       {
+        "ar": "لَا",
+        "en": "don't"
+       },
+       {
+        "ar": "تَنْتَظِرُوا",
+        "en": "wait (to a group)"
+       },
+       {
+        "ar": "هُنَا",
+        "en": "here"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why اُدْخُلْ with اُ, but اِجْلِسْ with اِ?",
+     "a_en": "The helping vowel follows the middle vowel of the present: تَدْخُلُ has u, so اُدْخُلْ; تَجْلِسُ has i, so اِجْلِسْ. When the middle vowel is a, it's اِ too: تَفْتَحُ, اِفْتَحْ."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you tell a woman \"Sit down\"?",
+      "choices": [
+       "اِجْلِسِي",
+       "اِجْلِسْ",
+       "تَجْلِسِينَ"
+      ],
+      "answer": "اِجْلِسِي",
+      "why_en": "To a woman, a command ends in ـِي. اِجْلِسْ is to a man, and تَجْلِسِينَ is \"you sit\"."
+     },
+     {
+      "q_en": "Which means \"Don't wait!\" to a man?",
+      "choices": [
+       "لَا تَنْتَظِرْ",
+       "لَا انْتَظِرْ",
+       "لَا تَنْتَظِرُ"
+      ],
+      "answer": "لَا تَنْتَظِرْ",
+      "why_en": "\"Don't\" is لَا with the \"you\" form, its last vowel dropped. لَا تَنْتَظِرُ is \"you don't wait\"."
+     },
+     {
+      "q_en": "The present of خَرَجَ, to go out, is يَخْرُجُ. What's the command to a man?",
+      "choices": [
+       "اُخْرُجْ",
+       "اِخْرُجْ",
+       "تَخْرُجْ"
+      ],
+      "answer": "اُخْرُجْ",
+      "why_en": "The present has u in the middle, so the helping vowel is اُ."
+     }
+    ],
+    "phrases_ar": [
+     "مِنْ فَضْلِكَ",
+     "هَلْ يُمْكِنُ أَنْ تَفْتَحَ الْبَابَ؟",
+     "لَا تَنْتَظِرُ"
+    ]
+   }
+  ],
+  "lesson.arabic-modal-complements": [
+   {
+    "id": "explainer.arabic-want-can-must",
+    "title_en": "Want to, can, must: أَنْ and the verb after it",
+    "family_en": "A frame, then أَنْ, then a present verb ending in -a",
+    "course_words": [
+     "lexeme.arabic-modal-complements-1",
+     "lexeme.arabic-modal-complements-2",
+     "lexeme.arabic-modal-complements-3",
+     "lexeme.arabic-modal-complements-4",
+     "lexeme.arabic-modal-complements-5",
+     "lexeme.arabic-modal-complements-6"
+    ],
+    "table": [
+     {
+      "form_en": "want",
+      "ar": "أُرِيدُ أَنْ أَنَامَ",
+      "en": "I want to sleep"
+     },
+     {
+      "form_en": "can",
+      "ar": "أَسْتَطِيعُ أَنْ أَسْبَحَ",
+      "en": "I can swim"
+     },
+     {
+      "form_en": "must",
+      "ar": "يَجِبُ أَنْ أَذْهَبَ",
+      "en": "I must go"
+     },
+     {
+      "form_en": "it's possible",
+      "ar": "يُمْكِنُ أَنْ نَلْتَقِيَ غَدًا",
+      "en": "We can meet tomorrow"
+     },
+     {
+      "form_en": "try",
+      "ar": "أُحَاوِلُ أَنْ أَفْهَمَ",
+      "en": "I'm trying to understand"
+     },
+     {
+      "form_en": "prefer",
+      "ar": "أُفَضِّلُ أَنْ أَمْشِيَ",
+      "en": "I prefer to walk"
+     }
+    ],
+    "steps": [
+     "Words like \"want\", \"can\" and \"must\" take أَنْ, then a present verb: أُرِيدُ أَنْ أَنَامَ, I want to sleep.",
+     "After أَنْ, the verb's last vowel becomes -a: أَنَامُ, but أَنْ أَنَامَ.",
+     "Both verbs change for who: تُرِيدُ أَنْ تَنَامَ, you want to sleep. يَجِبُ and يُمْكِنُ stay the same: يَجِبُ أَنْ تَذْهَبَ, you must go.",
+     "Endings in ـِينَ and ـُونَ lose their نَ after أَنْ: تَنَامِينَ, but يَجِبُ أَنْ تَنَامِي.",
+     "English \"can\" isn't always أَسْتَطِيعُ. To ask if something is possible or allowed, use يُمْكِنُ: هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟, can I sit here?"
+    ],
+    "examples": [
+     {
+      "ar": "لَا أَسْتَطِيعُ أَنْ أَنَامَ فِي الطَّائِرَةِ.",
+      "en": "I can't sleep on the plane.",
+      "words": [
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "أَسْتَطِيعُ",
+        "en": "I can"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "to"
+       },
+       {
+        "ar": "أَنَامَ",
+        "en": "sleep (-a after أَنْ)"
+       },
+       {
+        "ar": "فِي",
+        "en": "in, on"
+       },
+       {
+        "ar": "الطَّائِرَةِ",
+        "en": "the plane"
+       }
+      ]
+     },
+     {
+      "ar": "يَجِبُ أَنْ تَنَامِي مُبَكِّرًا.",
+      "en": "You must go to bed early. (to a woman)",
+      "words": [
+       {
+        "ar": "يَجِبُ",
+        "en": "it's necessary"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "that"
+       },
+       {
+        "ar": "تَنَامِي",
+        "en": "you sleep (to a woman; no نَ after أَنْ)"
+       },
+       {
+        "ar": "مُبَكِّرًا",
+        "en": "early"
+       }
+      ]
+     },
+     {
+      "ar": "أُحَاوِلُ أَنْ أَقْرَأَ كُلَّ يَوْمٍ.",
+      "en": "I try to read every day.",
+      "words": [
+       {
+        "ar": "أُحَاوِلُ",
+        "en": "I try"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "to"
+       },
+       {
+        "ar": "أَقْرَأَ",
+        "en": "read (-a after أَنْ)"
+       },
+       {
+        "ar": "كُلَّ",
+        "en": "every"
+       },
+       {
+        "ar": "يَوْمٍ",
+        "en": "day"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أَنَامَ, with -a, after أَنْ, when it's أَنَامُ on its own?",
+     "a_en": "أَنْ changes the verb's last vowel to -a. It marks the verb as the thing wanted, possible or needed, rather than a plain statement of fact."
+    },
+    "selftest": [
+     {
+      "q_en": "Which means \"I want to sleep\"?",
+      "choices": [
+       "أُرِيدُ أَنْ أَنَامَ",
+       "أُرِيدُ أَنْ أَنَامُ",
+       "أُرِيدُ أَنَامَ"
+      ],
+      "answer": "أُرِيدُ أَنْ أَنَامَ",
+      "why_en": "أُرِيدُ takes أَنْ, and after أَنْ the verb ends in -a."
+     },
+     {
+      "q_en": "A woman is told \"You must go\". Which is right?",
+      "choices": [
+       "يَجِبُ أَنْ تَذْهَبِي",
+       "يَجِبِينَ أَنْ تَذْهَبِي",
+       "يَجِبُ أَنْ تَذْهَبِينَ"
+      ],
+      "answer": "يَجِبُ أَنْ تَذْهَبِي",
+      "why_en": "يَجِبُ doesn't change, and ـِينَ loses its نَ after أَنْ."
+     },
+     {
+      "q_en": "Which is right for \"Can I sit here?\"",
+      "choices": [
+       "هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟",
+       "هَلْ يُمْكِنُ أَنْ أَجْلِسُ هُنَا؟",
+       "هَلْ يُمْكِنُ أَجْلِسَ هُنَا؟"
+      ],
+      "answer": "هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟",
+      "why_en": "يُمْكِنُ needs أَنْ, and the verb after أَنْ ends in -a."
+     }
+    ],
+    "phrases_ar": [
+     "أَنْ أَنَامَ",
+     "تُرِيدُ أَنْ تَنَامَ",
+     "يَجِبُ أَنْ تَذْهَبَ",
+     "يَجِبُ أَنْ تَنَامِي",
+     "هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟"
+    ]
+   }
+  ],
+  "lesson.arabic-plans-dialogue": [
+   {
+    "id": "explainer.arabic-making-plans",
+    "title_en": "Making a plan together: مَا رَأْيُكَ؟, لِلْأَسَفِ, إِذَنْ",
+    "family_en": "Suggest, answer, change, confirm",
+    "course_words": [
+     "lexeme.arabic-plans-dialogue-1",
+     "lexeme.arabic-plans-dialogue-2",
+     "lexeme.arabic-plans-dialogue-3",
+     "lexeme.arabic-plans-dialogue-4",
+     "lexeme.arabic-plans-dialogue-5",
+     "lexeme.arabic-plans-dialogue-6",
+     "lexeme.arabic-plans-dialogue-7",
+     "lexeme.arabic-plans-dialogue-8"
+    ],
+    "table": [
+     {
+      "form_en": "suggest",
+      "ar": "هَلْ نَلْتَقِي يَوْمَ الْخَمِيسِ؟",
+      "en": "Shall we meet on Thursday?"
+     },
+     {
+      "form_en": "ask their view",
+      "ar": "مَا رَأْيُكَ؟",
+      "en": "What do you think? (to a man)"
+     },
+     {
+      "form_en": "agree (a man)",
+      "ar": "أَنَا مُوَافِقٌ",
+      "en": "I agree"
+     },
+     {
+      "form_en": "agree (a woman)",
+      "ar": "أَنَا مُوَافِقَةٌ",
+      "en": "I agree"
+     },
+     {
+      "form_en": "say no politely",
+      "ar": "لِلْأَسَفِ، عِنْدِي عَمَلٌ",
+      "en": "Unfortunately, I have work"
+     },
+     {
+      "form_en": "instead of",
+      "ar": "بَدَلًا مِنْ يَوْمِ الْجُمُعَةِ",
+      "en": "instead of Friday"
+     },
+     {
+      "form_en": "confirm",
+      "ar": "إِذَنْ نَلْتَقِي يَوْمَ السَّبْتِ",
+      "en": "So we'll meet on Saturday"
+     }
+    ],
+    "steps": [
+     "Planning together has four moves: suggest, answer, change if needed, and confirm.",
+     "Suggest with a question: هَلْ نَلْتَقِي غَدًا؟, shall we meet tomorrow? The present نَلْتَقِي, we meet, works for a plan.",
+     "If you can't, say so clearly and give a reason. لِلْأَسَفِ, unfortunately, makes it a no, not a maybe.",
+     "Offer something else with بَدَلًا مِنْ, instead of, and ask مَا رَأْيُكَ؟, what do you think?",
+     "Finish with إِذَنْ, so, and say the agreed day, time and place again: إِذَنْ نَلْتَقِي يَوْمَ السَّبْتِ فِي الْمَقْهَى."
+    ],
+    "examples": [
+     {
+      "ar": "هَلْ نَلْتَقِي يَوْمَ الْخَمِيسِ بَعْدَ الظُّهْرِ؟",
+      "en": "Shall we meet on Thursday afternoon?",
+      "words": [
+       {
+        "ar": "هَلْ",
+        "en": "(starts a yes/no question)"
+       },
+       {
+        "ar": "نَلْتَقِي",
+        "en": "we meet"
+       },
+       {
+        "ar": "يَوْمَ",
+        "en": "on"
+       },
+       {
+        "ar": "الْخَمِيسِ",
+        "en": "Thursday"
+       },
+       {
+        "ar": "بَعْدَ",
+        "en": "after"
+       },
+       {
+        "ar": "الظُّهْرِ",
+        "en": "noon"
+       }
+      ]
+     },
+     {
+      "ar": "لِلْأَسَفِ، عِنْدِي دَرْسٌ يَوْمَ الْخَمِيسِ.",
+      "en": "Unfortunately, I have a lesson on Thursday.",
+      "words": [
+       {
+        "ar": "لِلْأَسَفِ",
+        "en": "unfortunately"
+       },
+       {
+        "ar": "عِنْدِي",
+        "en": "I have"
+       },
+       {
+        "ar": "دَرْسٌ",
+        "en": "a lesson"
+       },
+       {
+        "ar": "يَوْمَ",
+        "en": "on"
+       },
+       {
+        "ar": "الْخَمِيسِ",
+        "en": "Thursday"
+       }
+      ]
+     },
+     {
+      "ar": "إِذَنْ نَلْتَقِي يَوْمَ الْجُمُعَةِ فِي الْمَقْهَى.",
+      "en": "So we'll meet on Friday at the café.",
+      "words": [
+       {
+        "ar": "إِذَنْ",
+        "en": "so, then"
+       },
+       {
+        "ar": "نَلْتَقِي",
+        "en": "we meet"
+       },
+       {
+        "ar": "يَوْمَ",
+        "en": "on"
+       },
+       {
+        "ar": "الْجُمُعَةِ",
+        "en": "Friday"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "الْمَقْهَى",
+        "en": "the café"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why نَلْتَقِي, a present verb, for a plan in the future?",
+     "a_en": "The present often covers plans that are already settled, as English does in \"we're meeting on Friday\". سَنَلْتَقِي, we'll meet, is right too."
+    },
+    "selftest": [
+     {
+      "q_en": "Which reply is a clear no?",
+      "choices": [
+       "لِلْأَسَفِ، لَا أَسْتَطِيعُ",
+       "طَبْعًا",
+       "أَنَا مُوَافِقٌ"
+      ],
+      "answer": "لِلْأَسَفِ، لَا أَسْتَطِيعُ",
+      "why_en": "\"Unfortunately, I can't.\" طَبْعًا is \"of course\", and أَنَا مُوَافِقٌ \"I agree\"."
+     },
+     {
+      "q_en": "What does إِذَنْ do in إِذَنْ نَلْتَقِي يَوْمَ السَّبْتِ?",
+      "choices": [
+       "it sums up what you've agreed",
+       "it asks a question",
+       "it says no"
+      ],
+      "answer": "it sums up what you've agreed",
+      "why_en": "إِذَنْ is \"so, then\": it confirms the plan."
+     },
+     {
+      "q_en": "How do you ask a woman \"What do you think?\"",
+      "choices": [
+       "مَا رَأْيُكِ؟",
+       "مَا رَأْيُكَ؟",
+       "مَا رَأْيِي؟"
+      ],
+      "answer": "مَا رَأْيُكِ؟",
+      "why_en": "To a woman, \"your\" is ـكِ. رَأْيُكَ is to a man, and رَأْيِي is \"my opinion\"."
+     }
+    ],
+    "phrases_ar": [
+     "هَلْ نَلْتَقِي غَدًا؟",
+     "بَدَلًا مِنْ",
+     "إِذَنْ نَلْتَقِي يَوْمَ السَّبْتِ فِي الْمَقْهَى"
+    ]
+   }
+  ],
+  "lesson.arabic-pronoun-attachment": [
+   {
+    "id": "explainer.arabic-one-ending-three-jobs",
+    "title_en": "One ending, three jobs: بَيْتُهُ, أَعْرِفُهُ, مَعَهُ",
+    "family_en": "The same endings mean \"his\", \"him\" or \"with him\", depending on the word they're on",
+    "course_words": [
+     "lexeme.arabic-pronoun-attachment-1",
+     "lexeme.arabic-pronoun-attachment-2",
+     "lexeme.arabic-pronoun-attachment-3",
+     "lexeme.arabic-pronoun-attachment-4",
+     "lexeme.arabic-pronoun-attachment-5",
+     "lexeme.arabic-pronoun-attachment-6",
+     "lexeme.arabic-pronoun-attachment-7",
+     "lexeme.arabic-pronoun-attachment-8"
+    ],
+    "table": [
+     {
+      "form_en": "on a noun: his",
+      "ar": "بَيْتُهُ",
+      "en": "his house"
+     },
+     {
+      "form_en": "on a verb: him",
+      "ar": "أَعْرِفُهُ",
+      "en": "I know him"
+     },
+     {
+      "form_en": "on a small word: him",
+      "ar": "مَعَهُ",
+      "en": "with him"
+     },
+     {
+      "form_en": "on a noun: her",
+      "ar": "سَيَّارَتُهَا",
+      "en": "her car"
+     },
+     {
+      "form_en": "on a verb: her, it",
+      "ar": "رَأَيْتُهَا",
+      "en": "I saw her, I saw it"
+     },
+     {
+      "form_en": "on a small word: her",
+      "ar": "لَهَا",
+      "en": "for her"
+     },
+     {
+      "form_en": "on a noun: our",
+      "ar": "كِتَابُنَا",
+      "en": "our book"
+     },
+     {
+      "form_en": "on a verb: them",
+      "ar": "نَعْرِفُهُمْ",
+      "en": "we know them"
+     }
+    ],
+    "steps": [
+     "The endings ـهُ, ـهَا, ـنَا, ـهُمْ and the rest do three jobs, depending on the word they're on.",
+     "On a noun they mean \"his\", \"her\", \"our\": بَيْتُهُ, his house. On a verb they mean \"him\", \"her\", \"us\": أَعْرِفُهُ, I know him. After a small word like مَعَ, مِنْ or لِـ, they're who it's with, from or for: مَعَهُ, with him.",
+     "ـَة becomes ت before an ending: سَيَّارَة, but سَيَّارَتُهُ, his car.",
+     "Two small changes: لِـ, for, becomes لَـ before an ending (لَهُ, لَهَا, لَنَا), and \"me\" on a verb is ـنِي, while \"my\" on a noun is ـِي.",
+     "To look a word up, take the ending off first: نَعْرِفُهُمْ is نَعْرِفُ, we know, with ـهُمْ, them."
+    ],
+    "examples": [
+     {
+      "ar": "رَأَيْتُ صَدِيقَتِي وَتَكَلَّمْتُ مَعَهَا.",
+      "en": "I saw my friend and talked with her.",
+      "words": [
+       {
+        "ar": "رَأَيْتُ",
+        "en": "I saw"
+       },
+       {
+        "ar": "صَدِيقَتِي",
+        "en": "my friend (ـِي: my)"
+       },
+       {
+        "ar": "وَتَكَلَّمْتُ",
+        "en": "and I talked"
+       },
+       {
+        "ar": "مَعَهَا",
+        "en": "with her (ـهَا after مَعَ)"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ الْهَدِيَّةُ لَكَ.",
+      "en": "This present is for you.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْهَدِيَّةُ",
+        "en": "present, gift"
+       },
+       {
+        "ar": "لَكَ",
+        "en": "for you (لِـ becomes لَـ)"
+       }
+      ]
+     },
+     {
+      "ar": "أَخَذْتُ الْمِفْتَاحَ مِنْهُ أَمْسِ.",
+      "en": "I took the key from him yesterday.",
+      "words": [
+       {
+        "ar": "أَخَذْتُ",
+        "en": "I took"
+       },
+       {
+        "ar": "الْمِفْتَاحَ",
+        "en": "the key"
+       },
+       {
+        "ar": "مِنْهُ",
+        "en": "from him (ـهُ after مِنْ)"
+       },
+       {
+        "ar": "أَمْسِ",
+        "en": "yesterday"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why مَعَهُ, with an ending, and not مَعَ with هُوَ?",
+     "a_en": "After a small word like مَعَ, فِي or مِنْ, \"him\" and \"her\" are always endings: مَعَهُ, فِيهِ, مِنْهُ. هُوَ is only for the one the sentence is about: هُوَ مَعِي, he's with me."
+    },
+    "selftest": [
+     {
+      "q_en": "What does ـهَا mean in سَيَّارَتُهَا?",
+      "choices": [
+       "her",
+       "for her",
+       "with her"
+      ],
+      "answer": "her",
+      "why_en": "On a noun, ـهَا is \"her\": her car. \"For her\" is لَهَا, and \"with her\" مَعَهَا."
+     },
+     {
+      "q_en": "Which means \"I know them\"?",
+      "choices": [
+       "أَعْرِفُهُمْ",
+       "أَعْرِفُهُ",
+       "أَعْرِفُكُمْ"
+      ],
+      "answer": "أَعْرِفُهُمْ",
+      "why_en": "ـهُمْ is \"them\". أَعْرِفُهُ is \"I know him\", and أَعْرِفُكُمْ \"I know you all\"."
+     },
+     {
+      "q_en": "Which means \"for us\"?",
+      "choices": [
+       "لَنَا",
+       "لَهُمْ",
+       "مَعَنَا"
+      ],
+      "answer": "لَنَا",
+      "why_en": "لِـ with ـنَا is لَنَا. لَهُمْ is \"for them\", and مَعَنَا \"with us\"."
+     }
+    ],
+    "phrases_ar": [
+     "هُوَ مَعِي"
+    ]
+   }
+  ],
+  "lesson.arabic-case-roles": [
+   {
+    "id": "explainer.arabic-case-endings",
+    "title_en": "Who did what: the endings -u, -a and -i",
+    "family_en": "In fully vowelled Arabic, a noun's ending shows its job",
+    "course_words": [
+     "lexeme.arabic-case-roles-1",
+     "lexeme.arabic-case-roles-2",
+     "lexeme.arabic-case-roles-3",
+     "lexeme.arabic-case-roles-4",
+     "lexeme.arabic-case-roles-5",
+     "lexeme.arabic-case-roles-6",
+     "lexeme.arabic-case-roles-7"
+    ],
+    "table": [
+     {
+      "form_en": "the doer (فَاعِل): -u",
+      "ar": "شَرِبَ الْوَلَدُ",
+      "en": "the boy drank"
+     },
+     {
+      "form_en": "what it's done to (مَفْعُولٌ بِهِ): -a",
+      "ar": "شَرِبَ الْوَلَدُ الْحَلِيبَ",
+      "en": "the boy drank the milk"
+     },
+     {
+      "form_en": "after a small word (حَرْفُ جَرٍّ): -i",
+      "ar": "فِي الْمَطْبَخِ",
+      "en": "in the kitchen"
+     },
+     {
+      "form_en": "the -u case",
+      "ar": "مَرْفُوع",
+      "en": "-u (literally \"raised\")"
+     },
+     {
+      "form_en": "the -a case",
+      "ar": "مَنْصُوب",
+      "en": "-a (literally \"set up\")"
+     },
+     {
+      "form_en": "the -i case",
+      "ar": "مَجْرُور",
+      "en": "-i (literally \"pulled\")"
+     }
+    ],
+    "steps": [
+     "In a fully vowelled sentence, the endings show each noun's job: -u for the doer, -a for what it's done to, -i after a small word like فِي.",
+     "Without الْـ, the endings double: -un, -an, -in. شَرِبَ وَلَدٌ حَلِيبًا, a boy drank milk.",
+     "Arabic grammar has names for these: فَاعِل, the doer, and مَفْعُولٌ بِهِ, what it's done to. The cases are مَرْفُوع (-u), مَنْصُوب (-a) and مَجْرُور (-i).",
+     "Work out the roles from the meaning first, then check the endings. Many texts leave the endings out, and some words never show them."
+    ],
+    "examples": [
+     {
+      "ar": "شَرِبَ الْوَلَدُ الْحَلِيبَ فِي الْمَطْبَخِ.",
+      "en": "The boy drank the milk in the kitchen.",
+      "words": [
+       {
+        "ar": "شَرِبَ",
+        "en": "drank"
+       },
+       {
+        "ar": "الْوَلَدُ",
+        "en": "the boy (-u: the doer)"
+       },
+       {
+        "ar": "الْحَلِيبَ",
+        "en": "the milk (-a: what he drank)"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْمَطْبَخِ",
+        "en": "the kitchen (-i after فِي)"
+       }
+      ]
+     },
+     {
+      "ar": "فَتَحَتِ الْمُعَلِّمَةُ النَّافِذَةَ.",
+      "en": "The teacher opened the window.",
+      "words": [
+       {
+        "ar": "فَتَحَتِ",
+        "en": "opened (she)"
+       },
+       {
+        "ar": "الْمُعَلِّمَةُ",
+        "en": "the teacher (-u: the doer)"
+       },
+       {
+        "ar": "النَّافِذَةَ",
+        "en": "the window (-a: what she opened)"
+       }
+      ]
+     },
+     {
+      "ar": "كَتَبَ سَامِي رِسَالَةً إِلَى صَدِيقِهِ.",
+      "en": "Sāmī wrote a letter to his friend.",
+      "words": [
+       {
+        "ar": "كَتَبَ",
+        "en": "wrote"
+       },
+       {
+        "ar": "سَامِي",
+        "en": "Sāmī (the doer; a name ending in ـِي shows no ending)"
+       },
+       {
+        "ar": "رِسَالَةً",
+        "en": "a letter (-an: what he wrote)"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "صَدِيقِهِ",
+        "en": "his friend (-i after إِلَى)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "If the endings show who did what, can the words go in any order?",
+     "a_en": "More freely than in English, yes: the endings keep the roles clear. But the usual order is the verb, then the doer, then the rest, and that's the safest one to use."
+    },
+    "selftest": [
+     {
+      "q_en": "In فَتَحَتِ الْمُعَلِّمَةُ النَّافِذَةَ, which word is the doer?",
+      "choices": [
+       "الْمُعَلِّمَةُ",
+       "النَّافِذَةَ",
+       "فَتَحَتْ"
+      ],
+      "answer": "الْمُعَلِّمَةُ",
+      "why_en": "It ends in -u: the teacher did the opening. النَّافِذَةَ, with -a, is what was opened."
+     },
+     {
+      "q_en": "What ending does a noun take after فِي?",
+      "choices": [
+       "-i",
+       "-u",
+       "-a"
+      ],
+      "answer": "-i",
+      "why_en": "After a small word like فِي, مِنْ or إِلَى, the noun ends in -i (or -in without الْـ)."
+     },
+     {
+      "q_en": "What is a مَفْعُولٌ بِهِ?",
+      "choices": [
+       "what the action is done to",
+       "the doer",
+       "a small word like فِي"
+      ],
+      "answer": "what the action is done to",
+      "why_en": "مَفْعُولٌ بِهِ is what the action is done to, and it ends in -a. The doer is the فَاعِل."
+     }
+    ],
+    "phrases_ar": [
+     "شَرِبَ وَلَدٌ حَلِيبًا",
+     "مَفْعُولٌ بِهِ",
+     "حَرْفُ جَرٍّ"
+    ]
+   }
+  ],
+  "lesson.arabic-idafa-chains": [
+   {
+    "id": "explainer.arabic-noun-chains",
+    "title_en": "Chains of nouns: مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ",
+    "family_en": "\"The … of the … of the …\", and where a describing word goes",
+    "course_words": [
+     "lexeme.arabic-idafa-chains-1",
+     "lexeme.arabic-idafa-chains-2",
+     "lexeme.arabic-idafa-chains-3",
+     "lexeme.arabic-idafa-chains-4",
+     "lexeme.arabic-idafa-chains-5",
+     "lexeme.arabic-idafa-chains-6",
+     "lexeme.arabic-idafa-chains-7",
+     "lexeme.arabic-idafa-chains-8",
+     "lexeme.arabic-idafa-chains-9"
+    ],
+    "table": [
+     {
+      "form_en": "two nouns: whose",
+      "ar": "سَيَّارَةُ أَبِي",
+      "en": "my father's car"
+     },
+     {
+      "form_en": "two nouns: what kind",
+      "ar": "غُرْفَةُ النَّوْمِ",
+      "en": "the bedroom (\"the room of sleep\")"
+     },
+     {
+      "form_en": "three nouns",
+      "ar": "مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ",
+      "en": "the headteacher's office"
+     },
+     {
+      "form_en": "describing the first noun",
+      "ar": "بَيْتُ الْمُعَلِّمِ الْجَدِيدُ",
+      "en": "the teacher's new house"
+     },
+     {
+      "form_en": "describing the last noun",
+      "ar": "بَيْتُ الْمُعَلِّمِ الْجَدِيدِ",
+      "en": "the new teacher's house"
+     },
+     {
+      "form_en": "the middle of",
+      "ar": "وَسَطُ الْمَدِينَةِ",
+      "en": "the town centre"
+     }
+    ],
+    "steps": [
+     "Two nouns side by side mean \"the … of …\": بَابُ الْبَيْتِ, the door of the house.",
+     "You can chain more: مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ, the office of the head of the school. Read it from the front: office, head, school.",
+     "Only the last noun can have الْـ. The others never take الْـ or -un, but the whole chain still means \"the\".",
+     "Every noun after the first ends in -i. The first one's ending depends on its job in the sentence.",
+     "A describing word goes after the whole chain, and its ending shows which noun it describes: الْجَدِيدُ, with -u like بَيْتُ, is the house; الْجَدِيدِ, with -i, is the teacher."
+    ],
+    "examples": [
+     {
+      "ar": "نَافِذَةُ غُرْفَةِ النَّوْمِ مَفْتُوحَةٌ.",
+      "en": "The bedroom window is open.",
+      "words": [
+       {
+        "ar": "نَافِذَةُ",
+        "en": "the window (of)"
+       },
+       {
+        "ar": "غُرْفَةِ",
+        "en": "the room (of)"
+       },
+       {
+        "ar": "النَّوْمِ",
+        "en": "sleep"
+       },
+       {
+        "ar": "مَفْتُوحَةٌ",
+        "en": "open"
+       }
+      ]
+     },
+     {
+      "ar": "تَعْمَلُ أُخْتِي فِي جَامِعَةِ الْقَاهِرَةِ.",
+      "en": "My sister works at Cairo University.",
+      "words": [
+       {
+        "ar": "تَعْمَلُ",
+        "en": "works"
+       },
+       {
+        "ar": "أُخْتِي",
+        "en": "my sister"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "جَامِعَةِ",
+        "en": "the university (of)"
+       },
+       {
+        "ar": "الْقَاهِرَةِ",
+        "en": "Cairo"
+       }
+      ]
+     },
+     {
+      "ar": "سَكَنَّا فِي وَسَطِ الْمَدِينَةِ.",
+      "en": "We lived in the town centre.",
+      "words": [
+       {
+        "ar": "سَكَنَّا",
+        "en": "we lived"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "وَسَطِ",
+        "en": "the middle (of)"
+       },
+       {
+        "ar": "الْمَدِينَةِ",
+        "en": "the town"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does بَيْتُ الْمُعَلِّمِ mean \"the teacher's house\" when بَيْت has no الْـ?",
+     "a_en": "In a chain, the last noun makes the whole thing definite. Adding الْـ to بَيْت as well would be wrong: the first noun never takes it."
+    },
+    "selftest": [
+     {
+      "q_en": "What does مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ mean?",
+      "choices": [
+       "the headteacher's office",
+       "the manager of the school office",
+       "the school office"
+      ],
+      "answer": "the headteacher's office",
+      "why_en": "Read from the front: the office of the head of the school."
+     },
+     {
+      "q_en": "Which is right for \"the door of the room\"?",
+      "choices": [
+       "بَابُ الْغُرْفَةِ",
+       "الْبَابُ الْغُرْفَةِ",
+       "بَابُ الْغُرْفَةُ"
+      ],
+      "answer": "بَابُ الْغُرْفَةِ",
+      "why_en": "The first noun has no الْـ, and the second ends in -i."
+     },
+     {
+      "q_en": "In بَيْتُ الْمُعَلِّمِ الْجَدِيدُ, what is new?",
+      "choices": [
+       "the house",
+       "the teacher",
+       "both"
+      ],
+      "answer": "the house",
+      "why_en": "الْجَدِيدُ ends in -u, like بَيْتُ, so it describes the house."
+     }
+    ],
+    "phrases_ar": [
+     "بَابُ الْبَيْتِ",
+     "بَيْتُ الْمُعَلِّمِ"
+    ]
+   }
+  ],
+  "lesson.arabic-dual-sound-plurals": [
+   {
+    "id": "explainer.arabic-two-and-plurals",
+    "title_en": "Two of something, and plurals with endings: ـَانِ, ـُونَ, ـَات",
+    "family_en": "A form for exactly two, and the plurals made by adding an ending",
+    "course_words": [
+     "lexeme.arabic-dual-sound-plurals-1",
+     "lexeme.arabic-dual-sound-plurals-2",
+     "lexeme.arabic-dual-sound-plurals-3",
+     "lexeme.arabic-dual-sound-plurals-4",
+     "lexeme.arabic-dual-sound-plurals-5",
+     "lexeme.arabic-dual-sound-plurals-6"
+    ],
+    "table": [
+     {
+      "form_en": "two, as the subject",
+      "ar": "طَالِبَانِ",
+      "en": "two students"
+     },
+     {
+      "form_en": "two, otherwise",
+      "ar": "طَالِبَيْنِ",
+      "en": "two students"
+     },
+     {
+      "form_en": "two, from a word in ـَة",
+      "ar": "سَاعَتَانِ",
+      "en": "two hours"
+     },
+     {
+      "form_en": "men, as the subject",
+      "ar": "مُهَنْدِسُونَ",
+      "en": "engineers"
+     },
+     {
+      "form_en": "men, otherwise",
+      "ar": "مُهَنْدِسِينَ",
+      "en": "engineers"
+     },
+     {
+      "form_en": "women",
+      "ar": "طَالِبَات",
+      "en": "(women) students"
+     }
+    ],
+    "steps": [
+     "Arabic has a form for exactly two: add ـَانِ. طَالِب, a student; طَالِبَانِ, two students.",
+     "When the two aren't the subject (after a verb or a small word), the ending is ـَيْنِ: اِشْتَرَيْتُ قَلَمَيْنِ, I bought two pens.",
+     "A word in ـَة keeps a ت: سَاعَة, سَاعَتَانِ.",
+     "Some words for people add ـُونَ for men or a mixed group, or ـِينَ when they're not the subject: مُهَنْدِسُونَ, مُهَنْدِسِينَ.",
+     "For women, the ending is ـَات: طَالِبَات. Where other nouns end in -a, ـَات ends in -i: رَأَيْتُ الطَّالِبَاتِ.",
+     "Most nouns don't use these endings: they change inside instead, like كِتَاب, كُتُب. Learn each plural with its word."
+    ],
+    "examples": [
+     {
+      "ar": "قَضَيْنَا يَوْمَيْنِ فِي الْإِسْكَنْدَرِيَّةِ.",
+      "en": "We spent two days in Alexandria.",
+      "words": [
+       {
+        "ar": "قَضَيْنَا",
+        "en": "we spent"
+       },
+       {
+        "ar": "يَوْمَيْنِ",
+        "en": "two days (ـَيْنِ: not the subject)"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْإِسْكَنْدَرِيَّةِ",
+        "en": "Alexandria"
+       }
+      ]
+     },
+     {
+      "ar": "فِي شَارِعِنَا بَيْتَانِ قَدِيمَانِ.",
+      "en": "There are two old houses in our street.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "شَارِعِنَا",
+        "en": "our street"
+       },
+       {
+        "ar": "بَيْتَانِ",
+        "en": "two houses (ـَانِ: the subject)"
+       },
+       {
+        "ar": "قَدِيمَانِ",
+        "en": "old (two, to match)"
+       }
+      ]
+     },
+     {
+      "ar": "يَعْمَلُ فِي الشَّرِكَةِ مُهَنْدِسُونَ وَمُهَنْدِسَاتٌ.",
+      "en": "Men and women engineers work at the company.",
+      "words": [
+       {
+        "ar": "يَعْمَلُ",
+        "en": "work"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "الشَّرِكَةِ",
+        "en": "the company"
+       },
+       {
+        "ar": "مُهَنْدِسُونَ",
+        "en": "engineers (men)"
+       },
+       {
+        "ar": "وَمُهَنْدِسَاتٌ",
+        "en": "and engineers (women)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does بَيْتَانِ قَدِيمَانِ have the two-ending on both words?",
+     "a_en": "A describing word matches its noun in number too. Two houses, so \"old\" takes the two-ending as well: بَيْتَانِ قَدِيمَانِ."
+    },
+    "selftest": [
+     {
+      "q_en": "What does سَاعَتَانِ mean?",
+      "choices": [
+       "two hours",
+       "hours",
+       "an hour"
+      ],
+      "answer": "two hours",
+      "why_en": "ـَانِ makes two, and the ة of سَاعَة stays as ت."
+     },
+     {
+      "q_en": "Which is right for \"I visited two houses\"?",
+      "choices": [
+       "زُرْتُ بَيْتَيْنِ",
+       "زُرْتُ بَيْتَانِ",
+       "زُرْتُ بُيُوتَيْنِ"
+      ],
+      "answer": "زُرْتُ بَيْتَيْنِ",
+      "why_en": "The houses aren't the subject here, so the ending is ـَيْنِ, on the singular بَيْت."
+     },
+     {
+      "q_en": "Which plural ending is for a group of women?",
+      "choices": [
+       "ـَات",
+       "ـُونَ",
+       "ـَانِ"
+      ],
+      "answer": "ـَات",
+      "why_en": "ـُونَ is for men or a mixed group, and ـَانِ is for two."
+     }
+    ],
+    "phrases_ar": [
+     "اِشْتَرَيْتُ قَلَمَيْنِ",
+     "رَأَيْتُ الطَّالِبَاتِ",
+     "بَيْتَانِ قَدِيمَانِ"
+    ]
+   }
+  ],
+  "lesson.arabic-quantity-comparison": [
+   {
+    "id": "explainer.arabic-comparing",
+    "title_en": "Bigger, more, less: أَكْبَرُ مِنْ",
+    "family_en": "One pattern for comparing, with مِنْ for \"than\"",
+    "course_words": [
+     "lexeme.arabic-quantity-comparison-1",
+     "lexeme.arabic-quantity-comparison-2",
+     "lexeme.arabic-quantity-comparison-3",
+     "lexeme.arabic-quantity-comparison-4",
+     "lexeme.arabic-quantity-comparison-5",
+     "lexeme.arabic-quantity-comparison-6"
+    ],
+    "table": [
+     {
+      "form_en": "from كَبِير, big",
+      "ar": "أَكْبَرُ مِنْ",
+      "en": "bigger than"
+     },
+     {
+      "form_en": "from صَغِير, small",
+      "ar": "أَصْغَر",
+      "en": "smaller"
+     },
+     {
+      "form_en": "from كَثِير, many",
+      "ar": "أَكْثَر",
+      "en": "more"
+     },
+     {
+      "form_en": "from قَلِيل, few",
+      "ar": "أَقَلّ",
+      "en": "less, fewer"
+     },
+     {
+      "form_en": "from حَسَن, good",
+      "ar": "أَحْسَن",
+      "en": "better"
+     },
+     {
+      "form_en": "a whole comparison",
+      "ar": "الْقَرْيَةُ أَصْغَرُ مِنَ الْمَدِينَةِ",
+      "en": "The village is smaller than the town"
+     }
+    ],
+    "steps": [
+     "To compare, Arabic uses one pattern: أَ in front and the word's three letters after it. كَبِير, big; أَكْبَر, bigger.",
+     "\"Than\" is مِنْ, and the noun after it ends in -i: أَكْبَرُ مِنَ الْبَيْتِ, bigger than the house.",
+     "In a comparison with مِنْ, the form doesn't change for a feminine word or a plural: الْقَرْيَةُ أَصْغَرُ مِنَ الْمَدِينَةِ, with no ـَة.",
+     "English -er doesn't always match: \"better\" is أَحْسَن or أَفْضَل, and for some describing words Arabic uses أَكْثَر, more, instead."
+    ],
+    "examples": [
+     {
+      "ar": "الْقِطَارُ أَسْرَعُ مِنَ الْحَافِلَةِ.",
+      "en": "The train is faster than the bus.",
+      "words": [
+       {
+        "ar": "الْقِطَارُ",
+        "en": "the train"
+       },
+       {
+        "ar": "أَسْرَعُ",
+        "en": "faster (from سَرِيع, fast)"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "than"
+       },
+       {
+        "ar": "الْحَافِلَةِ",
+        "en": "the bus"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ الْقَرْيَةُ أَصْغَرُ مِنْ قَرْيَتِي.",
+      "en": "This village is smaller than my village.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْقَرْيَةُ",
+        "en": "village"
+       },
+       {
+        "ar": "أَصْغَرُ",
+        "en": "smaller (no ـَة)"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "than"
+       },
+       {
+        "ar": "قَرْيَتِي",
+        "en": "my village"
+       }
+      ]
+     },
+     {
+      "ar": "أَكَلْتُ أَقَلَّ مِنْ أَخِي.",
+      "en": "I ate less than my brother.",
+      "words": [
+       {
+        "ar": "أَكَلْتُ",
+        "en": "I ate"
+       },
+       {
+        "ar": "أَقَلَّ",
+        "en": "less"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "than"
+       },
+       {
+        "ar": "أَخِي",
+        "en": "my brother"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أَصْغَرُ, with no ـَة, for الْقَرْيَةُ, a feminine word?",
+     "a_en": "In a comparison with مِنْ, this form stays the same for every noun: masculine, feminine or plural. It's one describing word that doesn't match."
+    },
+    "selftest": [
+     {
+      "q_en": "Which means \"bigger than\"?",
+      "choices": [
+       "أَكْبَرُ مِنْ",
+       "كَبِيرٌ مِنْ",
+       "أَكْبَرُ فِي"
+      ],
+      "answer": "أَكْبَرُ مِنْ",
+      "why_en": "The أَـ pattern compares, and مِنْ is \"than\"."
+     },
+     {
+      "q_en": "Which says \"The car is faster than the bus\"?",
+      "choices": [
+       "السَّيَّارَةُ أَسْرَعُ مِنَ الْحَافِلَةِ",
+       "السَّيَّارَةُ أَسْرَعَةٌ مِنَ الْحَافِلَةِ",
+       "السَّيَّارَةُ سَرِيعَةٌ مِنَ الْحَافِلَةِ"
+      ],
+      "answer": "السَّيَّارَةُ أَسْرَعُ مِنَ الْحَافِلَةِ",
+      "why_en": "أَسْرَعُ stays the same for a feminine word, and سَرِيعَةٌ is just \"fast\"."
+     },
+     {
+      "q_en": "What does أَقَلّ mean?",
+      "choices": [
+       "less, fewer",
+       "more",
+       "better"
+      ],
+      "answer": "less, fewer",
+      "why_en": "أَقَلّ comes from قَلِيل, few. \"More\" is أَكْثَر, and \"better\" أَحْسَن."
+     }
+    ],
+    "phrases_ar": [
+     "أَكْبَرُ مِنَ الْبَيْتِ"
+    ]
+   },
+   {
+    "id": "explainer.arabic-three-to-ten",
+    "title_en": "Three to ten with a noun: أَرْبَعَةُ أَيَّامٍ, أَرْبَعُ سَاعَاتٍ",
+    "family_en": "The number comes first, the noun is plural, and the number takes the opposite gender",
+    "course_words": [
+     "lexeme.arabic-quantity-comparison-7",
+     "lexeme.arabic-quantity-comparison-8"
+    ],
+    "table": [
+     {
+      "form_en": "masculine noun (يَوْم)",
+      "ar": "أَرْبَعَةُ أَيَّامٍ",
+      "en": "four days"
+     },
+     {
+      "form_en": "feminine noun (سَاعَة)",
+      "ar": "أَرْبَعُ سَاعَاتٍ",
+      "en": "four hours"
+     },
+     {
+      "form_en": "masculine noun (رَجُل)",
+      "ar": "سَبْعَةُ رِجَالٍ",
+      "en": "seven men"
+     },
+     {
+      "form_en": "feminine noun (سَيَّارَة)",
+      "ar": "سَبْعُ سَيَّارَاتٍ",
+      "en": "seven cars"
+     },
+     {
+      "form_en": "masculine noun (طَالِب)",
+      "ar": "خَمْسَةُ طُلَّابٍ",
+      "en": "five students"
+     },
+     {
+      "form_en": "feminine noun (لُغَة)",
+      "ar": "خَمْسُ لُغَاتٍ",
+      "en": "five languages"
+     }
+    ],
+    "steps": [
+     "From three to ten, the number comes first, and the noun after it is plural and ends in -in: أَرْبَعَةُ أَيَّامٍ, four days.",
+     "Then a surprise: the number takes the opposite gender. With a masculine noun like يَوْم, it has ـَة: أَرْبَعَةُ. With a feminine noun like سَاعَة, it has none: أَرْبَعُ.",
+     "Go by the singular: يَوْم is masculine, even though its plural أَيَّام looks different.",
+     "One, two and eleven upward follow other rules, so for now learn the phrases you need and check new ones."
+    ],
+    "examples": [
+     {
+      "ar": "بَقِيتُ فِي الْقَرْيَةِ أَرْبَعَةَ أَيَّامٍ.",
+      "en": "I stayed in the village for four days.",
+      "words": [
+       {
+        "ar": "بَقِيتُ",
+        "en": "I stayed"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْقَرْيَةِ",
+        "en": "the village"
+       },
+       {
+        "ar": "أَرْبَعَةَ",
+        "en": "four (ـَة: يَوْم is masculine)"
+       },
+       {
+        "ar": "أَيَّامٍ",
+        "en": "days"
+       }
+      ]
+     },
+     {
+      "ar": "فِي بَيْتِنَا خَمْسُ غُرَفٍ.",
+      "en": "Our house has five rooms.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "بَيْتِنَا",
+        "en": "our house"
+       },
+       {
+        "ar": "خَمْسُ",
+        "en": "five (no ـَة: غُرْفَة is feminine)"
+       },
+       {
+        "ar": "غُرَفٍ",
+        "en": "rooms"
+       }
+      ]
+     },
+     {
+      "ar": "يَدْرُسُ فِي صَفِّنَا سَبْعَةُ طُلَّابٍ.",
+      "en": "Seven students study in our class.",
+      "words": [
+       {
+        "ar": "يَدْرُسُ",
+        "en": "study"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "صَفِّنَا",
+        "en": "our class"
+       },
+       {
+        "ar": "سَبْعَةُ",
+        "en": "seven (ـَة: طَالِب is masculine)"
+       },
+       {
+        "ar": "طُلَّابٍ",
+        "en": "students"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أَرْبَعَةُ, with ـَة, for days, when يَوْم is masculine?",
+     "a_en": "From three to ten, the number takes the opposite gender to the singular noun. It's an old rule with no simple reason, so learn it as it is and check the singular each time."
+    },
+    "selftest": [
+     {
+      "q_en": "Which is right for \"four hours\"?",
+      "choices": [
+       "أَرْبَعُ سَاعَاتٍ",
+       "أَرْبَعَةُ سَاعَاتٍ",
+       "أَرْبَعُ سَاعَةٍ"
+      ],
+      "answer": "أَرْبَعُ سَاعَاتٍ",
+      "why_en": "سَاعَة is feminine, so the number has no ـَة, and the noun is plural."
+     },
+     {
+      "q_en": "Which is right for \"seven days\"?",
+      "choices": [
+       "سَبْعَةُ أَيَّامٍ",
+       "سَبْعُ أَيَّامٍ",
+       "سَبْعَةُ يَوْمٍ"
+      ],
+      "answer": "سَبْعَةُ أَيَّامٍ",
+      "why_en": "يَوْم is masculine, so the number takes ـَة, and the noun is plural."
+     },
+     {
+      "q_en": "What does خَمْسُ لُغَاتٍ mean?",
+      "choices": [
+       "five languages",
+       "fifteen languages",
+       "the fifth language"
+      ],
+      "answer": "five languages",
+      "why_en": "خَمْسُ is five, and لُغَات is the plural of لُغَة."
+     }
+    ],
+    "phrases_ar": []
+   }
   ]
  }
 }
