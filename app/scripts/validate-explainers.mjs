@@ -116,7 +116,7 @@ const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course
 // The course's own order, for "where this leads": a later lesson.
 const lessonAt = new Map(course.lessons.map((l, i) => [l.id, i]));
 const only = (where, o, allowed) => { if (o && typeof o === 'object') for (const k of Object.keys(o)) if (!allowed.includes(k)) fail(where, `unknown field ${k}`); };
-const ids = new Set(), voiced = new Set(), shown = new Set(), linked = new Map(), home = new Map(), leads = [];
+const ids = new Set(), voiced = new Set(), shown = new Set(), linked = new Map(), home = new Map(), cards = new Map(), leads = [];
 let count = 0;
 if (!file || typeof file.lessons !== 'object') fail('the file', 'no lessons');
 for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
@@ -128,7 +128,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     for (const k of Object.keys(e)) if (!ENTRY.includes(k)) fail(at, `unknown field ${k}`);
     if (!/^explainer\.arabic-[a-z0-9-]{1,40}$/.test(e.id ?? '')) fail(at, 'an id is explainer.arabic- and a short name');
     if (ids.has(e.id)) fail(at, 'id used twice');
-    ids.add(e.id); home.set(e.id, lessonId);
+    ids.add(e.id); home.set(e.id, lessonId); cards.set(e.id, e);
     // A root is optional (a topic such as case endings has none), but comes with its reading.
     if (e.root_ar !== undefined || e.root_reading !== undefined) {
       if (!ROOT_FORM.test(e.root_ar ?? '')) fail(at, 'the root is written like ك-ت-ب');
@@ -158,7 +158,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
         only(`${at}, leads to ${i + 1}`, l, ['id', 'en']);
         if (!text(l?.en)) fail(`${at}, leads to ${i + 1}`, 'say how it builds on this one'); else labels.push([`leads to ${i + 1}`, l.en]);
         if (e.leads_to.findIndex(m => m?.id === l?.id) !== i) fail(`${at}, leads to ${i + 1}`, `${l?.id} is listed twice`);
-        leads.push({ at, from: lessonId, self: e.id, to: l?.id, i });
+        leads.push({ at, from: lessonId, self: e.id, to: l?.id, i, secrets });
       });
     }
     // Table: one Arabic piece per row, English around it.
@@ -203,6 +203,8 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
       only(where, q, ['q_en', 'choices', 'answer', 'why_en', 'hint_en']);
       if (!Array.isArray(q.choices) || q.choices.length < 2 || q.choices.length > 4 || new Set(q.choices).size !== q.choices.length) fail(where, 'two to four different choices');
       else if (!q.choices.includes(q.answer)) fail(where, 'the answer must be one of the choices');
+      // A hint comes before the answer, so it mustn't contain it.
+      if (text(q.hint_en) && text(q.answer) && (onePiece(q.answer) ? runs(q.hint_en).includes(runs(q.answer)[0]) : q.hint_en.toLowerCase().includes(q.answer.toLowerCase()))) fail(where, 'the hint gives away its own answer');
       for (const c of q.choices ?? []) if (text(c) && onePiece(c)) {
         checkRun(where, runs(c)[0]); shown.add(runs(c)[0]);
         if (c === q.answer && !cited(runs(c)[0])) voiced.add(runs(c)[0]);
@@ -231,11 +233,14 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
   }
 }
 
-// Each "where this leads" names an explainer in a later lesson of the course.
-for (const { at, from, self, to, i } of leads) {
-  if (to === self) fail(`${at}, leads to ${i + 1}`, 'not itself');
-  else if (!home.has(to)) fail(`${at}, leads to ${i + 1}`, `${to} isn't an explainer`);
-  else if (!(lessonAt.get(home.get(to)) > lessonAt.get(from))) fail(`${at}, leads to ${i + 1}`, `${to} must be in a later lesson`);
+// Each "where this leads" names an explainer in a later lesson of the course. The link shows that explainer's title
+// on this lesson's page, so the title mustn't give away this lesson's check either.
+for (const { at, from, self, to, i, secrets } of leads) {
+  const where = `${at}, leads to ${i + 1}`;
+  if (to === self) fail(where, 'not itself');
+  else if (!home.has(to)) fail(where, `${to} isn't an explainer`);
+  else if (!(lessonAt.get(home.get(to)) > lessonAt.get(from))) fail(where, `${to} must be in a later lesson`);
+  else for (const run of runs(cards.get(to).title_en ?? '')) for (const secret of secrets) if (contains(run, secret)) fail(where, `its link shows ${run}, which gives away the lesson check's answer (${secret})`);
 }
 
 if (withReadings && !problems.length) {
@@ -255,4 +260,4 @@ if (problems.length) {
   console.error(`Arabic explainers: ${problems.length} problem${problems.length === 1 ? '' : 's'}\n- ${problems.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away${leads.length ? `; ${new Set(leads.map(l => l.self)).size} lead on to a later explainer` : ''}.`);
+console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away${leads.length ? `; ${new Set(leads.map(l => l.self)).size} ${new Set(leads.map(l => l.self)).size === 1 ? 'leads' : 'lead'} on to a later explainer` : ''}.`);

@@ -457,7 +457,11 @@ check('vowelled and unvowelled versions are both kept where the package has them
   badExp('lead-field', f => { sayOf(f).leads_to[0].why = 'Extra.'; }, 'unknown field', 'an unknown field in a "Where this leads" entry');
   badExp('lead-no-en', f => { delete sayOf(f).leads_to[0].en; }, 'say how it builds on this one', 'a "Where this leads" entry without its English line');
   badExp('hint-vowel', f => { sayOf(f).selftest[0].hint_en = 'Think of قل here.'; }, 'is not fully vowelled', 'a self-test hint holding unvowelled Arabic');
-  check('the real explainers file reports how many cards lead on to a later explainer: 50', realExp.out.includes('; 50 lead on to a later explainer.'), realExp.out);
+  badExp('lead-title-secret', f => { leadOf(f, 'lesson.arabic-plans-dialogue', 'explainer.arabic-making-plans').leads_to = [{ id: 'explainer.arabic-sorting-it-out', en: 'Sorting something out.' }]; }, 'its link shows', 'a "Where this leads" link whose target title (هَلْ يُنَاسِبُكَ؟) gives away the source lesson\'s check');
+  badExp('lead-twice', f => { sayOf(f).leads_to = [{ id: 'explainer.arabic-reporting', en: 'One.' }, { id: 'explainer.arabic-reporting', en: 'Two.' }]; }, 'is listed twice', 'the same "Where this leads" target listed twice');
+  badExp('lead-vowel', f => { sayOf(f).leads_to[0].en = 'قال in reporting.'; }, 'is not fully vowelled', 'a "Where this leads" line holding unvowelled Arabic');
+  badExp('hint-answer', f => { const q = sayOf(f).selftest[0]; q.hint_en = `Think of ${q.answer} here.`; }, 'the hint gives away its own answer', 'a self-test hint containing its own question\'s answer');
+  check('the real explainers file reports how many cards lead on to a later explainer: 49', realExp.out.includes('; 49 lead on to a later explainer.'), realExp.out);
   fs.rmSync(expTemp, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);

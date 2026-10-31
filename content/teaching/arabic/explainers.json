@@ -9981,12 +9981,6 @@
      "هَلْ نَلْتَقِي غَدًا؟",
      "بَدَلًا مِنْ",
      "إِذَنْ نَلْتَقِي يَوْمَ السَّبْتِ فِي الْمَقْهَى"
-    ],
-    "leads_to": [
-     {
-      "id": "explainer.arabic-sorting-it-out",
-      "en": "Sorting something out, and checking what was meant."
-     }
     ]
    }
   ],

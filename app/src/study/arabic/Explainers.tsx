@@ -114,7 +114,7 @@ function ExplainerCard({ e, book }: { e: Explainer; book: Explainers | null }) {
     {leads.length > 0 && <>
       <H>Where this leads</H>
       <ul className="list-none p-0 m-0 grid gap-2" data-ar-explainer-leads="">{leads.map(l => <li key={l.id} className="leading-relaxed" data-ar-explainer-lead={l.id}>
-        <InlineLink href={'#study/arabic/' + l.to!.lessonId} data-ar-explainer-lead-link={l.id} className="text-primary font-semibold underline-offset-2 hover:underline"
+        <InlineLink href={'#study/arabic/' + l.to!.lessonId} data-ar-explainer-lead-link={l.id} className="inline-flex items-center min-h-11 text-primary font-semibold underline-offset-2 hover:underline"
           onClick={follow(l.to!.lessonId, l.id)}><WordNote text={l.to!.e.title_en} /></InlineLink>
         <span className="block text-[15px] text-fg-2"><WordNote text={l.en} /></span>
       </li>)}</ul>
@@ -132,13 +132,17 @@ function Choice({ text }: { text: string }) {
 }
 function SelfTest({ q, n }: { q: Explainer['selftest'][number]; n: number }) {
   const [tried, setTried] = useState<string[]>([]);
-  const last = tried.at(-1) ?? null, right = last === q.answer, done = right || tried.length >= 2;
+  // A second go only while two or more choices are left: on a two-choice question a wrong pick shows the answer.
+  const last = tried.at(-1) ?? null, right = last === q.answer, done = right || tried.length >= Math.min(2, q.choices.length - 1);
   const said = useRef<HTMLParagraphElement>(null);
   useEffect(() => { if (tried.length) said.current?.focus(); }, [tried.length]);
   const state = !tried.length ? 'open' : right ? 'right' : done ? 'wrong' : 'retry';
   const note = 'text-[15px] mt-2 mb-0 focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm';
   return <li data-ar-explainer-q={n} data-state={state}>
     <p className="mt-0 mb-2"><span className="font-semibold">{n}. </span><WordNote text={q.q_en} /></p>
+    {/* Above the choices, so the next Tab from the hint reaches the choices left to try. */}
+    {state === 'retry' && <p ref={said} tabIndex={-1} className={`${note} mb-2`} data-ar-explainer-hint="">
+      <span className="font-semibold">Not quite. </span>{q.hint_en ? <><WordNote text={q.hint_en} /> </> : null}Have another go.</p>}
     <div className="grid gap-2">{q.choices.map(c => {
       const isRight = c === q.answer, mine = tried.includes(c);
       if (!done && !mine) return <button key={c} type="button" data-action="ar-explainer-choose" onClick={() => setTried(t => [...t, c])}
@@ -149,8 +153,6 @@ function SelfTest({ q, n }: { q: Explainer['selftest'][number]; n: number }) {
         {shownRight ? '✓ ' : mine ? '✗ ' : ''}<Choice text={c} />{mine && <span className="text-sm opacity-80 font-normal"> (your choice)</span>}
       </div>;
     })}</div>
-    {state === 'retry' && <p ref={said} tabIndex={-1} className={note} data-ar-explainer-hint="">
-      <span className="font-semibold">Not quite. </span>{q.hint_en ? <><WordNote text={q.hint_en} /> </> : null}Have another go.</p>}
     {done && <p ref={said} tabIndex={-1} className={note} data-ar-explainer-why="">
       <span className="font-semibold">{right ? 'Right. ' : 'Not quite. '}</span><WordNote text={q.why_en} /></p>}
   </li>;
