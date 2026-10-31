@@ -25,43 +25,51 @@ type Unit = { c: string; m: string };
 const units = (s: string): Unit[] => [...s.matchAll(/([ء-غف-يٱ])([\u064b-\u065f\u0670]*)/g)].map(m => ({ c: m[1], m: m[2] }));
 const hasVowel = (s: string) => /[ًٌٍَُِْٰ]/.test(s);
 const bare = (u: Unit | undefined) => !!u && !/[ًٌٍَُِّٰ]/.test(u.m);
-// A joining alif (hamzat al-waṣl): ٱ, or a bare ا followed by a letter with sukūn (اسْمُ, اشْتَرَى, الْقَمَرُ) or, for the
-// article before a sun letter, by a bare ل and a doubled letter (الشَّمْسُ). It's said only where speech starts; after a
-// vowel it's silent. A long ā never stands before a sukūn, so this can't be one.
-const wasl = (a: Unit[], i: number) => a[i]?.c === 'ٱ' || (a[i]?.c === 'ا' && !/[ًٌٍَُِْ]/.test(a[i].m) && !!a[i + 1]
-  && (a[i + 1].m.includes('ْ') || (a[i + 1].c === 'ل' && !a[i + 1].m && !!a[i + 2]?.m.includes('ّ'))));
+// A joining alif (hamzat al-waṣl): ٱ, or a bare ا before a letter with sukūn or a doubled one (اسْمُ, اتَّصَلَ, الْقَمَرُ,
+// الشَّمْسُ). It's said only where speech starts; after a vowel it's silent. `joins` looks at the alif and what follows;
+// `wasl` also asks where it is: at the start of the word, or after وَ, فَ, بِ or لِ, and not before the word's last letter.
+// Anywhere else a bare ا is a long ā (قَالَ, دَابَّةٌ, كِتَابْ, أَلْمَانْيَا), and كَ is left out (كَانْتُ is kāntu).
+const joins = (a: Unit[], i: number) => a[i]?.c === 'ٱ' || (a[i]?.c === 'ا' && !/[ًٌٍَُِْ]/.test(a[i].m) && !!a[i + 1]
+  && i + 1 < a.length - 1 && (/[ّْ]/.test(a[i + 1].m) || (a[i + 1].c === 'ل' && !a[i + 1].m && !!a[i + 2]?.m.includes('ّ'))));
+const proclitic = (u: Unit) => (['و', 'ف'].includes(u.c) && u.m.includes('َ')) || (['ب', 'ل'].includes(u.c) && u.m.includes('ِ'));
+const wasl = (a: Unit[], i: number) => i <= 2 && a.slice(0, i).every(proclitic) && joins(a, i);
 
 // `afterVowel`: the word follows another that ends in a vowel, with only a space between, so its joining alif is
 // silent: قُلِ الْحَقَّ is quli l-ḥaqqa, الَّتِي اشْتَرَيْتُهَا is allatī shtaraytuhā. (The long vowel before it is kept as
-// written: fī l-bayti.)
+// written: fī l-bayti.) An authored reading loses its first vowel the same way (alladhī, after a vowel lladhī).
 function word(written: string, afterVowel = false): Reading {
   const word = written.normalize('NFC').replaceAll('ـ', '');
-  if (readings[readingKey(word)]) return { text: readings[readingKey(word)], incomplete: false };
+  const authored = readings[readingKey(word)];
+  if (authored) return { text: afterVowel && /^(ٱ|ا(?![ًٌٍَُِْ]))/.test(word) && /^[aiu]/.test(authored) ? authored.slice(1) : authored, incomplete: false };
   if (names[word]) return { text: names[word], incomplete: false };
   if (word === 'كتب') return { text: 'kataba / kutub / kutiba…', incomplete: false, note: 'Several readings are possible; use the sentence context.' };
   const a = units(word);
-  if (!a.length) return { text: word.replace(/[ًٌٍَُِْٰ]/g, c => vowels[c] ?? 'ā'), incomplete: false };
+  if (!a.length) return { text: word.replace(/[ًٌٍَُِْٰ]/g, c => vowels[c] ?? 'ā'), incomplete: false };
   let prefix = '', start = 0;
   // Joined wa-/fa- and bi-/ka-, and the contracted li-l- article.
   if (['و', 'ف'].includes(a[0].c) && a[0].m.includes('َ') && a.length > 2) { prefix = letters[a[0].c] + 'a-'; start++; }
   if (a[start] && ['ب', 'ك'].includes(a[start].c) && hasVowel(a[start].m) && ['ا', 'ٱ'].includes(a[start + 1]?.c) && a[start + 2]?.c === 'ل') {
     prefix += letters[a[start].c] + (a[start].m.includes('ِ') ? 'i-' : 'a-'); start++;
   }
-  // The article, not a verb's joining alif before ل: اِلْتَقَى (its alif has a vowel) or الْتَقَى (ل with sukūn before a sun
-  // letter that isn't doubled) is form VIII, iltaqā.
-  const verbL = !!a[start + 1]?.m.includes('ْ') && sun.has(a[start + 2]?.c ?? '') && !a[start + 2]?.m.includes('ّ');
-  let article = ['ا', 'ٱ'].includes(a[start]?.c) && !/[ُِ]/.test(a[start]?.m ?? '') && a[start + 1]?.c === 'ل' && !verbL;
+  const alifL = ['ا', 'ٱ'].includes(a[start]?.c) && a[start + 1]?.c === 'ل';
+  // The relative pronouns write the article's ل and their own as one doubled ل: الَّذِي, الَّذِينَ, alladhīna.
+  const relative = alifL && a[start + 1].m.includes('ّ');
+  // Form VIII of a root beginning with ل, not the article: لْ, or an alif with a vowel, before an undoubled ت (اِلْتَقَى, iltaqā).
+  const formVIII = alifL && a[start + 2]?.c === 'ت' && !a[start + 2].m.includes('ّ') && (a[start + 1].m.includes('ْ') || /[ُِ]/.test(a[start].m));
+  let article = alifL && !relative && !formVIII;
   const contracted = a[start]?.c === 'ل' && a[start].m.includes('ِ') && a[start + 1]?.c === 'ل';
   if (contracted) { prefix += 'li-'; article = true; }
-  if (article && a[start + 2]) {
-    start += 2;
+  if (relative) { prefix += prefix || afterVowel ? '' : 'a'; start++; }
+  else if (article && a[start + 2]) {
+    // After لِ, a doubled second ل is the noun's own first letter (لِلَّيْلِ, li-l-layli).
+    start += contracted && a[start + 1].m.includes('ّ') ? 1 : 2;
     const first = a[start];
     if (sun.has(first.c)) {
       prefix += (prefix || afterVowel ? '' : 'a') + letters[first.c] + '-';
       first.m = first.m.replace('ّ', ''); // assimilation is already represented by the prefix
     } else prefix += prefix || afterVowel ? 'l-' : 'al-';
     // Before a word's own joining alif the article's ل takes i, and that alif is silent: الِامْتِحَانُ, al-imtiḥānu.
-    if (a[start - 1].m.includes('ِ') && wasl(a, start)) { prefix += 'i'; start++; }
+    if (!a[start - 1].m.replace('ِ', '') && joins(a, start)) { prefix += 'i'; start++; }
   } else if (start) { prefix = ''; start = 0; }
   let out = prefix, incomplete = false;
   for (let i = start; i < a.length; i++) {
@@ -72,8 +80,7 @@ function word(written: string, afterVowel = false): Reading {
     if (c === 'آ') { out += (i === start ? '' : 'ʾ') + 'ā'; continue; }
     // A joining alif: silent after a vowel, in this word (وَاسْتَخْدَمَ, wastakhdama) or the one before; where speech
     // starts its vowel isn't written, so the reading is incomplete rather than a guess.
-    if (wasl(a, i) && (i > start || afterVowel)) continue;
-    if (wasl(a, i) && c === 'ا') { incomplete = true; continue; }
+    if (wasl(a, i)) { if (i === 0 && !afterVowel) incomplete = true; continue; }
     let consonant = letters[c] ?? (c === 'ة' ? (hasVowel(m) ? 't' : '') : c === 'ى' ? 'ā' : '');
     if ((c === 'أ' || c === 'إ') && i === start) consonant = '';
     if ((c === 'ا' || c === 'ٱ') && i === start) consonant = '';

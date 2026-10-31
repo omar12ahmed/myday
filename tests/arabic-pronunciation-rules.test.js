@@ -23,13 +23,25 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
     ['قُلِ الْحَقَّ', 'quli l-ḥaqqa'], ['فِي الْبَيْتِ', 'fī l-bayti'], ['عَنِ الطَّرِيقِ', 'ʿani ṭ-ṭarīqi'],
     ['الَّتِي اشْتَرَيْتُهَا', 'allatī shtaraytuhā'], ['مَا اسْمُ الْمَكَانِ؟', 'mā smu l-makāni?'], ['وَاسْتَخْدَمَ', 'wastakhdama'],
     ['أَنَّ الِامْتِحَانَ', 'anna l-imtiḥāna'], ['بِٱلنَّجَاحِ', 'bi-n-najāḥi'], ['بِٱلْقَلَمِ', 'bi-l-qalami'], ['فِي ٱلْبَيْتِ', 'fī l-bayti'],
-    ['اِلْتَقَى', 'iltaqā'], ['مَاذَا قُلْتَ، الْيَوْمَ', 'mādhā qulta, al-yawma'], ['هَذَا', 'hādhā'], ['هَذِهِ', 'hādhihi'],
+    ['اِلْتَقَى', 'iltaqā'], ['مَاذَا قُلْتَ، الْيَوْمَ', 'mādhā qulta, al-yawma'],
+    // …but a long ā stays long, before a sukūn or a doubled letter, or after كَ (kāntu is a wrong answer on purpose).
+    ['كَانْتُ', 'kāntu'], ['كِتَابْ', 'kitāb'], ['فِي الصَّبَاحْ', 'fī ṣ-ṣabāḥ'], ['أَلْمَانْيَا', 'almānyā'], ['حَارَّةٌ', 'ḥārratun'],
+    ['وَاحِدٌ', 'wāḥidun'], ['وَافَقَ', 'wāfaqa'],
+    // No joining after tanween or a sukūn; a joining alif after a prefix, before a doubled letter, after the plain article.
+    ['كِتَابٌ الْيَوْمَ', 'kitābun al-yawma'], ['مِنْ الْبَيْتِ', 'min al-bayti'], ['ثُمَّ الْتَقَى', 'thumma ltaqā'], ['فِي اللَّيْلِ', 'fī l-layli'],
+    ['بِاسْمِ', 'bismi'], ['لِلِاسْتِخْدَامِ', 'li-l-istikhdāmi'], ['فَاسْأَلُونِي', 'fasʾalūnī'], ['وَاتَّفَقَ', 'wattafaqa'],
+    ['هِيَ اتَّصَلَتْ', 'hiya ttaṣalat'], ['فِي الاسْتِخْدَامِ', 'fī l-istikhdāmi'],
+    // The relative pronouns' doubled ل, a doubled ل after لِ, an authored reading after a vowel, a misspelt article.
+    ['الَّذِينَ', 'alladhīna'], ['الطُّلَّابُ الَّذِينَ نَجَحُوا', 'aṭ-ṭullābu lladhīna najaḥū'], ['وَالَّذِي', 'wa-lladhī'],
+    ['لِلَّيْلِ', 'li-l-layli'], ['أَيْنَ الْقَلَمُ الَّذِي', 'ayna l-qalamu lladhī'], ['مَا اسْمُكَ', 'mā smuka'], ['الْشَمْسُ', 'ash-shamsu'],
+['هَذَا', 'hādhā'], ['هَذِهِ', 'hādhihi'],
     ['ذَلِكَ', 'dhālika'], ['لَكِنَّ', 'lākinna'], ['الَّذِي', 'alladhī'], ['اسْمِي', 'ismī'],
   ]) { const r = t(ar); check(`${ar} → ${latin}`, r.text === latin && !r.incomplete); }
   check('Unicode mark order cannot change a doubled consonant', t('دَرَ\u0651سَ').text === t('دَرّ\u064eسَ').text);
   check('unvowelled كتب keeps several readings instead of choosing a meaning', t('كتب').text.includes('kataba / kutub') && !!t('كتب').note);
   check('unknown missing vowels are flagged instead of invented', t('الجملة').incomplete && t('الجملة').text.includes('['));
   check('a joining alif where speech starts, without its vowel, is flagged, not read as a long ā (اسْمُ)', t('اسْمُ').incomplete && !t('اسْمُ').text.includes('ā'));
+  check('a line break is a break too: the article is said again on the next line', t('قُلِ\nالْحَقَّ').text === 'quli\nal-ḥaqqa');
   check('unsupported Arabic-script letters are not passed off as Latin pronunciation', t('پژ').incomplete);
   check('Arabic questions and numbers keep their order', t('أَيْنَ؟ ١٢').text === 'ayna? 12');
   const json = p => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
