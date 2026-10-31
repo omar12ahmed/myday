@@ -1,6 +1,7 @@
 # Ask MyDay: today's conversation kept until you close the day
 
-**Status:** agreed (31 Oct 2026): the owner's decisions are in §4. Being built. It follows the owner's choice
+**Status:** built and reviewed, with the owner's go-ahead (31 Oct 2026; decisions in §4); release 1.107.0. No server
+change. It follows the owner's choice
 of "Keep today's conversation" after 1.104.0 (`ask-conversation.md`), where a conversation is forgotten when Ask
 MyDay's panel closes.
 

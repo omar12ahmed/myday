@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.107.0 — Carry on today's Ask MyDay conversation:** close Ask MyDay and open + again later today, on any page, and
+a line at the top offers to carry the conversation on ("Your Ask MyDay conversation from 10:42 (3 messages)" ·
+Carry on). Carry on brings back the thread with a reply box; replies see the page you're on now. The last answer's
+suggestions come back as text: ask for them again to add them, checked against your data as it is then. A new
+question replaces it, and it's forgotten at midnight. It's kept on this device only (not synced, exported or backed
+up) and forgotten by Start over, either Undo, signing out, Delete everything, or anything being made private since
+(an answer might name it). What MyDay knows says so (`../specs/ask-keep-conversation.md`). No server change; going
+back to 1.106.0 is safe (the kept copy is simply not offered).
 **1.106.0 — Areas and an archive for projects:** a project can now be in an **area** — Home, Work, a business idea,
 Study — made as you go (About it → Edit → Area: pick one you've used or type a new one). Each new area takes the next of
 eight soft colours made for light and dark, always shown with its name, never alone. Above your projects, **All · Home ·
