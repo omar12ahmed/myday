@@ -21981,6 +21981,1606 @@
      "اِعْتَمَدَ عَلَى"
     ]
    }
+  ],
+  "lesson.arabic-fusha-register": [
+   {
+    "id": "explainer.arabic-fusha-and-dialects",
+    "title_en": "Arabic and its kinds: الْفُصْحَى and the dialects",
+    "family_en": "The words for formal Arabic, everyday Arabic and the language you're learning",
+    "table": [
+     {
+      "form_en": "formal Arabic",
+      "ar": "الْعَرَبِيَّةُ الْفُصْحَى",
+      "en": "formal Arabic, Fuṣḥā"
+     },
+     {
+      "form_en": "a language",
+      "ar": "لُغَة",
+      "en": "a language"
+     },
+     {
+      "form_en": "Arabic",
+      "ar": "الْعَرَبِيَّة",
+      "en": "Arabic (the language)"
+     },
+     {
+      "form_en": "a dialect",
+      "ar": "لَهْجَة",
+      "en": "a dialect, a regional variety"
+     },
+     {
+      "form_en": "everyday Arabic",
+      "ar": "الْعَامِّيَّة",
+      "en": "everyday spoken Arabic"
+     },
+     {
+      "form_en": "I speak",
+      "ar": "أَتَكَلَّمُ",
+      "en": "I speak"
+     },
+     {
+      "form_en": "a little",
+      "ar": "قَلِيلًا",
+      "en": "a little"
+     }
+    ],
+    "steps": [
+     "الْفُصْحَى is formal Arabic: the Arabic of books, the news, education and prepared speeches, shared across the Arab world. This course teaches its modern form, Modern Standard Arabic.",
+     "Each region also has its own لَهْجَة, dialect, for everyday talk. Together they're called الْعَامِّيَّة, everyday Arabic.",
+     "Many speakers mix the two. When you listen, note which you're hearing: Fuṣḥā, a dialect, or a mix."
+    ],
+    "examples": [
+     {
+      "ar": "أَتَكَلَّمُ الْعَرَبِيَّةَ قَلِيلًا.",
+      "en": "I speak Arabic a little.",
+      "words": [
+       {
+        "ar": "أَتَكَلَّمُ",
+        "en": "I speak"
+       },
+       {
+        "ar": "الْعَرَبِيَّةَ",
+        "en": "Arabic"
+       },
+       {
+        "ar": "قَلِيلًا",
+        "en": "a little"
+       }
+      ]
+     },
+     {
+      "ar": "أَدْرُسُ الْفُصْحَى.",
+      "en": "I'm studying Fuṣḥā.",
+      "words": [
+       {
+        "ar": "أَدْرُسُ",
+        "en": "I study"
+       },
+       {
+        "ar": "الْفُصْحَى",
+        "en": "Fuṣḥā, formal Arabic"
+       }
+      ]
+     },
+     {
+      "ar": "لِكُلِّ بَلَدٍ لَهْجَتُهُ.",
+      "en": "Each country has its own dialect.",
+      "words": [
+       {
+        "ar": "لِكُلِّ",
+        "en": "for every: \"every … has\""
+       },
+       {
+        "ar": "بَلَدٍ",
+        "en": "country"
+       },
+       {
+        "ar": "لَهْجَتُهُ",
+        "en": "its dialect"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does الْفُصْحَى have الْـ, like الْعَرَبِيَّةُ?",
+     "a_en": "الْفُصْحَى, \"the most eloquent\", describes الْعَرَبِيَّة, and a describing word takes الْـ when its noun does: الْعَرَبِيَّةُ الْفُصْحَى. On its own, الْفُصْحَى is short for the whole name."
+    },
+    "selftest": [
+     {
+      "q_en": "Which word means formal Arabic, the Arabic of books and the news?",
+      "choices": [
+       "الْفُصْحَى",
+       "الْعَامِّيَّة",
+       "لُغَة"
+      ],
+      "answer": "الْفُصْحَى",
+      "why_en": "It's the formal Arabic shared across the Arab world."
+     },
+     {
+      "q_en": "What is a لَهْجَة?",
+      "choices": [
+       "a dialect",
+       "a language",
+       "a book"
+      ],
+      "answer": "a dialect",
+      "why_en": "Each region has its own, for everyday talk."
+     },
+     {
+      "q_en": "What does قَلِيلًا mean?",
+      "choices": [
+       "a little",
+       "a lot",
+       "today"
+      ],
+      "answer": "a little",
+      "why_en": "أَتَكَلَّمُ الْعَرَبِيَّةَ قَلِيلًا: I speak Arabic a little."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-standard-and-accents",
+      "en": "Standard Arabic beside the dialects and accents you'll hear."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-goal-baseline": [
+   {
+    "id": "explainer.arabic-what-i-can-do",
+    "title_en": "Saying what you can do: أَقْرَأُ, أَفْهَمُ, أَتَكَلَّمُ",
+    "family_en": "Verbs for the four skills, with \"I\" and \"not\"",
+    "table": [
+     {
+      "form_en": "I read",
+      "ar": "أَقْرَأُ",
+      "en": "I read"
+     },
+     {
+      "form_en": "I write",
+      "ar": "أَكْتُبُ",
+      "en": "I write"
+     },
+     {
+      "form_en": "I listen",
+      "ar": "أَسْتَمِعُ",
+      "en": "I listen"
+     },
+     {
+      "form_en": "I speak",
+      "ar": "أَتَكَلَّمُ",
+      "en": "I speak"
+     },
+     {
+      "form_en": "I understand",
+      "ar": "أَفْهَمُ",
+      "en": "I understand"
+     },
+     {
+      "form_en": "not",
+      "ar": "لَا أَفْهَمُ",
+      "en": "I don't understand"
+     },
+     {
+      "form_en": "a little",
+      "ar": "قَلِيلًا",
+      "en": "a little"
+     }
+    ],
+    "steps": [
+     "Check the four skills one at a time: reading, listening, speaking and writing. You may read well and still find listening hard.",
+     "A present verb that starts with أَ is about \"I\": أَقْرَأُ, I read; أَكْتُبُ, I write.",
+     "لَا before it makes it \"not\": لَا أَفْهَمُ, I don't understand.",
+     "Write down the result for each skill, with any help you used."
+    ],
+    "examples": [
+     {
+      "ar": "أَقْرَأُ وَأَكْتُبُ قَلِيلًا.",
+      "en": "I read and write a little.",
+      "words": [
+       {
+        "ar": "أَقْرَأُ",
+        "en": "I read"
+       },
+       {
+        "ar": "وَأَكْتُبُ",
+        "en": "and I write"
+       },
+       {
+        "ar": "قَلِيلًا",
+        "en": "a little"
+       }
+      ]
+     },
+     {
+      "ar": "أَفْهَمُ، لَكِنْ لَا أَتَكَلَّمُ.",
+      "en": "I understand, but I don't speak.",
+      "words": [
+       {
+        "ar": "أَفْهَمُ",
+        "en": "I understand"
+       },
+       {
+        "ar": "لَكِنْ",
+        "en": "but"
+       },
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "أَتَكَلَّمُ",
+        "en": "I speak"
+       }
+      ]
+     },
+     {
+      "ar": "لَا أَفْهَمُ الْكَلِمَةَ.",
+      "en": "I don't understand the word.",
+      "words": [
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "أَفْهَمُ",
+        "en": "I understand"
+       },
+       {
+        "ar": "الْكَلِمَةَ",
+        "en": "the word"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أَقْرَأُ, with أَ at the start, for \"I read\"?",
+     "a_en": "In a present verb the first letter shows who: أَ is \"I\". The same verb with يَ is \"he\": يَقْرَأُ, he reads."
+    },
+    "selftest": [
+     {
+      "q_en": "What does أَفْهَمُ mean?",
+      "choices": [
+       "I understand",
+       "I read",
+       "I write"
+      ],
+      "answer": "I understand",
+      "why_en": "From فَهِمَ, to understand."
+     },
+     {
+      "q_en": "Which is \"I don't understand\"?",
+      "choices": [
+       "لَا أَفْهَمُ",
+       "أَفْهَمُ",
+       "لَا أَقْرَأُ"
+      ],
+      "answer": "لَا أَفْهَمُ",
+      "why_en": "لَا before the verb makes it \"not\"."
+     },
+     {
+      "q_en": "Which letter at the start of a present verb means \"I\"?",
+      "choices": [
+       "أَ",
+       "يَ",
+       "تَ"
+      ],
+      "answer": "أَ",
+      "why_en": "يَ is \"he\": يَقْرَأُ, he reads."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-level-and-next-step",
+      "en": "Describing your level later on, skill by skill."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-learning-loop": [
+   {
+    "id": "explainer.arabic-remember-and-revise",
+    "title_en": "Learning words: أُرَاجِعُ, أَتَذَكَّرُ, نَسِيتُ",
+    "family_en": "Verbs for revising, remembering and forgetting, and the loop that uses them",
+    "table": [
+     {
+      "form_en": "I revise",
+      "ar": "أُرَاجِعُ",
+      "en": "I revise, I go over"
+     },
+     {
+      "form_en": "I remember",
+      "ar": "أَتَذَكَّرُ",
+      "en": "I remember"
+     },
+     {
+      "form_en": "I forgot",
+      "ar": "نَسِيتُ",
+      "en": "I forgot"
+     },
+     {
+      "form_en": "I repeat",
+      "ar": "أُكَرِّرُ",
+      "en": "I repeat"
+     },
+     {
+      "form_en": "again",
+      "ar": "مَرَّةً أُخْرَى",
+      "en": "again, once more"
+     },
+     {
+      "form_en": "tomorrow",
+      "ar": "غَدًا",
+      "en": "tomorrow"
+     },
+     {
+      "form_en": "a word",
+      "ar": "كَلِمَة",
+      "en": "a word"
+     }
+    ],
+    "steps": [
+     "Study a short sentence, then hide it and say it from memory. Compare, and correct.",
+     "Change one word to check you understand it: هَذَا قَلَمٌ, this is a pen, becomes هَذَا بَابٌ, this is a door.",
+     "Come back to it another day, with one detail changed.",
+     "Keep words in short phrases, with their meaning and their sound."
+    ],
+    "examples": [
+     {
+      "ar": "أُرَاجِعُ الْكَلِمَاتِ كُلَّ يَوْمٍ.",
+      "en": "I revise the words every day.",
+      "words": [
+       {
+        "ar": "أُرَاجِعُ",
+        "en": "I revise"
+       },
+       {
+        "ar": "الْكَلِمَاتِ",
+        "en": "the words"
+       },
+       {
+        "ar": "كُلَّ",
+        "en": "every"
+       },
+       {
+        "ar": "يَوْمٍ",
+        "en": "day"
+       }
+      ]
+     },
+     {
+      "ar": "نَسِيتُ الْكَلِمَةَ.",
+      "en": "I forgot the word.",
+      "words": [
+       {
+        "ar": "نَسِيتُ",
+        "en": "I forgot"
+       },
+       {
+        "ar": "الْكَلِمَةَ",
+        "en": "the word"
+       }
+      ]
+     },
+     {
+      "ar": "أَتَذَكَّرُ الْجُمْلَةَ الْآنَ.",
+      "en": "I remember the sentence now.",
+      "words": [
+       {
+        "ar": "أَتَذَكَّرُ",
+        "en": "I remember"
+       },
+       {
+        "ar": "الْجُمْلَةَ",
+        "en": "the sentence"
+       },
+       {
+        "ar": "الْآنَ",
+        "en": "now"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why نَسِيتُ, a past verb, for \"I forgot\", but أَتَذَكَّرُ, a present one?",
+     "a_en": "نَسِيتُ is something that happened: the ـتُ at the end means \"I\" in the past. أَتَذَكَّرُ is how things are now: the أَ at the start means \"I\" in the present."
+    },
+    "selftest": [
+     {
+      "q_en": "What does أُرَاجِعُ mean?",
+      "choices": [
+       "I revise",
+       "I forget",
+       "I repeat"
+      ],
+      "answer": "I revise",
+      "why_en": "You go over what you've learned."
+     },
+     {
+      "q_en": "What does مَرَّةً أُخْرَى mean?",
+      "choices": [
+       "again",
+       "tomorrow",
+       "a word"
+      ],
+      "answer": "again",
+      "why_en": "Literally \"another time\"."
+     },
+     {
+      "q_en": "Which is \"I forgot\"?",
+      "choices": [
+       "نَسِيتُ",
+       "أَتَذَكَّرُ",
+       "أُكَرِّرُ"
+      ],
+      "answer": "نَسِيتُ",
+      "why_en": "The ـتُ at the end is \"I\", in the past."
+     }
+    ],
+    "phrases_ar": [
+     "هَذَا قَلَمٌ",
+     "هَذَا بَابٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-word-records",
+      "en": "Recording a word fully, so you can use it."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-arabic-tools": [
+   {
+    "id": "explainer.arabic-typing-arabic",
+    "title_en": "Arabic on a screen: مِنَ الْيَمِينِ إِلَى الْيَسَارِ",
+    "family_en": "The words for direction, keyboard, letters and recordings",
+    "table": [
+     {
+      "form_en": "from right to left",
+      "ar": "مِنَ الْيَمِينِ إِلَى الْيَسَارِ",
+      "en": "from right to left"
+     },
+     {
+      "form_en": "a keyboard",
+      "ar": "لَوْحَةُ الْمَفَاتِيحِ",
+      "en": "a keyboard"
+     },
+     {
+      "form_en": "a letter",
+      "ar": "حَرْف",
+      "en": "a letter (of the alphabet)"
+     },
+     {
+      "form_en": "a word",
+      "ar": "كَلِمَة",
+      "en": "a word"
+     },
+     {
+      "form_en": "a recording",
+      "ar": "تَسْجِيل",
+      "en": "a recording"
+     },
+     {
+      "form_en": "a notebook",
+      "ar": "دَفْتَر",
+      "en": "a notebook"
+     },
+     {
+      "form_en": "a date",
+      "ar": "تَارِيخ",
+      "en": "a date; history"
+     }
+    ],
+    "steps": [
+     "Arabic is written مِنَ الْيَمِينِ إِلَى الْيَسَارِ, from right to left. Numbers inside it still run left to right: ٢٠٢٦.",
+     "Type the letters in the order you say them. The keyboard and the font join and place them for you.",
+     "Label each تَسْجِيل, recording, with its date and its task.",
+     "Keep Arabic and notes apart: the word on one line, its meaning and the date on the next."
+    ],
+    "examples": [
+     {
+      "ar": "أَكْتُبُ مِنَ الْيَمِينِ إِلَى الْيَسَارِ.",
+      "en": "I write from right to left.",
+      "words": [
+       {
+        "ar": "أَكْتُبُ",
+        "en": "I write"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "from"
+       },
+       {
+        "ar": "الْيَمِينِ",
+        "en": "the right"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "الْيَسَارِ",
+        "en": "the left"
+       }
+      ]
+     },
+     {
+      "ar": "سَجَّلْتُ صَوْتِي الْيَوْمَ.",
+      "en": "I recorded my voice today.",
+      "words": [
+       {
+        "ar": "سَجَّلْتُ",
+        "en": "I recorded"
+       },
+       {
+        "ar": "صَوْتِي",
+        "en": "my voice"
+       },
+       {
+        "ar": "الْيَوْمَ",
+        "en": "today"
+       }
+      ]
+     },
+     {
+      "ar": "هَذَا دَفْتَرِي.",
+      "en": "This is my notebook.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "دَفْتَرِي",
+        "en": "my notebook"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is a letter of the alphabet حَرْف, and not رِسَالَة?",
+     "a_en": "A رِسَالَة is a letter you send; a حَرْف is a letter of the alphabet. Arabic has twenty-eight of them."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a تَسْجِيل?",
+      "choices": [
+       "a recording",
+       "a keyboard",
+       "a notebook"
+      ],
+      "answer": "a recording",
+      "why_en": "From سَجَّلَ, to record."
+     },
+     {
+      "q_en": "Which way is Arabic written?",
+      "choices": [
+       "from right to left",
+       "from left to right",
+       "from top to bottom"
+      ],
+      "answer": "from right to left",
+      "why_en": "Numbers inside it still run left to right."
+     },
+     {
+      "q_en": "What is a حَرْف?",
+      "choices": [
+       "a letter of the alphabet",
+       "a letter you send",
+       "a word"
+      ],
+      "answer": "a letter of the alphabet",
+      "why_en": "A letter you send is a رِسَالَة."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-practice-contract": [
+   {
+    "id": "explainer.arabic-study-time",
+    "title_en": "A study plan in Arabic: عَشْرُ دَقَائِقَ, نِصْفُ سَاعَةٍ, يَوْمِيًّا",
+    "family_en": "Time words for planning sessions that fit your day",
+    "table": [
+     {
+      "form_en": "a minute",
+      "ar": "دَقِيقَة",
+      "en": "a minute"
+     },
+     {
+      "form_en": "ten minutes",
+      "ar": "عَشْرُ دَقَائِقَ",
+      "en": "ten minutes"
+     },
+     {
+      "form_en": "an hour",
+      "ar": "سَاعَة",
+      "en": "an hour"
+     },
+     {
+      "form_en": "half an hour",
+      "ar": "نِصْفُ سَاعَةٍ",
+      "en": "half an hour"
+     },
+     {
+      "form_en": "every day",
+      "ar": "يَوْمِيًّا",
+      "en": "every day, daily"
+     },
+     {
+      "form_en": "today",
+      "ar": "الْيَوْمَ",
+      "en": "today"
+     },
+     {
+      "form_en": "tomorrow",
+      "ar": "غَدًا",
+      "en": "tomorrow"
+     }
+    ],
+    "steps": [
+     "Give each session one goal and a clear end, such as introducing yourself in عَشْرُ دَقَائِقَ, ten minutes.",
+     "Plan a short version for tired days and a longer one for good days, with the same goal.",
+     "A missed day doesn't need making up: keep tomorrow's plan the same size.",
+     "Count what you can now do, not the minutes."
+    ],
+    "examples": [
+     {
+      "ar": "أَدْرُسُ عَشْرَ دَقَائِقَ الْيَوْمَ.",
+      "en": "I'm studying for ten minutes today.",
+      "words": [
+       {
+        "ar": "أَدْرُسُ",
+        "en": "I study"
+       },
+       {
+        "ar": "عَشْرَ",
+        "en": "ten (-a: \"for ten\")"
+       },
+       {
+        "ar": "دَقَائِقَ",
+        "en": "minutes"
+       },
+       {
+        "ar": "الْيَوْمَ",
+        "en": "today"
+       }
+      ]
+     },
+     {
+      "ar": "سَأَدْرُسُ نِصْفَ سَاعَةٍ غَدًا.",
+      "en": "I'll study for half an hour tomorrow.",
+      "words": [
+       {
+        "ar": "سَأَدْرُسُ",
+        "en": "I'll study"
+       },
+       {
+        "ar": "نِصْفَ",
+        "en": "half (of)"
+       },
+       {
+        "ar": "سَاعَةٍ",
+        "en": "an hour"
+       },
+       {
+        "ar": "غَدًا",
+        "en": "tomorrow"
+       }
+      ]
+     },
+     {
+      "ar": "أَدْرُسُ الْعَرَبِيَّةَ يَوْمِيًّا.",
+      "en": "I study Arabic every day.",
+      "words": [
+       {
+        "ar": "أَدْرُسُ",
+        "en": "I study"
+       },
+       {
+        "ar": "الْعَرَبِيَّةَ",
+        "en": "Arabic"
+       },
+       {
+        "ar": "يَوْمِيًّا",
+        "en": "every day"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "What's the difference between الْيَوْمَ and يَوْم?",
+     "a_en": "يَوْم is \"a day\". With الْـ and -a, الْيَوْمَ means \"today\": أَدْرُسُ الْيَوْمَ, I'm studying today."
+    },
+    "selftest": [
+     {
+      "q_en": "What does يَوْمِيًّا mean?",
+      "choices": [
+       "every day",
+       "today",
+       "tomorrow"
+      ],
+      "answer": "every day",
+      "why_en": "From يَوْم, a day."
+     },
+     {
+      "q_en": "What is نِصْفُ سَاعَةٍ?",
+      "choices": [
+       "half an hour",
+       "ten minutes",
+       "an hour"
+      ],
+      "answer": "half an hour",
+      "why_en": "نِصْف is a half."
+     },
+     {
+      "q_en": "Which means \"today\"?",
+      "choices": [
+       "الْيَوْمَ",
+       "يَوْم",
+       "غَدًا"
+      ],
+      "answer": "الْيَوْمَ",
+      "why_en": "يَوْم on its own is \"a day\"."
+     }
+    ],
+    "phrases_ar": [
+     "أَدْرُسُ الْيَوْمَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-planning-your-learning",
+      "en": "Planning your own learning, later in the course."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-letter-families": [
+   {
+    "id": "explainer.arabic-letter-shapes",
+    "title_en": "Letters that share a shape: ب, ت, ث, ن, ي and ج, ح, خ",
+    "family_en": "Telling similar letters apart by their dots",
+    "table": [
+     {
+      "form_en": "ب: one dot below",
+      "ar": "بَاب",
+      "en": "a door"
+     },
+     {
+      "form_en": "ت: two dots above",
+      "ar": "تَمْر",
+      "en": "dates (the fruit)"
+     },
+     {
+      "form_en": "ث: three dots above",
+      "ar": "ثَلْج",
+      "en": "snow"
+     },
+     {
+      "form_en": "ن: one dot above",
+      "ar": "نُور",
+      "en": "light"
+     },
+     {
+      "form_en": "ي: two dots below",
+      "ar": "يَد",
+      "en": "a hand"
+     },
+     {
+      "form_en": "ج: one dot below",
+      "ar": "جَمَل",
+      "en": "a camel"
+     },
+     {
+      "form_en": "ح: no dot",
+      "ar": "حُبّ",
+      "en": "love"
+     },
+     {
+      "form_en": "خ: one dot above",
+      "ar": "خُبْز",
+      "en": "bread"
+     }
+    ],
+    "steps": [
+     "Arabic has 28 letters, and many share a shape. The dots tell them apart: how many, and whether they're above or below.",
+     "ب, ت and ث have the same body: one dot below, two above, three above. At the start of a word, ن and ي look like them too, with one dot above and two below.",
+     "ج, ح and خ share another body: one dot below, none, and one above.",
+     "Learn each letter by its sound in a word, not only by its name: ب is the b of بَاب, a door."
+    ],
+    "examples": [
+     {
+      "ar": "خُبْزٌ وَتَمْرٌ.",
+      "en": "Bread and dates.",
+      "words": [
+       {
+        "ar": "خُبْزٌ",
+        "en": "bread"
+       },
+       {
+        "ar": "وَتَمْرٌ",
+        "en": "and dates"
+       }
+      ]
+     },
+     {
+      "ar": "ثَلْجٌ أَبْيَضُ.",
+      "en": "White snow.",
+      "words": [
+       {
+        "ar": "ثَلْجٌ",
+        "en": "snow"
+       },
+       {
+        "ar": "أَبْيَضُ",
+        "en": "white"
+       }
+      ]
+     },
+     {
+      "ar": "هَذَا جَمَلٌ.",
+      "en": "This is a camel.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "جَمَلٌ",
+        "en": "a camel"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why learn a letter with a word, and not only its name?",
+     "a_en": "Names like بَاء and تَاء help you talk about letters, but in a word you read the sound, not the name. In بَاب you hear b, a long ā and b again."
+    },
+    "selftest": [
+     {
+      "q_en": "Which letter has one dot above?",
+      "choices": [
+       "ن",
+       "ب",
+       "ي"
+      ],
+      "answer": "ن",
+      "why_en": "ب has one dot below, and ي two below."
+     },
+     {
+      "q_en": "ج, ح and خ share a shape. Which has no dot?",
+      "choices": [
+       "ح",
+       "ج",
+       "خ"
+      ],
+      "answer": "ح",
+      "why_en": "ج has a dot below, and خ one above."
+     },
+     {
+      "q_en": "What does خُبْز mean?",
+      "choices": [
+       "bread",
+       "snow",
+       "light"
+      ],
+      "answer": "bread",
+      "why_en": "It starts with خ, with its dot above."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-letter-joining": [
+   {
+    "id": "explainer.arabic-joining-letters",
+    "title_en": "Joined letters, and six that don't join on: ا, د, ذ, ر, ز, و",
+    "family_en": "How letters change shape when they join, and where a word has a gap",
+    "table": [
+     {
+      "form_en": "joined all through",
+      "ar": "بَيْت",
+      "en": "a house"
+     },
+     {
+      "form_en": "a gap after ا",
+      "ar": "نَار",
+      "en": "fire"
+     },
+     {
+      "form_en": "gaps after د and ر",
+      "ar": "دَرْس",
+      "en": "a lesson"
+     },
+     {
+      "form_en": "a gap after ذ",
+      "ar": "ذَهَب",
+      "en": "gold"
+     },
+     {
+      "form_en": "gaps after و and ر",
+      "ar": "وَرْد",
+      "en": "roses"
+     },
+     {
+      "form_en": "a gap after ز",
+      "ar": "زَيْت",
+      "en": "oil"
+     },
+     {
+      "form_en": "a gap after و",
+      "ar": "يَوْم",
+      "en": "a day"
+     },
+     {
+      "form_en": "a gap, then joined again",
+      "ar": "كِتَاب",
+      "en": "a book"
+     }
+    ],
+    "steps": [
+     "Most letters join the next letter in a word, and change shape with their place: at the start, in the middle, at the end, or alone.",
+     "Six letters never join the letter after them: ا, د, ذ, ر, ز and و. After one of them, the next letter starts fresh.",
+     "That gap is inside the word, not a space: كِتَاب is one word, though its last letter stands apart after ا.",
+     "Read whole words, not letter cards: the shapes you'll meet are joined ones."
+    ],
+    "examples": [
+     {
+      "ar": "هَذَا دَرْسٌ جَدِيدٌ.",
+      "en": "This is a new lesson.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "دَرْسٌ",
+        "en": "a lesson"
+       },
+       {
+        "ar": "جَدِيدٌ",
+        "en": "new"
+       }
+      ]
+     },
+     {
+      "ar": "وَرْدٌ أَحْمَرُ.",
+      "en": "Red roses.",
+      "words": [
+       {
+        "ar": "وَرْدٌ",
+        "en": "roses"
+       },
+       {
+        "ar": "أَحْمَرُ",
+        "en": "red"
+       }
+      ]
+     },
+     {
+      "ar": "زَيْتٌ وَخُبْزٌ.",
+      "en": "Oil and bread.",
+      "words": [
+       {
+        "ar": "زَيْتٌ",
+        "en": "oil"
+       },
+       {
+        "ar": "وَخُبْزٌ",
+        "en": "and bread"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does كِتَاب have a gap before its last letter?",
+     "a_en": "ا never joins the letter after it, so the last letter has to start again on its own. The gap belongs to the word: there's no space."
+    },
+    "selftest": [
+     {
+      "q_en": "Which of these never joins the letter after it?",
+      "choices": [
+       "ر",
+       "ب",
+       "ك"
+      ],
+      "answer": "ر",
+      "why_en": "ب and ك join on."
+     },
+     {
+      "q_en": "How many words is وَرْد?",
+      "choices": [
+       "one",
+       "two",
+       "three"
+      ],
+      "answer": "one",
+      "why_en": "و and ر don't join on, but the gaps are inside one word."
+     },
+     {
+      "q_en": "In دَرْس, where are the gaps?",
+      "choices": [
+       "after د and after ر",
+       "after س",
+       "there are none"
+      ],
+      "answer": "after د and after ر",
+      "why_en": "Neither د nor ر joins the letter after it."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-vowel-decoding": [
+   {
+    "id": "explainer.arabic-short-long-vowels",
+    "title_en": "Short and long vowels: كَتَبَ, كَاتِب",
+    "family_en": "The three vowel marks, and the three letters that make them long",
+    "table": [
+     {
+      "form_en": "fatḥa: short a",
+      "ar": "كَتَبَ",
+      "en": "he wrote"
+     },
+     {
+      "form_en": "ا after a fatḥa: long ā",
+      "ar": "كَاتِب",
+      "en": "a writer"
+     },
+     {
+      "form_en": "kasra: short i",
+      "ar": "مِنْ",
+      "en": "from"
+     },
+     {
+      "form_en": "ي after a kasra: long ī",
+      "ar": "كَبِير",
+      "en": "big"
+     },
+     {
+      "form_en": "ḍamma: short u",
+      "ar": "هُمْ",
+      "en": "they"
+     },
+     {
+      "form_en": "و after a ḍamma: long ū",
+      "ar": "نُور",
+      "en": "light"
+     },
+     {
+      "form_en": "short a",
+      "ar": "جَمَل",
+      "en": "a camel"
+     },
+     {
+      "form_en": "long ā",
+      "ar": "جَمَال",
+      "en": "beauty"
+     }
+    ],
+    "steps": [
+     "The short vowels are marks: fatḥa above a letter is a, kasra below it is i, and ḍamma above it is u.",
+     "The long vowels are letters: ا after a fatḥa is ā, ي after a kasra is ī, and و after a ḍamma is ū.",
+     "Length changes the word, so hold a long vowel longer: جَمَل, a camel; جَمَال, beauty.",
+     "Read each letter with its vowel: كَ, then تَ, then بَ makes كَتَبَ, he wrote."
+    ],
+    "examples": [
+     {
+      "ar": "كَتَبَ الْكَاتِبُ.",
+      "en": "The writer wrote.",
+      "words": [
+       {
+        "ar": "كَتَبَ",
+        "en": "wrote"
+       },
+       {
+        "ar": "الْكَاتِبُ",
+        "en": "the writer"
+       }
+      ]
+     },
+     {
+      "ar": "نُورٌ كَبِيرٌ.",
+      "en": "A big light.",
+      "words": [
+       {
+        "ar": "نُورٌ",
+        "en": "a light"
+       },
+       {
+        "ar": "كَبِيرٌ",
+        "en": "big"
+       }
+      ]
+     },
+     {
+      "ar": "جَمَلٌ جَمِيلٌ.",
+      "en": "A beautiful camel.",
+      "words": [
+       {
+        "ar": "جَمَلٌ",
+        "en": "a camel"
+       },
+       {
+        "ar": "جَمِيلٌ",
+        "en": "beautiful"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "كَتَبَ and كَاتِب share the letters ك-ت-ب. Why do they mean different things?",
+     "a_en": "The vowels differ. In كَاتِب the ا makes the first a long, and the second vowel is i: a writer, someone who writes. The letters ك-ت-ب are about writing; the vowels give the exact word."
+    },
+    "selftest": [
+     {
+      "q_en": "In مِنْ, which vowel is on م?",
+      "choices": [
+       "i (kasra)",
+       "a (fatḥa)",
+       "u (ḍamma)"
+      ],
+      "answer": "i (kasra)",
+      "why_en": "The mark is below the letter."
+     },
+     {
+      "q_en": "Which word has a long ī?",
+      "choices": [
+       "كَبِير",
+       "كَتَبَ",
+       "هُمْ"
+      ],
+      "answer": "كَبِير",
+      "why_en": "ي after a kasra makes a long ī."
+     },
+     {
+      "q_en": "What does جَمَال mean?",
+      "choices": [
+       "beauty",
+       "a camel",
+       "big"
+      ],
+      "answer": "beauty",
+      "why_en": "With a short a, جَمَل is a camel."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-reading-without-marks",
+      "en": "Reading later on, when most of the vowel marks are left out."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-sukun-shadda": [
+   {
+    "id": "explainer.arabic-sukun-shadda-tanwin",
+    "title_en": "Sukūn, shadda and tanwīn: بِنْت, حَمَّام, قَلَمٌ",
+    "family_en": "The marks for no vowel, a doubled letter and an n at the end",
+    "table": [
+     {
+      "form_en": "sukūn: no vowel",
+      "ar": "بِنْت",
+      "en": "a girl"
+     },
+     {
+      "form_en": "ي with sukūn after a fatḥa: ay",
+      "ar": "بَيْت",
+      "en": "a house"
+     },
+     {
+      "form_en": "و with sukūn after a fatḥa: aw",
+      "ar": "يَوْم",
+      "en": "a day"
+     },
+     {
+      "form_en": "no shadda",
+      "ar": "حَمَام",
+      "en": "pigeons, doves"
+     },
+     {
+      "form_en": "shadda: a doubled letter",
+      "ar": "حَمَّام",
+      "en": "a bathroom"
+     },
+     {
+      "form_en": "tanwīn: -un",
+      "ar": "قَلَمٌ",
+      "en": "a pen"
+     },
+     {
+      "form_en": "tanwīn: -an",
+      "ar": "شُكْرًا",
+      "en": "thank you"
+     },
+     {
+      "form_en": "tanwīn: -in",
+      "ar": "بِقَلَمٍ",
+      "en": "with a pen"
+     }
+    ],
+    "steps": [
+     "Sukūn, a small circle above a letter, means no vowel after it: in بِنْت, a girl, ن and ت have none.",
+     "After a fatḥa, ي and و with a sukūn join the a into one sound: بَيْت, a house; يَوْم, a day.",
+     "Shadda, a small w shape above a letter, doubles it, so hold the sound: حَمَام is pigeons, and حَمَّام, with a doubled م, is a bathroom.",
+     "Tanwīn, a doubled vowel mark at the end of a word, adds an n after the vowel: قَلَمٌ, a pen. With -an it usually takes an ا too: شُكْرًا."
+    ],
+    "examples": [
+     {
+      "ar": "هَذَا حَمَّامٌ.",
+      "en": "This is a bathroom.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "حَمَّامٌ",
+        "en": "a bathroom"
+       }
+      ]
+     },
+     {
+      "ar": "بِنْتٌ وَوَلَدٌ.",
+      "en": "A girl and a boy.",
+      "words": [
+       {
+        "ar": "بِنْتٌ",
+        "en": "a girl"
+       },
+       {
+        "ar": "وَوَلَدٌ",
+        "en": "and a boy"
+       }
+      ]
+     },
+     {
+      "ar": "يَوْمٌ جَمِيلٌ.",
+      "en": "A beautiful day.",
+      "words": [
+       {
+        "ar": "يَوْمٌ",
+        "en": "a day"
+       },
+       {
+        "ar": "جَمِيلٌ",
+        "en": "beautiful"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is there a sukūn on ي in بَيْت?",
+     "a_en": "With no vowel of its own, ي joins the fatḥa before it into one sound, ay. After a kasra, ي would be a long ī instead, as in كَبِير."
+    },
+    "selftest": [
+     {
+      "q_en": "Which word means \"a bathroom\"?",
+      "choices": [
+       "حَمَّام",
+       "حَمَام",
+       "حَمَل"
+      ],
+      "answer": "حَمَّام",
+      "why_en": "The shadda doubles م. Without it, the word is pigeons."
+     },
+     {
+      "q_en": "In بِنْت, which letters have no vowel after them?",
+      "choices": [
+       "ن and ت",
+       "ب and ن",
+       "only ب"
+      ],
+      "answer": "ن and ت",
+      "why_en": "ب has a kasra; the sukūn is on ن, and the last letter has no vowel."
+     },
+     {
+      "q_en": "What does tanwīn add at the end of قَلَمٌ?",
+      "choices": [
+       "an n after the vowel",
+       "a doubled letter",
+       "a long vowel"
+      ],
+      "answer": "an n after the vowel",
+      "why_en": "Doubling a letter is the shadda's job."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-sun-moon-letters",
+      "en": "The shadda after الْـ: sun letters and moon letters."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-special-spellings": [
+   {
+    "id": "explainer.arabic-three-special-letters",
+    "title_en": "Three special letters: ء, ة and ى",
+    "family_en": "Hamza, tāʾ marbūṭa and alif maqṣūra, and the letters they're mistaken for",
+    "table": [
+     {
+      "form_en": "hamza on alif",
+      "ar": "أُمّ",
+      "en": "a mother"
+     },
+     {
+      "form_en": "hamza on its own",
+      "ar": "مَاء",
+      "en": "water"
+     },
+     {
+      "form_en": "tāʾ marbūṭa: ة",
+      "ar": "طَالِبَة",
+      "en": "a (woman) student"
+     },
+     {
+      "form_en": "ه: always h",
+      "ar": "وَجْه",
+      "en": "a face"
+     },
+     {
+      "form_en": "alif maqṣūra: ى, a long ā",
+      "ar": "لَيْلَى",
+      "en": "Laylā"
+     },
+     {
+      "form_en": "ي: a long ī, or y",
+      "ar": "فِي",
+      "en": "in"
+     },
+     {
+      "form_en": "ل and ا as one shape",
+      "ar": "لَا",
+      "en": "no"
+     }
+    ],
+    "steps": [
+     "Hamza ء is a catch in the throat, a consonant. It sits on ا, و or ي, or on its own: أُمّ, a mother; مَاء, water.",
+     "ة, tāʾ marbūṭa, ends many feminine words: طَالِبَة, a (woman) student. When you stop on it, it's said a; with an ending after it, the t is heard: طَالِبَةٌ.",
+     "ه is a different letter, always h: وَجْه, a face. Keep ة and ه apart when you spell.",
+     "ى at the end of a word is a long ā, written like ي without its dots: لَيْلَى.",
+     "ل followed by ا is written as one shape: لَا, no. It's two letters, not a new one."
+    ],
+    "examples": [
+     {
+      "ar": "لَيْلَى فِي الْمَدْرَسَةِ.",
+      "en": "Laylā is at school.",
+      "words": [
+       {
+        "ar": "لَيْلَى",
+        "en": "Laylā"
+       },
+       {
+        "ar": "فِي",
+        "en": "in, at"
+       },
+       {
+        "ar": "الْمَدْرَسَةِ",
+        "en": "the school"
+       }
+      ]
+     },
+     {
+      "ar": "أُرِيدُ مَاءً.",
+      "en": "I want water.",
+      "words": [
+       {
+        "ar": "أُرِيدُ",
+        "en": "I want"
+       },
+       {
+        "ar": "مَاءً",
+        "en": "water"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ غُرْفَةٌ كَبِيرَةٌ.",
+      "en": "This is a big room.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "غُرْفَةٌ",
+        "en": "a room"
+       },
+       {
+        "ar": "كَبِيرَةٌ",
+        "en": "big"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is ة sometimes said with a t, and sometimes not?",
+     "a_en": "When you stop on the word, ة is said as a plain a: غُرْفَة. When an ending follows, the t is heard: غُرْفَةٌ كَبِيرَةٌ, a big room."
+    },
+    "selftest": [
+     {
+      "q_en": "How is ى said at the end of لَيْلَى?",
+      "choices": [
+       "as a long ā",
+       "as y",
+       "as a long ī"
+      ],
+      "answer": "as a long ā",
+      "why_en": "It's alif maqṣūra: the shape of ي without its dots."
+     },
+     {
+      "q_en": "Which letter is always h?",
+      "choices": [
+       "ه",
+       "ة",
+       "ء"
+      ],
+      "answer": "ه",
+      "why_en": "ة is tāʾ marbūṭa, and ء is hamza."
+     },
+     {
+      "q_en": "What is لَا made of?",
+      "choices": [
+       "ل and ا",
+       "a letter of its own",
+       "ل and ي"
+      ],
+      "answer": "ل and ا",
+      "why_en": "The two are written as one shape."
+     }
+    ],
+    "phrases_ar": [
+     "غُرْفَةٌ كَبِيرَةٌ",
+     "هَمْزَةُ الْوَصْلِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-words-run-together",
+      "en": "Another alif, هَمْزَةُ الْوَصْلِ, that's silent when words run together."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-script-meaning": [
+   {
+    "id": "explainer.arabic-reading-for-meaning",
+    "title_en": "Reading for meaning: عِلْم, عَلَم, عَلِمَ",
+    "family_en": "Sounding a word out, knowing what it means, and words spelled alike",
+    "table": [
+     {
+      "form_en": "ع-ل-م: kasra, then sukūn",
+      "ar": "عِلْم",
+      "en": "knowledge"
+     },
+     {
+      "form_en": "ع-ل-م: fatḥa, fatḥa",
+      "ar": "عَلَم",
+      "en": "a flag"
+     },
+     {
+      "form_en": "ع-ل-م: fatḥa, kasra, fatḥa",
+      "ar": "عَلِمَ",
+      "en": "he knew, he learned"
+     },
+     {
+      "form_en": "ح-ب: ḍamma",
+      "ar": "حُبّ",
+      "en": "love"
+     },
+     {
+      "form_en": "ح-ب: fatḥa",
+      "ar": "حَبّ",
+      "en": "seeds, grain"
+     }
+    ],
+    "steps": [
+     "Reading a word aloud and knowing what it means are two different things, so check both: cover the word, then say what it names.",
+     "Most Arabic you'll read later has few vowel marks. Then one spelling can be several words: without the marks, عِلْم, knowledge, and عَلَم, a flag, look the same.",
+     "The sentence shows which word it is: you raise a flag, and you learn knowledge. رَفَعَ الْعَلَمَ is \"he raised the flag\"."
+    ],
+    "examples": [
+     {
+      "ar": "هَذَا عَلَمٌ كَبِيرٌ.",
+      "en": "This is a big flag.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "عَلَمٌ",
+        "en": "a flag"
+       },
+       {
+        "ar": "كَبِيرٌ",
+        "en": "big"
+       }
+      ]
+     },
+     {
+      "ar": "الْعِلْمُ نُورٌ.",
+      "en": "Knowledge is light.",
+      "words": [
+       {
+        "ar": "الْعِلْمُ",
+        "en": "knowledge"
+       },
+       {
+        "ar": "نُورٌ",
+        "en": "light"
+       }
+      ]
+     },
+     {
+      "ar": "اِشْتَرَيْتُ حَبَّ قَهْوَةٍ.",
+      "en": "I bought coffee beans.",
+      "words": [
+       {
+        "ar": "اِشْتَرَيْتُ",
+        "en": "I bought"
+       },
+       {
+        "ar": "حَبَّ",
+        "en": "beans, seeds (of)"
+       },
+       {
+        "ar": "قَهْوَةٍ",
+        "en": "coffee"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "How do you know which word you're reading when the marks are missing?",
+     "a_en": "From the words around it. You raise a flag, not knowledge, so رَفَعَ الْعَلَمَ can only be \"he raised the flag\". Check the meaning against the sentence before you settle on a reading."
+    },
+    "selftest": [
+     {
+      "q_en": "What does عَلَم mean?",
+      "choices": [
+       "a flag",
+       "knowledge",
+       "he knew"
+      ],
+      "answer": "a flag",
+      "why_en": "A fatḥa on ع and on ل."
+     },
+     {
+      "q_en": "Which is \"knowledge\"?",
+      "choices": [
+       "عِلْم",
+       "عَلَم",
+       "عَلِمَ"
+      ],
+      "answer": "عِلْم",
+      "why_en": "A kasra on ع, and a sukūn on ل."
+     },
+     {
+      "q_en": "You read a new word aloud correctly. What do you still need to check?",
+      "choices": [
+       "what it means",
+       "its spelling",
+       "nothing"
+      ],
+      "answer": "what it means",
+      "why_en": "Sounding a word out doesn't tell you what it names."
+     }
+    ],
+    "phrases_ar": [
+     "رَفَعَ الْعَلَمَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-one-spelling-several-words",
+      "en": "More words that share a spelling, and how to choose between them."
+     }
+    ]
+   }
   ]
  }
 }
