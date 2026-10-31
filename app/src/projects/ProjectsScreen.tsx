@@ -191,7 +191,7 @@ function AreasPanel({ areas }: { areas: Area[] }) {
   return (
     <ul className="list-none p-0 m-0 mt-3 grid gap-3 rounded-tile bg-surface-2 border border-outline p-3" data-s="areas-panel" aria-label="Your areas">
       {areas.map(a => (
-        <li key={a.name} className="grid gap-2" data-s="area-row" data-id={a.name}>
+        <li key={a.name} className="grid gap-2 sm:grid-cols-[minmax(0,18rem)_1fr] sm:items-end sm:gap-x-4" data-s="area-row" data-id={a.name}>
           <Field label={`Area: ${a.name}`} htmlFor={`area-${a.name}`}>
             <CommitInput id={`area-${a.name}`} key={a.name} defaultValue={a.name} maxLength={PROJECT_LIMITS.area}
               onCommit={el => { const to = el.value.trim(); if (!to) { el.value = a.name; return; } const into = areas.find(x => sameName(x.name, to) && !sameName(x.name, a.name));
