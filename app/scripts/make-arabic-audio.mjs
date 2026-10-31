@@ -40,7 +40,10 @@ for (const text of source.texts) {
   const audio = Buffer.from((await res.json()).audioContent, 'base64');
   const file = createHash('sha256').update(audio).digest('hex').slice(0, 16) + '.mp3';
   writeFileSync(new URL(file, clips), audio);
-  if (entry?.file && entry.file !== file) rmSync(new URL(entry.file, clips), { force: true });
+  // The old clip goes, unless another text's clip is the same file (the same words spoken the same way can come back as
+  // the same audio: لَمْ, and the piece لم read from its script); the build then asks for a take of its own.
+  const shared = Object.entries(audit.clips).some(([other, c]) => other !== text && c.file === entry?.file);
+  if (entry?.file && entry.file !== file && !shared) rmSync(new URL(entry.file, clips), { force: true });
   audit.clips[text] = { file, voice: VOICE, made: today, spoken: spoken(text), check: 'to check', ...(entry?.note ? { earlier: entry.note } : {}) };
   // Keep completed clips in the audit even if a later request fails or the run is interrupted.
   writeFileSync(auditFile, JSON.stringify(audit, null, 1) + '\n');

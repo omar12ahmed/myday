@@ -30,6 +30,7 @@ export function voiceSources(root) {
   const families = read('content/teaching/arabic/word-families.json');
   const keys = read('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json');
   const words = Object.values(read('content/teaching/arabic/course-words.json').lessons).flatMap(l => l.words);
+  const explainers = Object.values(read('content/teaching/arabic/explainers.json').lessons).flat();
   const uniq = xs => [...new Set(xs)];
   // Arabic inside English: each run that is fully vowelled, and in the places whose pieces have been scripted and checked
   // (voice-scripts.json "pieces": the lesson checks from round eleven; teaching, key concepts and objectives, tasks and the
@@ -68,6 +69,10 @@ export function voiceSources(root) {
     { id: 'key-ideas', round: 12, label: 'key concepts and objectives', texts: mixed(keyValues, true) },
     { id: 'tasks', round: 12, label: 'practical tasks and mini challenges', texts: mixed(taskValues, true) },
     { id: 'timetable', round: 12, label: 'the timetable', texts: mixed(timetableValues, true) },
+    // Round thirteen: the explainers (“How it works”): each form in a table, each whole sentence and the Arabic in the
+    // steps, all fully vowelled in explainers.json; a root's letters or a prefix (سَـ) on its own is not a word to say.
+    // Not the word-by-word pieces (heard in their sentence) or the self-test's choices.
+    { id: 'explainers', round: 13, label: 'explainers: table forms, sentences and steps', texts: uniq([...explainers.flatMap(e => [...e.table.map(r => r.ar), ...e.examples.map(x => x.ar)]), ...runsOf(explainers.flatMap(e => e.steps))]).filter(courseVoiceable) },
     // Round ten: each reading text read in one go, for “Listen to the whole text”.
     { id: 'reading-wholes', round: 10, label: 'reading texts, whole', texts: uniq(Object.values(readingPassages(root)).map(wholeText)) },
   ];
