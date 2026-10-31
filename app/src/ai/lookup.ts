@@ -23,9 +23,9 @@ import { aiReach } from './reach';
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 
 // What a lookup couldn't send, counted on this device for the panel's line only (never sent): how many there were when
-// more than the limit allowed, the notes that went by title only (of those whose titles went), and the courses when
-// they couldn't be loaded.
-export type LookupMore = { tasks?: number; done?: number; due?: number; notes?: number; titleOnly?: number; titlesOnly?: boolean; noCourses?: boolean };
+// more than the limit allowed, how many of a project's notes went with their text (newest first, while it fits) or by
+// title only as AI help with notes is off, and the courses when they couldn't be loaded.
+export type LookupMore = { tasks?: number; done?: number; due?: number; busy?: number; milestones?: number; notes?: number; textNotes?: number; titlesOnly?: boolean; noCourses?: boolean };
 
 export function notesLookup(data: MyDayData, query: string): { lookup: AskNotesLookup; leftOut: number } {
   const reach = aiReach(data), withText = !!data.patterns.prefs.aiNotes;
@@ -143,7 +143,7 @@ export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayK
       free: pc.free.slice(0, L.dayFree),
     },
     leftOut: plan.filter(t => held.has(t.uid)).length + dueAll.length - due.length,
-    more: { tasks: sendable.length, due: due.length },
+    more: { tasks: sendable.length, due: due.length, busy: pc.busy.filter(b => (DAY_KINDS as readonly string[]).includes(b.kind)).length },
   };
 }
 
@@ -156,7 +156,8 @@ export function projectLookup(data: MyDayData, id: string): { lookup: AskProject
   const { project, heldNotes, textNotes } = projectSlice(data, p), { open, done } = projectTasks(data, p);
   const notes = projectNotes(data, p).length - heldNotes, withText = !!data.patterns.prefs.aiNotes;
   return { lookup: { tool: 'project', query: p.id, project }, leftOut: heldNotes,
-    more: { tasks: open.length + done.length, done: done.length, notes, ...(withText ? { titleOnly: Math.max(0, Math.min(notes, L.list) - textNotes) } : { titlesOnly: notes > 0 }) } };
+    // done: as sent (a task let go, or ticked only on a day's plan, goes as not done)
+    more: { tasks: open.length + done.length, done: done.filter(t => t.done).length, milestones: p.milestones?.length ?? 0, notes, ...(withText ? { textNotes } : { titlesOnly: notes > 0 }) } };
 }
 
 // "Open decisions" (v20): the decisions with nothing chosen yet, oldest first, across your open projects ("all") or in
@@ -227,8 +228,8 @@ export function studyLookup(data: MyDayData, today: DateKey = todayKey()): { loo
 
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
 // "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out. Checked at 10:42."
-// Everything that didn't go is said: private things, what a setting kept back, what was more than the limit allowed
-// (`more`), and when it was read (`at`: an answer to a follow-up, or a second try, uses what was read the first time).
+// What didn't go is said: private things, what a setting kept back, what was more than the limit allowed (`more`),
+// and when it was read (`at`: an answer to a follow-up, or a second try, uses what was read the first time).
 export function lookupLine(l: AskLookup, held: number, projectTitle?: string, { more = {}, at }: { more?: LookupMore; at?: Date } = {}): string {
   const line = sayLookup(l, held, projectTitle, more);
   return at ? `${line} Checked at ${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}.` : line;
@@ -236,9 +237,9 @@ export function lookupLine(l: AskLookup, held: number, projectTitle?: string, { 
 function sayLookup(l: AskLookup, held: number, projectTitle: string | undefined, more: LookupMore): string {
   const count = (n: number, one: string, many: string) => (n === 1 ? one : `${n} ${many}`);
   if (l.tool === 'day') {
-    const nt = Math.max(more.tasks ?? 0, l.tasks.length), nd = Math.max(more.due ?? 0, l.due.length);
+    const nt = Math.max(more.tasks ?? 0, l.tasks.length), nd = Math.max(more.due ?? 0, l.due.length), nb = Math.max(more.busy ?? 0, l.busy.length);
     const parts = [l.rest ? 'a rest day' : l.planned ? `${count(nt, 'one task', 'tasks')} planned${nt > l.tasks.length ? ` (the first ${l.tasks.length} sent)` : ''}` : 'no plan yet',
-      ...(nd ? [`${nd} due${nd > l.due.length ? ` (${l.due.length} sent)` : ''}`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
+      ...(nd ? [`${nd} due${nd > l.due.length ? ` (${l.due.length} sent)` : ''}`] : []), nb ? `${count(nb, 'one busy time', 'busy times')}${nb > l.busy.length ? ` (the first ${l.busy.length} sent)` : ''}` : 'nothing booked'];
     return `Looked at ${prettyDate(l.query)}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private task' : `${held} private tasks`} left out` : ''}.`;
   }
   if (l.tool === 'study') {
@@ -258,11 +259,14 @@ function sayLookup(l: AskLookup, held: number, projectTitle: string | undefined,
   }
   if (l.tool === 'project') {
     const t = l.project.tasks, m = l.project.milestones?.length ?? 0, n = l.project.notes.length;
-    const nt = Math.max(more.tasks ?? 0, t.length), done = more.tasks !== undefined ? more.done ?? 0 : t.filter(x => x.done).length, nn = Math.max(more.notes ?? 0, n);
-    const parts = [nt ? `${count(nt, 'one task', 'tasks')}${done || nt > t.length ? ` (${[done ? `${done} done` : '', nt > t.length ? `${t.length} sent, open ones first` : ''].filter(Boolean).join('; ')})` : ''}` : 'no tasks yet',
-      ...(m ? [m === 1 ? 'one milestone' : `${m} milestones`] : []), ...(nn ? [`${count(nn, 'one note', 'notes')}${nn > n ? ` (the newest ${n} sent)` : ''}`] : [])];
-    const extra = [held ? `${held === 1 ? 'one private note' : `${held} private notes`} left out` : '',
-      more.titleOnly ? `${count(more.titleOnly, 'one note', 'notes')} by title only, as there was too much text` : '', more.titlesOnly ? 'notes by title only, as AI help with notes is off' : ''].filter(Boolean);
+    const nt = Math.max(more.tasks ?? 0, t.length), done = more.tasks !== undefined ? more.done ?? 0 : t.filter(x => x.done).length, nm = Math.max(more.milestones ?? 0, m), nn = Math.max(more.notes ?? 0, n);
+    // Notes go by title (the newest 20) and with their text (newest first, while it fits), so the newest of either went.
+    const sent = Math.max(n, more.textNotes ?? 0), titleOnly = more.textNotes !== undefined ? Math.max(0, n - more.textNotes) : 0;
+    const paren = (xs: string[]) => (xs.some(Boolean) ? ` (${xs.filter(Boolean).join('; ')})` : '');
+    const parts = [nt ? `${count(nt, 'one task', 'tasks')}${paren([done ? `${done} done` : '', nt > t.length ? `${t.length} sent, open ones first` : ''])}` : 'no tasks yet',
+      ...(nm ? [`${count(nm, 'one milestone', 'milestones')}${nm > m ? ` (the first ${m} sent)` : ''}`] : []),
+      ...(nn ? [`${count(nn, 'one note', 'notes')}${paren([nn > sent ? `the newest ${sent} sent` : '', titleOnly ? `${titleOnly} by title only, as there was too much text` : ''])}`] : [])];
+    const extra = [held ? `${held === 1 ? 'one private note' : `${held} private notes`} left out` : '', more.titlesOnly ? 'notes by title only, as AI help with notes is off' : ''].filter(Boolean);
     return `Looked at your project “${l.project.title}”: ${parts.join(', ')}${extra.length ? ` — ${extra.join('; ')}` : ''}.`;
   }
   if (l.tool === 'search') {

@@ -117,7 +117,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : r.tool === 'waiting' ? waitingLookup(now, r.query) : r.tool === 'study' ? studyLookup(now, k)
         : searchLookup(now, r.query, courses, k);
       if (!found) { setPhase({ at: 'error', message: r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.' }); return; }
-      looked = { ...found, at: new Date() };
+      looked = { ...found, at: new Date(clock()) };
       const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);
       reply = await again();
       if (!reply.ok && reply.reason === 'too-fast') {

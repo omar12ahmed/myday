@@ -962,9 +962,17 @@ const SEED = `s => {
     check('the preview says it may look across MyDay if needed (v24: in place of your notes)', pm.prev.includes('If needed, a look across MyDay'), pm.prev);
     check('practice mode: it looks across MyDay, and says so above the answer — one thing found, the two private ones only counted here, and when it was read', pm.phase === 'shown' && /^Looked across MyDay for “bike rack”: one thing — 2 private things left out\. Checked at \d\d:\d\d\.$/.test(pm.looked), pm.looked);
     check('…and the answer links the note it used', eq(pm.sources, ['Shed sizes|#projects/notes/nLkRack']), pm.sources);
+    // The clock moves on 7 minutes: a follow-up answers from what was read the first time, and its line still says when.
+    await mock.ev(`(() => { const D0 = Date; class D7 extends D0 { constructor(...a) { if (a.length) super(...a); else super(D0.now() + 420000); } static now() { return D0.now() + 420000; } } window.Date = D7; })()`);
+    await mock.type('[data-s=ask-more]', 'and what did it cost?'); await mock.click('[data-action=ask-again]');
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !document.querySelector('[data-s=ask-more]')`, 25000);
+    const pmf = await mock.text('[data-s=ask-looked]');
+    check('a follow-up 7 minutes later uses what was read the first time, and its line keeps that time', pmf === pm.looked, [pmf, pm.looked]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const pdy = await runLk(mock, 'Am I free on Thursday?');
     check('practice mode: "Am I free on Thursday?" looks at that day and says so above the answer', pdy.phase === 'shown' && /^Looked at Thursday \d{1,2} \w+: /.test(pdy.looked) && pdy.sources.length === 0, [pdy.looked, pdy.error]);
+    const hm = x => { const t = /Checked at (\d\d):(\d\d)\.$/.exec(x); return t ? Number(t[1]) * 60 + Number(t[2]) : NaN; };
+    check('…and a new question\'s lookup says the new time (7 minutes on)', [7, 8].includes((hm(pdy.looked) - hm(pm.looked) + 1440) % 1440), [pm.looked, pdy.looked]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const pdc = await runLk(mock, 'Which decisions am I putting off?');
     check('practice mode: "Which decisions am I putting off?" looks at your open decisions, says so above the answer and links the oldest (never what its pros say)', pdc.phase === 'shown' && /^Looked at your open decisions: (one decision|\d+ decisions)/.test(pdc.looked)

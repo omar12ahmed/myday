@@ -1701,8 +1701,15 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       notes: { ...lw.notes, items: Array.from({ length: 22 }, (_, i) => LN('nP' + i, 'Shed note ' + i, 'x'.repeat(400), { projectId: 'pjShed', updatedAt: `2026-11-${String(i + 1).padStart(2, '0')}T08:00` })) } });
     pbig.patterns.prefs.aiNotes = true;
     const pb = K.projectLookup(pbig, 'pjShed');
-    check('more tasks and notes than the limit, and more notes\' text than fits: the line says how many there were, what was sent, and the notes that went by title only', pmline(pbig) === 'Looked at your project “Garden shed”: 23 tasks (3 done; 20 sent, open ones first), 22 notes (the newest 20 sent) — 13 notes by title only, as there was too much text.'
+    check('more tasks and notes than the limit, and more notes\' text than fits: the line says how many there were, what was sent, and the notes that went by title only', pmline(pbig) === 'Looked at your project “Garden shed”: 23 tasks (3 done; 20 sent, open ones first), 22 notes (the newest 20 sent; 13 by title only, as there was too much text).'
       && pb.lookup.project.tasks.length === 20 && pb.lookup.project.notes.length === 20 && pb.lookup.project.notesText.split('\n').length === 7 && !('more' in pb.lookup), pmline(pbig));
+    const pshort = K.normalize({ ...lw, notes: { ...lw.notes, items: Array.from({ length: 25 }, (_, i) => LN('nQ' + i, 'Shed note ' + i, 'short', { projectId: 'pjShed', updatedAt: `2026-11-${String(i + 1).padStart(2, '0')}T08:00` })) } });
+    pshort.patterns.prefs.aiNotes = true;
+    check('…but when every note\'s text fits, all of them went (20 titles, and all 25 with their text): the line says so', pmline(pshort) === 'Looked at your project “Garden shed”: no tasks yet, 25 notes.' && K.projectLookup(pshort, 'pjShed').lookup.project.notesText.split('\n').length === 25, pmline(pshort));
+    const plet = K.normalize({ ...lw, tasks: { ...lw.tasks, items: [TI2('tkA', 'Order the felt', { projectId: 'pjShed' }), TI2('tkB', 'Paint it red', { projectId: 'pjShed', letGoOn: '2026-11-09' })] } });
+    check('…a task let go is counted as it\'s sent (not done), never as done', pmline(plet) === 'Looked at your project “Garden shed”: 2 tasks, one note.' && K.projectLookup(plet, 'pjShed').lookup.project.tasks.every(t => !t.done), pmline(plet));
+    const pms = K.lookupLine(pr.lookup, 0, undefined, { more: { milestones: 31 } }), dbs = K.lookupLine(dr.lookup, 0, undefined, { more: { busy: 45 } });
+    check('more milestones or busy times than were sent: the line says how many', pms.includes(', 31 milestones (the first 1 sent), ') && dbs.includes(`, 45 busy times (the first ${dr.lookup.busy.length} sent).`), [pms, dbs]);
     pbig.patterns.prefs.aiNotes = false;
     check('…and with AI help with notes off, notes by title only, saying why', pmline(pbig).endsWith('22 notes (the newest 20 sent) — notes by title only, as AI help with notes is off.') && !('notesText' in K.projectLookup(pbig, 'pjShed').lookup.project), pmline(pbig));
     const tslice = K.askSlice(pw, '#today', LD), pq = 'What\'s next on the garden shed?';
