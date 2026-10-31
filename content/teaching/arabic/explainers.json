@@ -25105,11 +25105,11 @@
       "q_en": "Which preposition goes with اِخْتَلَفَ, to differ over?",
       "choices": [
        "فِي",
-       "عَلَى",
+       "إِلَى",
        "مِنْ"
       ],
       "answer": "فِي",
-      "why_en": "Agreeing takes the other one."
+      "why_en": "Agreeing takes عَلَى; differing takes فِي."
      },
      {
       "q_en": "What does وَفْقًا لِلْمَصْدَرِ mean?",
@@ -25189,7 +25189,7 @@
     ],
     "steps": [
      "Start with the decision: التَّوْصِيَة, the recommendation, comes first, before the background.",
-     "Give the reasons, compare each خِيَار, option, on the same points, such as التَّكْلِفَة, the cost, and الْمَخَاطِر, the risks, and name the الْخُطْوَةُ التَّالِيَةُ, the next step, and who is مَسْؤُولٌ عَنْ it.",
+     "Give the reasons, compare each خِيَار, option, on the same points, such as التَّكْلِفَة, the cost, and الْمَخَاطِر, the risks, and name الْخُطْوَةُ التَّالِيَةُ, the next step, and who is مَسْؤُولٌ عَنْ it.",
      "نُوصِي, we recommend, takes بِـ and a noun, usually a verbal noun: نُوصِي بِتَأْجِيلِ الْقَرَارِ, we recommend postponing the decision.",
      "Don't let polished wording claim more than you know: say what you've assumed."
     ],
@@ -25711,7 +25711,7 @@
     ],
     "steps": [
      "Keep three voices apart: الرَّاوِي, the narrator; each شَخْصِيَّة, character, in their own words; and the author, who may share neither view.",
-     "Speech verbs show who's talking: قَالَ يُوسُفُ, Yūsuf said. A colon or quotation marks then give his own words; after قَالَ, إِنَّ reports them in the narrator's words instead.",
+     "Speech verbs show who's talking: قَالَ يُوسُفُ, Yūsuf said. A colon or quotation marks then give his own words; after قَالَ, إِنَّ can report them in the narrator's words instead.",
      "Shifts in time show in the verbs and the time words: كَانَ قَدْ with a past verb is \"had done\", and بَعْدَ سَنَوَاتٍ, years later, jumps ahead.",
      "If it's unclear who a pronoun refers to, say so and give the possibilities, rather than picking one silently."
     ],
@@ -25953,7 +25953,7 @@
     ],
     "why": {
      "q_en": "What's the difference between كَالرَّعْدِ and a metaphor?",
-     "a_en": "كَالرَّعْدِ says openly that his voice is like thunder: that's a تَشْبِيه. A metaphor drops the comparing word: رَعْدُ صَوْتِهِ, the thunder of his voice, treats the voice as thunder."
+     "a_en": "كَالرَّعْدِ says openly that his voice is like thunder: that's a تَشْبِيه. An اِسْتِعَارَة names only one side and drops the comparison: اِبْتَلَعَ الضَّجِيجُ صَوْتَهَا gives the noise a creature's act of swallowing, with no creature named. رَعْدُ صَوْتِهِ, the thunder of his voice, still names both sides, so Arabic rhetoric counts it as a compressed simile, a تَشْبِيهٌ بَلِيغٌ."
     },
     "selftest": [
      {
@@ -25988,7 +25988,8 @@
      }
     ],
     "phrases_ar": [
-     "رَعْدُ صَوْتِهِ"
+     "رَعْدُ صَوْتِهِ",
+     "تَشْبِيهٌ بَلِيغٌ"
     ],
     "leads_to": [
      {
@@ -26042,8 +26043,8 @@
     ],
     "steps": [
      "Start with what the poem says: who speaks, to whom, and what happens, line by line.",
-     "A classical line has two halves, each a شَطْر, held together by وَزْن, metre, with the same قَافِيَة, rhyme, at the end of every line. شِعْرٌ حُرٌّ, free verse, loosens both.",
-     "Poets may bend the usual word order for metre and rhyme: a ضَرُورَةٌ شِعْرِيَّةٌ, poetic licence. Put the words back in order to understand them.",
+     "A classical line has two halves, each a شَطْر, held together by وَزْن, metre, with the same قَافِيَة, rhyme, at the end of every line. شِعْرٌ حُرٌّ, free verse, keeps the metrical foot but varies the line's length, and gives up the single rhyme.",
+     "Poets may bend the usual word order, and even a word's form, for metre and rhyme: a ضَرُورَةٌ شِعْرِيَّةٌ, poetic licence. Put the words back in order to understand them.",
      "Metre is heard, not seen: listen to a good reading before you try to name it."
     ],
     "examples": [
