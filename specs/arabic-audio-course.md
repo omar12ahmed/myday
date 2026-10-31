@@ -172,6 +172,9 @@ Round fifteen (modules 4–5's thirteen A1 explainers, released with their text)
 again from Charon, mostly A1 starter and course words, which now play WaveNet B everywhere. Ten first came back as the
 very same audio as a scripted piece and were made again until each had its own; two retakes after blind transcription.
 عَنِ said alone was still heard as عَنِّي and was approved by ear ("all good"). The key was deleted.
+Round seventeen (modules 6–7's twelve A1 explainers, released with their text): 181 clips, 110 new texts and 71 made
+again from Charon. One came back as a scripted piece's audio and was made again; هُمْ said alone was still heard as
+هُنَّ on a new take and was approved by ear ("all good").
 
 **Each round works like round one.**
 - **On the Mac:**

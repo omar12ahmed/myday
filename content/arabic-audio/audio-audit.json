@@ -225,6 +225,18 @@
    "voice": "ar-XA-Wavenet-B",
    "listening": "All 179 clips (87 new texts and 92 whose clips were in the earlier voice, Chirp 3 HD Charon, mostly A1 starter and course words, made again so each explainer is in one voice, the owner’s rule; each keeps a note of its earlier clip; the explainers are fully vowelled in explainers.json, cross-checked by an independent reviewer and approved by the owner’s fluent checker) listened to by ear by the owner on 2026-10-31: “all good”, including the three pointed out for a close listen (عَنِ، مُعَلِّمَة، بِرِيطَانِيَا). Those starter and course words now play this voice too. Not yet by an Arabic teacher. No recordings held.",
    "cross_check": "Every new recording transcribed blind with Gemini 3.8 Flash (temperature 0; 180 more requests, 482 in all, cross-check-explainers.json), and the doubtful ones three more times at temperature 1 (21 requests); every transcript read by the main session. Sixteen takes were made again: ten first came back as the very same audio as a scripted piece spoken the same way and took fourteen takes to get their own, and two were made again after transcription (مِنَ, now heard right; عَنِ came back as the same audio). عَنِ, said alone, was still transcribed as عَنِّي and was approved by ear."
+  },
+  {
+   "round": "explainers, modules 6–7: the twelve new A1 explainers’ table forms, whole sentences and the Arabic in their steps (round seventeen)",
+   "sources": [
+    "explainers"
+   ],
+   "made": "2026-10-31",
+   "generated": 181,
+   "retakes": 2,
+   "voice": "ar-XA-Wavenet-B",
+   "listening": "All 181 clips (110 new texts and 71 whose clips were in the earlier voice, Chirp 3 HD Charon, made again so each explainer is in one voice, the owner’s rule; each keeps a note of its earlier clip; the explainers are fully vowelled in explainers.json, cross-checked by an independent reviewer and approved by the owner’s fluent checker) listened to by ear by the owner on 2026-10-31: “all good”, including the three pointed out for a close listen (هُمْ، بِعَشَرَةِ جُنَيْهَاتٍ، إِلَّا رُبْعًا). Those starter and course words now play this voice too. Not yet by an Arabic teacher. No recordings held.",
+   "cross_check": "Every new recording transcribed blind with Gemini 3.8 Flash (temperature 0; 183 more requests, 665 in all, cross-check-explainers.json), and the doubtful ones three more times at temperature 1 (12 requests; one attempt failed and was repeated); every transcript read by the main session. Two takes were made again: one that first came back as the same audio as a scripted piece, and هُمْ, still transcribed as هُنَّ on a new take and approved by ear."
   }
  ],
  "clips": {
@@ -297,8 +309,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هِيَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هِيَ فِي الْمَدْرَسَةِ.": {
    "file": "9274978e882baa14.mp3",
@@ -312,8 +325,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "نَحْنُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "نَحْنُ نَدْرُسُ.": {
    "file": "951d123ecb6ffda0.mp3",
@@ -766,8 +780,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "كَتَبَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "كَتَبَ رِسَالَةً.": {
    "file": "9150ca273c8d7ef1.mp3",
@@ -825,8 +840,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُرِيدُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أُرِيدُ كِتَابًا.": {
    "file": "690b3781c3ae2fae.mp3",
@@ -840,8 +856,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدِي.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "عِنْدِي سُؤَالٌ.": {
    "file": "8bf37ea6d8c79034.mp3",
@@ -880,8 +897,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "ثُمَّ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-18 and listened to on 2026-10-19; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَقْرَأُ ثُمَّ أَكْتُبُ.": {
    "file": "2837f6abff9f0772.mp3",
@@ -1331,8 +1349,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بَعْدَ ذَلِكَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-20 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-20 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "مَا رَأْيُكَ؟": {
    "file": "a7acab20b9eb18f0.mp3",
@@ -2680,32 +2699,36 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هِيَ تَكْتُبُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَنْتِ تَكْتُبِينَ": {
    "file": "f4a4161c254f2e28.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتِ تَكْتُبِينَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَنَا أَكْتُبُ": {
    "file": "a0a1418d6822fa10.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنَا أَكْتُبُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هُوَ يَكْتُبُ": {
    "file": "62fb23d99ba7ae58.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هُوَ يَكْتُبُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَكْتُبُ": {
    "file": "2b73abda2341b3f6.mp3",
@@ -2719,8 +2742,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "تَكْتُبُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "نَحْنُ نَدْرُسُ الْعَرَبِيَّةَ": {
    "file": "cd4b414c28e20726.mp3",
@@ -2748,24 +2772,27 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "تَكْتُبُونَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "يَكْتُبُونَ": {
    "file": "088481172be3caa1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَكْتُبُونَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَقْرَأُ كِتَابًا فِي الْمَكْتَبَةِ": {
    "file": "c447ac7834492302.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَقْرَأُ كِتَابًا فِي الْمَكْتَبَةِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "كِتَابًا": {
    "file": "9324e782d65216f7.mp3",
@@ -2835,8 +2862,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَحْتَاجُ إِلَى.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَسْتَيْقِظُ صَبَاحًا، ثُمَّ أَشْرَبُ الْمَاءَ، وَأَذْهَبُ إِلَى الْعَمَلِ": {
    "file": "0f2e7f1697b82201.mp3",
@@ -2899,8 +2927,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "سَاعَة.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-23 and listened to on 2026-10-24; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-23 and listened to on 2026-10-24; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ": {
    "file": "40da179cda1abb84.mp3",
@@ -2921,32 +2950,36 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِذْهَبْ يَمِينًا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَمَامَ": {
    "file": "3b368e2a9fa2c857.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَمَامَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "خَلْفَ": {
    "file": "be2fb2a625d56dff.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "خَلْفَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "بِجَانِبِ": {
    "file": "41b1b36181e15f5c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بِجَانِبِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أُرِيدُ خُبْزًا وَمَاءً، مِنْ فَضْلِكَ": {
    "file": "34bd9783bfa76f8a.mp3",
@@ -2988,8 +3021,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "لَا أَسْتَطِيعُ الْحُضُورَ الْيَوْمَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هَلْ يُمْكِنُ أَنْ نَلْتَقِيَ غَدًا؟": {
    "file": "cbce05fb446818dc.mp3",
@@ -3624,8 +3658,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَقْرَأُ كِتَابًا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-21 and listened to on 2026-10-21; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "تَبْدَأُ الدَّوْرَةُ يَوْمَ الْأَحَدِ": {
    "file": "4293fbd22e53d14e.mp3",
@@ -6478,8 +6513,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَعْمَلُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هُوَ يَعْمَلُ فِي مَكْتَبٍ.": {
    "file": "76574eac3acfa8fb.mp3",
@@ -6582,8 +6618,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هُمْ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هُمْ طُلَّابٌ.": {
    "file": "894e5732d83955cc.mp3",
@@ -6598,8 +6635,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتُمْ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هَلْ أَنْتُمْ مِنْ مِصْرَ؟": {
    "file": "5d2f2a85540d54c1.mp3",
@@ -6614,8 +6652,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "نَكْتُبُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "نَكْتُبُ كُلَّ يَوْمٍ.": {
    "file": "1da62fa980d17b0f.mp3",
@@ -6742,8 +6781,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتَظِرُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَنْتَظِرُ صَدِيقِي.": {
    "file": "3201c47cd31ba2b9.mp3",
@@ -6806,8 +6846,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُحِبُّ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أُحِبُّ الْقِرَاءَةَ.": {
    "file": "a0e4450fa1a1afb3.mp3",
@@ -6830,8 +6871,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدَكَ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هَلْ عِنْدَكَ سُؤَالٌ؟": {
    "file": "c4d04193e3441b80.mp3",
@@ -6846,8 +6888,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "لَدَيَّ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "لَدَيَّ سُؤَالٌ.": {
    "file": "a69a55b7d69bbc7f.mp3",
@@ -6959,8 +7002,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عَادَةً.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "عَادَةً أَشْرَبُ الشَّايَ.": {
    "file": "f8ee505e9a16a9e9.mp3",
@@ -6975,8 +7019,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "كُلَّ يَوْمٍ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَقْرَأُ كُلَّ يَوْمٍ.": {
    "file": "170cfca02f5b80bd.mp3",
@@ -7047,8 +7092,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "وَاحِد.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "عِنْدِي سُؤَالٌ وَاحِدٌ.": {
    "file": "de35da2517c5e745.mp3",
@@ -7063,8 +7109,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِثْنَانِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "وَاحِدٌ، اثْنَانِ، ثَلَاثَةٌ.": {
    "file": "9027d8a922c97477.mp3",
@@ -7079,8 +7126,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "ثَلَاثَة.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "عِنْدِي ثَلَاثَةُ كُتُبٍ.": {
    "file": "a709ecfd01265140.mp3",
@@ -7095,8 +7143,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عَشَرَة.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "عِنْدِي عَشَرَةُ أَقْلَامٍ.": {
    "file": "846cf5a817771137.mp3",
@@ -7127,16 +7176,18 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "كَمِ السِّعْرُ؟",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "كَمِ السِّعْرُ، مِنْ فَضْلِكَ؟": {
    "file": "aa0e7be24647ccb1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "كَمِ السِّعْرُ، مِنْ فَضْلِكَ؟",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "سِعْر": {
    "file": "1aeb71f8f59b8af5.mp3",
@@ -7175,8 +7226,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "خَمْسَة.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هَذِهِ خَمْسَةُ كُتُبٍ.": {
    "file": "a2576a4834202a2b.mp3",
@@ -7199,16 +7251,18 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "كَمِ السَّاعَةُ؟",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "كَمِ السَّاعَةُ الْآنَ؟": {
    "file": "eca6deadb79efeb1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "كَمِ السَّاعَةُ الْآنَ؟",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الْآنَ": {
    "file": "abd2fe3dc9a89537.mp3",
@@ -7247,8 +7301,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ الِاثْنَيْنِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الْمَوْعِدُ يَوْمَ الِاثْنَيْنِ.": {
    "file": "12928642893ea403.mp3",
@@ -7263,8 +7318,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ الْجُمُعَةِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الْمَكْتَبَةُ مُغْلَقَةٌ يَوْمَ الْجُمُعَةِ.": {
    "file": "47e09d29364ad9de.mp3",
@@ -7311,8 +7367,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ الثُّلَاثَاءِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الدَّرْسُ يَوْمَ الثُّلَاثَاءِ.": {
    "file": "1281889c60baaca7.mp3",
@@ -7327,8 +7384,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بَعْدَ الظُّهْرِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الْمَوْعِدُ بَعْدَ الظُّهْرِ.": {
    "file": "8a490e9c60bf636c.mp3",
@@ -7399,8 +7457,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِذْهَبْ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "اِذْهَبْ يَمِينًا، ثُمَّ يَسَارًا.": {
    "file": "43a72e11bb04612c.mp3",
@@ -7431,8 +7490,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "مُسْتَقِيمًا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "اِذْهَبْ مُسْتَقِيمًا.": {
    "file": "c2957a3e95e16fac.mp3",
@@ -7527,8 +7587,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "غَالٍ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "هَذَا غَالٍ.": {
    "file": "885d4b6dcbd11662.mp3",
@@ -7543,8 +7604,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "رَخِيص.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الْخُبْزُ رَخِيصٌ.": {
    "file": "fd3172592895f9c9.mp3",
@@ -7559,8 +7621,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "تَفَضَّلْ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "تَفَضَّلْ، هَذَا شَايُكَ.": {
    "file": "f97ee03f03c30de6.mp3",
@@ -7599,8 +7662,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَصِلُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَصِلُ بَعْدَ سَاعَةٍ.": {
    "file": "99f3c68ef6a24abf.mp3",
@@ -7994,16 +8058,18 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدَكِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "عِنْدَهُ": {
    "file": "b51e7d73472dd1c4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدَهُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أُحِبُّ الْقِرَاءَةَ": {
    "file": "5fa9d6efe66f770e.mp3",
@@ -8026,8 +8092,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "صَبَاحًا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "يَنَامُ": {
    "file": "5c83a23e09783040.mp3",
@@ -8067,8 +8134,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "مَسَاءً.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "كَمِ": {
    "file": "3e5d41104cd198c6.mp3",
@@ -8123,8 +8191,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "سَبْعَة.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَسَابِيع": {
    "file": "778ad9fac16fdf1e.mp3",
@@ -8139,8 +8208,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "وَالنِّصْفُ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الظُّهْر": {
    "file": "6755297c2247c425.mp3",
@@ -8163,32 +8233,36 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عَلَى الْيَمِينِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "يَمِينًا": {
    "file": "86432ea17e5d97be.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَمِينًا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "يَسَارًا": {
    "file": "f41610cb2d94a6d2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَسَارًا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "اِذْهَبِي": {
    "file": "39f82c73f855553f.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِذْهَبِي.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "شَوَارِع": {
    "file": "021dd296a7c4f87c.mp3",
@@ -8251,8 +8325,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "تَفَضَّلِي.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "رَسَائِل": {
    "file": "88fa48de3a3fd5d3.mp3",
@@ -8267,8 +8342,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنَا مُتَأَخِّرَةٌ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "يَصِلُ": {
    "file": "6225c15cd8aa5edb.mp3",
@@ -8315,8 +8391,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنَا آسِفَةٌ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "مُحَادَثَة": {
    "file": "4cc0c41db416d980.mp3",
@@ -9757,8 +9834,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ الْأَرْبِعَاءِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الدَّرْسُ يَوْمَ الْأَرْبِعَاءِ.": {
    "file": "4939c144a1b5e122.mp3",
@@ -10190,8 +10268,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَرْبَعَة.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "مَا رَأْيُكِ؟": {
    "file": "2b385f5caf6071d4.mp3",
@@ -11418,8 +11497,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ السَّبْتِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "أَزُورُ أُمِّي يَوْمَ السَّبْتِ.": {
    "file": "7565ab9ecc24c587.mp3",
@@ -11434,8 +11514,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ الْأَحَدِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "يَبْدَأُ الدَّرْسُ يَوْمَ الْأَحَدِ.": {
    "file": "ca9694d2439cf250.mp3",
@@ -11450,8 +11531,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ الْخَمِيسِ.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "الْمَوْعِدُ يَوْمَ الْخَمِيسِ.": {
    "file": "f31cf783ab4ca6c1.mp3",
@@ -11795,8 +11877,9 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَعْرِفُنَا.",
-   "check": "to check",
-   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026)."
+   "check": "checked",
+   "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
+   "checked": "2026-10-31"
   },
   "جُمَل": {
    "file": "c226c7ed72711ef4.mp3",
@@ -22883,770 +22966,880 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتَ تَكْتُبُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَعْمَلُ أَبِي فِي مَكْتَبٍ.": {
    "file": "56f49c37a1d5cd05.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَعْمَلُ أَبِي فِي مَكْتَبٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَلْ تَتَكَلَّمِينَ الْعَرَبِيَّةَ؟": {
    "file": "141462c862375f65.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَلْ تَتَكَلَّمِينَ الْعَرَبِيَّةَ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هِيَ تَذْهَبُ إِلَى الْجَامِعَةِ.": {
    "file": "64043b4b9a77ccec.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هِيَ تَذْهَبُ إِلَى الْجَامِعَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نَحْنُ نَكْتُبُ": {
    "file": "8866f27b990b5f03.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "نَحْنُ نَكْتُبُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنْتُمْ تَكْتُبُونَ": {
    "file": "80e27563c7bf0798.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتُمْ تَكْتُبُونَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هُمْ يَكْتُبُونَ": {
    "file": "0dbb9b6d2941089b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هُمْ يَكْتُبُونَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنْتُنَّ تَكْتُبْنَ": {
    "file": "1130d9ce0920933a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتُنَّ تَكْتُبْنَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هُنَّ يَكْتُبْنَ": {
    "file": "378cdb77cc140b89.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هُنَّ يَكْتُبْنَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نَذْهَبُ إِلَى السُّوقِ كُلَّ أُسْبُوعٍ.": {
    "file": "161bae2b994e4445.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "نَذْهَبُ إِلَى السُّوقِ كُلَّ أُسْبُوعٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مَاذَا تَشْرَبُونَ؟": {
    "file": "5f53875484a09874.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "مَاذَا تَشْرَبُونَ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْأَطْفَالُ يَلْعَبُونَ فِي الْحَدِيقَةِ.": {
    "file": "7f1b669928727364.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْأَطْفَالُ يَلْعَبُونَ فِي الْحَدِيقَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَقْرَأُ الْكِتَابَ": {
    "file": "8a54c90e8889b818.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَقْرَأُ الْكِتَابَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَرْجِعُ إِلَى الْبَيْتِ": {
    "file": "a21ef318671cb91e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَرْجِعُ إِلَى الْبَيْتِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنْتَظِرُ صَدِيقِي": {
    "file": "0fe07c3353afc75a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتَظِرُ صَدِيقِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَبْحَثُ عَنْ مِفْتَاحِي": {
    "file": "d379e74f98cc25ef.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَبْحَثُ عَنْ مِفْتَاحِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَسْتَمِعُ إِلَى الْمُعَلِّمِ": {
    "file": "4b34224374732b09.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَسْتَمِعُ إِلَى الْمُعَلِّمِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَشْرَبُ الْقَهْوَةَ بِلَا سُكَّرٍ.": {
    "file": "54cf21b262b84c72.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَشْرَبُ الْقَهْوَةَ بِلَا سُكَّرٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نَنْتَظِرُ الْحَافِلَةَ هُنَا.": {
    "file": "2bc51a04781207b2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "نَنْتَظِرُ الْحَافِلَةَ هُنَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَبْحَثُ يُوسُفُ عَنْ عَمَلٍ.": {
    "file": "c22ba61b5065310c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَبْحَثُ يُوسُفُ عَنْ عَمَلٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَعْرِفُنِي": {
    "file": "39f6b08406bc4fa6.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَعْرِفُنِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَعْرِفُكَ": {
    "file": "a691808c4392d2c4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَعْرِفُكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَعْرِفُكِ": {
    "file": "1358da91b1b4d0fa.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَعْرِفُكِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَعْرِفُهُ": {
    "file": "ce58132a9d104de6.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَعْرِفُهُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَعْرِفُهَا": {
    "file": "cf98336f69120556.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَعْرِفُهَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَعْرِفُهُمْ": {
    "file": "e5e3c8bffd3789f0.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَعْرِفُهُمْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَلْ تَعْرِفُنِي؟": {
    "file": "6d81c62958e8b0b4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَلْ تَعْرِفُنِي؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَذِهِ حَقِيبَةٌ جَدِيدَةٌ، وَأُحِبُّهَا كَثِيرًا.": {
    "file": "9a68dc2e5b5b7eb1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَذِهِ حَقِيبَةٌ جَدِيدَةٌ، وَأُحِبُّهَا كَثِيرًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَيْنَ الْمِفْتَاحُ؟ لَا أَجِدُهُ.": {
    "file": "50f3e1f0b28570fb.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَيْنَ الْمِفْتَاحُ؟ لَا أَجِدُهُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عِنْدَنَا": {
    "file": "811e1fefe24bbfdb.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدَنَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَلْ عِنْدَكِ وَقْتٌ الْيَوْمَ؟": {
    "file": "35e62bd9f0a8d0f3.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَلْ عِنْدَكِ وَقْتٌ الْيَوْمَ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُحِبُّ السِّبَاحَةَ كَثِيرًا.": {
    "file": "3e0c7a30441734ba.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُحِبُّ السِّبَاحَةَ كَثِيرًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نَحْتَاجُ إِلَى خَرِيطَةٍ.": {
    "file": "323a25529ec9e11b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "نَحْتَاجُ إِلَى خَرِيطَةٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عَادَةً أَشْرَبُ الْقَهْوَةَ صَبَاحًا.": {
    "file": "7fa63ae572a442ad.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عَادَةً أَشْرَبُ الْقَهْوَةَ صَبَاحًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَتَغَدَّى، ثُمَّ أَنَامُ قَلِيلًا.": {
    "file": "638b1229ca750fbb.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَتَغَدَّى، ثُمَّ أَنَامُ قَلِيلًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَرْجِعُ أَبِي إِلَى الْبَيْتِ مَسَاءً.": {
    "file": "8d62733801b60a16.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَرْجِعُ أَبِي إِلَى الْبَيْتِ مَسَاءً.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "صِفْر": {
    "file": "1b70468a3196e871.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "صِفْر.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "سِتَّة": {
    "file": "ca15342127e5b378.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "سِتَّة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ثَمَانِيَة": {
    "file": "a9915ab51b448230.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "ثَمَانِيَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "تِسْعَة": {
    "file": "8730cc85d996243b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "تِسْعَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "بِكَمْ هَذَا الْقَلَمُ؟": {
    "file": "e6699cc9c5818a8c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بِكَمْ هَذَا الْقَلَمُ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْقَلَمُ بِثَلَاثَةِ جُنَيْهَاتٍ.": {
    "file": "6bc8c52445ab4a37.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْقَلَمُ بِثَلَاثَةِ جُنَيْهَاتٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ الْوَاحِدَةُ": {
    "file": "cb5cb2718f0b5031.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ الْوَاحِدَةُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ الثَّانِيَةُ": {
    "file": "6dcb23d3b9df6264.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ الثَّانِيَةُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ الرَّابِعَةُ": {
    "file": "33ec5017121dfb06.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ الرَّابِعَةُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ الْخَامِسَةُ وَالنِّصْفُ": {
    "file": "95fad8d61c826a67.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ الْخَامِسَةُ وَالنِّصْفُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ السَّابِعَةُ وَالرُّبْعُ": {
    "file": "9b06a7f0ac9ee88b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ السَّابِعَةُ وَالرُّبْعُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ الْعَاشِرَةُ إِلَّا رُبْعًا": {
    "file": "1f4683adba80e4fa.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ الْعَاشِرَةُ إِلَّا رُبْعًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ الثَّانِيَةَ عَشْرَةَ": {
    "file": "4bdf410dacbba369.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ الثَّانِيَةَ عَشْرَةَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الدَّرْسُ فِي السَّاعَةِ الْعَاشِرَةِ صَبَاحًا.": {
    "file": "79b21112829bf587.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الدَّرْسُ فِي السَّاعَةِ الْعَاشِرَةِ صَبَاحًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَصِلُ فِي السَّاعَةِ السَّادِسَةِ وَالنِّصْفِ.": {
    "file": "e599c42bd4bcb71a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَصِلُ فِي السَّاعَةِ السَّادِسَةِ وَالنِّصْفِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْيَوْمُ الْخَمِيسُ.": {
    "file": "ef6e9a480a2e4abe.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْيَوْمُ الْخَمِيسُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عِنْدِي مَوْعِدٌ يَوْمَ الْأَرْبِعَاءِ.": {
    "file": "13c92016d422cad3.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدِي مَوْعِدٌ يَوْمَ الْأَرْبِعَاءِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لَا أَعْمَلُ يَوْمَ السَّبْتِ.": {
    "file": "83d817f9068711b7.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "لَا أَعْمَلُ يَوْمَ السَّبْتِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَمَامَ الْفُنْدُقِ": {
    "file": "3b95b10ffec24489.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَمَامَ الْفُنْدُقِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "خَلْفَ الْبَيْتِ": {
    "file": "ab5e02e90a769732.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "خَلْفَ الْبَيْتِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "بِجَانِبِ الْمَحَطَّةِ": {
    "file": "7125c2c0006ca11c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بِجَانِبِ الْمَحَطَّةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عَلَى الْيَسَارِ": {
    "file": "b72a8f5bdfe38a5b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عَلَى الْيَسَارِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "اِذْهَبِي يَسَارًا": {
    "file": "1e1576f9e516e8ad.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِذْهَبِي يَسَارًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "اِذْهَبْ مُسْتَقِيمًا": {
    "file": "7247f866f90d2189.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِذْهَبْ مُسْتَقِيمًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْمَطْعَمُ أَمَامَ الْفُنْدُقِ.": {
    "file": "b31a1389dc928532.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْمَطْعَمُ أَمَامَ الْفُنْدُقِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "اِذْهَبْ مُسْتَقِيمًا، ثُمَّ يَسَارًا.": {
    "file": "1aace04c94eab3ff.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِذْهَبْ مُسْتَقِيمًا، ثُمَّ يَسَارًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْمَحَطَّةُ عَلَى الْيَمِينِ.": {
    "file": "bf7735b4914debd5.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْمَحَطَّةُ عَلَى الْيَمِينِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُرِيدُ خُبْزًا، مِنْ فَضْلِكَ": {
    "file": "71a7f31963c05aae.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُرِيدُ خُبْزًا، مِنْ فَضْلِكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَلْ عِنْدَكَ حَلِيبٌ؟": {
    "file": "4d60444bc91833b7.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَلْ عِنْدَكَ حَلِيبٌ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "بِكَمْ هَذَا؟": {
    "file": "07278a91b154f164.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بِكَمْ هَذَا؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُرِيدُ كِيلُو تُفَّاحٍ، مِنْ فَضْلِكَ.": {
    "file": "5e0de0918769ad5a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُرِيدُ كِيلُو تُفَّاحٍ، مِنْ فَضْلِكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَلْ عِنْدَكَ خُبْزٌ طَازَجٌ؟": {
    "file": "fec4a345c920a2fc.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَلْ عِنْدَكَ خُبْزٌ طَازَجٌ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَذَا غَالٍ جِدًّا.": {
    "file": "b79d90146301b462.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَذَا غَالٍ جِدًّا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنَا مُتَأَخِّرٌ": {
    "file": "7cce4d4bd7f60c19.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنَا مُتَأَخِّرٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنَا آسِفٌ": {
    "file": "f7a81f2fe0fcb09b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنَا آسِفٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَصِلُ بَعْدَ عَشْرِ دَقَائِقَ": {
    "file": "ab2703f02248e0d6.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَصِلُ بَعْدَ عَشْرِ دَقَائِقَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَحْتَاجُ إِلَى مُسَاعَدَةٍ": {
    "file": "c8d08eeaa12581e9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَحْتَاجُ إِلَى مُسَاعَدَةٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنَا آسِفَةٌ، الْحَافِلَةُ مُتَأَخِّرَةٌ.": {
    "file": "5f29aaaa7e938818.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنَا آسِفَةٌ، الْحَافِلَةُ مُتَأَخِّرَةٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَنْتَظِرُكَ فِي الْمَحَطَّةِ.": {
    "file": "a78a75d4ee5774e4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَنْتَظِرُكَ فِي الْمَحَطَّةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَاتِفِي لَا يَعْمَلُ.": {
    "file": "965ad0d3f98a43f3.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَاتِفِي لَا يَعْمَلُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَكْتُبُ رِسَالَةً الْآنَ": {
    "file": "129315cbcbfff594.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَكْتُبُ رِسَالَةً الْآنَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عَمِلَ": {
    "file": "4210e1ca5de538b8.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عَمِلَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَبْحَثُ": {
    "file": "a56f1ee392d00721.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَبْحَثُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هَذَا قَلَمٌ جَدِيدٌ، أُحِبُّهُ كَثِيرًا": {
    "file": "5149ebf77306fb92.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "هَذَا قَلَمٌ جَدِيدٌ، أُحِبُّهُ كَثِيرًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عِنْدِي أَخٌ": {
    "file": "903cf71ccd31ba69.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدِي أَخٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عِنْدِي سُؤَالٌ": {
    "file": "db683b8eb1845330.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "عِنْدِي سُؤَالٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُحِبُّ الْقَهْوَةَ": {
    "file": "3d3b22b171102ace.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُحِبُّ الْقَهْوَةَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَحْتَاجُ": {
    "file": "304567533bf7a957.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَحْتَاجُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُرِيدُ قَهْوَةً": {
    "file": "7834d7f14db59afd.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُرِيدُ قَهْوَةً.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَسْتَيْقِظُ صَبَاحًا": {
    "file": "ef2ea533d33ffd0a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَسْتَيْقِظُ صَبَاحًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَدْرُسُ ثُمَّ أَنَامُ": {
    "file": "6508b8a945aaccc6.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَدْرُسُ ثُمَّ أَنَامُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أَسْتَيْقِظُ، ثُمَّ أَشْرَبُ الْقَهْوَةَ، وَأَذْهَبُ إِلَى الْعَمَلِ": {
    "file": "92ca6220d3adf7b5.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أَسْتَيْقِظُ، ثُمَّ أَشْرَبُ الْقَهْوَةَ، وَأَذْهَبُ إِلَى الْعَمَلِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "سَبْعَةٌ وَأَرْبَعُونَ": {
    "file": "c0df8f5272b39f1d.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "سَبْعَةٌ وَأَرْبَعُونَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ثَلَاثَةَ عَشَرَ": {
    "file": "24d4fc6256aca076.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "ثَلَاثَةَ عَشَرَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "بِعَشَرَةِ جُنَيْهَاتٍ": {
    "file": "28c0db65fb44e250.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "بِعَشَرَةِ جُنَيْهَاتٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "السَّاعَةُ": {
    "file": "b161302a8815c9e9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "السَّاعَةُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "وَالرُّبْعُ": {
    "file": "d5c77fbca8f6ad04.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "وَالرُّبْعُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "إِلَّا رُبْعًا": {
    "file": "2453d354f3c99699.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "إِلَّا رُبْعًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "فِي السَّاعَةِ": {
    "file": "7e60dbe71cacbb7e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "فِي السَّاعَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "فِي السَّاعَةِ الرَّابِعَةِ": {
    "file": "b8f585ddce63f0a2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "فِي السَّاعَةِ الرَّابِعَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "فِي السَّاعَةِ الثَّانِيَةَ عَشْرَةَ": {
    "file": "c1f7207326bebbf4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "فِي السَّاعَةِ الثَّانِيَةَ عَشْرَةَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَوْمُ": {
    "file": "ce20cb59cc44f7b4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْأَحَدُ": {
    "file": "2b586929f00c80cd.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْأَحَدُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْأَحَد": {
    "file": "b84a5a7fa9e8a52c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْأَحَد.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْخَمِيس": {
    "file": "894ef9d3375ea956.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْخَمِيس.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَوْمَ": {
    "file": "4e66c6bd680abe39.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُسَافِرُ يَوْمَ الْخَمِيسِ": {
    "file": "4149ab1edba0f3c7.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُسَافِرُ يَوْمَ الْخَمِيسِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يَوْمَ الْأَحَدِ فِي السَّاعَةِ الْعَاشِرَةِ": {
    "file": "ffc1137ebe031be9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "يَوْمَ الْأَحَدِ فِي السَّاعَةِ الْعَاشِرَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْبَيْتُ خَلْفَ الْحَدِيقَةِ": {
    "file": "d8042f520ae221a6.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْبَيْتُ خَلْفَ الْحَدِيقَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُرِيدُ شَايًا": {
    "file": "9966b65acc8279b5.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "أُرِيدُ شَايًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لَيْسَ عِنْدَنَا": {
    "file": "7650add16f725a50.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "لَيْسَ عِنْدَنَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْخُبْزُ رَخِيصٌ": {
    "file": "9c7e3b62c0be9abf.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْخُبْزُ رَخِيصٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الْقَهْوَةُ رَخِيصَةٌ": {
    "file": "bad08430a8ebb6a6.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "الْقَهْوَةُ رَخِيصَةٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لَا أَسْتَطِيعُ": {
    "file": "6e7ba98551c12e29.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "لَا أَسْتَطِيعُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   }
  },
  "removed": [
