@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react';
+import { pruneAskSeen } from './data/patterns/saved';
 import { exploreRoute, projectHref } from './explore/route';
 import { ExploreBoundary } from './explore/ExploreBoundary';
 import { Card } from './components/Card';
@@ -96,6 +97,9 @@ function Shell() {
   useEffect(() => { const m = takeBootNotice(); if (m) toast(m); }, []);
   // The daily backup, while MyDay is open and signed in (sync/backup.ts).
   useEffect(() => { startDailyBackups(); startFileTidy(); startWipeRetry(); }, []);
+  // Counts of what you did with Ask MyDay's suggestions are kept for 8 weeks: older ones forgotten when MyDay opens, and
+  // each new day (specs/ask-how-you-work.md).
+  useEffect(() => { update(d => (pruneAskSeen(d.patterns, k) ? undefined : false)); }, [k]);
 
   // Theme and animations: set on the page so the colours and motion follow straight away.
   useEffect(() => {

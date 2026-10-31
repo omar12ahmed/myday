@@ -54,21 +54,22 @@ export interface AskSlice { page: AskPage; context: AskPageContext; sends: strin
 // How you work, for Ask MyDay — only when you've let it use that (1.108.0, specs/ask-how-you-work.md), and only what you've
 // confirmed: your preferences as limits, and the patterns you said are right, as plain statements (never their evidence,
 // patterns you said no to or haven't answered, or your name). At most 8, each up to 120 characters. It doubts: a pattern
-// you confirmed that no longer has recent evidence isn't sent (`heldBack` says which).
+// you confirmed is sent only while the evidence still says what you confirmed, in MyDay's own words; one that has faded,
+// or now says something else (energy higher on work days, not lower), is held back (`heldBack` says which).
 export function howYouWork(data: MyDayData, k: DateKey = todayKey()): string[] {
   const p = data.patterns.prefs;
   if (!p.askUse) return [];
-  const holding = new Set(findPatterns(data, k).map(x => x.id));
+  const now = new Map(findPatterns(data, k).map(x => [x.id, x.title]));
   const out: string[] = [];
   for (const c of ['learning', 'admin', 'health'] as const) { const m = p.maxMinutes[c]; if (m) out.push(`${CAT_LABEL[c]} tasks: ${m.value} min at most`); }
   if (p.maxTasks) out.push(`At most ${p.maxTasks.value} ${p.maxTasks.value === 1 ? 'task' : 'tasks'} a day on the plan`);
-  for (const [id, a] of Object.entries(data.patterns.answers)) if (a.said === 'yes' && a.title.trim() && holding.has(id)) out.push(a.title.trim());
+  for (const [id, a] of Object.entries(data.patterns.answers)) if (a.said === 'yes' && now.get(id) === a.title.trim()) out.push(now.get(id)!);
   return [...new Set(out.map(s => cut(s, L.howChars)))].slice(0, L.howLines);
 }
 // The patterns you confirmed that it doubts now (not enough recent evidence), so they're held back from Ask MyDay.
 export function heldBack(data: MyDayData, k: DateKey = todayKey()): string[] {
-  const holding = new Set(findPatterns(data, k).map(x => x.id));
-  return Object.entries(data.patterns.answers).filter(([id, a]) => a.said === 'yes' && a.title.trim() && !holding.has(id)).map(([, a]) => a.title.trim());
+  const now = new Map(findPatterns(data, k).map(x => [x.id, x.title]));
+  return Object.entries(data.patterns.answers).filter(([id, a]) => a.said === 'yes' && a.title.trim() && now.get(id) !== a.title.trim()).map(([, a]) => a.title.trim());
 }
 
 // The words for what each page sends — shared by the "Sends:" line and the What MyDay knows page, so they can't drift.
@@ -200,7 +201,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
     parts.push(SENDS.calendar);
   }
-  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count }, how: howYouWork(data) };
+  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count }, how: howYouWork(data, k) };
 }
 
 // A project as its page sends it — and as Ask MyDay's look at a project sends it (v19): its name, summary, stage, tasks,

@@ -3,7 +3,8 @@ import { heldBack, howYouWork } from '../ai/askContext';
 import { AI_MODE } from '../ai/request';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { forgetAskSeen, setAskUse } from '../data/patterns/saved';
+import { ASK_SEEN_DAYS, forgetAskSeen, setAskUse } from '../data/patterns/saved';
+import { shift, todayKey } from '../data/dates';
 import { LinkButton } from '../components/parts';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
@@ -15,7 +16,8 @@ import type { MyDayData } from '../data/types';
 // Off again: nothing more is sent, and what it counted is forgotten. Only shown when this copy of MyDay has AI help.
 export function AskUseCard({ data }: { data: MyDayData }) {
   if (AI_MODE === 'off') return null;
-  const on = !!data.patterns.prefs.askUse, lines = howYouWork(data), doubts = on ? heldBack(data) : [], seen = data.patterns.askSeen ?? [];
+  const today = todayKey(), from = shift(today, -ASK_SEEN_DAYS);
+  const on = !!data.patterns.prefs.askUse, lines = howYouWork(data, today), doubts = on ? heldBack(data, today) : [], seen = (data.patterns.askSeen ?? []).filter(x => x.on >= from);
   const added = seen.filter(x => x.added), shortened = added.filter(x => x.proposed && x.minutes && x.minutes < x.proposed).length;
   const n = (k: number, one: string, many: string) => (k === 1 ? `one ${one}` : `${k} ${many}`);
   const set = (v: boolean) => { if (update(d => (setAskUse(d.patterns, v) ? undefined : false))) toast(v ? 'Ask MyDay can use how you work.' : 'Ask MyDay no longer uses how you work: nothing more is sent, and what it counted is forgotten.'); };
@@ -35,7 +37,7 @@ export function AskUseCard({ data }: { data: MyDayData }) {
           {lines.length ? lines.map(l => <li key={l}>{l}</li>) : <li>Nothing yet: set a preference below, or say a pattern is right.</li>}
         </ul>
         {doubts.length > 0 && <>
-          <p className="text-sm font-semibold m-0 mt-3">Held back while it’s less clear lately</p>
+          <p className="text-sm font-semibold m-0 mt-3">Held back: less clear lately, or it now says something else</p>
           <ul className="m-0 pl-5 text-[15px] text-fg-2" data-s="ask-use-doubts">{doubts.map(l => <li key={l}>{l}</li>)}</ul>
         </>}
         <p className="text-sm text-fg-3 m-0 mt-2" data-s="ask-use-seen">
@@ -43,7 +45,7 @@ export function AskUseCard({ data }: { data: MyDayData }) {
           {seen.length > 0 && <> <LinkButton data-action="ask-use-forget" className="text-sm" onClick={() => { if (update(d => (forgetAskSeen(d.patterns) ? undefined : false))) toast('Forgotten. It counts afresh from now.'); }}>Forget what it counted</LinkButton></>}
         </p>
       </>}
-      <p className="text-sm text-fg-3 m-0 mt-2">Never sent: what a pattern is based on, patterns you said no to or haven’t answered, your name, or anything private.</p>
+      <p className="text-sm text-fg-3 m-0 mt-2">Only these general statements are sent: never what a pattern is based on, patterns you said no to or haven’t answered, your name, or the name of anything in MyDay.</p>
     </Card>
   );
 }

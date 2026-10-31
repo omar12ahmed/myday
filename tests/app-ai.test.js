@@ -66,6 +66,7 @@ const SEED = `s => {
   await seeded(mock, MOCK);
   // (Only calls to the AI function count: another tab's background sync also reaches the stand-in, and is not what these checks are about.)
   const logBefore = aiCalls().length;
+  await mock.until(`!!document.querySelector('[data-action=ai-open]')`, 10000); // (the plan's AI button can arrive a moment after Today, under load)
   check('"Help me adjust today" is on the plan, as a secondary action', await mock.ev(`(() => { const b = document.querySelector('[data-action=ai-open]'); return !!b && b.dataset.variant !== 'primary'; })()`));
   await mock.click('[data-action=ai-open]'); await mock.until(`document.getElementById('aiNote')`);
   check('it explains it\'s practice mode and nothing is sent anywhere', (await mock.text('#aiCard')).includes('Practice mode') && (await mock.text('#aiCard')).includes('Nothing is sent anywhere'));
@@ -571,7 +572,7 @@ const SEED = `s => {
     await mock.setData(`s => { s.patterns.prefs.maxMinutes.admin = { value: 10, on: '2026-01-01', from: null, why: 'You chose this.' }; s.tasks.items = s.tasks.items.filter(t => !['Call the bank', 'Renew passport', 'Email Sam'].includes(t.title)); }`);
     await mock.ev(`location.hash = 'noticed'`); await mock.until(`!!document.querySelector('[data-action=ask-use]')`, 10000);
     check('nothing confirmed yet: MyDay doesn\'t ask', !(await mock.exists('[data-s=ask-offer]')));
-    await mock.setData(`s => { s.patterns.answers['study-time'] = { said: 'yes', on: '2026-01-01', examples: 12, title: 'You study most between 07:00 and 09:00' }; }`);
+    await mock.setData(`s => { s.patterns.answers['time:study'] = { said: 'yes', on: '2026-01-01', examples: 12, title: 'You usually study in the morning' }; }`);
     await mock.ev(`location.hash = 'noticed'`); await mock.until(`!!document.querySelector('[data-s=ask-offer]')`, 10000);
     check('once something is confirmed, MyDay asks once, in the moment: Shall Ask MyDay use this too?', (await mock.text('[data-s=ask-offer]')).includes('Shall Ask MyDay use this too?'));
     await mock.click('[data-action=ask-offer-no]'); await sleep(250);
@@ -579,7 +580,7 @@ const SEED = `s => {
     check('What MyDay has noticed has "Let Ask MyDay use how you work", off until you switch it on', (await mock.ev(`document.querySelector('[data-action=ask-use]')?.getAttribute('aria-checked')`)) === 'false');
     await mock.click('[data-action=ask-use]'); await mock.until(`!!document.querySelector('[data-s=ask-use-lines]')`, 5000);
     check('…on: it lists exactly what Ask MyDay is sent now', (await mock.ev(`document.querySelector('[data-action=ask-use]')?.getAttribute('aria-checked')`)) === 'true' && (await mock.text('[data-s=ask-use-lines]')).includes('Admin tasks: 10 min at most'), await mock.text('[data-s=ask-use-lines]'));
-    check('…and what it holds back while it\'s less clear lately (it doubts a confirmed pattern with no recent evidence)', (await mock.text('[data-s=ask-use-doubts]')).includes('You study most between 07:00 and 09:00') && !(await mock.text('[data-s=ask-use-lines]')).includes('07:00'), await mock.text('[data-s=askUse]'));
+    check('…and what it holds back while it\'s less clear lately (it doubts a confirmed pattern with no recent evidence)', (await mock.text('[data-s=ask-use-doubts]')).includes('You usually study in the morning') && !(await mock.text('[data-s=ask-use-lines]')).includes('morning'), await mock.text('#askUse'));
     await mock.ev(`location.hash = 'today'`); await sleep(300);
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
     check('the "Sent to the AI" preview says how you work goes too', (await mock.text('[data-s=ask-sends]')).includes('How you work'), await mock.text('[data-s=ask-sends]'));
@@ -587,10 +588,12 @@ const SEED = `s => {
     const hwItems = await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].map(li => li.textContent)`);
     check('its admin tasks are kept to your 10 minutes, and say so', hwItems.length >= 2 && hwItems.every(t => /10 min, as you prefer/.test(t)), hwItems);
     await mock.ev(`document.querySelectorAll('[data-s=ask-pick]')[1].click()`); await sleep(100);
+    await mock.ev(`document.querySelector('[data-action=ask-edit]').click()`); await sleep(150);
+    await mock.type('[data-f=ask-minutes]', '5'); await mock.ev(`document.querySelector('[data-action=ask-edit-done]').click()`); await sleep(100);
     await mock.click('[data-action=ask-add]'); await sleep(300);
     let seen = (await mock.data()).patterns.askSeen ?? [];
-    check('Add counts what you did with each: added or not, its list and minutes, never its words', seen.length === hwItems.length && seen.filter(x => x.added).length === hwItems.length - 1 && seen.every(x => x.category === 'admin' && x.proposed === 10)
-      && !JSON.stringify(seen).includes('bank'), seen);
+    check('Add counts what you did with each: added or not, its list and minutes (one shortened to 5 by editing), never its words', seen.length === hwItems.length && seen.filter(x => x.added).length === hwItems.length - 1 && seen.every(x => x.category === 'admin' && x.proposed === 10)
+      && seen[0].added && seen[0].minutes === 5 && !JSON.stringify(seen).includes('bank'), seen);
     await closeSheet(mock); await sleep(200);
     await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => !['Call the bank', 'Renew passport', 'Email Sam'].includes(t.title)); }`);
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
@@ -602,7 +605,7 @@ const SEED = `s => {
     check('the card says what it counted (added, shortened, not added), never words', /What it has counted of its suggestions: \d+ added \(.*\), \d+ not added\./.test(await mock.text('[data-s=ask-use-seen]')), await mock.text('[data-s=ask-use-seen]'));
     await mock.click('[data-action=forget-learned]'); await sleep(150); await mock.click('[data-action=forget-learned-yes]'); await sleep(250);
     const fl = (await mock.data()).patterns;
-    check('Forget everything it has learned (asked twice): your answers and its counts go; your preferences stay', eq(fl.answers, {}) && !('askSeen' in fl) && fl.prefs.maxMinutes.admin?.value === 10 && fl.prefs.askUse === true, fl);
+    check('Forget everything it has learned (asked twice): your answers and its counts go; your preferences and your answer about Ask stay', eq(fl.answers, {}) && !('askSeen' in fl) && fl.prefs.maxMinutes.admin?.value === 10 && fl.prefs.askUse === true && !!fl.prefs.askAsked, fl);
     await mock.click('[data-action=ask-use]'); await sleep(250);
     const offData = await mock.data();
     check('switched off: nothing more is sent, and what it counted is forgotten', !offData.patterns.prefs.askUse && !('askSeen' in offData.patterns) && !(await mock.exists('[data-s=ask-use-lines]')));

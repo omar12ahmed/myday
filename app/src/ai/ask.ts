@@ -152,6 +152,9 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
     const whole = message.match(/^[\s\S]*[.!?…](?=\s|$)/);
     // A message cut off mid-thought ("I searched your notes for") can't be mended: the reply isn't usable.
     if (!whole && /\b(for|to|the|a|an|of|on|about|in|with|and|or|matched|called|named|says?|is|are|was|your)\s*$/i.test(message)) return null;
+    // …nor one the model's own straight quote cut short: it ends in a space, where the quote closed it ("I can see ",
+    // "low energy: "; 1.111.0's evaluation) — no sentence ends that way…
+    if (!whole && /"message"\s*:\s*"(?:[^"\\]|\\.)*[ \t]"/.test(text)) return null;
     // …and so can't an answer that stops where what it introduced should follow ("I can only see one step ahead:").
     if (!whole && /:\s*$/.test(message) && r.kind !== 'add' && r.kind !== 'steps') return null;
     message = whole ? whole[0].trim() : message.replace(/[\s,;:—–-]+$/, '') + '.';

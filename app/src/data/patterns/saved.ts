@@ -93,16 +93,25 @@ export function answerAskOffer(d: PatternsData, yes: boolean, today = todayKey()
   if (yes) d.prefs.askUse = true;
   return true;
 }
-export function setAskUse(d: PatternsData, on: boolean): boolean {
+export function setAskUse(d: PatternsData, on: boolean, today = todayKey()): boolean {
   if (!!d.prefs.askUse === on) return false;
   if (on) d.prefs.askUse = true; else { delete d.prefs.askUse; delete d.askSeen; }
+  d.prefs.askAsked ??= today; // your answer either way: the offer doesn't come back
+  return true;
+}
+// Counts older than 8 weeks are forgotten (checked once a day when MyDay opens; also each time it counts).
+export const ASK_SEEN_DAYS = 56;
+export function pruneAskSeen(d: PatternsData, today = todayKey()): boolean {
+  const from = shift(today, -ASK_SEEN_DAYS), kept = (d.askSeen ?? []).filter(x => x.on >= from);
+  if (!d.askSeen || kept.length === d.askSeen.length) return false;
+  if (kept.length) d.askSeen = kept; else delete d.askSeen;
   return true;
 }
 // What you did with Ask MyDay's suggestions this time (only while it's on): newest last, the last 8 weeks, at most 200.
 export const ASK_SEEN_MAX = 200;
 export function recordAskSeen(d: PatternsData, xs: Omit<AskSeen, 'on'>[], today = todayKey()): boolean {
   if (!d.prefs.askUse || !xs.length) return false;
-  const from = shift(today, -56);
+  const from = shift(today, -ASK_SEEN_DAYS);
   d.askSeen = [...(d.askSeen ?? []).filter(x => x.on >= from), ...xs.map((x): AskSeen => ({ ...x, on: today } as AskSeen))].slice(-ASK_SEEN_MAX);
   return true;
 }
@@ -113,11 +122,11 @@ export function forgetAskSeen(d: PatternsData): boolean {
   return true;
 }
 // Forget everything MyDay has learned about you: every answer you gave about a pattern (so they're all new again, worked
-// out afresh from what you do), what it counted of Ask MyDay's suggestions, and that it asked about Ask. Your own
-// preferences and the switch stay: they're choices you made, each changed where it's set.
+// out afresh from what you do) and what it counted of Ask MyDay's suggestions. Your own preferences, the switch and
+// your answer about Ask stay: they're choices you made, each changed where it's set.
 export function forgetLearned(d: PatternsData): boolean {
-  if (!Object.keys(d.answers).length && !d.askSeen && !d.prefs.askAsked) return false;
-  d.answers = {}; delete d.askSeen; delete d.prefs.askAsked;
+  if (!Object.keys(d.answers).length && !d.askSeen) return false;
+  d.answers = {}; delete d.askSeen;
   return true;
 }
 // Let AI help place notes in projects (or stop it). Returns false when nothing changed.

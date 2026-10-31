@@ -34,9 +34,26 @@ recommendations".
   - a pattern's evidence (the counts and dates);
   - patterns you said no to;
   - (unless you choose otherwise in §5) patterns you haven't answered yet;
-  - anything private (the counting already leaves private projects out);
+  - the name of anything in MyDay: only general statements in MyDay's own words go ("Shorter learning tasks get done
+    more often"), even though the counting behind them includes private projects' tasks;
   - your name.
 - **Small:** at most about 8 statements of up to 120 characters each.
+
+**Doubt, forget, withdraw** (the owner's safeguards, `myday-vision.md` §1):
+- A confirmed pattern is sent only while the evidence still says what you confirmed, in MyDay's own words. One that
+  has faded, or now says something else, is held back, and the card says so.
+- Counts are kept for 8 weeks. Older ones are dropped when MyDay opens each day.
+- "Forget what it counted" and "Forget everything it has learned" (your answers about patterns and the counts; your
+  preferences and your answer about Ask stay) are in What MyDay has noticed.
+- Switching it on or off counts as your answer, so the offer doesn't come back.
+
+**Counting:** on Add (each suggestion added or not, its list as you set it, the length it showed against the length you
+added it with, renamed or not) and on Dismiss (none added). A reply that moves on without adding isn't counted, and
+Undo leaves the counts as they were. Suggestions already on your lists aren't counted.
+
+**Two devices:** the counts live in the synced "What MyDay has noticed" record. Two devices that both count before they
+sync meet as a conflict to choose between, like any other record. The side not chosen loses its counts (counts only),
+which is accepted for now; merging them would be a separate sync change.
 
 ## 3. The app keeps to it as well
 

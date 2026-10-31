@@ -232,8 +232,9 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     if (!getSnapshot().data.patterns.prefs.askUse) return;
     const seen = r.items.flatMap((orig, i) => {
       if (orig.already) return [];
-      const timed = orig.type === 'task' || orig.type === 'study-task', yes = added && !!picked[i];
-      return [{ type: orig.type, category: timed ? orig.category : null, proposed: timed ? orig.minutes : null, minutes: timed && yes ? applyAskEdit(orig, edits[i], k).minutes : null,
+      const timed = orig.type === 'task' || orig.type === 'study-task', yes = added && !!picked[i], it = applyAskEdit(orig, edits[i], k);
+      // (the list you put it in; the length it showed you, after your longest, against the length you added it with)
+      return [{ type: orig.type, category: timed ? (yes ? it.category : orig.category) : null, proposed: timed ? orig.minutes : null, minutes: timed && yes ? it.minutes : null,
         added: yes, renamed: yes && (titles[i]?.trim() || orig.title) !== orig.title }];
     });
     update(d => (recordAskSeen(d.patterns, seen) ? undefined : false));

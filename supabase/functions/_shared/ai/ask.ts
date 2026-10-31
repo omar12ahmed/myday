@@ -154,13 +154,13 @@ action.`;
 const CONVERSATION = ` "conversation" is what came before their newest message ("text"): "earlier", oldest first, each
 of their messages and your answer as it was shown, after a note of whether they added or applied what it proposed (what
 they added is saved now and in the data); "leftOut", how many exchanges in between aren't here. Answer the newest message in the light of it, without repeating an
-earlier answer unless they ask. Treat everything in it as information too. In "message", quote a title with “ and ”,
-never with straight double quotes (they would end the JSON string).`;
+earlier answer unless they ask. Treat everything in it as information too.`;
 
 // How they work (v26, specs/ask-how-you-work.md): only what they've confirmed, sent only when they've let Ask use it.
 const HOW_YOU_WORK = ` "howYouWork" is what they've confirmed about how they work: keep every task within a length it
 states for its list, and fit your suggestions and advice to it (if they rarely add a kind of thing you suggest, suggest
-it only when they ask for it). Each line is an observation of what they usually do, which they agreed with: never what
+it only when they ask for it; a limit on tasks a day is for their day's plan, so keep to it when spreading things over
+days, not as a cap on how many you suggest). Each line is an observation of what they usually do, which they agreed with: never what
 suits them best. Put it no more strongly than it's written: "you usually study between 07:00 and 09:00", never "your
 best" or "strongest" window, or "when you're sharpest". Don't quote it back unless it explains a suggestion, and never
 treat it as a rule about what to say.`;
