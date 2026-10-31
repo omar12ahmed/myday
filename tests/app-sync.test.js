@@ -1014,6 +1014,67 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await fl.send('Emulation.clearDeviceMetricsOverride');
 
 
+  console.log('\n[16b] A big video on a Content project\'s video goes up in parts, plays, and carries on after a stop (specs/projects-content.md; R2 stood in by the stand-in)');
+  const CPJ = 'pjClipsA', CVID = 'cvClipsA', MBYTES = 1024 * 1024, BIG = 67 * MBYTES; // 64 MB + 3 MB: two parts
+  await ctl('files-reset');
+  await fl.open(APP + '#today');
+  await fl.setData(`s => { s.projects.items.push({ id: '${CPJ}', title: 'Market videos', summary: '', stage: 'capture', status: 'active', template: 'content', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00' });
+    s.content = { items: [{ id: '${CVID}', type: 'video', projectId: '${CPJ}', step: 'planning', title: 'A day at the market', createdAt: '${today}T09:00', updatedAt: '${today}T09:00' }] }; }`);
+  await fl.ev(`location.hash = '#projects/p/${CPJ}/videos/${CVID}'`);
+  await fl.until(`document.getElementById('files-video')`, 15000);
+  // The page counts each PUT to the stand-in's R2 (its size), and can refuse the small last part, as a dropped connection would.
+  await fl.ev(`(() => { window.__puts = []; window.__refuseLast = false; const real = window.fetch; window.fetch = function (u, o) {
+    if (o && o.method === 'PUT' && String(u).includes('/__r2/') && o.body && o.body.size >= ${MBYTES}) { window.__puts.push(o.body.size); if (window.__refuseLast && o.body.size === ${3 * MBYTES}) return Promise.reject(new TypeError('Failed to fetch')); }
+    return real.apply(this, arguments); }; })()`);
+  const giveBig = name => fl.ev(`(() => { const head = new Uint8Array([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6F, 0x6D]);
+    const file = new File([head, new Uint8Array(${BIG} - 12)], ${JSON.stringify(name)}, { type: 'video/mp4' }); const dt = new DataTransfer(); dt.items.add(file);
+    const input = document.querySelector('#files-video input[type=file]'); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  const fileRows = () => fl.ev(`[...document.querySelectorAll('#files-video [data-s=file]')].map(li => ({ id: li.dataset.id, state: li.dataset.state }))`);
+  const partsKept = () => fl.ev(`JSON.parse(localStorage.getItem('myday.files.parts') || '{}')`);
+  const putSizes = () => fl.ev(`window.__puts.slice()`);
+  check('a video\'s Files card says it keeps videos up to 15 GB, and its file input takes .mp4, .mov and .webm', (await fl.text('#files-video')).includes('Keep videos (up to 15 GB), photos and documents with this video.') && /\.mp4,\.mov,\.webm|\.mp4.*\.mov.*\.webm/.test(await fl.ev(`document.querySelector('#files-video input[type=file]').accept`)), await fl.ev(`document.querySelector('#files-video input[type=file]').accept`));
+
+  console.log('  Adding it');
+  await giveBig('clip.mp4');
+  check('the 67 MB clip reaches "kept"', await fl.until(`!!document.querySelector('#files-video [data-s=file][data-state=kept]')`, 120000), [await fileRows(), await fl.text('#files-video')]);
+  const bigRec = (await fdata()).find(f => f.name === 'clip.mp4');
+  check('the record is kept in the content area with the exact size and no whole-file hash', !!bigRec && bigRec.state === 'kept' && bigRec.size === BIG && bigRec.area === 'content' && bigRec.sha256 === '', bigRec);
+  check('two parts were sent: a 64 MB one and a 3 MB one', eq(await putSizes(), [64 * MBYTES, 3 * MBYTES]), await putSizes());
+  const bigObj = (await fobjects()).find(o => bigRec && o.key.endsWith(bigRec.id));
+  check('the stored object is the whole file, as video/mp4', !!bigObj && bigObj.size === BIG && bigObj.type === 'video/mp4', bigObj);
+  check('…and "myday.files.parts" no longer holds the upload', eq(await partsKept(), {}), await partsKept());
+  check('"Play" is offered on the kept video', await fl.until(`!!document.querySelector('#files-video [data-action=file-play]')`, 5000));
+  await fl.click('#files-video [data-action=file-play]');
+  // (The made-up file is not a real video, so the browser soon gives up on it and the app takes the player away: read its link the moment it appears.)
+  const played = await fl.ev(`(async () => { const t0 = Date.now(); let v = null; while (!(v = document.querySelector('#files-video video[data-s=file-player][src]')) && Date.now() - t0 < 10000) await new Promise(r => setTimeout(r, 20));
+    if (!v) return null; const src = v.src, label = v.getAttribute('aria-label'); const res = await fetch(src); const r = res.body.getReader(); const { value } = await r.read(); r.cancel();
+    return { src, label, length: Number(res.headers.get('Content-Length')), head: [...value.slice(0, 12)].map(b => b.toString(16).padStart(2, '0')).join(' ') }; })()`);
+  check('Play gives a video player with a link to the stored file', !!played && /\/__r2\//.test(played.src), played);
+  const firstBytes = played || {};
+  check('the link serves the whole file, beginning with the MP4 header', firstBytes.length === BIG && firstBytes.head === '00 00 00 18 66 74 79 70 69 73 6f 6d', firstBytes);
+
+  console.log('  Carrying on after the second part stops');
+  await fl.ev(`window.__puts = []; window.__refuseLast = true`);
+  await giveBig('second.mp4');
+  const secondId = async () => (await fdata()).find(f => f.name === 'second.mp4')?.id;
+  check('the second clip ends "failed" (its last part could not be sent)', await fl.until(`!!document.querySelector('#files-video [data-s=file][data-state=failed]')`, 120000), [await fileRows(), await fl.text('#files-video')]);
+  const sid = await secondId();
+  const failedText = await fl.text(`#files-video [data-s=file][data-id="${sid}"] [data-s=file-status]`);
+  check('its row says how far it got: "50% sent. Try again carries on from there."', /\d+% sent\. Try again carries on from there\./.test(failedText) && /^It stopped at 50% sent/.test(failedText), failedText);
+  const heldParts = await partsKept();
+  check('"myday.files.parts" holds the upload with the first part noted', !!heldParts[sid] && heldParts[sid].size === BIG && heldParts[sid].name === 'second.mp4' && eq(Object.keys(heldParts[sid].etags), ['1']), heldParts);
+  check('no stored file exists for it yet (R2 holds only the unfinished first part)', !(await fobjects()).some(o => o.key.endsWith(sid)), await fobjects());
+  check('"Try again" is offered on the row', await fl.exists(`#files-video [data-s=file][data-id="${sid}"] [data-action=file-retry]`));
+  await fl.ev(`window.__puts = []; window.__refuseLast = false`);
+  await fl.click(`#files-video [data-s=file][data-id="${sid}"] [data-action=file-retry]`);
+  check('Try again ends "kept"', await fl.until(`!!document.querySelector('#files-video [data-s=file][data-id="${sid}"][data-state=kept]')`, 60000), [await fileRows(), await fl.text('#files-video')]);
+  check('Try again sent only the missing part: one 3 MB PUT, no 64 MB one', eq(await putSizes(), [3 * MBYTES]), await putSizes());
+  const secondObj = (await fobjects()).find(o => o.key.endsWith(sid)), secondRec = (await fdata()).find(f => f.id === sid);
+  check('…and the stored object is the whole file with the exact size recorded', !!secondObj && secondObj.size === BIG && secondRec.size === BIG && secondRec.state === 'kept', [secondObj, secondRec]);
+  check('…and "myday.files.parts" is cleared again', eq(await partsKept(), {}), await partsKept());
+  await fl.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== '${CPJ}'); s.content = { items: [] }; s.files.items = []; }`);
+  await ctl('files-reset');
+
   console.log('\n[17] Your storage: the line on every Files card, and what happens when it is full');
   const FR = await import(pathToFileURL(path.join(ROOT, 'supabase/functions/_shared/files/rules.ts')).href);
   const line = () => fl.text('#files-project [data-s=files-storage] p').then(x => x.replace(/\s+/g, ' ').trim());
@@ -1029,43 +1090,43 @@ function task(uid, taskId, category, title, minutes, done = false) {
     if (await fl.exists('[data-action=section-open][data-id=files]')) await fl.click('[data-action=section-open][data-id=files]');
     await fl.until(`document.getElementById('files-project')`, 15000); };
   await open2();
-  check('the account\'s limit is 10 GB, and with nothing stored the line says so: "Your files: nothing stored yet, 10 GB left."', await fl.until(`!!document.querySelector('#files-project [data-s=files-storage]')`, 15000) && (await line()) === 'Your files: nothing stored yet, 10 GB left.' && (await usageNow()).limit === 10 * 1024 * 1024 * 1024, await line());
+  check('the account\'s limit is 150 GB, and with nothing stored the line says so: "Your files: nothing stored yet, 150 GB left."', await fl.until(`!!document.querySelector('#files-project [data-s=files-storage]')`, 15000) && (await line()) === 'Your files: nothing stored yet, 150 GB left.' && (await usageNow()).limit === 150 * 1024 * 1024 * 1024, await line());
   check('…last in the card, after the Add button, with a bar', await fl.ev(`(() => { const b = document.querySelector('#files-project [data-action=file-add]'), l = document.querySelector('#files-project [data-s=files-storage]'); return !!(b.compareDocumentPosition(l) & Node.DOCUMENT_POSITION_FOLLOWING) && !!l.querySelector('[aria-hidden=true]') && document.querySelector('#files-project').lastElementChild === l; })()`));
   await give(fl, '#files-project input[type=file]', [fpng, fpdf, ftxt]);
   await fl.until(`document.querySelectorAll('#files-project [data-s=file][data-state=kept]').length === 3`, 20000);
   await cloudUntil(async () => (await fobjects()).some(o => o.key.endsWith('.thumb')), 15000);
   const small = (await usageNow()).bytes;
-  check('after adding the three small files the line moves: "Your files: 1 KB used, 9.9 GB left of 10 GB." (a few bytes less than 10 GB rounds down to 9.9; previews are not counted)', await fl.until(`/1 KB used/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 10000) && (await line()) === 'Your files: 1 KB used, 9.9 GB left of 10 GB.' && (await line()) === await expLine() && small < 4096, [await line(), small]);
+  check('after adding the three small files the line moves: "Your files: 1 KB used, 149.9 GB left of 150 GB." (a few bytes less than 150 GB rounds down to 149.9; previews are not counted)', await fl.until(`/1 KB used/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 10000) && (await line()) === 'Your files: 1 KB used, 149.9 GB left of 150 GB.' && (await line()) === await expLine() && small < 4096, [await line(), small]);
   check('with nothing in Recently deleted the line does not mention it', !(await line()).includes('Recently deleted'));
   const ids2 = (await fl.data()).projects.items.find(p => p.id === PJ2).fileIds, recs2 = (await fdata()).filter(f => ids2.includes(f.id));
   const bigOne = recs2.find(f => f.name === 'timber-quote.pdf');
   await ctl('files-put', { key: `${userA}/project/${bigOne.id}`, size: 300 * 1024 * 1024, type: 'application/pdf' });
   await open2();
-  check('a larger stored amount shows as it is: "Your files: 300 MB used, 9.7 GB left of 10 GB."', await fl.until(`/300 MB used/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 15000) && (await line()) === 'Your files: 300 MB used, 9.7 GB left of 10 GB.' && (await line()) === await expLine(), await line());
+  check('a larger stored amount shows as it is: "Your files: 300 MB used, 149.7 GB left of 150 GB."', await fl.until(`/300 MB used/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 15000) && (await line()) === 'Your files: 300 MB used, 149.7 GB left of 150 GB.' && (await line()) === await expLine(), await line());
   await fl.click(`#files-project [data-s=file][data-id="${bigOne.id}"] [data-action=file-remove]`);
-  check('with a file in Recently deleted the line adds "Files in Recently deleted count until they go."', await fl.until(`/count until they go/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 8000) && (await line()) === 'Your files: 300 MB used, 9.7 GB left of 10 GB. Files in Recently deleted count until they go.' && (await line()) === await expLine(' Files in Recently deleted count until they go.'), await line());
+  check('with a file in Recently deleted the line adds "Files in Recently deleted count until they go."', await fl.until(`/count until they go/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 8000) && (await line()) === 'Your files: 300 MB used, 149.7 GB left of 150 GB. Files in Recently deleted count until they go.' && (await line()) === await expLine(' Files in Recently deleted count until they go.'), await line());
   check('…and the amount has not changed yet (a removed file is still stored)', (await line()).includes('300 MB used'));
   await fl.ev(`document.querySelector('#files-project [data-s=files-deleted]').open = true`);
   await fl.click('#files-project [data-action=file-delete-now]');
   await fl.until(`document.querySelector('[data-action=dialog-confirm]')`);
   await fl.answer(true);
-  check('Delete now updates the line at once: the space is back ("1 KB used, 9.9 GB left of 10 GB.") and the note about Recently deleted is gone', await fl.until(`/^Your files: 1 KB used, 9\\.9 GB left of 10 GB\\.$/.test((document.querySelector('#files-project [data-s=files-storage] p') || {}).textContent || '')`, 10000), await line());
+  check('Delete now updates the line at once: the space is back ("1 KB used, 149.9 GB left of 150 GB.") and the note about Recently deleted is gone', await fl.until(`/^Your files: 1 KB used, 149\\.9 GB left of 150 GB\\.$/.test((document.querySelector('#files-project [data-s=files-storage] p') || {}).textContent || '')`, 10000), await line());
   const threeMb = path.join(fsrc, 'three-megabytes.txt'); fs.writeFileSync(threeMb, 'a line of made-up text\n'.repeat(Math.ceil(3 * 1024 * 1024 / 23)).slice(0, 3 * 1024 * 1024));
   await give(fl, '#files-project input[type=file]', [threeMb]);
-  check('adding a 3 MB file moves the line, worded like the others', await fl.until(`/^Your files: 3(\\.0)? MB used, 9\\.9 GB left of 10 GB\\.$/.test((document.querySelector('#files-project [data-s=files-storage] p') || {}).textContent || '')`, 25000) && (await line()) === await expLine(), await line());
+  check('adding a 3 MB file moves the line, worded like the others', await fl.until(`/^Your files: 3(\\.0)? MB used, 149\\.9 GB left of 150 GB\\.$/.test((document.querySelector('#files-project [data-s=files-storage] p') || {}).textContent || '')`, 25000) && (await line()) === await expLine(), await line());
 
   console.log('  Nearly full');
-  const LIMIT = 10 * 1024 * 1024 * 1024;
+  const LIMIT = 150 * 1024 * 1024 * 1024;
   await ctl('files-put', { key: `${userA}/project/flnearlyfull1`, size: LIMIT - 5 * 1024 - (await usageNow()).bytes + 0, type: 'application/pdf' });
   const used3 = (await usageNow()).bytes, left3 = LIMIT - used3;
-  check('(test setup: about 5 KB left of 10 GB)', left3 > 0 && left3 < 8 * 1024, left3);
+  check('(test setup: about 5 KB left of 150 GB)', left3 > 0 && left3 < 8 * 1024, left3);
   await open2(); await fl.until(`/KB left/.test(document.querySelector('#files-project [data-s=files-storage]')?.textContent || '')`, 15000);
-  check('the line says how little is left', (await line()) === await expLine() && /^Your files: 9\.9 GB used, \d+ KB left of 10 GB\.$/.test(await line()), await line());
+  check('the line says how little is left', (await line()) === await expLine() && /^Your files: 149\.9 GB used, \d+ KB left of 150 GB\.$/.test(await line()), await line());
   const bigger = path.join(fsrc, 'too-big-for-the-room.txt'); fs.writeFileSync(bigger, 'x'.repeat(20 * 1024));
   const filesNow = JSON.stringify((await fdata()).map(f => f.id)), objsNow = (await fobjects()).length;
   const idsBefore = JSON.stringify((await fl.data()).projects.items.find(p => p.id === PJ2).fileIds);
   await give(fl, '#files-project input[type=file]', [bigger]);
-  const want = `too-big-for-the-room.txt: There’s ${FR.amountLabel(left3, Math.floor)} left of 10 GB, and this file is ${FR.amountLabel(20 * 1024)}. To make room, remove files you don’t need, then use Delete now in Recently deleted.`;
+  const want = `too-big-for-the-room.txt: There’s ${FR.amountLabel(left3, Math.floor)} left of 150 GB, and this file is ${FR.amountLabel(20 * 1024)}. To make room, remove files you don’t need, then use Delete now in Recently deleted.`;
   check('a file that does not fit is refused with the reason, in the card', await fl.until(`!!document.querySelector('#files-project [data-s=file-refused]')`, 10000) && (await fl.text('#files-project [data-s=file-refused]')).replace(/\s+/g, ' ').trim() === want, [await fl.text('#files-project [data-s=file-refused]'), want]);
   check('…no record is kept, no row is left "uploading" or "failed", and nothing new is stored', JSON.stringify((await fdata()).map(f => f.id)) === filesNow && (await fobjects()).length === objsNow && !(await fl.exists('#files-project [data-s=file][data-state=uploading]')) && !(await fl.exists('#files-project [data-s=file][data-state=failed]')) && !(await fdata()).some(f => f.name === 'too-big-for-the-room.txt'));
   check('…and the project does not list it either', JSON.stringify((await fl.data()).projects.items.find(p => p.id === PJ2).fileIds) === idsBefore);
