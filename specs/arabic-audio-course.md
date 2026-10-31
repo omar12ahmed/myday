@@ -163,6 +163,11 @@ course words; the owner chose to make them again in WaveNet B so each explainer 
 play WaveNet B too. Transcribed blind, eleven takes made again, approved ("all good"). Two first came back as the very
 same audio as a scripted piece spoken the same way (لَمْ and لم, قَالَ and قال); a clip file belongs to one text, so each
 was made again, and the clip maker no longer deletes a file that another text still uses. The key was deleted.
+Round fourteen (module 15's eight explainers, released together with their text): 131 clips, 97 new texts and 34 made
+again from Charon so each explainer stays in one voice. Six first came back as the very same audio as a scripted piece
+spoken the same way (لِأَنَّ and لأنّ, لَكِنَّ, لِذَلِكَ, لَوْ, الْجَوُّ جَمِيلٌ, ذَكَرَ أَنَّ) and were made again until each had its
+own; four more retakes after blind transcription. Four were still heard as a commoner phrase on every take (اِعْتَقَدَ
+أَنَّ as أَعْتَقِدُ أَنَّ, إِنْ as أَنْ, مِنْ أَجْلِ as مِنْ أَجْلِي, لَمَا) and were approved by ear ("all good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
