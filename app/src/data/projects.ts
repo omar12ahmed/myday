@@ -195,8 +195,7 @@ export function deleteProject(d: MyDayData, id: string): boolean {
   if (i < 0) return false;
   filesLeaving(d, { kind: 'project', id }); // its files that nothing else lists go to Recently deleted
   deleteProjectResearch(d, id);              // its questions, sources and findings go with it
-  for (const v of d.content.items) if (v.projectId === id) filesLeaving(d, { kind: 'video', id: v.id }); // its videos' files likewise
-  deleteProjectContent(d, id);               // and its ideas and videos (specs/projects-content.md)
+  deleteProjectContent(d, id);               // and its ideas and videos, their files likewise (specs/projects-content.md)
   d.projects.items.splice(i, 1);
   for (const n of d.notes.items) if (n.projectId === id) delete n.projectId;
   for (const t of d.tasks.items) if (t.projectId === id) { delete t.projectId; delete t.after; } // ("Starts after" is within a project)

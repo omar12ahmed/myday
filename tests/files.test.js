@@ -45,6 +45,7 @@ const MB = 1024 * 1024;
         this.uploads.delete(uploadId);
       },
       async mpAbort(key, uploadId) { const u = this.uploads.get(uploadId); if (u && u.key === key) this.uploads.delete(uploadId); },
+      async mpOpen(prefix) { return [...this.uploads].filter(([, u]) => u.key.startsWith(prefix)).map(([uploadId, u]) => ({ key: u.key, uploadId })); },
     };
   };
   const reset = () => { store = memory(); logs = []; signed = []; origins = undefined; };

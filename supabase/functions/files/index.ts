@@ -90,6 +90,18 @@ function r2(): Store | null {
       const xml = await res.text();
       if (/<Error>/.test(xml)) throw new Error('r2 complete');
     },
+    async mpOpen(prefix) {
+      const out: { key: string; uploadId: string }[] = [];
+      let keyMarker = '', idMarker = '';
+      do {
+        const q = new URLSearchParams({ uploads: '', prefix, ...(keyMarker ? { 'key-marker': keyMarker, 'upload-id-marker': idMarker } : {}) });
+        const xml = await (await ok(await aws.fetch(`${base}?${q}`))).text();
+        for (const u of xml.match(/<Upload>[\s\S]*?<\/Upload>/g) ?? []) out.push({ key: unxml(tag(u, 'Key')), uploadId: unxml(tag(u, 'UploadId')) });
+        const more = tag(xml, 'IsTruncated') === 'true';
+        keyMarker = more ? unxml(tag(xml, 'NextKeyMarker')) : ''; idMarker = more ? unxml(tag(xml, 'NextUploadIdMarker')) : '';
+      } while (keyMarker);
+      return out;
+    },
     async mpAbort(key, uploadId) {
       const res = await aws.fetch(`${at(key)}?${new URLSearchParams({ uploadId })}`, { method: 'DELETE' });
       if (!res.ok && res.status !== 404) throw new Error(`r2 ${res.status}`);

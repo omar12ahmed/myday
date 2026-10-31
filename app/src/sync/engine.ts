@@ -333,7 +333,7 @@ function noteOutgoing(link: Link, local: Map<string, Content>, keys: string[]) {
     }
     // (A video likewise, a little before the database's limit, with what to shorten: specs/projects-content.md.)
     if (content && splitKey(key).kind === 'content' && recordBytes(content) > CONTENT_RECORD_BYTES) {
-      link.rejected[key] = { f: fingerprint(content), reason: 'This video is too large for cloud sync — shorten its transcript or script. It’s still saved on this device.' };
+      link.rejected[key] = { f: fingerprint(content), reason: 'This video is too large for cloud sync — shorten its transcript or script, or remove some of its links or lists. It’s still saved on this device.' };
       continue;
     }
     link.out[key] = { id: newId(), base: link.base[key] ? link.base[key].v : 0, del: !content, content, f: fingerprint(content), tries: 0 };
@@ -550,6 +550,7 @@ export async function clearThisDevice() {
     st.link = null; st.before = null; st.kept = [];
     writeState(st);
     forgetLastAsk();
+    try { localStorage.removeItem('myday.files.parts'); } catch { /* nothing kept */ } // (big uploads under way: specs/projects-content.md)
     cleared = true;
   });
   if (cleared) await clearFileCache(); // the other account's portfolio files kept for offline viewing go with it

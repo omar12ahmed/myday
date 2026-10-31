@@ -18,11 +18,36 @@ import { knownEpoch } from './state';
 const SHIFT = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
 const K = Array.from({ length: 64 }, (_, i) => Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32) >>> 0);
 export function md5(bytes: Uint8Array): Uint8Array {
-  const len = bytes.length, total = Math.ceil((len + 9) / 64) * 64;
-  const buf = new Uint8Array(total); buf.set(bytes); buf[len] = 0x80;
+  const st = Uint32Array.of(0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476);
+  return md5End(st, bytes, bytes.length);
+}
+// A big upload's part (specs/projects-content.md): read and hashed 4 MB at a time, so the part is never held whole and
+// the page keeps responding between reads.
+export async function md5Of(blob: Blob): Promise<Uint8Array> {
+  const st = Uint32Array.of(0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476), CHUNK = 4 * 1024 * 1024; // (a multiple of 64)
+  let off = 0;
+  for (;;) {
+    const chunk = new Uint8Array(await blob.slice(off, Math.min(off + CHUNK, blob.size)).arrayBuffer());
+    off += chunk.length;
+    if (off >= blob.size) return md5End(st, chunk, blob.size);
+    md5Blocks(st, new DataView(chunk.buffer, chunk.byteOffset, chunk.byteLength), chunk.length);
+  }
+}
+// The last bytes (fewer than a whole number of blocks is fine), padded with the whole length, and the digest.
+function md5End(st: Uint32Array, last: Uint8Array, len: number): Uint8Array {
+  const whole = last.length - (last.length % 64);
+  if (whole) md5Blocks(st, new DataView(last.buffer, last.byteOffset, whole), whole);
+  const rest = last.subarray(whole), total = Math.ceil((rest.length + 9) / 64) * 64;
+  const buf = new Uint8Array(total); buf.set(rest); buf[rest.length] = 0x80;
   const dv = new DataView(buf.buffer);
   dv.setUint32(total - 8, (len * 8) >>> 0, true); dv.setUint32(total - 4, Math.floor(len / 0x20000000) >>> 0, true);
-  let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+  md5Blocks(st, dv, total);
+  const out = new Uint8Array(16), ov = new DataView(out.buffer);
+  ov.setUint32(0, st[0], true); ov.setUint32(4, st[1], true); ov.setUint32(8, st[2], true); ov.setUint32(12, st[3], true);
+  return out;
+}
+function md5Blocks(st: Uint32Array, dv: DataView, total: number) {
+  let a0 = st[0], b0 = st[1], c0 = st[2], d0 = st[3];
   const M = new Uint32Array(16);
   for (let off = 0; off < total; off += 64) {
     for (let i = 0; i < 16; i++) M[i] = dv.getUint32(off + i * 4, true);
@@ -40,9 +65,7 @@ export function md5(bytes: Uint8Array): Uint8Array {
     }
     a0 = (a0 + A) >>> 0; b0 = (b0 + B) >>> 0; c0 = (c0 + C) >>> 0; d0 = (d0 + D) >>> 0;
   }
-  const out = new Uint8Array(16), ov = new DataView(out.buffer);
-  ov.setUint32(0, a0, true); ov.setUint32(4, b0, true); ov.setUint32(8, c0, true); ov.setUint32(12, d0, true);
-  return out;
+  st[0] = a0; st[1] = b0; st[2] = c0; st[3] = d0;
 }
 const base64 = (b: Uint8Array) => btoa(Array.from(b, c => String.fromCharCode(c)).join(''));
 const hex = (b: ArrayBuffer) => Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join('');
@@ -225,6 +248,13 @@ function keepSending(id: string, s: Sending | null) {
 }
 // A big upload this device started and can carry on, given the same file again.
 export const carryingOn = (id: string) => !!sendings()[id];
+// Removing an unfinished big upload drops what was sent (R2 would after 7 days anyway) and where it had got to.
+export async function dropSending(id: string, area: string) {
+  const s = sendings()[id];
+  if (!s) return;
+  keepSending(id, null);
+  await call('mp-abort', { fileId: id, area, uploadId: s.uploadId });
+}
 async function putPart(url: string, headers: Record<string, string>, body: Blob): Promise<string | null> {
   for (let tries = 0; tries < 3; tries++) {
     try {
@@ -257,6 +287,8 @@ async function sendInParts(id: string, area: string, file: File, name: string, f
     if (!r.ok) return fail(r.message || WHY[r.why as Exclude<FilesResult, 'ok'>] || WHY.failed, r.why === 'not-allowed' || r.why === 'full');
     s = { uploadId: r.data.uploadId, size: file.size, name, etags: {} };
     keepSending(id, s);
+    // (Its 7 days start now, so another device doesn't take a fresh start for an old one.)
+    update(d => { const f = d.files.items.find(x => x.id === id); if (!f) return false; f.startedAt = Date.now(); });
   }
   const sending = s;
   for (let n = 1; n <= count; n++) {
@@ -264,7 +296,7 @@ async function sendInParts(id: string, area: string, file: File, name: string, f
     setProgress(id, { name, state: 'adding', message: sentWords(Object.keys(sending.etags).length), done: Object.keys(sending.etags).length, of: count });
     const part = file.slice((n - 1) * PART_BYTES, Math.min(n * PART_BYTES, file.size));
     let digest: string;
-    try { digest = base64(md5(new Uint8Array(await part.arrayBuffer()))); } catch { return fail('That file can’t be read any more. Pick it again to carry on.'); }
+    try { digest = base64(await md5Of(part)); } catch { return fail('That file can’t be read any more. Pick it again to carry on.'); }
     const link = await call<{ parts: { n: number; url: string; headers: Record<string, string> }[] }>('mp-parts', { fileId: id, area, uploadId: sending.uploadId, size: file.size, parts: [{ n, md5: digest }] });
     if (!link.ok) return fail(link.message || WHY[link.why as Exclude<FilesResult, 'ok'>] || WHY.failed);
     const etag = await putPart(link.data.parts[0].url, link.data.parts[0].headers, part);
@@ -285,19 +317,21 @@ async function sendInParts(id: string, area: string, file: File, name: string, f
 }
 // A video's preview: a frame a second in (or its first), at most 320 px, as WebP; null when this browser can't.
 async function videoFrame(file: File): Promise<Uint8Array | null> {
-  const src = URL.createObjectURL(file), v = document.createElement('video');
+  const src = URL.createObjectURL(file), v = document.createElement('video'), timers: ReturnType<typeof setTimeout>[] = [];
+  const within = (ms: number) => new Promise<never>((_, no) => { timers.push(setTimeout(() => no(new Error('slow')), ms)); });
   try {
-    v.muted = true; v.playsInline = true; v.preload = 'metadata'; v.src = src;
-    await new Promise<void>((ok, no) => { v.onloadeddata = () => ok(); v.onerror = () => no(new Error('video')); setTimeout(() => no(new Error('slow')), 15_000); });
+    // (preload "auto": a phone may never load a frame for "metadata" alone.)
+    v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = src;
+    await Promise.race([new Promise<void>((ok, no) => { v.onloadeddata = () => ok(); v.onerror = () => no(new Error('video')); }), within(15_000)]);
     v.currentTime = Math.min(1, (v.duration || 2) / 2);
-    await new Promise<void>((ok, no) => { v.onseeked = () => ok(); setTimeout(() => no(new Error('slow')), 15_000); });
+    await Promise.race([new Promise<void>(ok => { v.onseeked = () => ok(); }), within(15_000)]);
     const scale = Math.min(1, 320 / Math.max(v.videoWidth, v.videoHeight, 1)), c = document.createElement('canvas');
     c.width = Math.max(1, Math.round(v.videoWidth * scale)); c.height = Math.max(1, Math.round(v.videoHeight * scale));
     c.getContext('2d')?.drawImage(v, 0, 0, c.width, c.height);
     const blob = await new Promise<Blob | null>(ok => c.toBlob(ok, 'image/webp', 0.7));
     const out = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
     return out && out.length <= THUMB_MAX_BYTES ? out : null;
-  } catch { return null; } finally { URL.revokeObjectURL(src); v.removeAttribute('src'); }
+  } catch { return null; } finally { timers.forEach(clearTimeout); URL.revokeObjectURL(src); v.removeAttribute('src'); }
 }
 // Try a failed file again (while this page still has it).
 export const canRetry = (id: string) => pending.has(id);

@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Check, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
@@ -13,6 +13,7 @@ import {
 } from '../data/content';
 import { isDateKey, shortDate, todayKey } from '../data/dates';
 import { filesLeaving } from '../data/files';
+import { webAddress } from '../data/projectResources';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { ContentItem, ContentStep, DateKey, MyDayData, Project } from '../data/types';
@@ -25,6 +26,8 @@ const videoHref = (p: Project, id?: string) => `#projects/p/${enc(p.id)}/videos$
 const focusSoon = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
 const plural = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 const save = (fn: (d: MyDayData) => boolean) => update(d => (fn(d) ? undefined : false));
+// A saved link opens only when it's a plain web address (one from elsewhere that isn't shows as text).
+const Link = ({ url, children }: { url: string; children: React.ReactNode }) => (webAddress(url) === url ? <ExternalLink href={url}>{children}</ExternalLink> : <span className="break-all">{children}</span>);
 
 // ---------- The Overview's card ----------
 // How many at each step and the next planned post day, opening the Videos tab.
@@ -109,8 +112,9 @@ function VideoList({ data, p, videos }: { data: MyDayData; p: Project; videos: C
         <Field label="A new video" htmlFor="videoNew"><TextInput id="videoNew" value={title} maxLength={CONTENT_LIMITS.title} placeholder="A working title" onChange={e => setTitle(e.target.value)} /></Field>
         <Button inline type="submit" variant="tonal" data-action="video-add" disabled={!title.trim()}><Plus size={18} aria-hidden="true" /> Add</Button>
       </form>
-      {steps.map(s => {
-        const here = videos.filter(x => stepOf(data, x) === s.id);
+      {[...steps, { id: 'other', label: 'Other' }].map(s => {
+        // (A step from a newer MyDay is kept, and shown here under Other.)
+        const here = videos.filter(x => s.id === 'other' ? !STEPS.some(t => t.id === stepOf(data, x)) : stepOf(data, x) === s.id);
         if (!here.length) return null;
         return (
           <section key={s.id} aria-labelledby={`step-${s.id}`} className="mt-4" data-s="video-step" data-id={s.id}>
@@ -120,10 +124,10 @@ function VideoList({ data, p, videos }: { data: MyDayData; p: Project; videos: C
                 <li key={x.id} className="border-t border-outline first:border-t-0 py-2 flex flex-wrap items-center gap-x-2 gap-y-1" data-s="video-row" data-id={x.id}>
                   <a href={videoHref(p, x.id)} className="flex-1 min-w-[12rem] min-h-11 py-1 text-fg no-underline hover:underline underline-offset-4 break-words">
                     <span className="block font-medium">{v.title || 'Untitled video'}</span>
-                    <span className="block text-sm text-fg-2">{[v.postOn && !isPosted(data, x) ? `Post ${v.postOn === k ? 'today' : shortDate(v.postOn)}` : '', ...open].filter(Boolean).join(' · ') || stepLabel(s.id)}</span>
+                    <span className="block text-sm text-fg-2">{[v.postOn && !isPosted(data, x) ? `Post ${v.postOn === k ? 'today' : shortDate(v.postOn)}` : '', ...open].filter(Boolean).join(' · ') || (s.id === 'other' ? v.step : stepLabel(s.id))}</span>
                   </a>
-                  {i > 1 && <Button inline variant="ghost" aria-label={`Move “${v.title}” back to ${STEPS[i - 1].label}`} data-action="video-back" onClick={() => move(x, -1)}><ArrowLeft size={18} aria-hidden="true" /></Button>}
-                  {i < STEPS.length - 1 && <Button inline variant="ghost" aria-label={`Move “${v.title}” on to ${STEPS[i + 1].label}`} data-action="video-on" onClick={() => move(x, 1)}><ArrowRight size={18} aria-hidden="true" /></Button>}
+                  {i > 1 && s.id !== 'other' && <Button inline variant="ghost" aria-label={`Move “${v.title}” back to ${STEPS[i - 1].label}`} data-action="video-back" onClick={() => move(x, -1)}><ArrowLeft size={18} aria-hidden="true" /></Button>}
+                  {i > 0 && i < STEPS.length - 1 && <Button inline variant="ghost" aria-label={`Move “${v.title}” on to ${STEPS[i + 1].label}`} data-action="video-on" onClick={() => move(x, 1)}><ArrowRight size={18} aria-hidden="true" /></Button>}
                 </li>
               ); })}
             </ul>
@@ -137,6 +141,7 @@ function VideoList({ data, p, videos }: { data: MyDayData; p: Project; videos: C
 // ---------- A video's page, planning first ----------
 function VideoPage({ data, p, v: item }: { data: MyDayData; p: Project; v: ContentItem }) {
   const confirm = useConfirm(), v = videoOf(item), step = stepOf(data, item);
+  useEffect(() => { focusSoon('videoTitleH'); }, [item.id]); // (arriving from Make this a video, Add, or a link)
   const edit = (patch: Parameters<typeof editVideo>[2]) => save(d => editVideo(d, item.id, patch));
   async function remove() {
     if (!await confirm({ title: 'Delete this video?', body: 'Its planning, script, transcript, links and results go with it; its tasks stay. Its uploads go to Recently deleted.', confirmLabel: 'Delete', cancelLabel: 'Keep it' })) return;
@@ -148,7 +153,7 @@ function VideoPage({ data, p, v: item }: { data: MyDayData; p: Project; v: Conte
       <Card aria-labelledby="videoTitleH" id="videoHead">
         <h3 id="videoTitleH" tabIndex={-1} className="m-0 text-[22px] break-words">{v.title || 'Untitled video'}</h3>
         <p className="m-0 mt-1 text-sm text-fg-2" data-s="video-step-now">{step === 'idea' ? 'An idea, not decided yet' : stepLabel(step)}{v.postOn && !isPosted(data, item) ? ` · post ${shortDate(v.postOn)}` : ''}</p>
-        {tooBig(item) && <p className="m-0 mt-2 text-[15px]" data-s="video-too-big">This video is too big to sync — shorten its transcript or script. It’s still saved on this device.</p>}
+        {tooBig(item) && <p className="m-0 mt-2 text-[15px]" data-s="video-too-big">This video is too big to sync — shorten its transcript or script, or remove some of its links or lists. It’s still saved on this device.</p>}
         <div className="flex flex-wrap gap-1.5 mt-3" role="group" aria-label="Its step">
           {STEPS.map(s => <Button key={s.id} inline variant={step === s.id ? 'selected' : 'ghost'} aria-pressed={step === s.id} className="!min-h-11" data-action="video-step" data-id={s.id}
             onClick={() => { if (save(d => setStep(d, item.id, s.id as ContentStep))) toast(s.id === 'idea' ? 'Back to an idea.' : `Now ${s.label}.`); }}>{s.label}</Button>)}
@@ -234,8 +239,8 @@ function ExamplesCard({ v }: { v: Video }) {
         <ul className="list-none p-0 m-0 mt-2">
           {v.examples.map(x => (
             <li key={x.id} className="border-t border-outline first:border-t-0 py-2 flex flex-wrap items-start gap-x-2" data-s="example" data-id={x.id}>
-              <span className="flex-1 min-w-[12rem] break-words"><ExternalLink href={x.url}>{x.title || x.url}</ExternalLink>{(x.at || x.note) && <span className="block text-sm text-fg-2">{[x.at, x.note].filter(Boolean).join(' — ')}</span>}</span>
-              <Button inline variant="ghost" aria-label="Remove this example" data-action="example-remove" onClick={() => save(d => removeExample(d, v.id, x.id))}><Trash2 size={16} aria-hidden="true" /></Button>
+              <span className="flex-1 min-w-[12rem] break-words"><Link url={x.url}>{x.title || x.url}</Link>{(x.at || x.note) && <span className="block text-sm text-fg-2">{[x.at, x.note].filter(Boolean).join(' — ')}</span>}</span>
+              <Button inline variant="ghost" aria-label={`Remove example “${x.title || x.url}”`} data-action="example-remove" onClick={() => save(d => removeExample(d, v.id, x.id))}><Trash2 size={16} aria-hidden="true" /></Button>
             </li>
           ))}
         </ul>
@@ -291,11 +296,11 @@ function LineSection({ data, v, list }: { data: MyDayData; v: Video; list: typeo
             return (
               <li key={x.id} className="border-t border-outline first:border-t-0 py-1.5" data-s="line" data-id={x.id}>
                 <div className="flex flex-wrap items-center gap-x-2">
-                  {list.tick && <input type="checkbox" className="size-5 accent-[var(--primary)]" checked={!!x.done} aria-label={`${list.tick}: ${x.text}`} data-action="line-tick" onChange={() => save(d => tickLine(d, v.id, list.id, x.id))} />}
+                  {list.tick && <label className="inline-grid place-items-center size-11 -my-1 cursor-pointer flex-none"><input type="checkbox" className="size-5 accent-[var(--primary)]" checked={!!x.done} aria-label={`${list.tick}: ${x.text}`} data-action="line-tick" onChange={() => save(d => tickLine(d, v.id, list.id, x.id))} /></label>}
                   <CommitInput aria-label={`${list.label}: ${x.text}`} className="flex-1 min-w-[10rem]" key={x.text} defaultValue={x.text} maxLength={CONTENT_LIMITS.line} onCommit={el => { if (!el.value.trim()) { el.value = x.text; return; } save(d => editLine(d, v.id, list.id, x.id, { text: el.value })); }} />
                   {list.id === 'outline' && <>
-                    <Button inline variant="ghost" aria-label="Move up" disabled={i === 0} data-action="line-up" onClick={() => save(d => moveLine(d, v.id, 'outline', x.id, -1))}>↑</Button>
-                    <Button inline variant="ghost" aria-label="Move down" disabled={i === lines.length - 1} data-action="line-down" onClick={() => save(d => moveLine(d, v.id, 'outline', x.id, 1))}>↓</Button>
+                    <Button inline variant="ghost" aria-label={`Move “${x.text}” up`} disabled={i === 0} data-action="line-up" onClick={() => save(d => moveLine(d, v.id, 'outline', x.id, -1))}>↑</Button>
+                    <Button inline variant="ghost" aria-label={`Move “${x.text}” down`} disabled={i === lines.length - 1} data-action="line-down" onClick={() => save(d => moveLine(d, v.id, 'outline', x.id, 1))}>↓</Button>
                   </>}
                   {(list.id === 'shots' || list.id === 'steps') && (t ? <a href={`#today/tasks/${enc(t.id)}`} className="inline-flex items-center min-h-11 text-sm text-primary font-semibold no-underline" data-s="line-task">A task{t.due ? ` · ${shortDate(t.due)}` : ''}</a>
                     : <LinkButton className="text-sm" data-action="line-task" aria-expanded={tasking === x.id} onClick={() => setTasking(tasking === x.id ? null : x.id)}>Make a task</LinkButton>)}
@@ -340,8 +345,8 @@ function ClipsCard({ data, v }: { data: MyDayData; v: Video }) {
           <ul className="list-none p-0 m-0 mt-2">
             {v.clips.map(c => (
               <li key={c.id} className="border-t border-outline first:border-t-0 py-2 flex flex-wrap items-start gap-x-2" data-s="clip" data-id={c.id}>
-                <span className="flex-1 min-w-[12rem] break-words">{c.url ? <ExternalLink href={c.url}>{c.label || c.url}</ExternalLink> : c.label}{(c.from || c.to) && <span className="block text-sm text-fg-2">{[c.from, c.to].filter(Boolean).join('–')}</span>}</span>
-                <Button inline variant="ghost" aria-label="Remove this clip" data-action="clip-remove" onClick={() => save(d => removeClip(d, v.id, c.id))}><Trash2 size={16} aria-hidden="true" /></Button>
+                <span className="flex-1 min-w-[12rem] break-words">{c.url ? <Link url={c.url}>{c.label || c.url}</Link> : c.label}{(c.from || c.to) && <span className="block text-sm text-fg-2">{[c.from, c.to].filter(Boolean).join('–')}</span>}</span>
+                <Button inline variant="ghost" aria-label={`Remove clip “${c.label || c.url}”`} data-action="clip-remove" onClick={() => save(d => removeClip(d, v.id, c.id))}><Trash2 size={16} aria-hidden="true" /></Button>
               </li>
             ))}
           </ul>
@@ -381,7 +386,7 @@ function PostingCard({ data, v }: { data: MyDayData; v: Video }) {
         <ul className="list-none p-0 m-0 mt-1">
           {v.posts.map(x => (
             <li key={x.id} className="border-t border-outline first:border-t-0 py-2 flex flex-wrap items-center gap-x-2" data-s="post" data-id={x.id}>
-              <span className="flex-1 min-w-[12rem] break-words">{x.url ? <ExternalLink href={x.url}>{platformLabel(x.platform)}</ExternalLink> : platformLabel(x.platform)}{isDateKey(x.on) && <span className="text-sm text-fg-2"> · {shortDate(x.on)}</span>}</span>
+              <span className="flex-1 min-w-[12rem] break-words">{x.url ? <Link url={x.url}>{platformLabel(x.platform)}</Link> : platformLabel(x.platform)}{isDateKey(x.on) && <span className="text-sm text-fg-2"> · {shortDate(x.on)}</span>}</span>
               <Button inline variant="ghost" aria-label={`Remove ${platformLabel(x.platform)}`} data-action="post-remove" onClick={() => save(d => removePost(d, v.id, x.id))}><Trash2 size={16} aria-hidden="true" /></Button>
             </li>
           ))}
@@ -402,7 +407,10 @@ function ResultsCard({ v }: { v: Video }) {
   const [platform, setPlatform] = useState('youtube'), [on, setOn] = useState(todayKey() as string), [nums, setNums] = useState<Partial<Record<ResultField, string>>>({});
   const edit = (patch: Parameters<typeof editVideo>[2]) => save(d => editVideo(d, v.id, patch));
   function add() {
-    const parsed = Object.fromEntries(RESULT_FIELDS.map(f => [f, nums[f]?.trim() ? Number(nums[f]!.replace(/[,\s]/g, '')) : null]));
+    // Whole numbers only (digits, with commas or spaces if you like): "12.5" or "0x10" isn't one.
+    const raw = RESULT_FIELDS.map(f => [f, (nums[f] ?? '').replace(/[,\s]/g, '')] as const);
+    if (raw.some(([, t]) => t && !/^\d+$/.test(t))) { toast('Add at least one number (whole numbers, none below 0).'); return; }
+    const parsed = Object.fromEntries(raw.map(([f, t]) => [f, t ? Number(t) : null]));
     if (!save(d => !!addResult(d, v.id, platform, isDateKey(on) ? on as DateKey : null, parsed))) { toast('Add at least one number (whole numbers, none below 0).'); return; }
     setNums({}); toast('Results kept.');
   }
@@ -414,7 +422,7 @@ function ResultsCard({ v }: { v: Video }) {
           {v.results.map(r => (
             <li key={r.id} className="border-t border-outline first:border-t-0 py-2 flex flex-wrap items-center gap-x-2" data-s="result" data-id={r.id}>
               <span className="flex-1 min-w-[12rem]"><span className="font-semibold">{platformLabel(r.platform)}{isDateKey(r.on) ? ` · ${shortDate(r.on)}` : ''}</span><span className="block text-sm text-fg-2 tabular-nums">{resultWords(r)}</span></span>
-              <Button inline variant="ghost" aria-label="Remove these results" data-action="result-remove" onClick={() => save(d => removeResult(d, v.id, r.id))}><Trash2 size={16} aria-hidden="true" /></Button>
+              <Button inline variant="ghost" aria-label={`Remove ${platformLabel(r.platform)} results${isDateKey(r.on) ? ` of ${shortDate(r.on)}` : ''}`} data-action="result-remove" onClick={() => save(d => removeResult(d, v.id, r.id))}><Trash2 size={16} aria-hidden="true" /></Button>
             </li>
           ))}
         </ul>

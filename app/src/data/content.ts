@@ -7,7 +7,8 @@
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
 import { recordBytes } from './projectRecords';
 import { tidyText, webAddress } from './projectResources';
-import { addTask, isDone, removeTask } from './tasks';
+import { filesLeaving } from './files';
+import { addTask, isDone, leaveTodaysPlanIfLater, removeTask, TASK_LIMITS } from './tasks';
 import type { ContentClip, ContentData, ContentExample, ContentItem, ContentLine, ContentOption, ContentPost, ContentResult, ContentStep, DateKey, MyDayData, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
@@ -48,7 +49,7 @@ export function normalizeContent(raw: unknown, report: { dropped: number }): Con
     if (seen.has(x.id)) { report.dropped++; continue; }
     seen.add(x.id);
     const item = { ...x } as ContentItem;
-    if (!isDateTime(item.createdAt)) item.createdAt = isDateTime(item.updatedAt) ? item.updatedAt : localStamp();
+    if (!isDateTime(item.createdAt)) item.createdAt = isDateTime(item.updatedAt) ? item.updatedAt : '2000-01-01T00:00'; // (the same on every device)
     if (!isDateTime(item.updatedAt)) item.updatedAt = item.createdAt;
     out.items.push(item);
   }
@@ -132,10 +133,13 @@ export function addVideo(d: MyDayData, projectId: string, title: string): string
   if (id) find(d, id)!.step = 'planning';
   return id;
 }
-// Its step: one of the five (a step from a newer MyDay isn't set here).
+// Its step: one of the five (a step from a newer MyDay isn't set here). Moving a video its done post task shows as
+// Posted back to an earlier step lets go of that task (and its day): it's being worked on again.
 export function setStep(d: MyDayData, id: string, step: ContentStep): boolean {
   const v = find(d, id);
-  if (!v || !STEPS.some(s => s.id === step) || v.step === step) return false;
+  if (!v || !STEPS.some(s => s.id === step) || (v.step === step && stepOf(d, v) === step)) return false;
+  const t = postTask(d, v);
+  if (step !== 'posted' && t && isDone(d, t)) { delete v.postTaskId; delete v.postOn; }
   v.step = step; touch(v);
   return true;
 }
@@ -152,14 +156,20 @@ export function editVideo(d: MyDayData, id: string, patch: Partial<Record<keyof 
   for (const key of Object.keys(patch) as (keyof typeof WORDS)[]) {
     const raw = patch[key];
     if (raw === undefined || !(key in WORDS)) continue;
-    const val = key === 'script' || key === 'transcript' ? raw.slice(0, WORDS[key]) : tidyText(raw, WORDS[key]);
+    const val = key === 'script' || key === 'transcript' ? Array.from(raw).slice(0, WORDS[key]).join('') : tidyText(raw, WORDS[key]); // (by character: never half an emoji)
     if (key === 'title' && !val) continue;
     if ((v[key] ?? '') === val) continue;
     if (val) v[key] = val; else delete v[key];
+    if (key === 'title') renamePostTask(d, v, val);
     changed = true;
   }
   if (changed) touch(v);
   return changed;
+}
+// Its "Post: …" task follows a new title while it's still to do.
+function renamePostTask(d: MyDayData, v: ContentItem, title: string) {
+  const t = postTask(d, v);
+  if (t && !isDone(d, t)) t.title = tidyText(`Post: ${title}`, TASK_LIMITS.title);
 }
 // Deleting one: its files that nothing else lists go to Recently deleted (the caller does that first, by its place).
 export function deleteVideo(d: MyDayData, id: string): boolean {
@@ -168,8 +178,10 @@ export function deleteVideo(d: MyDayData, id: string): boolean {
   d.content.items.splice(i, 1);
   return true;
 }
-// When a project is deleted, its ideas and videos go with it.
+// When a project is deleted (here, or on another device), its ideas and videos go with it, and their uploads that
+// nothing else lists go to Recently deleted.
 export function deleteProjectContent(d: MyDayData, projectId: string): boolean {
+  for (const v of d.content.items) if (v.projectId === projectId) filesLeaving(d, { kind: 'video', id: v.id });
   const before = d.content.items.length;
   d.content.items = d.content.items.filter(x => x.projectId !== projectId);
   return d.content.items.length !== before;
@@ -190,7 +202,7 @@ export function editOption(d: MyDayData, id: string, optionId: string, patch: { 
   let changed = false;
   if (patch.text !== undefined) { const t = tidyText(patch.text, CONTENT_LIMITS.option); if (t && t !== o.text) { o.text = t; changed = true; } }
   if (patch.note !== undefined) { const n = tidyText(patch.note, CONTENT_LIMITS.note); if (n !== (o.note ?? '')) { if (n) o.note = n; else delete o.note; changed = true; } }
-  if (changed) { if (o.chosen && (o.kind === 'title' || o.kind === 'hook')) v[o.kind] = o.text; touch(v); }
+  if (changed) { if (o.chosen && (o.kind === 'title' || o.kind === 'hook')) setFrom(d, v, o); touch(v); }
   return changed;
 }
 // "Choose this": the one chosen for its kind; the others stay, not chosen. A title or hook then reads from it.
@@ -200,9 +212,14 @@ export function chooseOption(d: MyDayData, id: string, optionId: string): boolea
   if (!v || !o) return false;
   const on = !o.chosen;
   for (const x of videoOf(v).options) if (x.kind === o.kind) { if (x.id === o.id && on) x.chosen = true; else delete x.chosen; }
-  if (on && (o.kind === 'title' || o.kind === 'hook')) v[o.kind] = o.text;
+  if (on && (o.kind === 'title' || o.kind === 'hook')) setFrom(d, v, o);
   touch(v);
   return true;
+}
+// A chosen title or hook becomes the video's (within its own limit; a title renames its post task).
+function setFrom(d: MyDayData, v: ContentItem, o: ContentOption) {
+  if (o.kind === 'title') { v.title = tidyText(o.text, CONTENT_LIMITS.title); renamePostTask(d, v, v.title); }
+  else v.hook = tidyText(o.text, CONTENT_LIMITS.hook);
 }
 export function removeOption(d: MyDayData, id: string, optionId: string): boolean {
   const v = find(d, id), list = v ? videoOf(v).options : [];
@@ -321,9 +338,9 @@ export function setPostDay(d: MyDayData, id: string, day: DateKey | null): boole
     if (t && !isDone(d, t)) { removeTask(d.tasks, t.id); delete v.postTaskId; } else if (!t) delete v.postTaskId;
   } else {
     v.postOn = on;
-    if (t && !isDone(d, t)) t.due = on;
+    if (t && !isDone(d, t)) { t.due = on; leaveTodaysPlanIfLater(d, t.id); } // (as a task's own date change does)
     else if (!t) {
-      const tid = addTask(d.tasks, { title: `Post: ${v.title || 'video'}`, minutes: 10, due: on });
+      const tid = addTask(d.tasks, { title: tidyText(`Post: ${v.title || 'video'}`, TASK_LIMITS.title), minutes: 10, due: on });
       if (tid) { d.tasks.items.find(x => x.id === tid)!.projectId = v.projectId; v.postTaskId = tid; }
     }
   }

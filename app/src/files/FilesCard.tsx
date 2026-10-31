@@ -10,7 +10,7 @@ import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { FileRecord, MyDayData } from '../data/types';
 import { useSync } from '../sync/engine';
-import { addFiles, canRetry, carryingOn, carryOn, checkUnlisted, deleteNow, deleteUnlisted, getProgress, getUnlisted, getUsage, linkTo, openFile, refreshUsage, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
+import { addFiles, canRetry, carryingOn, carryOn, dropSending, checkUnlisted, deleteNow, deleteUnlisted, getProgress, getUnlisted, getUsage, linkTo, openFile, refreshUsage, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
 
 // "Files" (specs/files.md): the files attached to a project (a card on its Overview) or a note (a section in its
 // editor). Add (or drop) photos, PDFs and documents; Open; Remove (to Recently deleted for 30 days, unless something else
@@ -39,7 +39,12 @@ function FileRow({ f, owner }: { f: FileRecord; owner: Owner }) {
   const [playing, setPlaying] = useState<string | null>(null), pick = useRef<HTMLInputElement>(null);
   async function open() { const r = await openFile(f); if (r !== 'ok') toast(why(r)); }
   // A video plays here, streaming on its link (never held whole on the device).
-  async function play() { const r = await linkTo(f); if (r.ok) setPlaying(r.url); else toast(why(r.why)); }
+  async function play() {
+    const r = await linkTo(f);
+    if (!r.ok) { toast(why(r.why)); return; }
+    setPlaying(r.url); requestAnimationFrame(() => document.getElementById(`player-${f.id}`)?.focus());
+  }
+  const stopPlaying = () => { setPlaying(null); requestAnimationFrame(() => document.getElementById(`play-${f.id}`)?.focus()); };
   // A big upload this device started carries on once you pick the same file again (after a reload).
   async function again(file: File | undefined) {
     if (!file) return;
@@ -50,8 +55,10 @@ function FileRow({ f, owner }: { f: FileRecord; owner: Owner }) {
   const resumable = (f.state === 'uploading' || f.state === 'failed') && progress?.state !== 'adding' && !canRetry(f.id) && carryingOn(f.id);
   function remove() {
     let r = false as ReturnType<typeof removeFile>;
-    if (update(d => { r = removeFile(d, f.id, owner); return r ? undefined : false; }))
+    if (update(d => { r = removeFile(d, f.id, owner); return r ? undefined : false; })) {
       toast(r === 'removed' ? 'Removed from here — it’s still used elsewhere.' : 'Removed — it’s in Recently deleted for 30 days.');
+      if (f.state !== 'kept') void dropSending(f.id, f.area); // (a big upload left unfinished: what was sent goes)
+    }
   }
   const status = f.state === 'uploading' ? (progress?.state === 'adding' ? (progress.message || 'Adding…') : resumable ? 'Stopped part way — pick the same file to carry on.' : unfinished(f) ? 'It wasn’t finished.' : 'Still being added.')
     : f.state === 'failed' ? (progress?.message || 'It couldn’t be added.') : `${label} · ${sizeLabel(f.size)}`;
@@ -62,12 +69,15 @@ function FileRow({ f, owner }: { f: FileRecord; owner: Owner }) {
         <span className="block font-medium break-words">{f.name}</span>
         <span className={`block text-sm ${f.state === 'failed' ? 'text-on-warn-c' : 'text-fg-3'}`} data-s="file-status">{status}</span>
         {progress?.state === 'adding' && progress.of ? <progress className="block w-full max-w-xs h-2 mt-1 accent-[var(--primary)]" max={progress.of} value={progress.done ?? 0} aria-label={`${f.name}: ${progress.message}`} data-s="file-progress" /> : null}
-        {playing && <video src={playing} controls playsInline preload="metadata" className="block w-full max-w-xl mt-2 rounded-tile bg-black" data-s="file-player" onError={() => { setPlaying(null); toast(WHY.failed); }} />}
+        {playing && <>
+          <video id={`player-${f.id}`} src={playing} controls playsInline preload="metadata" aria-label={`“${f.name}”`} className="block w-full max-w-xl mt-2 rounded-tile bg-black" data-s="file-player" onError={() => { stopPlaying(); toast(WHY.failed); }} />
+          <LinkButton className="text-[15px]" data-action="file-player-close" onClick={stopPlaying}>Close</LinkButton>
+        </>}
         <div className="flex flex-wrap gap-x-5">
-          {f.state === 'kept' && video && !playing && <LinkButton className="text-[15px]" data-action="file-play" aria-label={`Play “${f.name}”`} onClick={() => { void play(); }}>Play</LinkButton>}
+          {f.state === 'kept' && video && !playing && <LinkButton id={`play-${f.id}`} className="text-[15px]" data-action="file-play" aria-label={`Play “${f.name}”`} onClick={() => { void play(); }}>Play</LinkButton>}
           {f.state === 'kept' && <LinkButton className="text-[15px]" data-action="file-open" aria-label={`Open “${f.name}”`} onClick={open}>Open</LinkButton>}
           {resumable && <><input ref={pick} type="file" hidden accept={'.' + (f.name.split('.').pop() ?? '')} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; void again(file); }} />
-            <LinkButton className="text-[15px]" data-action="file-carry-on" onClick={() => pick.current?.click()}>Pick the file to carry on</LinkButton></>}
+            <LinkButton className="text-[15px]" data-action="file-carry-on" aria-label={`Pick “${f.name}” again to carry on`} onClick={() => pick.current?.click()}>Pick the file to carry on</LinkButton></>}
           {f.state === 'failed' && canRetry(f.id) && <LinkButton className="text-[15px]" data-action="file-retry" onClick={() => { void retry(f.id).then(r => { if (r.refused) toast(`${f.name}: ${r.refused}`); }); }}>Try again</LinkButton>}
           {(f.state !== 'uploading' || progress?.state !== 'adding') && <LinkButton className="text-[15px]" data-action="file-remove" aria-label={`Remove “${f.name}”`} onClick={remove}>Remove</LinkButton>}
         </div>

@@ -42,6 +42,8 @@ export interface Store {
   mpParts(key: string, uploadId: string): Promise<{ n: number; etag: string; size: number }[] | null>;
   mpComplete(key: string, uploadId: string, parts: { n: number; etag: string }[]): Promise<void>;
   mpAbort(key: string, uploadId: string): Promise<void>;
+  // The multipart uploads still open under a prefix (R2 drops one left unfinished after 7 days by itself).
+  mpOpen(prefix: string): Promise<{ key: string; uploadId: string }[]>;
 }
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -57,6 +59,8 @@ export interface Deps {
 
 const LINK_SECONDS = 300, PART_LINK_SECONDS = 3600, VIDEO_LINK_SECONDS = 6 * 3600;
 const UPLOAD_ID = /^[A-Za-z0-9+/=._~-]{8,1024}$/, ETAG = /^"?[A-Za-z0-9-]{1,80}"?$/;
+// At most this many big uploads unfinished at once for an account: their parts aren't counted in its total until done.
+const OPEN_UPLOADS = 10;
 const DEFAULT_ORIGINS = 'https://omar12ahmed.github.io,http://localhost:5173,http://127.0.0.1:5500';
 const FILE_ID = /^fl[a-z0-9]{6,40}$/, MD5 = /^[A-Za-z0-9+/]{22}==$/;
 
@@ -175,6 +179,7 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
       }
       case 'delete-all': {
         const objs = await all();
+        for (const u of await store.mpOpen(`${user}/`)) if (u.key.startsWith(`${user}/`)) await store.mpAbort(u.key, u.uploadId); // (and any upload still under way)
         await removeAll(store, objs.map(o => o.key));
         return done(json(200, { ok: true, deleted: objs.filter(o => !o.key.endsWith('.thumb')).length }));
       }
@@ -206,6 +211,10 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
         if (objs.some(o => o.key === key)) return done(json(409, { error: 'exists' }));
         const full = roomFor(ACCOUNT_TOTAL_BYTES, sizeOf(objs), size) || (rule.totalBytes ? roomFor(rule.totalBytes, sizeOf(objs, body.area as string), size) : '');
         if (full) return done(json(422, { error: 'full', message: full }));
+        // Starting this file again drops its own earlier unfinished upload; otherwise only a few may be open at once.
+        const open = (await store.mpOpen(`${user}/`)).filter(u => u.key.startsWith(`${user}/`));
+        for (const u of open.filter(u => u.key === key)) await store.mpAbort(u.key, u.uploadId);
+        if (open.filter(u => u.key !== key).length >= OPEN_UPLOADS) return done(json(422, { error: 'not-allowed', message: 'Too many big uploads are unfinished. Finish or remove one first.' }));
         const type = typeOfName(name)!;
         const uploadId = await store.mpCreate(key, { 'Content-Type': type, 'Content-Disposition': disposition(name, type) });
         return done(json(200, { ok: true, uploadId, partBytes: PART_BYTES, parts: count }));

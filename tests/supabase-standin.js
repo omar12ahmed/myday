@@ -156,6 +156,7 @@ function start(db, port = 0) {
       fileUploads.delete(uploadId);
     },
     async mpAbort(key, uploadId) { const u = fileUploads.get(uploadId); if (u && u.key === key) fileUploads.delete(uploadId); },
+    async mpOpen(prefix) { return [...fileUploads].filter(([, u]) => u.key.startsWith(prefix)).map(([uploadId, u]) => ({ key: u.key, uploadId })); },
   };
   const server = http.createServer((req, res) => {
     const chunks = [];

@@ -47,13 +47,14 @@ for a video's journey.
 - **A video's page** (`#projects/p/<id>/videos/<video>`), planning first:
   - **The idea:** title, hook (the first seconds), and notes from when it was an idea.
   - **Options still open:** candidate **titles, hooks, angles and thumbnail ideas**, each with a note. **Choose this**
-    marks one chosen for its kind (the title and hook then read from it); the rest stay, under "Not chosen". Nothing
-    is ever picked for you.
+    marks one chosen for its kind (the title and hook then read from it); the rest stay ("2 others not chosen").
+    Nothing is ever picked for you.
   - **Examples to learn from:** another creator's video — a link, what you like about it, and a moment ("0:12 how they
     open"); it opens in a new tab.
   - **How to make it:** an **outline** (beats, in order), a **shot list** (what, where, with what), **what you need**
     (a checklist: place, gear, people), and **steps**, any of which **becomes a task** in this project, on a day if you
-    like ("Film: market shots", Thu 6 Nov) — so it reaches Today like any task.
+    like ("Film: market shots", Thu 6 Nov) — so it reaches Today like any task. Moving a posted video back to an earlier
+    step lets go of its done post task (it's being worked on again).
   - **Script** and **transcript:** long text, written or pasted in.
   - **Clips and thumbnails:** a clip is a **link** (with a moment or a span, "0:42–0:58 market shot") or an **upload**
     (MP4, MOV, WebM up to 15 GB); thumbnails are images (or uploads). An uploaded clip plays in MyDay; a big upload
@@ -63,7 +64,8 @@ for a video's journey.
     Posted. **Where it went up:** each platform's link and day (YouTube, Shorts, TikTok, Instagram, other).
   - **Results**, typed in when you like: for a platform and a day, views, likes, comments, shares and followers gained
     (any you have); and **what worked** and **what didn't**, in your words. No scores, no comparisons.
-- **Capture:** "Video idea" sends what you captured to a Content project's Ideas.
+- **Capture:** "Keep as a video idea — <channel>" (your three most recently worked-on Content projects) sends what
+  you captured to its Ideas: the first line the idea, the rest a line about it.
 - **Storage:** every Files card's "used and left" line counts against **150 GB** in all.
 
 ## 4. How it works
@@ -71,8 +73,9 @@ for a video's journey.
 - **Saved data (schema stays 5, the AGENTS.md exception):** a new section `content: { items }`, one record per item
   in a new synced kind **`content`** (not `project_…`). An item: `{ id ('cv'+uid), type: 'video', projectId, step:
   'idea' | 'planning' | 'filming' | 'editing' | 'posted', title, hook, notes, options[], examples[], outline[], shots[],
-  needs[], script, transcript, clips[], thumbs[], postOn, postTaskId, posts[], results[], worked, didnt, createdAt,
-  updatedAt }`. An idea is an item at step `idea`. Read as written; an item of a type or step this version doesn't know
+  needs[], steps[], script, transcript, clips[] (links), fileIds[] (its uploads: clips and thumbnails), postOn,
+  postTaskId, posts[], results[], worked, didnt, createdAt, updatedAt }`. A video is a place for files, like a project
+  or a note; deleting it (or its project, here or on another device) sends its uploads to Recently deleted. An idea is an item at step `idea`. Read as written; an item of a type or step this version doesn't know
   is kept; unknown fields kept. Limits keep a record well under the database's 512 KB (title 120, hook 200, notes
   2,000, script 20,000, transcript 50,000; up to 40 options, 20 examples, 60 beats, 60 shots, 40 needs, 40 clips, 10
   posts, 30 results; a link 1,000), and the app checks a record's size before sending, saying which video is too big.
@@ -92,11 +95,16 @@ for a video's journey.
   - The device reads one part at a time (never the whole file), so a phone can send 15 GB; no whole-file hash for a
     file over 64 MB (`sha256` empty, as already allowed).
   - An upload's progress (upload id, parts done) is kept on the device (`myday.files.parts`) so it can carry on; an
-    unfinished upload is left alone for 7 days (R2 drops unfinished ones after 7), not 1 hour.
+    unfinished upload is left alone for 7 days (R2 drops unfinished multipart uploads after 7 days by default), not 1
+    hour. Removing one drops what was sent (`mp-abort`); Delete everything drops every unfinished one; starting a file
+    again drops its own earlier one; at most 10 can be unfinished at once (their parts don't count in the 150 GB until
+    done). Each part's MD5 is worked out 4 MB at a time, so a part is never held whole.
   - **Playing:** a video opens in a player in MyDay with a signed link valid 6 hours (R2 streams it in ranges); never
     held whole in memory or cached on the device. Its preview is a frame from the video, made on the device.
   - Bucket CORS already allows PUT with Content-MD5 and exposes ETag; the live check proves it for parts.
-- **AI:** nothing of a Content project's videos is sent to AI in this release (Ask's reach skips the kind).
+- **AI:** nothing of a Content project's ideas and videos is sent to AI in this release (their planning, script,
+  transcript, links, posts and results: ai/reach.ts's "never" list); the tasks you make from them ("Post: …",
+  "Film: …") are ordinary tasks and go as tasks always have.
 
 ## 5. Checks
 
