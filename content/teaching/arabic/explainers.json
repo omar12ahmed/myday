@@ -22158,7 +22158,7 @@
       "en": "I understand"
      },
      {
-      "form_en": "not",
+      "form_en": "with لَا: not",
       "ar": "لَا أَفْهَمُ",
       "en": "I don't understand"
      },
@@ -22170,7 +22170,7 @@
     ],
     "steps": [
      "Check the four skills one at a time: reading, listening, speaking and writing. You may read well and still find listening hard.",
-     "A present verb that starts with أَ is about \"I\": أَقْرَأُ, I read; أَكْتُبُ, I write.",
+     "A present verb that starts with أ (أَ or أُ) is about \"I\": أَقْرَأُ, I read; أَكْتُبُ, I write.",
      "لَا before it makes it \"not\": لَا أَفْهَمُ, I don't understand.",
      "Write down the result for each skill, with any help you used."
     ],
@@ -22786,7 +22786,7 @@
     ],
     "steps": [
      "Arabic has 28 letters, and many share a shape. The dots tell them apart: how many, and whether they're above or below.",
-     "ب, ت and ث have the same body: one dot below, two above, three above. At the start of a word, ن and ي look like them too, with one dot above and two below.",
+     "ب, ت and ث have the same body: one dot below, two above, three above. At the start or in the middle of a word, ن and ي look like them too, with one dot above and two below.",
      "ج, ح and خ share another body: one dot below, none, and one above.",
      "Learn each letter by its sound in a word, not only by its name: ب is the b of بَاب, a door."
     ],
@@ -22915,7 +22915,7 @@
       "en": "a day"
      },
      {
-      "form_en": "a gap, then joined again",
+      "form_en": "a gap before the last letter",
       "ar": "كِتَاب",
       "en": "a book"
      }
@@ -23203,7 +23203,7 @@
      }
     ],
     "steps": [
-     "Sukūn, a small circle above a letter, means no vowel after it: in بِنْت, a girl, ن and ت have none.",
+     "Sukūn, a small circle above a letter, means no vowel after it: in بِنْت, a girl, the sukūn on ن means nothing comes between n and t.",
      "After a fatḥa, ي and و with a sukūn join the a into one sound: بَيْت, a house; يَوْم, a day.",
      "Shadda, a small w shape above a letter, doubles it, so hold the sound: حَمَام is pigeons, and حَمَّام, with a doubled م, is a bathroom.",
      "Tanwīn, a doubled vowel mark at the end of a word, adds an n after the vowel: قَلَمٌ, a pen. With -an it usually takes an ا too: شُكْرًا."
@@ -23268,14 +23268,14 @@
       "why_en": "The shadda doubles م. Without it, the word is pigeons."
      },
      {
-      "q_en": "In بِنْت, which letters have no vowel after them?",
+      "q_en": "In بِنْت, which letter carries the sukūn?",
       "choices": [
-       "ن and ت",
-       "ب and ن",
-       "only ب"
+       "ن",
+       "ب",
+       "ت"
       ],
-      "answer": "ن and ت",
-      "why_en": "ب has a kasra; the sukūn is on ن, and the last letter has no vowel."
+      "answer": "ن",
+      "why_en": "ب has a kasra; ت is the last letter, and takes an ending in a sentence: بِنْتٌ."
      },
      {
       "q_en": "What does tanwīn add at the end of قَلَمٌ?",
@@ -23341,15 +23341,15 @@
     ],
     "steps": [
      "Hamza ء is a catch in the throat, a consonant. It sits on ا, و or ي, or on its own: أُمّ, a mother; مَاء, water.",
-     "ة, tāʾ marbūṭa, ends many feminine words: طَالِبَة, a (woman) student. When you stop on it, it's said a; with an ending after it, the t is heard: طَالِبَةٌ.",
+     "ة, tāʾ marbūṭa, ends many feminine words: طَالِبَة, a (woman) student. When you stop on it, it's said as a light -ah; with an ending after it, the t is heard: طَالِبَةٌ.",
      "ه is a different letter, always h: وَجْه, a face. Keep ة and ه apart when you spell.",
      "ى at the end of a word is a long ā, written like ي without its dots: لَيْلَى.",
      "ل followed by ا is written as one shape: لَا, no. It's two letters, not a new one."
     ],
     "examples": [
      {
-      "ar": "لَيْلَى فِي الْمَدْرَسَةِ.",
-      "en": "Laylā is at school.",
+      "ar": "لَيْلَى فِي الْمَكْتَبَةِ.",
+      "en": "Laylā is in the library.",
       "words": [
        {
         "ar": "لَيْلَى",
@@ -23360,8 +23360,8 @@
         "en": "in, at"
        },
        {
-        "ar": "الْمَدْرَسَةِ",
-        "en": "the school"
+        "ar": "الْمَكْتَبَةِ",
+        "en": "the library"
        }
       ]
      },
@@ -23400,7 +23400,7 @@
     ],
     "why": {
      "q_en": "Why is ة sometimes said with a t, and sometimes not?",
-     "a_en": "When you stop on the word, ة is said as a plain a: غُرْفَة. When an ending follows, the t is heard: غُرْفَةٌ كَبِيرَةٌ, a big room."
+     "a_en": "When you stop on the word, ة is said as a light -ah: غُرْفَة. When an ending follows, the t is heard: غُرْفَةٌ كَبِيرَةٌ, a big room."
     },
     "selftest": [
      {
@@ -23475,7 +23475,7 @@
      {
       "form_en": "ح-ب: fatḥa",
       "ar": "حَبّ",
-      "en": "seeds, grain"
+      "en": "seeds, grain; beans"
      }
     ],
     "steps": [
@@ -23517,15 +23517,15 @@
       ]
      },
      {
-      "ar": "اِشْتَرَيْتُ حَبَّ قَهْوَةٍ.",
-      "en": "I bought coffee beans.",
+      "ar": "هَذَا حَبُّ قَهْوَةٍ.",
+      "en": "These are coffee beans.",
       "words": [
        {
-        "ar": "اِشْتَرَيْتُ",
-        "en": "I bought"
+        "ar": "هَذَا",
+        "en": "this"
        },
        {
-        "ar": "حَبَّ",
+        "ar": "حَبُّ",
         "en": "beans, seeds (of)"
        },
        {
