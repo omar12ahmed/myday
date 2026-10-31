@@ -14902,7 +14902,7 @@
     "steps": [
      "A formal email says who it's for, why you're writing, what they need to know, and exactly what you're asking.",
      "Open with the person's title and الْمُحْتَرَمُ, then a greeting: تَحِيَّةً طَيِّبَةً.",
-     "Make the request plain. أَرْجُو, I'd be grateful for, takes a verbal noun: أَرْجُو إِرْسَالَ الْفَاتُورَةِ, please send the invoice.",
+     "Make the request plain. أَرْجُو, I'd be grateful for, is followed by what you ask for, usually as a verbal noun: أَرْجُو إِرْسَالَ الْفَاتُورَةِ, please send the invoice.",
      "To an office, or someone you don't know, use the plural \"you\": تَجِدُونَ, you will find.",
      "Check names, dates and attachments before sending, and close with شُكْرًا مُسْبَقًا, thank you in advance."
     ],
@@ -14989,7 +14989,7 @@
        },
        {
         "ar": "الْبَرِيدِ",
-        "en": "email"
+        "en": "mail (here: this email)"
        }
       ]
      }
@@ -15020,14 +15020,14 @@
       "why_en": "تَجِدُونَ الْمِلَفَّ مُرْفَقًا: you'll find the file attached."
      },
      {
-      "q_en": "What makes a request easy to act on?",
+      "q_en": "Writing to an office, how do you say \"you will find\"?",
       "choices": [
-       "saying exactly what you need, and by when",
-       "a long polite opening",
-       "leaving out the date"
+       "تَجِدُونَ",
+       "تَجِدُ",
+       "تَجِدِينَ"
       ],
-      "answer": "saying exactly what you need, and by when",
-      "why_en": "Politeness matters, but it mustn't hide the request."
+      "answer": "تَجِدُونَ",
+      "why_en": "The plural \"you\" is the polite one in a formal email. تَجِدُ is to one man, and تَجِدِينَ to one woman."
      }
     ],
     "phrases_ar": [
@@ -15273,7 +15273,7 @@
      {
       "form_en": "a final long ā",
       "ar": "أَلِفٌ مَقْصُورَةٌ",
-      "en": "the \"short alif\": a long ā at the end of a word"
+      "en": "the \"shortened alif\": written short, said as a long ā at the end of a word"
      },
      {
       "form_en": "a comma",
@@ -15300,7 +15300,7 @@
      "Edit in passes: first the meaning and the order, then one spelling pattern at a time.",
      "ة, the تَاءٌ مَرْبُوطَةٌ, ends a feminine noun and is said -a, or -at- before an ending: مَدِينَة, مَدِينَتُنَا. A plain ه is a real h: وَجْه, a face.",
      "ى at the end, the أَلِفٌ مَقْصُورَةٌ, is a long ā: عَلَى, مُسْتَشْفَى. ي, with its dots, is ī or y: فِي.",
-     "At the end of a word, a hamza sits on the letter that matches the vowel before it: بَدَأَ after a, شَاطِئ after i. After a sukūn or a long vowel it stands alone: جُزْء, سَمَاء.",
+     "At the end of a word, a hamza sits on the letter that matches the vowel before it: بَدَأَ after a, شَاطِئ after i, تَبَاطُؤ after u. After a sukūn or a long vowel it stands alone: جُزْء, سَمَاء.",
      "Arabic's comma and question mark face the other way. Use them to help the reader, not to patch an unclear sentence."
     ],
     "examples": [
@@ -15381,7 +15381,7 @@
     },
     "selftest": [
      {
-      "q_en": "Which letter ends a feminine noun like مَدِينَة?",
+      "q_en": "Which letter writes the feminine ending of مَدِينَة?",
       "choices": [
        "ة",
        "ه",
@@ -15561,7 +15561,7 @@
     ],
     "why": {
      "q_en": "Why أَعَدْتُ, with a short a, from أَعَادَ?",
-     "a_en": "أَعَادَ has a long ā in the middle, and, as in قَالَ, قُلْتُ, it shortens before an ending that starts with a consonant: أَعَدْتُ, I did again."
+     "a_en": "أَعَادَ has a long ā in the middle, and, as in قَالَ, قُلْتُ, it shortens before an ending that starts with a consonant. Here the short vowel stays a: أَعَدْتُ, I did again."
     },
     "selftest": [
      {
@@ -15638,7 +15638,7 @@
       "en": "a reliable source"
      },
      {
-      "form_en": "not",
+      "form_en": "the opposite",
       "ar": "غَيْرُ مَوْثُوقٍ",
       "en": "unreliable"
      }
@@ -15647,7 +15647,7 @@
      "Keep each source's points apart first: its topic, its main point, and its evidence.",
      "Then compare: يَتَّفِقُ النَّصَّانِ عَلَى, the two texts agree on; يَخْتَلِفُ النَّصَّانِ فِي, the two texts differ on.",
      "A shared topic isn't a shared claim: two texts about learning can answer different questions.",
-     "غَيْر, not, turns a describing word round, and the word after it ends in -in: غَيْرُ مَوْثُوقٍ, unreliable.",
+     "غَيْر, not, turns a describing word round, and the word after it takes -i, here -in: غَيْرُ مَوْثُوقٍ, unreliable.",
      "Two sources agreeing doesn't make a claim true: it shows only that they agree."
     ],
     "examples": [
@@ -15724,7 +15724,7 @@
     ],
     "why": {
      "q_en": "Why يَتَّفِقُ الْكَاتِبَانِ, singular, but لَكِنَّهُمَا يَخْتَلِفَانِ, for two?",
-     "a_en": "A verb that comes before its doers stays singular, even for two or more: يَتَّفِقُ الْكَاتِبَانِ. Once the doers have been named, or a pronoun stands for them, the verb matches them: يَخْتَلِفَانِ, they two differ."
+     "a_en": "A verb that comes before its doers stays singular, even for two or more: يَتَّفِقُ الْكَاتِبَانِ. When the doers come first, as a noun or a pronoun, the verb matches them: لَكِنَّهُمَا يَخْتَلِفَانِ, but they two differ."
     },
     "selftest": [
      {
@@ -15745,24 +15745,26 @@
        "لَيْسَ مَوْثُوقٍ"
       ],
       "answer": "غَيْرُ مَوْثُوقٍ",
-      "why_en": "غَيْر comes before the describing word, which ends in -in."
+      "why_en": "غَيْر comes before the describing word, which ends in -in. لَيْسَ would need -an (لَيْسَ مَوْثُوقًا, it isn't reliable), and لَا doesn't make a describing word negative this way."
      },
      {
-      "q_en": "Two sources agree. What does that show?",
+      "q_en": "What does قَارَنَ بَيْنَ mean?",
       "choices": [
-       "that they agree, not that the claim is proven",
-       "that the claim is certainly true",
-       "that one copied the other"
+       "compared",
+       "agreed with",
+       "chose between"
       ],
-      "answer": "that they agree, not that the claim is proven",
-      "why_en": "Agreement is worth noting, but it isn't proof."
+      "answer": "compared",
+      "why_en": "قَارَنَ بَيْنَ النَّصَّيْنِ: he compared the two texts."
      }
     ],
     "phrases_ar": [
      "يَتَّفِقُ النَّصَّانِ عَلَى",
      "يَخْتَلِفُ النَّصَّانِ فِي",
      "يَتَّفِقُ الْكَاتِبَانِ",
-     "لَكِنَّهُمَا يَخْتَلِفَانِ"
+     "لَكِنَّهُمَا يَخْتَلِفَانِ",
+     "لَيْسَ مَوْثُوقًا",
+     "قَارَنَ بَيْنَ"
     ]
    }
   ],
@@ -16001,7 +16003,7 @@
     "steps": [
      "Listen for what the question actually asks: لِمَاذَا wants a reason, not a name.",
      "It's fine to take a moment: دَعْنِي أُفَكِّرُ, let me think.",
-     "Say how sure you are: عَلَى حَدِّ عِلْمِي, as far as I know; فِي الْحَقِيقَةِ, actually; بِصَرَاحَةٍ, honestly.",
+     "Say how sure you are, or how you mean it: عَلَى حَدِّ عِلْمِي, as far as I know; فِي الْحَقِيقَةِ, actually; بِصَرَاحَةٍ, honestly.",
      "If the answer depends on something, say so with يَعْتَمِدُ عَلَى, it depends on.",
      "If you're unsure what's being asked, check before you answer: a fluent answer to the wrong question doesn't help."
     ],
@@ -16188,7 +16190,7 @@
     ],
     "steps": [
      "A learning cycle has four steps: choose a text you can mostly follow, find one gap, practise it, then check it in something new.",
-     "Give one gap أَوْلَوِيَّة, priority: a small set you can fix, not everything at once.",
+     "Give a small set of gaps أَوْلَوِيَّة, priority: ones you can fix now, not everything at once.",
      "Practise it with a short تَمْرِين, and keep a سِجِلّ of what you did and what help you used.",
      "Raise the difficulty تَدْرِيجِيًّا, gradually. Easy texts still count."
     ],
@@ -16306,14 +16308,14 @@
       "why_en": "\"Daily\" is يَوْمِيًّا."
      },
      {
-      "q_en": "How many gaps should one short cycle work on?",
+      "q_en": "What is a تَمْرِين?",
       "choices": [
-       "a small set",
-       "every mistake you made",
-       "none: just read more"
+       "an exercise",
+       "a record",
+       "patience"
       ],
-      "answer": "a small set",
-      "why_en": "Small enough to fix, then check in something new."
+      "answer": "an exercise",
+      "why_en": "A record is سِجِلّ, and patience صَبْر."
      }
     ],
     "phrases_ar": [
