@@ -1,5 +1,24 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.105.0 — Arabic explainers for modules 4, 5 and 15, with their voice:** twenty-one more **How it works** cards.
+Module 15's eight explain relative words (الَّذِي and its family), إِنَّ and its sisters, كَانَ and its sisters,
+reporting what someone said (قَالَ إِنَّ, ذَكَرَ أَنَّ), real and imagined conditions (إِذَا and إِنْ; لَوْ and لَوْلَا), and
+words for reasons, purposes and contrast. Modules 4–5's thirteen, for beginners, take the first patterns step by step:
+"you" to a man or a woman, greetings and their replies, sentences with no "is", question words, place words and the
+-i after them, ـِيّ ("from a place"), asking for help, masculine and feminine, sun and moon letters, describing words,
+plurals, this and that, and whose something is. Each has a table, short steps, two or three sentences broken down word
+by word, a "why" and three questions. An independent reviewer cross-checked them and the owner's fluent checker
+approved them; they never show a lesson check's answer. A table's form label or a word's gloss can now name Arabic
+("with إِنَّ"), shown as Arabic and never voiced, and 79 more course words link to their explainer (92 in all). Each
+table form, whole sentence and the Arabic in the steps plays in the WaveNet B voice: 310 clips, transcribed blind and
+listened to by the owner. 126 of those words had clips in the earlier voice, mostly beginners' words, and were made
+again so each explainer keeps one voice; they now play the new voice everywhere. 2,868 clips in all. Readings: tanween
+before the article joins as it's said (مُغْلَقٌ الْيَوْمَ, "mughlaquni l-yawma"); هَؤُلَاءِ and أُولَئِكَ read "hāʾulāʾi" and
+"ulāʾika" as the course spells them (they read "haʾulāʾi" and "ūlaʾika"); a prefix before such a word keeps its reading
+(لِهَذَا, "li-hādhā"); and a cited article or ending reads "al-", "-āt", "-ūna". No saved-data, sync or database change,
+and nothing goes to AI. Going back to 1.104.0 is safe: the new cards, links and clips simply aren't there, and those
+126 words play their earlier clips.
+
 **1.104.0 — Ask MyDay keeps the conversation going:** after Ask MyDay answers, you can reply while its panel is open,
 for as long as the day's AI requests last: "only the first two", "move it to Friday", "what about Friday?". Each
 reply is answered knowing the conversation so far, which shows above the newest answer, one line for each exchange
