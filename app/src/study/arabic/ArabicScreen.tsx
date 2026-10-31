@@ -266,6 +266,9 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
   const needsVoice = l.input_requirements?.modalities.some(m => m === 'listening' || m === 'speaking');
   const checkIds = check?.questions?.map(q => q.id) ?? [];
+  // While you check yourself, the objectives and tasks stay on the page but their voice waits, as the explanation
+  // folds away: a vowelled model there can give away a check's answer (قُلْتُ, لَمْ أَدْرُسْ).
+  const hold = checking && current === 'check' && !explain;
   // Where the finish card points: the path's next step (it moves on once you mark this lesson ready), never back here.
   const plan = arabicPlan(data)?.step;
   const next: UpNext = !plan ? null : plan.kind === 'complete' ? { kind: 'complete' } : plan.lessonId !== l.id ? { kind: plan.kind, id: plan.lessonId } : null;
@@ -286,7 +289,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
         {folded ? <><p className="text-[15px] text-fg-2" data-ar-folded="">The explanation is folded away while you check yourself, so the answers come from memory.</p>
             <Button inline variant="ghost" data-action="ar-explain-again" onClick={() => setExplain(true)}>Show the explanation again</Button></>
           : <>
-            <p className="text-sm text-fg-2">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} /></span>)}</p>
+            <p className="text-sm text-fg-2" data-ar-key-ideas="">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} voice={`${l.id}:key:${i}`} /></span>)}</p>
+            <MixedVoiceLabel texts={l.key_concepts} />
             {l.example && <div className="rounded-tile bg-surface border border-outline px-4 py-3 my-3" data-ar-example="">
               <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar></div>
                 <PlayButton text={l.example.text_ar} name={`${l.id}:example`} label="the lesson’s example" /></div>
@@ -310,11 +314,12 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
         <div className="flex items-center gap-2"><Ar className="text-[22px]">{l.example.text_ar}</Ar><PlayButton text={l.example.text_ar} name={`${l.id}:example:try`} label="the lesson’s example" /></div>
         <VoiceLabel text={l.example.text_ar} />
       </div>}
-      {task && <div className="border-t border-outline pt-3 mt-4" data-ar-task=""><h4 className="mt-0">Practical task · {task.estimated_minutes} min</h4><p><Mixed text={task.instruction} /></p>
+      {task && <div className="border-t border-outline pt-3 mt-4" data-ar-task=""><h4 className="mt-0">Practical task · {task.estimated_minutes} min</h4><p><Mixed text={task.instruction} voice={hold ? undefined : `${task.id}:instruction`} /></p>
         <h4>What to produce</h4><Lines items={task.expected_evidence} />
         <details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">How it’s judged</summary><ul className="list-disc pl-5">{task.rubric.map(r => <li key={r.criterion}>{r.criterion} ({r.weight}): <Mixed text={r.pass_evidence || ''} /></li>)}</ul></details>
       </div>}
-      {challenge && <div className="border-t border-outline pt-3 mt-4" data-ar-challenge=""><h4 className="mt-0">Mini challenge · {challenge.estimated_minutes} min</h4><p className="mb-0"><Mixed text={challenge.instruction} /></p></div>}
+      {challenge && <div className="border-t border-outline pt-3 mt-4" data-ar-challenge=""><h4 className="mt-0">Mini challenge · {challenge.estimated_minutes} min</h4><p className="mb-0"><Mixed text={challenge.instruction} voice={hold ? undefined : `${challenge.id}:instruction`} /></p></div>}
+      {!hold && <MixedVoiceLabel texts={[task?.instruction ?? '', challenge?.instruction ?? '']} />}
       {transfer && <div className="border-t border-outline pt-3 mt-4" data-ar-transfer=""><h4 className="mt-0">For an extended session</h4><p className="mb-0"><Mixed text={transfer.activity} /></p></div>}
     </Card>,
     check: () => { const qs = check?.questions ?? [], short = length === 'short' && shown.includes('check');
@@ -339,7 +344,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       <Eyebrow>Lesson · {l.estimated_duration_minutes.standard} min · {l.stage_target}{l.optional ? ' · optional' : ''}</Eyebrow>
       <h2>{l.title}</h2>
       <LessonPlace data={data} lessonId={l.id} checks={checkIds} />
-      <Lines items={l.learning_objectives} />
+      <ul className="list-disc pl-5 space-y-2 text-[15px]" data-ar-objectives="">{l.learning_objectives.map((o, i) => <li key={i}><Mixed text={o} voice={hold ? undefined : `${l.id}:objective:${i}`} /></li>)}</ul>
+      {!hold && <MixedVoiceLabel texts={l.learning_objectives} />}
       {needsVoice && <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. Use the assigned listening material where provided, or a fluent speaker. External recordings open on the provider’s site.</p>}
     </Card>
     {!session && <SessionChoice data={data} lesson={l} suggested={suggested} chosen={chosen} setChosen={setChosen} onBegin={() => { setStep(null); setChecking(false); setFinished(null); }} />}
@@ -564,6 +570,11 @@ function TextsIndex() {
   </>;
 }
 
+// A timetable cell: its Arabic, with a play button where it has a voice (the button wraps under it on a narrow screen).
+function Cell({ text, name }: { text: string; name: string }) {
+  return <span className="flex flex-wrap items-center gap-x-2 gap-y-1"><Ar>{text}</Ar><PlayButton text={text} name={name} label={text} /></span>;
+}
+
 function TextView({ data, asset: a }: { data: MyDayData; asset: Asset }) {
   const plain = 'text_unvowelled' in a ? a.text_unvowelled : null, full = 'text_ar' in a ? a.text_ar : null;
   const [vowels, setVowels] = useState(true);
@@ -572,6 +583,8 @@ function TextView({ data, asset: a }: { data: MyDayData; asset: Asset }) {
   const prepared = (passageReadings as Record<string, { latin: string; style: string }>)[a.id];
   const pairs = 'pairs' in a ? a.pairs : null;
   const hasPairVoice = pairs?.some(p => clipFor(p.a) || clipFor(p.b));
+  const rows = 'rows' in a ? a.rows : null, rowTexts = rows?.flatMap(r => [r.day_ar, r.activity_ar, r.place_ar]) ?? [];
+  const hasRowVoice = rowTexts.some(t => clipFor(t));
   return <>
     <Card>
       <BackLink to="study/arabic/texts" label="Reading texts" />
@@ -586,7 +599,7 @@ function TextView({ data, asset: a }: { data: MyDayData; asset: Asset }) {
       {prepared?.style.startsWith('word-by-word') && <p className="text-xs text-fg-2">The prepared transliteration is a word-by-word reading, generally without noun case endings. Use a recording for connected speech.</p>}
       {'rows' in a && a.rows && <div className="overflow-x-auto"><table className="w-full text-left border-collapse mt-2">
         <thead><tr className="border-b border-outline"><th className="py-2 pr-3">Day</th><th className="py-2 pr-3">Time</th><th className="py-2 pr-3">Activity</th><th className="py-2">Place</th></tr></thead>
-        <tbody>{a.rows.map((r, i) => <tr key={i} className="border-b border-outline"><td className="py-2 pr-3"><Ar>{r.day_ar}</Ar></td><td className="py-2 pr-3 tabular-nums">{r.time}</td><td className="py-2 pr-3"><Ar>{r.activity_ar}</Ar></td><td className="py-2"><Ar>{r.place_ar}</Ar></td></tr>)}</tbody>
+        <tbody>{a.rows.map((r, i) => <tr key={i} className="border-b border-outline"><td className="py-2 pr-3"><Cell text={r.day_ar} name={`${a.id}:row:${i}:day`} /></td><td className="py-2 pr-3 tabular-nums">{r.time}</td><td className="py-2 pr-3"><Cell text={r.activity_ar} name={`${a.id}:row:${i}:activity`} /></td><td className="py-2"><Cell text={r.place_ar} name={`${a.id}:row:${i}:place`} /></td></tr>)}</tbody>
       </table></div>}
       {'pairs' in a && a.pairs && <ul className="list-none p-0 grid sm:grid-cols-2 gap-2 mt-2">{a.pairs.map((p, i) => <li key={i} className="rounded-tile bg-surface-2 px-3.5 py-2.5 flex items-center justify-between gap-3">
         <span><Ar className="text-[24px]">{p.a}</Ar> <span className="text-sm text-fg-2">{p.meaning_a}</span><PlayButton text={p.a} name={`${a.id}:pair:${i}:a`} label={p.a} /></span>
@@ -597,6 +610,7 @@ function TextView({ data, asset: a }: { data: MyDayData; asset: Asset }) {
       {a.use_note && <p className="text-sm text-fg-2">{pairs && <strong>From the course’s recording brief: </strong>}<Mixed text={a.use_note} /></p>}
       {hasPairVoice && <p className="text-sm text-fg-2">The play buttons are synthesised models to copy. The course’s listening task still needs a fluent speaker’s recording.</p>}
       {hasPairVoice && pairs ? <MixedVoiceLabel texts={pairs.flatMap(p => [p.a, p.b])} />
+        : hasRowVoice && rows ? <MixedVoiceLabel texts={rowTexts} />
         : !shown && <p className="text-sm text-fg-2 flex gap-2 items-start mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recording included. Read it aloud yourself, or ask a fluent speaker to.</p>}
     </Card>
     {questions.length > 0 && <Card><h3>Questions about the text</h3><ol className="list-decimal pl-5 grid gap-4">{questions.map(q => <li key={q.id}><CheckQuestion q={q} /></li>)}</ol></Card>}

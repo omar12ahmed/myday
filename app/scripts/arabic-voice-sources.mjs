@@ -46,7 +46,8 @@ export function voiceSources(root) {
   const checkValues = [...course.assessments.flatMap(a => (a.questions || []).map(q => q.prompt)), ...keys.answer_keys.map(k => k.expected_answer)];
   const noteValues = words.map(w => w.note);
   const keyValues = course.lessons.flatMap(l => [...(l.key_concepts || []), ...(l.learning_objectives || [])]);
-  const taskValues = (course.exercises || []).flatMap(e => [e.instruction, e.rubric]);
+  // A lesson's practical task and mini challenge: their instructions (the app voices them, not how they're judged).
+  const taskValues = (course.exercises || []).map(e => e.instruction);
   const timetableValues = course.assets.flatMap(a => (a.rows || []).flatMap(r => Object.values(r)));
   const sources = [
     // Round one (1.39.0): the 48 starter words and their example sentences, all of them.
@@ -62,9 +63,10 @@ export function voiceSources(root) {
     // Round four: the course words (content/teaching/arabic/course-words.json), each word, its example and the Arabic
     // in its note, once the owner has checked the list.
     { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(courseVoiceable), ...mixed(noteValues)]) },
-    // Round twelve: the Arabic in a lesson's key concepts and objectives, its practical tasks and the timetable.
+    // Round twelve: the Arabic in a lesson's key concepts and objectives, its practical task and mini challenge, and the
+    // timetable. Objectives and tasks are quiet while you check yourself (ArabicScreen.tsx).
     { id: 'key-ideas', round: 12, label: 'key concepts and objectives', texts: mixed(keyValues, true) },
-    { id: 'tasks', round: 12, label: 'practical tasks', texts: mixed(taskValues, true) },
+    { id: 'tasks', round: 12, label: 'practical tasks and mini challenges', texts: mixed(taskValues, true) },
     { id: 'timetable', round: 12, label: 'the timetable', texts: mixed(timetableValues, true) },
     // Round ten: each reading text read in one go, for “Listen to the whole text”.
     { id: 'reading-wholes', round: 10, label: 'reading texts, whole', texts: uniq(Object.values(readingPassages(root)).map(wholeText)) },
