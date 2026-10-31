@@ -483,7 +483,8 @@ export function recordLines(key: string, content: Content | null): string[] {
       isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null, kept.length ? `Links: ${kept.join('; ')}` : null,
       // …and its tools and the Overview sections hidden on it, so two versions that differ only there can be told apart.
       words(v.tools) ? `Tools: ${words(v.tools)}` : null,
-      // …its area and how it ended (specs/projects-areas-archive.md).
+      // …whom it's waiting on (specs/projects-project-waiting.md), its area and how it ended (specs/projects-areas-archive.md).
+      isObj(v.waiting) && typeof v.waiting.on === 'string' ? `Waiting on ${v.waiting.on}${isDateKey(v.waiting.since) ? ` since ${shortDate(v.waiting.since)}` : ''}${isDateKey(v.waiting.until) ? ` · check back ${shortDate(v.waiting.until)}` : ''}${typeof v.waiting.chaseTaskId === 'string' ? ' · chased' : ''}` : null,
       typeof v.area === 'string' && v.area ? `Area: ${v.area}${typeof v.areaColour === 'string' ? ` (${v.areaColour})` : ''}` : null,
       isObj(v.finished) && typeof v.finished.how === 'string' ? `Finished: ${v.finished.how === 'achieved' ? 'achieved' : v.finished.how === 'stopped' ? 'stopped on purpose' : v.finished.how}${isDateKey(v.finished.on) ? ` ${shortDate(v.finished.on)}` : ''}${typeof v.finished.note === 'string' && v.finished.note ? ` — ${v.finished.note}` : ''}` : null, words(v.hiddenSections) ? `Hidden on the Overview: ${words((v.hiddenSections as unknown[]).map(x => SECTIONS.find(s => s.id === x)?.label ?? x))}` : null] : [];
     return [v.title, ...own, v.text, v.summary, v.details, v.notes,

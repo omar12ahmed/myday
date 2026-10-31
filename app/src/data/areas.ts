@@ -83,6 +83,7 @@ export function finishProject(d: MyDayData, projectId: string, how: FinishedHow,
   const p = d.projects.items.find(x => x.id === projectId);
   if (!p || (how !== 'achieved' && how !== 'stopped')) return false;
   p.status = 'done'; p.finished = { how, note: note.trim().slice(0, PROJECT_LIMITS.finishedNote), on: k }; p.updatedAt = localStamp();
+  delete p.waiting; // (finishing ends its wait: specs/projects-project-waiting.md)
   return true;
 }
 // The archive: finished projects, the most recently finished first (one finished before this release by when it was

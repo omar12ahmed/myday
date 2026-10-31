@@ -31,7 +31,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
     `export { setDeadline, deadlineWords, deadlineLabel, setMilestone } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
-    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`,
+    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -2575,6 +2575,75 @@ const clone = o => JSON.parse(JSON.stringify(o));
       K.AR.finishProject(v, 't2', 'achieved', '', '2026-11-05'); v.projects.items[1].updatedAt = '2026-11-05T10:00';
       return eq(K.AR.archive(v).map(p => p.id), ['t2', 't1']) && v.projects.items[0].finished.note.length === 400; })());
     check('bringing one back: active again, its ending gone', K.editProject(w, 'p1', { status: 'active' }) && P('p1').status === 'active' && !('finished' in P('p1')) && eq(K.AR.archive(w).map(p => p.id), ['p2', 'p4']));
+  }
+
+  console.log('\n[28] A whole project waiting on someone or something (specs/projects-project-waiting.md)');
+  {
+    const k = '2026-11-02';
+    const tk = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pw1', ...x });
+    console.log('  reading');
+    let r = { dropped: 0 };
+    const asWritten = [base('a', { waiting: { on: 'The landlord  ', since: '2026-10-20', until: '2026-11-04', chaseTaskId: 'tkC', futureBit: 1 } }), base('b', { waiting: { on: 'Priya', since: '2026-10-20' } })];
+    const again = K.normalizeProjects(K.normalizeProjects({ items: structuredClone(asWritten) }, r), r).items;
+    check('a wait is read exactly as written (a missing check-back day stays missing, a newer MyDay\'s key kept), twice over, nothing counted', eq(again, asWritten) && r.dropped === 0, again);
+    r = { dropped: 0 };
+    const odd = K.normalizeProjects({ items: [base('c', { waiting: { on: 'x'.repeat(130), since: '2026-10-20', until: 'soon' } }), base('d', { waiting: { on: '  ', since: '2026-10-20' } }), base('e', { waiting: null }),
+      base('f', { waiting: { on: 'Priya', since: 'yesterday' } }), base('g', { waiting: 'Priya' })] }, r).items;
+    check('…cut to 120; a check-back day that isn\'t one counted and left off; a blank or null wait simply absent; one without a day it started, or not a wait, counted',
+      odd[0].waiting.on.length === 120 && !('until' in odd[0].waiting) && ['d', 'e', 'f', 'g'].every(id => !('waiting' in odd.find(p => p.id === id))) && r.dropped === 3, [odd.map(p => p.waiting), r]);
+
+    console.log('  setting, changing, stopping');
+    const w = world(base('pw1', { title: 'Garden shed', updatedAt: OLD }), base('pw2', { title: 'Old car', status: 'done' }));
+    const P1 = () => w.projects.items[0];
+    check('setting: whom (trimmed) and since today, the check-back day optional; not work on the project', K.PW.setProjectWaiting(w, 'pw1', '  Priya ', '2026-11-04', k) && eq(P1().waiting, { on: 'Priya', since: k, until: '2026-11-04' }) && P1().updatedAt === OLD
+      && K.PW.isProjectWaiting(P1()) && K.PW.waitLine(P1().waiting) === `Waiting on Priya · check back ${K.shortDate('2026-11-04')}`);
+    check('…the same again changes nothing; empty words, a finished project or one that isn\'t there are refused', !K.PW.setProjectWaiting(w, 'pw1', 'Priya', '2026-11-04', k) && !K.PW.setProjectWaiting(w, 'pw1', '  ', null, k)
+      && !K.PW.setProjectWaiting(w, 'pw2', 'Priya', null, k) && !K.PW.setProjectWaiting(w, 'nope', 'Priya', null, k));
+    check('changing keeps the day it started; no check-back day says just whom', K.PW.setProjectWaiting(w, 'pw1', 'The builder', null, '2026-11-09') && eq(P1().waiting, { on: 'The builder', since: k, until: null })
+      && K.PW.waitLine(P1().waiting) === 'Waiting on The builder');
+    check('the check-back day: due from that day, not before; never without one', !K.PW.checkBackDue(P1(), k) && K.PW.setProjectWaiting(w, 'pw1', 'Priya', '2026-11-04', k) && !K.PW.checkBackDue(P1(), '2026-11-03')
+      && K.PW.checkBackDue(P1(), '2026-11-04') && K.PW.checkBackDue(P1(), '2026-11-10'));
+    check('Got it: no longer waiting (and again changes nothing)', K.PW.stopProjectWaiting(w, 'pw1') && !('waiting' in P1()) && !K.PW.stopProjectWaiting(w, 'pw1') && !K.PW.isProjectWaiting(P1()));
+
+    console.log('  chase it, and finishing');
+    K.PW.setProjectWaiting(w, 'pw1', 'Priya', '2026-11-04', k);
+    const cid = K.PW.chaseProject(w, 'pw1', '2026-11-05'), chase = w.tasks.items.find(t => t.id === cid);
+    check('Chase it adds one 5-minute task in the project, "Chase: <the project>" (not whom), on the day chosen', !!chase && chase.title === 'Chase: Garden shed' && chase.minutes === 5 && chase.projectId === 'pw1' && chase.due === '2026-11-05'
+      && P1().waiting.chaseTaskId === cid && K.PW.projectChaseTask(w, P1())?.id === cid, chase);
+    check('…once per wait, while that task is still to do; once it\'s done, another can be added', K.PW.chaseProject(w, 'pw1') === 'already' && w.tasks.items.length === 1
+      && (chase.done = true, chase.doneOn = k, K.PW.projectChaseTask(w, P1()) === null) && typeof K.PW.chaseProject(w, 'pw1', null) === 'string' && w.tasks.items.length === 2);
+    check('…and none for a project that isn\'t waiting', K.PW.chaseProject(w, 'pw2') === null && K.PW.chaseProject(w, 'nope') === null);
+    check('finishing ends the wait; a finished project with a wait (an older release\'s "Mark as done") isn\'t waiting', K.AR.finishProject(w, 'pw1', 'achieved', '', k) && !('waiting' in P1())
+      && !K.PW.isProjectWaiting({ ...P1(), waiting: { on: 'Priya', since: k, until: k } }) && !K.PW.checkBackDue({ ...P1(), waiting: { on: 'Priya', since: k, until: k } }, k));
+
+    console.log('  the nudge');
+    const n = world(base('pw1', { title: 'Garden shed' }));
+    n.tasks.items = [tk('t1', 'Get the quote', { waiting: { on: 'The builder', since: '2026-10-25', until: '2026-11-08' } }), tk('t2', 'Book the slab', { waiting: { on: 'The builder', since: '2026-10-26', until: '2026-11-06' } }),
+      tk('t3', 'Done already', { done: true, doneOn: '2026-10-20' })];
+    const NP = () => n.projects.items[0];
+    check('every open task waiting: offered, filled in with whom (the same for all) and the earliest expected day, for that set of tasks', eq(K.PW.waitOffer(n, NP()), { on: 'The builder', until: '2026-11-06', sig: 't1 t2' }), K.PW.waitOffer(n, NP()));
+    n.tasks.items[1].waiting.on = 'The council';
+    check('…waiting on different people: whom is left for you to say', K.PW.waitOffer(n, NP())?.on === '' && K.PW.waitOffer(n, NP())?.until === '2026-11-06');
+    n.tasks.items.push(tk('t4', 'Measure the base'));
+    check('…not while any open task isn\'t waiting; not with no open tasks', K.PW.waitOffer(n, NP()) === null && K.PW.waitOffer(world(base('pw9')), base('pw9')) === null);
+    n.tasks.items.pop();
+    check('…nor for a project already waiting, paused or finished', K.PW.waitOffer(n, { ...NP(), waiting: { on: 'x', since: k } }) === null && K.PW.waitOffer(n, { ...NP(), status: 'paused' }) === null && K.PW.waitOffer(n, { ...NP(), status: 'done' }) === null);
+
+    console.log('  Needs you and Your week');
+    const nd = world(base('pw1', { title: 'Garden shed', updatedAt: '2026-10-01T09:00' }), base('pw2', { title: 'Visa', updatedAt: '2026-10-01T09:00' }), base('pw3', { title: 'Paused wait', status: 'paused' }));
+    nd.projects.items[0].waiting = { on: 'Priya', since: '2026-10-20', until: '2026-10-28' };
+    nd.projects.items[1].waiting = { on: 'The visa office', since: '2026-10-20', until: k };
+    nd.projects.items[2].waiting = { on: 'Sam', since: '2026-10-20', until: '2026-10-21' };
+    nd.tasks.items = [tk('tw', 'Ask about the armchair', { projectId: 'pw2', waiting: { on: 'Jo', since: '2026-10-20', until: '2026-10-30' } })];
+    const ny = K.needsYou(nd, k).filter(x => x.reason === 'waiting');
+    check('from its check-back day, Needs you says "Still waiting on Priya" · "check back was …" (or "today"), opening the project, with Chase it — oldest first, among the task waits; not for a paused project',
+      eq(ny.map(x => [x.title, x.why, x.project]), [['Still waiting on Priya', `check back was ${K.shortDate('2026-10-28')}`, 'Garden shed'], ['Ask about the armchair', `waiting on Jo — expected ${K.shortDate('2026-10-30')}`, 'Visa'], ['Still waiting on The visa office', 'check back today', 'Visa']])
+      && ny[0].href === '#projects/p/pw1' && eq(ny[0].chase, { projectId: 'pw1', added: false }) && ny[0].group === 'waiting', ny);
+    const quiet = K.whatsWaiting(nd, k, 10).filter(x => x.kind === 'quiet').map(x => x.projectId);
+    check('Your week doesn\'t call a waiting project quiet (a month without work), and still does once it stops waiting', eq(quiet, []) && (nd.projects.items[0].waiting = undefined, eq(K.whatsWaiting(nd, k, 10).filter(x => x.kind === 'quiet').map(x => x.projectId), ['pw1'])), quiet);
+    nd.projects.items[0].waiting = { on: 'Priya', since: '2026-10-20', until: '2026-10-28' };
+    K.PW.chaseProject(nd, 'pw1');
+    check('…and once chased, it says so', eq(K.needsYou(nd, k).find(x => x.key === 'pwait:pw1')?.chase, { projectId: 'pw1', added: true }));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

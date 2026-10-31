@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarPlus, Check, Lock, NotebookPen, Pause, Pencil, Play, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowUpRight, CalendarPlus, Check, Hourglass, Lock, NotebookPen, Pause, Pencil, Play, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { exploreHref, rememberExploreEntry, restoreExploreEntry } from '../explore/route';
 import { addAppointment } from '../capture/save';
@@ -41,6 +41,7 @@ import { ResourcesCard } from './ResourcesCard';
 import { FilesCard } from '../files/FilesCard';
 import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
+import { ProjectWaitForm, ProjectWaitingCard, WaitOfferLine } from './ProjectWaiting';
 
 // One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
@@ -80,6 +81,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       {tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
+      <ProjectWaitingCard data={data} p={p} />
       <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />
       <ProjectHead data={data} p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
@@ -447,6 +449,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           <Button inline type="submit" variant="primary" data-action="project-step-add" disabled={!text.trim()}>Set</Button>
         </form>
       </>)}
+      <WaitOfferLine data={data} p={p} />
     </Card>
   );
 }
@@ -631,6 +634,7 @@ function ManageCard({ p }: { p: Project }) {
   const confirm = useConfirm();
   // Finishing asks how it ended (specs/projects-areas-archive.md): achieved or stopped on purpose, with a note if you like.
   const [finishing, setFinishing] = useState(false), [how, setHow] = useState<FinishedHow>('achieved'), [note, setNote] = useState('');
+  const [waiting, setWaiting] = useState(false); // (the form for a whole project's wait: specs/projects-project-waiting.md)
   function finish() {
     if (update(d => (finishProject(d, p.id, how, note) ? undefined : false))) { setFinishing(false); setNote(''); toast(how === 'achieved' ? 'Achieved — well done. It\'s in the archive.' : 'Stopped — it\'s in the archive, if you ever want it back.'); focusSoon('projectTitle'); }
   }
@@ -660,6 +664,9 @@ function ManageCard({ p }: { p: Project }) {
             </div>
           </form>
         ) : <Button inline variant="ghost" className="w-full" id="projectFinishBtn" data-action="project-finish" onClick={() => setFinishing(true)}><Check size={18} aria-hidden="true" /> Mark as done</Button>)}
+        {p.status !== 'done' && !p.waiting && (waiting
+          ? <div className="rounded-tile bg-surface-2 border border-outline p-3 pt-0"><ProjectWaitForm p={p} onDone={saved => { setWaiting(false); focusSoon(saved ? 'projectWaitingH' : 'projectWaitBtn'); }} /></div>
+          : <Button inline variant="ghost" className="w-full" id="projectWaitBtn" data-action="project-wait" onClick={() => setWaiting(true)}><Hourglass size={18} aria-hidden="true" /> Waiting on someone?</Button>)}
         <Button inline variant="ghost" className="w-full" data-action="project-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete project</Button>
       </div>
     </Card>

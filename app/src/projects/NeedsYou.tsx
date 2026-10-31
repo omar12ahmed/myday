@@ -11,6 +11,7 @@ import type { MyDayData, Project } from '../data/types';
 import { inFocus } from '../data/weekReview';
 import { ChaseIt } from '../tasks/ChaseIt';
 import { awayFor, awayWords, isAway } from '../data/welcomeBack';
+import { isProjectWaiting, waitLine } from '../data/projectWaiting';
 import { areasOf, sameArea, type Area } from '../data/areas';
 import { AreaLabel } from './AreaBits';
 
@@ -62,7 +63,7 @@ export function NeedsYouCard({ data, all }: { data: MyDayData; all: Need[] }) {
 
 // One line: what (in ink), then why and which project (in grey); a wait that's due offers Chase it under it.
 function NeedRow({ data, n }: { data: MyDayData; n: Need }) {
-  const p = projectById(data, n.projectId), t = n.chase ? data.tasks.items.find(x => x.id === n.chase!.taskId) : null;
+  const p = projectById(data, n.projectId), c = n.chase, t = c && 'taskId' in c ? data.tasks.items.find(x => x.id === c.taskId) : null;
   return (
     <li className="border-t border-outline first:border-t-0" data-s="need" data-reason={n.reason} data-id={n.key}>
       <a href={n.href} className="block py-2 min-h-11 text-fg no-underline hover:underline underline-offset-4 break-words" data-s="need-link">
@@ -70,6 +71,7 @@ function NeedRow({ data, n }: { data: MyDayData; n: Need }) {
         <span className="block text-sm text-fg-2 mt-0.5">{n.why} · {n.project}{p?.private && <Lock size={12} aria-label="Private" className="inline ml-1 align-[-1px]" />}</span>
       </a>
       {t && <div className="pb-2"><ChaseIt data={data} t={t} /></div>}
+      {c && 'projectId' in c && p && <div className="pb-2"><ChaseIt data={data} p={p} /></div>}
     </li>
   );
 }
@@ -92,8 +94,9 @@ export function ProjectList({ data, all, fits = () => true, grouped = false }: {
       {grouped && <h3 className={`flex items-center gap-2 m-0 text-[15px] ${gi ? 'mt-4' : ''}`} data-s="list-group-head">{g.area ? <AreaLabel name={g.area.name} colour={g.area.colour} /> : 'No area'} <span className="text-fg-3 font-normal tabular-nums">{g.items.length}</span></h3>}
       <ul className="list-none p-0 m-0">{g.items.map(p => {
         const step = nextStep(data, p), n = count.get(p.id) ?? 0;
-        // (Away a week or more: specs/projects-welcome-back.md.)
-        const about = [stageOf(p.stage).label, isCase(p) ? 'Case' : isBusiness(p) ? 'Business idea' : null, inFocus(p) ? 'This week’s focus' : null, isAway(data, p) ? `Away ${awayWords(awayFor(data, p))}` : null].filter(Boolean).join(' · ');
+        // (Away a week or more: specs/projects-welcome-back.md — or, instead, waiting: specs/projects-project-waiting.md.)
+        const about = [stageOf(p.stage).label, isCase(p) ? 'Case' : isBusiness(p) ? 'Business idea' : null, inFocus(p) ? 'This week’s focus' : null,
+          isProjectWaiting(p) ? waitLine(p.waiting) : isAway(data, p) ? `Away ${awayWords(awayFor(data, p))}` : null].filter(Boolean).join(' · ');
         return (
           <li key={p.id} className="border-t border-outline first:border-t-0" data-s="project-row" data-id={p.id}>
             <a href={`#projects/p/${p.id}`} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-center py-2.5 min-h-11 text-fg no-underline hover:underline underline-offset-4">

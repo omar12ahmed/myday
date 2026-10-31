@@ -204,6 +204,9 @@ export interface Project {
   // How it ended, once finished (status 'done'): achieved, or stopped on purpose, a note and the day. Bringing it back
   // removes it. Absent on a project finished before 1.106 (it reads as "Finished").
   finished?: Finished;
+  // Waiting on someone or something as a whole (specs/projects-project-waiting.md; optional; absent = not waiting):
+  // whom or what, since when, a day to check back, and its "Chase it" task. Not work on the project.
+  waiting?: ProjectWaiting;
   // Overview sections hidden on this project (optional; absent = none): 'notes', 'recently', 'learning', 'resources',
   // 'files' (specs/projects-sections.md). One from a newer MyDay is kept as it is.
   hiddenSections?: string[];
@@ -211,6 +214,8 @@ export interface Project {
 export interface LeftOff { text: string; at: DateTime; [other: string]: unknown }
 // How a project ended (specs/projects-areas-archive.md): 'achieved' | 'stopped' (one from a newer MyDay kept).
 export interface Finished { how: string; note?: string; on?: DateKey | null; [other: string]: unknown }
+// A project's wait (specs/projects-project-waiting.md): a task's shape (Waiting), with the check-back day optional.
+export interface ProjectWaiting { on: string; since: DateKey; until?: DateKey | null; chaseTaskId?: string; [other: string]: unknown }
 // `kind` is a string so a kind from a newer MyDay is kept as it is; `title` is what it was called when linked, so a
 // link still reads well once its item is gone from Study.
 export interface StudyLink { kind: string; id: string; title: string; why?: string; addedOn: DateKey; [other: string]: unknown }

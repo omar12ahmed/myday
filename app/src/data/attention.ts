@@ -5,13 +5,14 @@
 // The owner's decisions (25 Oct 2026): a date today or in the next 7 days; a task still open after its date (not one
 // that's waiting or starts after another); a wait whose expected day has come; a task that keeps moving; a decision
 // open 14 days or more; a business idea's Find out results; a case's evidence still to get. Not "quiet" projects
-// (Your week keeps those). Paused and finished projects aren't included; a private one's items show, on this device.
+// (Your week keeps those). And a whole project's wait from its check-back day (specs/projects-project-waiting.md). Paused and finished projects aren't included; a private one's items show, on this device.
 //
 // The selection rules below are shared: each project's Worth a look and Your week's What needs you read the same
 // ones, so a reason is decided once (each keeps its own wording for where it's shown).
 import { awaitingAnswer, isBusiness, isCase } from './businessModel';
 import { caseCounts } from './caseFile';
 import { experimentsHome, testsDone } from './experiments';
+import { checkBackDue, projectChaseTask } from './projectWaiting';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, heldBack, projectsInOrder, projectTasks, stillOpen } from './projects';
 import { chaseTask, deadlineLabel, isStuck } from './tasks';
@@ -51,7 +52,7 @@ export interface Need {
   title: string; why: string;          // what, and why, in words
   href: string;                        // opens the thing itself
   when: string;                        // for the order (a day, or when it was opened)
-  chase?: { taskId: string; added: boolean };
+  chase?: { taskId: string; added: boolean } | { projectId: string; added: boolean }; // a task's wait, or the project's
 }
 const taskHref = (t: TaskItem) => `#today/tasks/${enc(t.id)}`;
 const dayWords = (day: DateKey, k: DateKey) => day === k ? 'today' : day === shift(k, 1) ? 'tomorrow' : `on ${shortDate(day)}`;
@@ -70,6 +71,9 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
       add({ key: `stuck:${t.id}`, reason: 'stuck', title: t.title, href: taskHref(t), when: t.due ?? t.createdAt.slice(0, 10),
         why: t.postponed >= 3 ? `moved ${t.postponed} times — something in the way?` : `planned for ${shortDate(t.due!)} — something in the way?` });
     }
+    // The project's own wait, from its check-back day: "Still waiting on Priya" · "check back was Wed 4 Nov".
+    if (checkBackDue(p, k)) add({ key: `pwait:${p.id}`, reason: 'waiting', title: `Still waiting on ${p.waiting!.on}`, href: `#projects/p/${enc(p.id)}`, when: p.waiting!.until!,
+      chase: { projectId: p.id, added: !!projectChaseTask(data, p) }, why: p.waiting!.until === k ? 'check back today' : `check back was ${shortDate(p.waiting!.until!)}` });
     for (const t of waitsDue(data, p, k).filter(t => !seen.has(t.id))) {
       seen.add(t.id);
       add({ key: `waiting:${t.id}`, reason: 'waiting', title: t.title, href: taskHref(t), when: t.waiting!.until!, chase: { taskId: t.id, added: !!chaseTask(data, t) },

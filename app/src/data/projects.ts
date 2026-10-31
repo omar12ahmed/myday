@@ -18,10 +18,10 @@ import { normalizeResources } from './projectResources';
 import { deleteProjectResearch } from './research';
 import { normalizeStudyLinks } from './studyLinks';
 import { forgetStartsAfter, isDone, onTodaysPlan, taskOrder, startsAfter } from './tasks';
-import type { Commitment, DateKey, Finished, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
+import type { Commitment, DateKey, Finished, MyDayData, ProjectWaiting, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
-export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200, outcome: 200, finishedWhen: 600, leftOff: 800, area: 40, finishedNote: 400 };
+export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200, outcome: 200, finishedWhen: 600, leftOff: 800, area: 40, finishedNote: 400, waitingOn: 120 };
 
 export const STAGES: { id: ProjectStage; label: string; hint: string }[] = [
   { id: 'capture', label: 'Capture', hint: "It's out of your head and safe here." },
@@ -111,6 +111,14 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
       if (f.on !== undefined && f.on !== null && !isDateKey(f.on)) { report.dropped++; delete ending.on; }
       item.finished = ending;
     } else { if (f !== undefined && f !== null) report.dropped++; delete item.finished; }
+    // Waiting on someone or something (specs/projects-project-waiting.md), likewise as written: kept when it says whom
+    // and since when; a check-back day that isn't one is counted and left off.
+    const w = p.waiting, blankWait = w === null || (isObj(w) && typeof w.on === 'string' && !w.on.trim());
+    if (isObj(w) && typeof w.on === 'string' && w.on.trim() && isDateKey(w.since)) {
+      const wait: ProjectWaiting = { ...w, on: w.on.slice(0, PROJECT_LIMITS.waitingOn), since: w.since };
+      if (w.until !== undefined && w.until !== null && !isDateKey(w.until)) { report.dropped++; delete wait.until; }
+      item.waiting = wait;
+    } else { if (w !== undefined && !blankWait) report.dropped++; delete item.waiting; }
     seen.add(item.id);
     out.items.push(item);
   }

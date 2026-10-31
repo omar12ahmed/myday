@@ -8,6 +8,7 @@ import { isBusiness, isCase } from './businessModel';
 import { keyOf, localStamp, parseKey, shift, shortDate, todayKey } from './dates';
 import { NOTE_LIMITS } from './notes';
 import { lastActivity, projectsInOrder } from './projects';
+import { isProjectWaiting } from './projectWaiting';
 import { isStuck } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 import { uid } from './util';
@@ -66,8 +67,8 @@ export function whatsWaiting(data: MyDayData, k: DateKey = todayKey(), max = REV
       text: t.postponed >= 3 ? `“${t.title}” has moved ${t.postponed} times` : `“${t.title}” was planned for ${shortDate(t.due!)}` });
   }
   for (const p of active) {
-    const quiet = days(lastActivity(data, p).slice(0, 10), k);
-    if (quiet >= 14) out.push({ key: `quiet:${p.id}`, kind: 'quiet', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}`, text: `“${p.title}” has been quiet for ${Math.floor(quiet / 7)} weeks` });
+    const quiet = days(lastActivity(data, p).slice(0, 10), k); // (a project waiting on someone or something isn't quiet: specs/projects-project-waiting.md)
+    if (quiet >= 14 && !isProjectWaiting(p)) out.push({ key: `quiet:${p.id}`, kind: 'quiet', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}`, text: `“${p.title}” has been quiet for ${Math.floor(quiet / 7)} weeks` });
   }
   for (const p of active) for (const x of decisionsOpen(p, k)) {
     out.push({ key: `decision:${p.id}:${x.id}`, kind: 'decision', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/decisions`, text: `“${x.question}” is still open (${p.title})` });
