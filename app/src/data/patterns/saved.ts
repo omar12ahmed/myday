@@ -106,6 +106,20 @@ export function recordAskSeen(d: PatternsData, xs: Omit<AskSeen, 'on'>[], today 
   d.askSeen = [...(d.askSeen ?? []).filter(x => x.on >= from), ...xs.map((x): AskSeen => ({ ...x, on: today } as AskSeen))].slice(-ASK_SEEN_MAX);
   return true;
 }
+// Forget what it counted of Ask MyDay's suggestions (it goes on counting from now, while it's on).
+export function forgetAskSeen(d: PatternsData): boolean {
+  if (!d.askSeen) return false;
+  delete d.askSeen;
+  return true;
+}
+// Forget everything MyDay has learned about you: every answer you gave about a pattern (so they're all new again, worked
+// out afresh from what you do), what it counted of Ask MyDay's suggestions, and that it asked about Ask. Your own
+// preferences and the switch stay: they're choices you made, each changed where it's set.
+export function forgetLearned(d: PatternsData): boolean {
+  if (!Object.keys(d.answers).length && !d.askSeen && !d.prefs.askAsked) return false;
+  d.answers = {}; delete d.askSeen; delete d.prefs.askAsked;
+  return true;
+}
 // Let AI help place notes in projects (or stop it). Returns false when nothing changed.
 export function setAiNotes(d: PatternsData, on: boolean): boolean {
   if (!!d.prefs.aiNotes === on) return false;

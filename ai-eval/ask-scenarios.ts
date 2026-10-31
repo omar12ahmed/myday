@@ -421,7 +421,7 @@ export const ASK_SCENARIOS: AskScenario[] = [
     { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'], howYouWork: ['You study most between 07:00 and 09:00', 'Your energy is lower after short nights'] }),
   A('hw08-few-a-day', 'A week planned with a confirmed daily limit in mind', 'today', 'Help me spread my admin over the week', TODAY, { kinds: ['add', 'answer'] },
     { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'], howYouWork: ['At most 2 tasks a day on the plan', 'Admin tasks: 20 min at most'] }),
-  A('hw09-rarely-notes', 'They rarely add the notes it suggests', 'project', 'What should I capture about the flat viewings?', MOVE, { kinds: ['answer', 'add'] },
+  A('hw09-rarely-notes', 'They rarely add the notes it suggests', 'project', 'What should I do next about the flat viewings?', MOVE, { kinds: ['answer', 'add'] },
     { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'], howYouWork: ['You rarely add the notes Ask MyDay suggests'] }),
   A('hw10-shortened', 'They shorten its learning tasks', 'study', 'Give me three study tasks for DNS', STUDY, { kinds: ['add', 'steps'], maxMinutes: 20 },
     { can: ['day', 'project', 'decisions', 'waiting', 'search'], howYouWork: ['You shorten Ask MyDay\'s learning tasks to about 20 min'] }),

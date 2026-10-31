@@ -98,6 +98,23 @@ missing:
    - *Today:* decisions stay yours; the tutor's graduated help; Check my answer.
    - *Missing:* the same principle written into each new feature's specification, and checked in its evaluation.
 
+**The other side, which makes it safe to build** (the owner, the same day): as well as noticing, understanding and
+anticipating, MyDay should **doubt, forget, wait and withdraw**, and let the person **see and delete everything it
+believes about them**. "Intelligence you can inspect and outgrow is assistance. Intelligence you can't is a cage with
+good UX." Every level above meets these:
+- **Doubt.** What it believes is provisional. It says how sure it is (an early sign or a clear pattern), and it stops
+  using a belief once the recent evidence fades, saying so, rather than holding on to it.
+- **Forget.** Evidence ages out: patterns look at the last 8 weeks, and counts are kept for 8 weeks. Nothing about the
+  person is kept for ever just because it once held.
+- **Wait.** It speaks only with enough evidence and at a genuine moment, and asks once rather than repeatedly.
+- **Withdraw.** "No" and "Not now" are respected and remembered. Switching something off stops it and forgets what it
+  gathered. Help fades as the person grows.
+- **Inspect and delete.** Everything it believes is visible in one place (What MyDay has noticed), each belief with
+  what it's based on, what's sent to AI and what's held back. It can be deleted there, one at a time or all at once.
+- *Today (1.109.0):* doubt (a confirmed pattern without recent evidence is held back from Ask MyDay and shown as
+  such), forgetting (8-week windows; "Forget what it counted"; "Forget everything it has learned"), asking once,
+  and one place to see it all.
+
 Each level is built as small, owner-approved increments, in the usual way. Private stays private, and what's observed
 stays separate from what's confirmed (§5).
 

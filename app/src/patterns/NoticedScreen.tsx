@@ -6,7 +6,8 @@ import { BackLink, Eyebrow, Note } from '../components/parts';
 import { Why } from '../components/Why';
 import { shortDate, todayKey } from '../data/dates';
 import { noticed, type Pattern, type Shown } from '../data/patterns/notice';
-import { answerAskOffer, answerPattern, CATEGORIES, forgetAnswer, MINUTE_CHOICES, NAME_MAX, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
+import { answerAskOffer, answerPattern, CATEGORIES, forgetAnswer, forgetLearned, MINUTE_CHOICES, NAME_MAX, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
+import { useState } from 'react';
 import { AI_MODE } from '../ai/request';
 import { CAT_LABEL } from '../data/plan';
 import { update } from '../data/storage';
@@ -58,6 +59,7 @@ export function NoticedScreen({ data }: { data: MyDayData }) {
       )}
       <PrefsCard data={data} />
       <AskUseCard data={data} />
+      <ForgetLearned data={data} />
     </div>
   );
 }
@@ -143,6 +145,25 @@ function PrefsCard({ data }: { data: MyDayData }) {
       </Field>
       {from(prefs.maxTasks?.from ?? null) && <p className="text-sm text-fg-2 m-0 mt-2" data-s="pref-from">From “{from(prefs.maxTasks!.from)}”.</p>}
       <Note className="mb-0 mt-3">Shorter tasks keep how long they were, so the plan shows e.g. "25 min (shortened from 60)". Fewer tasks never means more: your energy's limit still applies.</Note>
+    </Card>
+  );
+}
+
+// Everything MyDay has learned about you can be seen above and forgotten here, in one go (the owner: intelligence you
+// can inspect and outgrow). Asked twice, as it can't be undone; your own preferences stay.
+function ForgetLearned({ data }: { data: MyDayData }) {
+  const [sure, setSure] = useState(false);
+  const any = Object.keys(data.patterns.answers).length > 0 || !!data.patterns.askSeen?.length;
+  if (!any) return null;
+  return (
+    <Card id="forgetLearned">
+      <p className="text-[15px] m-0">Forget everything MyDay has learned about you: your answers about these patterns, and what it counted of Ask MyDay’s suggestions. Patterns are worked out afresh from what you do; your preferences stay.</p>
+      {sure ? (
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Button inline variant="primary" data-action="forget-learned-yes" onClick={() => { if (update(d => (forgetLearned(d.patterns) ? undefined : false))) toast('Forgotten. MyDay starts learning afresh.'); setSure(false); }}>Yes, forget it all</Button>
+          <Button inline variant="ghost" data-action="forget-learned-no" onClick={() => setSure(false)}>Keep it</Button>
+        </div>
+      ) : <Button inline variant="ghost" className="mt-2" data-action="forget-learned" onClick={() => setSure(true)}>Forget everything it has learned…</Button>}
     </Card>
   );
 }

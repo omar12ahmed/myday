@@ -2075,15 +2075,26 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     hw.patterns.answers = { 'study-time': { said: 'yes', on: HD, examples: 12, title: 'You study most between 07:00 and 09:00' }, blocker: { said: 'no', on: HD, examples: 5, title: 'SAID-NO pattern' } };
     check('off (the default): nothing about how you work is sent, and the request is as before', !K.howYouWork(hw).length && !('howYouWork' in K.askContext(hs(), 'Plan my study', HD)));
     K.setAskUse(hw.patterns, true);
-    const hy = K.howYouWork(hw);
-    check('on: your preferences as limits and the patterns you said are right, as plain statements', eq(hy, ['Learning tasks: 20 min at most', 'At most 2 tasks a day on the plan', 'You study most between 07:00 and 09:00']), hy);
+    // A confirmed pattern that still holds (seven learning tasks it suggested, all shortened) is sent; one with no recent evidence is doubted.
+    hw.patterns.askSeen = Array.from({ length: 7 }, () => ({ on: HD, type: 'task', category: 'learning', proposed: 30, minutes: 15, added: true, renamed: false }));
+    hw.patterns.answers['ask-size:learning'] = { said: 'yes', on: HD, examples: 7, title: 'You shorten Ask MyDay\'s learning tasks to about 15 min' };
+    const hy = K.howYouWork(hw, HD);
+    check('on: your preferences as limits and the patterns you said are right and that still hold, as plain statements', eq(hy, ['Learning tasks: 20 min at most', 'At most 2 tasks a day on the plan', 'You shorten Ask MyDay\'s learning tasks to about 15 min']), hy);
+    check('…it doubts: a pattern you confirmed with no recent evidence is held back, and says so', !hy.some(x => /07:00/.test(x)) && eq(K.heldBack(hw, HD), ['You study most between 07:00 and 09:00']), K.heldBack(hw, HD));
     const hc = K.askContext(hs(), 'Plan my study', HD);
     check('…sent with Ask\'s request (and in its preview), never a pattern you said no to, nor your name', eq(hc.howYouWork, hy) && !/SAID-NO|Sam/.test(JSON.stringify(hc)) && K.askPreview(hc).all.some(x => x.label.startsWith('How you work') && eq(x.lines, hy)), hc.howYouWork);
     check('…which the server accepts', K.checkAskContext(hc));
     const many = K.freshState(); K.setAskUse(many.patterns, true);
-    many.patterns.answers = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`p${i}`, { said: 'yes', on: HD, examples: 9, title: `Pattern ${i} ` + 'x'.repeat(200) }]));
-    const hm = K.howYouWork(many);
-    check('…at most 8 statements of up to 120 characters', hm.length === 8 && hm.every(x => x.length <= 120));
+    // Eight patterns that hold (each list's tasks shortened; five kinds rarely added), all confirmed, plus four preferences.
+    const SEEN = (x) => ({ on: HD, type: 'task', category: null, proposed: null, minutes: null, added: false, renamed: false, ...x });
+    many.patterns.askSeen = [...['learning', 'admin', 'health'].flatMap(c => Array.from({ length: 7 }, () => SEEN({ category: c, proposed: 30, minutes: 15, added: true }))),
+      ...['note', 'appointment', 'project', 'milestone', 'step'].flatMap(t => Array.from({ length: 8 }, () => SEEN({ type: t })))];
+    const holdingIds = K.findPatterns(many, HD).map(x => x.id).filter(id => id.startsWith('ask-'));
+    many.patterns.answers = Object.fromEntries(holdingIds.map(id => [id, { said: 'yes', on: HD, examples: 8, title: `${id} ` + 'x'.repeat(200) }]));
+    for (const c of ['learning', 'admin', 'health']) many.patterns.prefs.maxMinutes[c] = { value: 20, on: HD, from: null, why: 'x' };
+    many.patterns.prefs.maxTasks = { value: 2, on: HD, from: null, why: 'x' };
+    const hm = K.howYouWork(many, HD);
+    check('…at most 8 statements of up to 120 characters (of 12 that hold)', holdingIds.length === 8 && hm.length === 8 && hm.every(x => x.length <= 120), [holdingIds.length, hm.length]);
     for (const [why, v] of [['more than 8', Array.from({ length: 9 }, (_, i) => `s${i}`)], ['one over 120 characters', ['x'.repeat(121)]], ['an empty one', ['  ']], ['not a list', 'Learning tasks: 20 min at most'], ['an empty list', []]])
       check(`the server refuses "howYouWork" that\'s ${why}`, !K.checkAskContext({ ...hc, howYouWork: v }));
     const sysOn = K.buildAskMessages(hc)[0].content, sysOff = K.buildAskMessages(K.askContext(K.askSlice(K.freshState(), '#today', HD), 'Plan my study', HD))[0].content;
@@ -2112,6 +2123,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check(`at most ${K.ASK_SEEN_MAX} kept`, pd.patterns.askSeen.length === K.ASK_SEEN_MAX);
     pd.patterns.askSeen[0].on = '2026-09-01'; K.recordAskSeen(pd.patterns, [S()], HD);
     check('…and only the last 8 weeks', pd.patterns.askSeen.every(x => x.on >= '2026-09-15'));
+    const fc = K.freshState().patterns; K.setAskUse(fc, true); K.recordAskSeen(fc, [S()], HD);
+    check('Forget what it counted: gone, and it stays on (it counts afresh)', K.forgetAskSeen(fc) && !('askSeen' in fc) && fc.prefs.askUse === true && !K.forgetAskSeen(fc));
+    const fl = K.freshState().patterns; K.setAskUse(fl, true); K.recordAskSeen(fl, [S()], HD); K.answerAskOffer(fl, true, HD);
+    fl.answers = { 'size:learning': { said: 'yes', on: HD, examples: 20, title: 'x' }, blocker: { said: 'no', on: HD, examples: 5, title: 'y' } }; fl.prefs.maxMinutes.learning = { value: 20, on: HD, from: null, why: 'z' };
+    check('Forget everything it has learned: every answer, the counts and that it asked go; your preferences and the switch stay', K.forgetLearned(fl) && eq(fl.answers, {}) && !('askSeen' in fl) && !('askAsked' in fl.prefs) && fl.prefs.maxMinutes.learning.value === 20 && fl.prefs.askUse === true && !K.forgetLearned(fl));
     K.setAskUse(pd.patterns, false);
     check('switching it off forgets what it counted', !pd.patterns.prefs.askUse && !('askSeen' in pd.patterns));
     // Saved: kept when valid, a bad entry counted (never dropped silently), absent when there's nothing.
