@@ -38,7 +38,15 @@ const wasl = (a: Unit[], i: number) => i <= 2 && a.slice(0, i).every(proclitic) 
 // `afterVowel`: the word follows another that ends in a vowel, with only a space between, so its joining alif is
 // silent: قُلِ الْحَقَّ is quli l-ḥaqqa, الَّتِي اشْتَرَيْتُهَا is allatī shtaraytuhā. (The long vowel before it is kept as
 // written: fī l-bayti.) An authored reading loses its first vowel the same way (alladhī, after a vowel lladhī).
+// A vowelled ending cited on its own (ـَات, ـُونَ, ـِيّ): read after a stand-in letter, shown with a hyphen (-āt, -ūna, -iyy).
 function word(written: string, afterVowel = false): Reading {
+  if (/^ـ[ًٌٍَُِّْ]/.test(written)) {
+    const r = readWord('د' + written.slice(1));
+    if (!r.incomplete && r.text.startsWith('d')) return { text: '-' + r.text.slice(1), incomplete: false };
+  }
+  return readWord(written, afterVowel);
+}
+function readWord(written: string, afterVowel = false): Reading {
   const word = written.normalize('NFC').replaceAll('ـ', '');
   const authored = readings[readingKey(word)];
   // Only where the spelling shows a joining alif (ٱ, the article, or a bare ا before a sukūn or a doubled letter), so an

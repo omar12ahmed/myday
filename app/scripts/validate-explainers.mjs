@@ -71,7 +71,12 @@ const bareShadda = (run, phrase) => run.split(/\s+/).filter(w => letters(w)).som
   return clusters.some(([, , m], i) => m.includes('\u0651') && !VOWEL.test(m) && (phrase || i < clusters.length - 1));
 });
 const checkRun = (where, run) => {
-  if (affix(run)) { if (!markedThrough(run)) fail(where, `${run} is not fully vowelled`); return; }
+  // An affix is checked without its joining mark; only a lone alif (ـا) may go without a vowel mark.
+  if (affix(run)) {
+    const core = run.replaceAll('\u0640', '');
+    if (!markedThrough(core) || (!MARK.test(core) && !/^[\u0627\u0649]$/.test(core))) fail(where, `${run} is not fully vowelled`);
+    return;
+  }
   if (kind(run) === 'letters') return;
   if (bareShadda(run, wordsOf(run).length > 1)) fail(where, `${run}: a shadda needs its vowel`);
   if (!markedThrough(run)) fail(where, `${run} is not fully vowelled`);
@@ -186,7 +191,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
       else if (!q.choices.includes(q.answer)) fail(where, 'the answer must be one of the choices');
       for (const c of q.choices ?? []) if (text(c) && onePiece(c)) {
         checkRun(where, runs(c)[0]); shown.add(runs(c)[0]);
-        if (c === q.answer) voiced.add(runs(c)[0]);
+        if (c === q.answer && !cited(runs(c)[0])) voiced.add(runs(c)[0]);
       }
     });
     // Arabic inside English. A run of two or more words must be a piece the explainer knows (a table form, a sentence,

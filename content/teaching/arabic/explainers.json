@@ -1,6 +1,6 @@
 {
  "about": "Explainers: one verb family at a time, explained in short steps (MyDay's own, not part of the supplied package). Each has the family as a table, the contrast learners trip on, two or three short sentences broken down word by word, the natural \"why\" question, and a three-question self-test with answers. Only the Arabic is stored: the app shows its own transliteration. Standard Arabic only, fully vowelled, made-up names. Checked by app/scripts/validate-explainers.mjs. Proposal: specs/arabic-explainers.md.",
- "status": "module 14 (ten) and module 15 (eight): each cross-checked independently, then checked by the owner's fluent checker (30 and 31 October 2026); module 14 shown in the app and voiced",
+ "status": "module 14 (ten) and module 15 (eight): each cross-checked independently, then checked by the owner's fluent checker (30 and 31 October 2026); module 14 shown in the app and voiced. Modules 4–5 (thirteen): draft 1, 31 October 2026, not yet cross-checked or checked",
  "version": "1.1",
  "lessons": {
   "lesson.arabic-weak-verbs": [
@@ -3030,6 +3030,2116 @@
      "رَغْمَ الْبَرْدِ",
      "رَغْمَ الْمَطَرِ",
      "مَعَ أَنَّ"
+    ]
+   }
+  ],
+  "lesson.arabic-greetings-address": [
+   {
+    "id": "explainer.arabic-you-man-woman",
+    "title_en": "Talking to a man or a woman: أَنْتَ and أَنْتِ",
+    "family_en": "\"You\" and \"your\" change for a man or a woman",
+    "course_words": [
+     "lexeme.arabic-greetings-address-5"
+    ],
+    "table": [
+     {
+      "form_en": "you (to a man)",
+      "ar": "أَنْتَ",
+      "en": "you"
+     },
+     {
+      "form_en": "you (to a woman)",
+      "ar": "أَنْتِ",
+      "en": "you"
+     },
+     {
+      "form_en": "your name (to a man)",
+      "ar": "اِسْمُكَ",
+      "en": "your name"
+     },
+     {
+      "form_en": "your name (to a woman)",
+      "ar": "اِسْمُكِ",
+      "en": "your name"
+     },
+     {
+      "form_en": "how are you? (to a man)",
+      "ar": "كَيْفَ حَالُكَ؟",
+      "en": "how are you?"
+     },
+     {
+      "form_en": "how are you? (to a woman)",
+      "ar": "كَيْفَ حَالُكِ؟",
+      "en": "how are you?"
+     },
+     {
+      "form_en": "please (to a man)",
+      "ar": "مِنْ فَضْلِكَ",
+      "en": "please"
+     },
+     {
+      "form_en": "please (to a woman)",
+      "ar": "مِنْ فَضْلِكِ",
+      "en": "please"
+     }
+    ],
+    "steps": [
+     "When you talk to one person, Arabic has two words for \"you\": أَنْتَ to a man and أَنْتِ to a woman. Only the last vowel differs: -ta or -ti.",
+     "\"Your\" works the same way, as an ending on the word: -ka to a man, -ki to a woman. اِسْمُكَ is \"your name\" to a man, and اِسْمُكِ to a woman.",
+     "So the question changes with the person you ask: كَيْفَ حَالُكَ؟ to a man, كَيْفَ حَالُكِ؟ to a woman.",
+     "Without vowel marks the two look alike, so the last vowel is what you listen for.",
+     "Words about yourself don't change: أَنَا بِخَيْرٍ, I'm well, is the same for a man or a woman."
+    ],
+    "examples": [
+     {
+      "ar": "اِسْمِي لَيْلَى، وَمَا اسْمُكَ؟",
+      "en": "My name's Laylā, and what's yours? (to a man)",
+      "words": [
+       {
+        "ar": "اِسْمِي",
+        "en": "my name (-ī: my)"
+       },
+       {
+        "ar": "لَيْلَى",
+        "en": "(is) Laylā"
+       },
+       {
+        "ar": "وَمَا",
+        "en": "and what (is)"
+       },
+       {
+        "ar": "اسْمُكَ",
+        "en": "your name (-ka: to a man)"
+       }
+      ]
+     },
+     {
+      "ar": "كَيْفَ حَالُكِ يَا سَلْمَى؟",
+      "en": "How are you, Salmā?",
+      "words": [
+       {
+        "ar": "كَيْفَ",
+        "en": "how (is)"
+       },
+       {
+        "ar": "حَالُكِ",
+        "en": "your state (-ki: to a woman)"
+       },
+       {
+        "ar": "يَا",
+        "en": "(used when calling someone)"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       }
+      ]
+     },
+     {
+      "ar": "أَنْتَ طَالِبٌ، وَأَنْتِ مُعَلِّمَةٌ.",
+      "en": "You're a student, and you're a teacher.",
+      "words": [
+       {
+        "ar": "أَنْتَ",
+        "en": "you (a man)"
+       },
+       {
+        "ar": "طَالِبٌ",
+        "en": "(are) a student"
+       },
+       {
+        "ar": "وَأَنْتِ",
+        "en": "and you (a woman)"
+       },
+       {
+        "ar": "مُعَلِّمَةٌ",
+        "en": "(are) a teacher (a woman)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does Arabic need two words for \"you\"?",
+     "a_en": "Arabic shows whether you're talking to a man or a woman, in \"you\", in \"your\" and in many verbs. It isn't about politeness: both forms are equally polite."
+    },
+    "selftest": [
+     {
+      "q_en": "You're asking a woman how she is. What do you say?",
+      "choices": [
+       "كَيْفَ حَالُكِ؟",
+       "كَيْفَ حَالُكَ؟",
+       "كَيْفَ حَالِي؟"
+      ],
+      "answer": "كَيْفَ حَالُكِ؟",
+      "why_en": "To a woman, \"your\" is -ki: حَالُكِ. -ka is for a man, and حَالِي is \"my state\"."
+     },
+     {
+      "q_en": "Which word means \"you\" when you speak to a man?",
+      "choices": [
+       "أَنْتَ",
+       "أَنْتِ",
+       "أَنَا"
+      ],
+      "answer": "أَنْتَ",
+      "why_en": "أَنْتَ, with -ta, is for a man; أَنْتِ, with -ti, for a woman. أَنَا is \"I\"."
+     },
+     {
+      "q_en": "Does أَنَا بِخَيْرٍ change when a woman says it?",
+      "choices": [
+       "No, it's the same for a man or a woman",
+       "Yes, the last vowel changes",
+       "Yes, a woman adds ة"
+      ],
+      "answer": "No, it's the same for a man or a woman",
+      "why_en": "It's about yourself, and بِخَيْرٍ doesn't change for a man or a woman."
+     }
+    ],
+    "phrases_ar": [
+     "أَنَا بِخَيْرٍ"
+    ]
+   },
+   {
+    "id": "explainer.arabic-greetings-replies",
+    "title_en": "Greetings and their replies",
+    "family_en": "Each greeting has its own answer",
+    "course_words": [
+     "lexeme.arabic-greetings-address-1",
+     "lexeme.arabic-greetings-address-2",
+     "lexeme.arabic-greetings-address-3",
+     "lexeme.arabic-greetings-address-6",
+     "lexeme.arabic-greetings-address-8",
+     "lexeme.arabic-greetings-address-9"
+    ],
+    "table": [
+     {
+      "form_en": "hello",
+      "ar": "مَرْحَبًا",
+      "en": "hello"
+     },
+     {
+      "form_en": "the reply (to a man)",
+      "ar": "مَرْحَبًا بِكَ",
+      "en": "hello to you, welcome"
+     },
+     {
+      "form_en": "a greeting for anyone",
+      "ar": "السَّلَامُ عَلَيْكُمْ",
+      "en": "peace be with you"
+     },
+     {
+      "form_en": "its reply",
+      "ar": "وَعَلَيْكُمُ السَّلَامُ",
+      "en": "and with you be peace"
+     },
+     {
+      "form_en": "good morning",
+      "ar": "صَبَاحُ الْخَيْرِ",
+      "en": "good morning (\"morning of good\")"
+     },
+     {
+      "form_en": "its reply",
+      "ar": "صَبَاحُ النُّورِ",
+      "en": "good morning (\"morning of light\")"
+     },
+     {
+      "form_en": "good evening",
+      "ar": "مَسَاءُ الْخَيْرِ",
+      "en": "good evening"
+     },
+     {
+      "form_en": "its reply",
+      "ar": "مَسَاءُ النُّورِ",
+      "en": "good evening (\"evening of light\")"
+     },
+     {
+      "form_en": "thank you",
+      "ar": "شُكْرًا",
+      "en": "thank you"
+     },
+     {
+      "form_en": "its reply",
+      "ar": "عَفْوًا",
+      "en": "you're welcome"
+     },
+     {
+      "form_en": "goodbye",
+      "ar": "مَعَ السَّلَامَةِ",
+      "en": "goodbye (\"with safety\")"
+     }
+    ],
+    "steps": [
+     "Arabic greetings come in pairs: each one has its own reply, so learn them together.",
+     "Many replies answer with something brighter: صَبَاحُ الْخَيْرِ, \"morning of good\", is answered with صَبَاحُ النُّورِ, \"morning of light\".",
+     "السَّلَامُ عَلَيْكُمْ works anywhere, with anyone. The reply turns the words round and adds وَ, \"and\": وَعَلَيْكُمُ السَّلَامُ.",
+     "عَلَيْكُمْ is plural, but it's used for one person too.",
+     "When someone thanks you with شُكْرًا, the answer is عَفْوًا, you're welcome."
+    ],
+    "examples": [
+     {
+      "ar": "صَبَاحُ الْخَيْرِ يَا لَيْلَى.",
+      "en": "Good morning, Laylā.",
+      "words": [
+       {
+        "ar": "صَبَاحُ",
+        "en": "morning (of)"
+       },
+       {
+        "ar": "الْخَيْرِ",
+        "en": "good, goodness"
+       },
+       {
+        "ar": "يَا",
+        "en": "(used when calling someone)"
+       },
+       {
+        "ar": "لَيْلَى",
+        "en": "Laylā"
+       }
+      ]
+     },
+     {
+      "ar": "مَرْحَبًا بِكِ فِي بَيْتِنَا.",
+      "en": "Welcome to our home. (to a woman)",
+      "words": [
+       {
+        "ar": "مَرْحَبًا",
+        "en": "hello, welcome"
+       },
+       {
+        "ar": "بِكِ",
+        "en": "to you (-ki: a woman)"
+       },
+       {
+        "ar": "فِي",
+        "en": "in, to"
+       },
+       {
+        "ar": "بَيْتِنَا",
+        "en": "our home"
+       }
+      ]
+     },
+     {
+      "ar": "شُكْرًا، مَعَ السَّلَامَةِ.",
+      "en": "Thank you, goodbye.",
+      "words": [
+       {
+        "ar": "شُكْرًا",
+        "en": "thank you"
+       },
+       {
+        "ar": "مَعَ",
+        "en": "with"
+       },
+       {
+        "ar": "السَّلَامَةِ",
+        "en": "safety (together: goodbye)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why isn't صَبَاحُ الْخَيْرِ answered with the same words?",
+     "a_en": "It's the custom: the reply matches the greeting and goes one better, \"light\" for \"good\". Saying صَبَاحُ الْخَيْرِ back wouldn't be wrong, but صَبَاحُ النُّورِ is what people expect."
+    },
+    "selftest": [
+     {
+      "q_en": "Someone says مَسَاءُ الْخَيْرِ. What's the usual reply?",
+      "choices": [
+       "مَسَاءُ النُّورِ",
+       "صَبَاحُ النُّورِ",
+       "مَعَ السَّلَامَةِ"
+      ],
+      "answer": "مَسَاءُ النُّورِ",
+      "why_en": "مَسَاءُ is evening, so the reply is مَسَاءُ النُّورِ. صَبَاحُ النُّورِ is for the morning, and مَعَ السَّلَامَةِ means goodbye."
+     },
+     {
+      "q_en": "What's the reply to السَّلَامُ عَلَيْكُمْ?",
+      "choices": [
+       "وَعَلَيْكُمُ السَّلَامُ",
+       "مَعَ السَّلَامَةِ",
+       "شُكْرًا"
+      ],
+      "answer": "وَعَلَيْكُمُ السَّلَامُ",
+      "why_en": "The reply turns the words round and adds وَ: وَعَلَيْكُمُ السَّلَامُ."
+     },
+     {
+      "q_en": "Someone says شُكْرًا to you. What do you answer?",
+      "choices": [
+       "عَفْوًا",
+       "مَرْحَبًا",
+       "صَبَاحُ الْخَيْرِ"
+      ],
+      "answer": "عَفْوًا",
+      "why_en": "عَفْوًا is \"you're welcome\". It's also \"excuse me\" or \"sorry\"."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-nominal-sentences": [
+   {
+    "id": "explainer.arabic-is-sentences",
+    "title_en": "Saying what something is, with no \"is\"",
+    "family_en": "A sentence without a verb: what you're talking about, and what you say about it",
+    "course_words": [
+     "lexeme.arabic-nominal-sentences-7",
+     "lexeme.arabic-nominal-sentences-8"
+    ],
+    "table": [
+     {
+      "form_en": "I am",
+      "ar": "أَنَا طَالِبٌ",
+      "en": "I'm a student"
+     },
+     {
+      "form_en": "you are (to a man)",
+      "ar": "أَنْتَ طَبِيبٌ",
+      "en": "you're a doctor"
+     },
+     {
+      "form_en": "you are (to a woman)",
+      "ar": "أَنْتِ مُهَنْدِسَةٌ",
+      "en": "you're an engineer"
+     },
+     {
+      "form_en": "he is",
+      "ar": "هُوَ مُعَلِّمٌ",
+      "en": "he's a teacher"
+     },
+     {
+      "form_en": "she is",
+      "ar": "هِيَ طَبِيبَةٌ",
+      "en": "she's a doctor"
+     },
+     {
+      "form_en": "a sentence",
+      "ar": "الْبَيْتُ كَبِيرٌ",
+      "en": "the house is big"
+     },
+     {
+      "form_en": "a phrase, not yet a sentence",
+      "ar": "الْبَيْتُ الْكَبِيرُ",
+      "en": "the big house"
+     },
+     {
+      "form_en": "a phrase in a sentence",
+      "ar": "الْبَيْتُ الْكَبِيرُ جَدِيدٌ",
+      "en": "the big house is new"
+     }
+    ],
+    "steps": [
+     "In the present, Arabic doesn't need a word for \"is\" or \"are\": أَنَا طَالِبٌ is \"I (am) a student\".",
+     "A sentence like this has two parts: what you're talking about, and what you say about it.",
+     "With الْـ on the first word and none on the second, it's a sentence: الْبَيْتُ كَبِيرٌ, the house is big.",
+     "With الْـ on both, it's a phrase, not yet a sentence: الْبَيْتُ الْكَبِيرُ, the big house. Add something to make it one: الْبَيْتُ الْكَبِيرُ جَدِيدٌ.",
+     "For a woman, or a feminine word, the second part usually ends in ة: هِيَ طَبِيبَةٌ; الْغُرْفَةُ صَغِيرَةٌ."
+    ],
+    "examples": [
+     {
+      "ar": "أَنَا مُهَنْدِسٌ وَهِيَ طَبِيبَةٌ.",
+      "en": "I'm an engineer and she's a doctor.",
+      "words": [
+       {
+        "ar": "أَنَا",
+        "en": "I"
+       },
+       {
+        "ar": "مُهَنْدِسٌ",
+        "en": "(am) an engineer"
+       },
+       {
+        "ar": "وَهِيَ",
+        "en": "and she"
+       },
+       {
+        "ar": "طَبِيبَةٌ",
+        "en": "(is) a doctor (a woman)"
+       }
+      ]
+     },
+     {
+      "ar": "الْغُرْفَةُ صَغِيرَةٌ.",
+      "en": "The room is small.",
+      "words": [
+       {
+        "ar": "الْغُرْفَةُ",
+        "en": "the room"
+       },
+       {
+        "ar": "صَغِيرَةٌ",
+        "en": "(is) small (with ة: the room is feminine)"
+       }
+      ]
+     },
+     {
+      "ar": "السَّيَّارَةُ الْجَدِيدَةُ جَمِيلَةٌ.",
+      "en": "The new car is beautiful.",
+      "words": [
+       {
+        "ar": "السَّيَّارَةُ",
+        "en": "the car"
+       },
+       {
+        "ar": "الْجَدِيدَةُ",
+        "en": "the new one (with الْـ: part of the phrase)"
+       },
+       {
+        "ar": "جَمِيلَةٌ",
+        "en": "(is) beautiful (no الْـ: what you say about it)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "With no \"is\", how can I tell a sentence from a phrase?",
+     "a_en": "Look at the second word. If it has الْـ like the first (الْبَيْتُ الْكَبِيرُ), it belongs to the name: the big house. If it has no الْـ (الْبَيْتُ كَبِيرٌ), it's what you're saying about the house: the house is big."
+    },
+    "selftest": [
+     {
+      "q_en": "What does الْكِتَابُ جَدِيدٌ mean?",
+      "choices": [
+       "The book is new",
+       "the new book",
+       "a new book"
+      ],
+      "answer": "The book is new",
+      "why_en": "Only the first word has الْـ, so it's a sentence: the book (is) new."
+     },
+     {
+      "q_en": "Which is a full sentence?",
+      "choices": [
+       "الْقَلَمُ صَغِيرٌ",
+       "الْقَلَمُ الصَّغِيرُ",
+       "قَلَمٌ صَغِيرٌ"
+      ],
+      "answer": "الْقَلَمُ صَغِيرٌ",
+      "why_en": "الْقَلَمُ صَغِيرٌ is \"the pen is small\". The other two are phrases: \"the small pen\" and \"a small pen\"."
+     },
+     {
+      "q_en": "A man says \"I'm busy\". Which is it?",
+      "choices": [
+       "أَنَا مَشْغُولٌ",
+       "أَنَا مَشْغُولَةٌ",
+       "أَنْتَ مَشْغُولٌ"
+      ],
+      "answer": "أَنَا مَشْغُولٌ",
+      "why_en": "مَشْغُولَةٌ is what a woman says, and أَنْتَ مَشْغُولٌ is \"you're busy\"."
+     }
+    ],
+    "phrases_ar": [
+     "الْكِتَابُ جَدِيدٌ",
+     "الْقَلَمُ صَغِيرٌ",
+     "أَنْتَ مَشْغُولٌ"
+    ]
+   }
+  ],
+  "lesson.arabic-simple-questions": [
+   {
+    "id": "explainer.arabic-question-words",
+    "title_en": "Question words: هَلْ, مَنْ, مَا, أَيْنَ, مَتَى, كَيْفَ",
+    "family_en": "Asking for the piece of information you need",
+    "course_words": [
+     "lexeme.arabic-simple-questions-1",
+     "lexeme.arabic-simple-questions-2",
+     "lexeme.arabic-simple-questions-3",
+     "lexeme.arabic-simple-questions-4",
+     "lexeme.arabic-simple-questions-5"
+    ],
+    "table": [
+     {
+      "form_en": "yes or no?",
+      "ar": "هَلْ",
+      "en": "(starts a yes/no question)"
+     },
+     {
+      "form_en": "who?",
+      "ar": "مَنْ",
+      "en": "who"
+     },
+     {
+      "form_en": "what? (before a noun)",
+      "ar": "مَا",
+      "en": "what"
+     },
+     {
+      "form_en": "what? (before a verb)",
+      "ar": "مَاذَا",
+      "en": "what"
+     },
+     {
+      "form_en": "where?",
+      "ar": "أَيْنَ",
+      "en": "where"
+     },
+     {
+      "form_en": "when?",
+      "ar": "مَتَى",
+      "en": "when"
+     },
+     {
+      "form_en": "how?",
+      "ar": "كَيْفَ",
+      "en": "how"
+     }
+    ],
+    "steps": [
+     "Choose the question word for what you're missing: a person (مَنْ), a thing (مَا), a place (أَيْنَ), a time (مَتَى) or a way (كَيْفَ).",
+     "هَلْ at the start turns a statement into a yes/no question: هَلْ أَنْتَ طَالِبٌ؟ The answer is نَعَمْ, yes, or لَا, no.",
+     "مَا is \"what\" before a noun or a pronoun (مَا هَذَا؟), and مَاذَا before a verb (مَاذَا تَدْرُسُ؟).",
+     "Before الْـ, هَلْ takes a helping i: هَلِ الْكِتَابُ جَدِيدٌ؟",
+     "The question word comes first, and the rest stays as it would in a statement: الْبَيْتُ هُنَا, the house is here; أَيْنَ الْبَيْتُ؟, where is the house?"
+    ],
+    "examples": [
+     {
+      "ar": "مَنْ هَذِهِ؟ هَذِهِ سَلْمَى.",
+      "en": "Who's this? This is Salmā.",
+      "words": [
+       {
+        "ar": "مَنْ",
+        "en": "who (is)"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this (a woman)"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this (is)"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       }
+      ]
+     },
+     {
+      "ar": "مَتَى الدَّرْسُ؟",
+      "en": "When is the lesson?",
+      "words": [
+       {
+        "ar": "مَتَى",
+        "en": "when (is)"
+       },
+       {
+        "ar": "الدَّرْسُ",
+        "en": "the lesson"
+       }
+      ]
+     },
+     {
+      "ar": "هَلِ الْمَطْعَمُ قَرِيبٌ؟",
+      "en": "Is the restaurant near?",
+      "words": [
+       {
+        "ar": "هَلِ",
+        "en": "(starts a yes/no question; the i joins it to the next word)"
+       },
+       {
+        "ar": "الْمَطْعَمُ",
+        "en": "the restaurant"
+       },
+       {
+        "ar": "قَرِيبٌ",
+        "en": "(is) near"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why don't Arabic questions need \"is\" or \"does\"?",
+     "a_en": "Just as in statements: أَيْنَ الْبَيْتُ؟ is literally \"where the house?\", and هَلْ تَدْرُسُ؟ is \"do you study?\" with no word for \"do\". The question word does the job."
+    },
+    "selftest": [
+     {
+      "q_en": "You want to know when the train leaves. Which word do you start with?",
+      "choices": [
+       "مَتَى",
+       "أَيْنَ",
+       "مَنْ"
+      ],
+      "answer": "مَتَى",
+      "why_en": "مَتَى asks about a time. أَيْنَ asks where, and مَنْ who."
+     },
+     {
+      "q_en": "Which word for \"what\" goes before a verb?",
+      "choices": [
+       "مَاذَا",
+       "مَا"
+      ],
+      "answer": "مَاذَا",
+      "why_en": "مَاذَا goes before a verb (مَاذَا تَدْرُسُ؟), and مَا before a noun or a pronoun (مَا هَذَا؟)."
+     },
+     {
+      "q_en": "Which is a natural answer to هَلْ أَنْتِ مَشْغُولَةٌ؟",
+      "choices": [
+       "نَعَمْ، أَنَا مَشْغُولَةٌ",
+       "نَعَمْ، أَنْتِ مَشْغُولَةٌ",
+       "مَتَى؟"
+      ],
+      "answer": "نَعَمْ، أَنَا مَشْغُولَةٌ",
+      "why_en": "A هَلْ question is answered with نَعَمْ or لَا, and you answer about yourself with أَنَا."
+     }
+    ],
+    "phrases_ar": [
+     "هَلْ أَنْتَ طَالِبٌ؟",
+     "مَا هَذَا؟",
+     "مَاذَا تَدْرُسُ؟",
+     "هَلِ الْكِتَابُ جَدِيدٌ؟",
+     "الْبَيْتُ هُنَا",
+     "أَيْنَ الْبَيْتُ؟",
+     "هَلْ تَدْرُسُ؟",
+     "هَلْ أَنْتِ مَشْغُولَةٌ؟"
+    ]
+   }
+  ],
+  "lesson.arabic-origin-location": [
+   {
+    "id": "explainer.arabic-place-words",
+    "title_en": "In, from, to, on: فِي, مِنْ, إِلَى, عَلَى",
+    "family_en": "Small words for place, and the -i ending after them",
+    "course_words": [
+     "lexeme.arabic-origin-location-7",
+     "lexeme.arabic-origin-location-8"
+    ],
+    "table": [
+     {
+      "form_en": "in, at",
+      "ar": "فِي الْبَيْتِ",
+      "en": "in the house, at home"
+     },
+     {
+      "form_en": "from",
+      "ar": "مِنَ الْمَدْرَسَةِ",
+      "en": "from the school"
+     },
+     {
+      "form_en": "to",
+      "ar": "إِلَى الْمَكْتَبَةِ",
+      "en": "to the library"
+     },
+     {
+      "form_en": "on",
+      "ar": "عَلَى الْمَكْتَبِ",
+      "en": "on the desk"
+     },
+     {
+      "form_en": "away from, about",
+      "ar": "عَنِ الْبَيْتِ",
+      "en": "away from the house; about the house"
+     },
+     {
+      "form_en": "with",
+      "ar": "مَعَ صَدِيقِي",
+      "en": "with my friend"
+     }
+    ],
+    "steps": [
+     "These small words show where something is, where it comes from or where it's going: فِي, in; مِنْ, from; إِلَى, to; عَلَى, on.",
+     "The noun after them ends in -i: فِي الْبَيْتِ, عَلَى الْمَكْتَبِ. Without الْـ, it ends in -in: فِي بَيْتٍ, in a house.",
+     "Before الْـ, مِنْ becomes مِنَ and عَنْ becomes عَنِ, so the words run on smoothly: مِنَ الْمَدْرَسَةِ, عَنِ الْبَيْتِ.",
+     "Where you are and where you're from are different questions: أَيْنَ أَنْتَ؟ asks where you are now; مِنْ أَيْنَ أَنْتَ؟ asks where you're from.",
+     "إِلَى is for moving towards a place: أَذْهَبُ إِلَى الْمَدْرَسَةِ, I go to school. For being in a place, use فِي."
+    ],
+    "examples": [
+     {
+      "ar": "أَنَا مِنْ لُبْنَانَ، وَأَسْكُنُ فِي بِرِيطَانِيَا.",
+      "en": "I'm from Lebanon, and I live in Britain.",
+      "words": [
+       {
+        "ar": "أَنَا",
+        "en": "I (am)"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "لُبْنَانَ",
+        "en": "Lebanon (it never takes -in)"
+       },
+       {
+        "ar": "وَأَسْكُنُ",
+        "en": "and I live"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "بِرِيطَانِيَا",
+        "en": "Britain"
+       }
+      ]
+     },
+     {
+      "ar": "الْقَلَمُ عَلَى الطَّاوِلَةِ.",
+      "en": "The pen is on the table.",
+      "words": [
+       {
+        "ar": "الْقَلَمُ",
+        "en": "the pen"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(is) on"
+       },
+       {
+        "ar": "الطَّاوِلَةِ",
+        "en": "the table (-i after عَلَى)"
+       }
+      ]
+     },
+     {
+      "ar": "الْمَدْرَسَةُ قَرِيبَةٌ مِنَ الْبَيْتِ.",
+      "en": "The school is near the house.",
+      "words": [
+       {
+        "ar": "الْمَدْرَسَةُ",
+        "en": "the school"
+       },
+       {
+        "ar": "قَرِيبَةٌ",
+        "en": "(is) near"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "to (literally \"from\"; مِنْ becomes مِنَ before الْـ)"
+       },
+       {
+        "ar": "الْبَيْتِ",
+        "en": "the house (-i)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does the noun end in -i after فِي?",
+     "a_en": "These little words always put the noun after them in its -i form; it's one of the main jobs of the endings. So the same word can end differently: الْبَيْتُ كَبِيرٌ, the house is big, but فِي الْبَيْتِ, in the house."
+    },
+    "selftest": [
+     {
+      "q_en": "Which ending does a noun take after عَلَى?",
+      "choices": [
+       "-i",
+       "-u",
+       "-a"
+      ],
+      "answer": "-i",
+      "why_en": "After فِي, مِنْ, إِلَى, عَلَى and the rest, the noun ends in -i: عَلَى الْمَكْتَبِ."
+     },
+     {
+      "q_en": "\"I'm going to the market\": which word means \"to\"?",
+      "choices": [
+       "إِلَى",
+       "فِي",
+       "مِنْ"
+      ],
+      "answer": "إِلَى",
+      "why_en": "إِلَى is for moving towards a place. فِي is \"in\", and مِنْ is \"from\"."
+     },
+     {
+      "q_en": "What does مِنْ أَيْنَ أَنْتِ؟ ask?",
+      "choices": [
+       "where you're from",
+       "where you are now",
+       "where you're going"
+      ],
+      "answer": "where you're from",
+      "why_en": "مِنْ أَيْنَ is \"from where\". \"Where are you?\" is أَيْنَ أَنْتِ؟"
+     }
+    ],
+    "phrases_ar": [
+     "فِي بَيْتٍ",
+     "أَيْنَ أَنْتَ؟",
+     "مِنْ أَيْنَ أَنْتَ؟",
+     "أَذْهَبُ إِلَى الْمَدْرَسَةِ",
+     "الْبَيْتُ كَبِيرٌ",
+     "مِنْ أَيْنَ أَنْتِ؟",
+     "مِنْ أَيْنَ",
+     "أَيْنَ أَنْتِ؟"
+    ]
+   },
+   {
+    "id": "explainer.arabic-from-a-place",
+    "title_en": "From a place to a describing word: مِصْر, مِصْرِيّ",
+    "family_en": "Adding ـِيّ to a place makes \"from there\"",
+    "course_words": [
+     "lexeme.arabic-origin-location-4",
+     "lexeme.arabic-origin-location-5",
+     "lexeme.arabic-origin-location-9",
+     "lexeme.arabic-origin-location-10"
+    ],
+    "table": [
+     {
+      "form_en": "the country",
+      "ar": "مِصْر",
+      "en": "Egypt"
+     },
+     {
+      "form_en": "a man from there",
+      "ar": "مِصْرِيّ",
+      "en": "Egyptian"
+     },
+     {
+      "form_en": "a woman from there",
+      "ar": "مِصْرِيَّة",
+      "en": "Egyptian"
+     },
+     {
+      "form_en": "the country",
+      "ar": "لُبْنَان",
+      "en": "Lebanon"
+     },
+     {
+      "form_en": "a man from there",
+      "ar": "لُبْنَانِيّ",
+      "en": "Lebanese"
+     },
+     {
+      "form_en": "a country with الْـ",
+      "ar": "الْعِرَاق",
+      "en": "Iraq"
+     },
+     {
+      "form_en": "a man from there (no الْـ)",
+      "ar": "عِرَاقِيّ",
+      "en": "Iraqi"
+     },
+     {
+      "form_en": "a name ending in ـا",
+      "ar": "بِرِيطَانِيَا",
+      "en": "Britain"
+     },
+     {
+      "form_en": "a man from there (the ـا drops)",
+      "ar": "بِرِيطَانِيّ",
+      "en": "British"
+     }
+    ],
+    "steps": [
+     "To say someone is from a place, add ـِيّ to the place's name: مِصْر, Egypt; مِصْرِيّ, Egyptian.",
+     "For a woman, add ـِيَّة instead: مِصْرِيَّة.",
+     "If the country's name has الْـ, leave it off: الْعِرَاق, عِرَاقِيّ. If it ends in ـا, drop that too: بِرِيطَانِيَا, بِرِيطَانِيّ.",
+     "Use it like any describing word: هُوَ مِصْرِيٌّ وَهِيَ لُبْنَانِيَّةٌ, he's Egyptian and she's Lebanese.",
+     "The same ending makes describing words from other nouns too: عَرَبِيّ, Arab or Arabic, from عَرَب, the Arabs."
+    ],
+    "examples": [
+     {
+      "ar": "أَنَا بِرِيطَانِيٌّ، وَصَدِيقِي عِرَاقِيٌّ.",
+      "en": "I'm British, and my friend is Iraqi.",
+      "words": [
+       {
+        "ar": "أَنَا",
+        "en": "I"
+       },
+       {
+        "ar": "بِرِيطَانِيٌّ",
+        "en": "(am) British"
+       },
+       {
+        "ar": "وَصَدِيقِي",
+        "en": "and my friend"
+       },
+       {
+        "ar": "عِرَاقِيٌّ",
+        "en": "(is) Iraqi"
+       }
+      ]
+     },
+     {
+      "ar": "هَلْ أَنْتِ مِصْرِيَّةٌ؟",
+      "en": "Are you Egyptian? (to a woman)",
+      "words": [
+       {
+        "ar": "هَلْ",
+        "en": "(starts a yes/no question)"
+       },
+       {
+        "ar": "أَنْتِ",
+        "en": "you (a woman)"
+       },
+       {
+        "ar": "مِصْرِيَّةٌ",
+        "en": "Egyptian (ـِيَّة: a woman)"
+       }
+      ]
+     },
+     {
+      "ar": "هِيَ مِنْ سُورِيَا، فَهِيَ سُورِيَّةٌ.",
+      "en": "She's from Syria, so she's Syrian.",
+      "words": [
+       {
+        "ar": "هِيَ",
+        "en": "she (is)"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "سُورِيَا",
+        "en": "Syria"
+       },
+       {
+        "ar": "فَهِيَ",
+        "en": "so she (is)"
+       },
+       {
+        "ar": "سُورِيَّةٌ",
+        "en": "Syrian (a woman)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is it عِرَاقِيّ, without الْـ, when the country is الْعِرَاق?",
+     "a_en": "The describing word is made from the name itself, without \"the\". You add الْـ again only when the phrase needs it, as in الطَّالِبُ الْعِرَاقِيُّ, the Iraqi student."
+    },
+    "selftest": [
+     {
+      "q_en": "How does a woman from Lebanon describe herself?",
+      "choices": [
+       "أَنَا لُبْنَانِيَّةٌ",
+       "أَنَا لُبْنَانِيٌّ",
+       "أَنَا لُبْنَانُ"
+      ],
+      "answer": "أَنَا لُبْنَانِيَّةٌ",
+      "why_en": "For a woman, the ending is ـِيَّة. لُبْنَانِيٌّ is for a man, and لُبْنَان is the country."
+     },
+     {
+      "q_en": "Which means \"Iraqi\" for a man?",
+      "choices": [
+       "عِرَاقِيّ",
+       "الْعِرَاق",
+       "عِرَاقِيَّة"
+      ],
+      "answer": "عِرَاقِيّ",
+      "why_en": "الْعِرَاق is the country, and عِرَاقِيَّة is for a woman."
+     },
+     {
+      "q_en": "What do you add to a place's name to make \"from there\", for a man?",
+      "choices": [
+       "ـِيّ",
+       "ـَة",
+       "ـَات"
+      ],
+      "answer": "ـِيّ",
+      "why_en": "ـِيّ makes \"from there\" (ـِيَّة for a woman). ـَة marks the feminine, and ـَات a plural."
+     }
+    ],
+    "phrases_ar": [
+     "هُوَ مِصْرِيٌّ وَهِيَ لُبْنَانِيَّةٌ",
+     "الطَّالِبُ الْعِرَاقِيُّ"
+    ]
+   }
+  ],
+  "lesson.arabic-repair-phrases": [
+   {
+    "id": "explainer.arabic-asking-for-help",
+    "title_en": "When you don't understand: asking politely",
+    "family_en": "Phrases that keep a conversation going, to a man or a woman",
+    "course_words": [
+     "lexeme.arabic-repair-phrases-1",
+     "lexeme.arabic-repair-phrases-3",
+     "lexeme.arabic-repair-phrases-4",
+     "lexeme.arabic-repair-phrases-5",
+     "lexeme.arabic-repair-phrases-7",
+     "lexeme.arabic-repair-phrases-9"
+    ],
+    "table": [
+     {
+      "form_en": "I didn't understand",
+      "ar": "لَمْ أَفْهَمْ",
+      "en": "I didn't understand"
+     },
+     {
+      "form_en": "repeat! (to a man)",
+      "ar": "أَعِدْ",
+      "en": "repeat!"
+     },
+     {
+      "form_en": "repeat! (to a woman)",
+      "ar": "أَعِيدِي",
+      "en": "repeat!"
+     },
+     {
+      "form_en": "slowly",
+      "ar": "بِبُطْءٍ",
+      "en": "slowly"
+     },
+     {
+      "form_en": "once more",
+      "ar": "مَرَّةً أُخْرَى",
+      "en": "again"
+     },
+     {
+      "form_en": "what does … mean?",
+      "ar": "مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟",
+      "en": "what does this word mean?"
+     },
+     {
+      "form_en": "I don't know",
+      "ar": "لَا أَعْرِفُ",
+      "en": "I don't know"
+     }
+    ],
+    "steps": [
+     "Not understanding is a normal part of talking in a new language. Say so, and ask for what you need.",
+     "Start with عَفْوًا, excuse me, or لَمْ أَفْهَمْ, I didn't understand.",
+     "Then ask: أَعِدْ, repeat, and add بِبُطْءٍ, slowly, or مَرَّةً أُخْرَى, once more. Finish with مِنْ فَضْلِكَ, please.",
+     "To a woman, the request ends in -ī: أَعِيدِي, and \"please\" is مِنْ فَضْلِكِ.",
+     "For one word you didn't catch, ask about it: مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟"
+    ],
+    "examples": [
+     {
+      "ar": "عَفْوًا، أَعِيدِي مَرَّةً أُخْرَى، مِنْ فَضْلِكِ.",
+      "en": "Excuse me, could you say it again, please? (to a woman)",
+      "words": [
+       {
+        "ar": "عَفْوًا",
+        "en": "excuse me"
+       },
+       {
+        "ar": "أَعِيدِي",
+        "en": "repeat (-ī: to a woman)"
+       },
+       {
+        "ar": "مَرَّةً",
+        "en": "a time"
+       },
+       {
+        "ar": "أُخْرَى",
+        "en": "another (together: once more)"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "فَضْلِكِ",
+        "en": "your kindness (together: please)"
+       }
+      ]
+     },
+     {
+      "ar": "لَمْ أَفْهَمْ هَذِهِ الْكَلِمَةَ.",
+      "en": "I didn't understand this word.",
+      "words": [
+       {
+        "ar": "لَمْ",
+        "en": "didn't"
+       },
+       {
+        "ar": "أَفْهَمْ",
+        "en": "understand (I)"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْكَلِمَةَ",
+        "en": "word (the -a ending: what I didn't understand)"
+       }
+      ]
+     },
+     {
+      "ar": "تَكَلَّمْ بِبُطْءٍ، مِنْ فَضْلِكَ.",
+      "en": "Speak slowly, please. (to a man)",
+      "words": [
+       {
+        "ar": "تَكَلَّمْ",
+        "en": "speak (to a man)"
+       },
+       {
+        "ar": "بِبُطْءٍ",
+        "en": "slowly"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "فَضْلِكَ",
+        "en": "your kindness (together: please)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Isn't it rude to keep asking someone to repeat?",
+     "a_en": "No: asking shows you're listening and want to understand, and it keeps the conversation honest. A polite عَفْوًا at the start and مِنْ فَضْلِكَ at the end is all it takes."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you ask a woman to repeat?",
+      "choices": [
+       "أَعِيدِي",
+       "أَعِدْ",
+       "أَعِيدُ"
+      ],
+      "answer": "أَعِيدِي",
+      "why_en": "To a woman the request ends in -ī: أَعِيدِي. أَعِدْ is to a man, and أَعِيدُ means \"I repeat\"."
+     },
+     {
+      "q_en": "What does بِبُطْءٍ add to a request?",
+      "choices": [
+       "slowly",
+       "again",
+       "please"
+      ],
+      "answer": "slowly",
+      "why_en": "بِبُطْءٍ is \"slowly\". \"Again\" is مَرَّةً أُخْرَى, and \"please\" is مِنْ فَضْلِكَ."
+     },
+     {
+      "q_en": "Which question asks what a word means?",
+      "choices": [
+       "مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟",
+       "مَا اسْمُكَ؟",
+       "مَتَى الدَّرْسُ؟"
+      ],
+      "answer": "مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟",
+      "why_en": "مَعْنَى is \"meaning\". The others ask your name and when the lesson is."
+     }
+    ],
+    "phrases_ar": [
+     "مِنْ فَضْلِكَ",
+     "مِنْ فَضْلِكِ"
+    ]
+   }
+  ],
+  "lesson.arabic-gender-definiteness": [
+   {
+    "id": "explainer.arabic-masculine-feminine",
+    "title_en": "Masculine and feminine: ة, and the words without it",
+    "family_en": "Every noun is masculine or feminine",
+    "course_words": [
+     "lexeme.arabic-gender-definiteness-1",
+     "lexeme.arabic-gender-definiteness-3",
+     "lexeme.arabic-gender-definiteness-5",
+     "lexeme.arabic-gender-definiteness-8",
+     "lexeme.arabic-gender-definiteness-9"
+    ],
+    "table": [
+     {
+      "form_en": "a man student",
+      "ar": "طَالِب",
+      "en": "a student (a man)"
+     },
+     {
+      "form_en": "a woman student",
+      "ar": "طَالِبَة",
+      "en": "a student (a woman)"
+     },
+     {
+      "form_en": "a man teacher",
+      "ar": "مُعَلِّم",
+      "en": "a teacher (a man)"
+     },
+     {
+      "form_en": "a woman teacher",
+      "ar": "مُعَلِّمَة",
+      "en": "a teacher (a woman)"
+     },
+     {
+      "form_en": "a thing, feminine, with ة",
+      "ar": "سَيَّارَة",
+      "en": "car"
+     },
+     {
+      "form_en": "a thing, masculine",
+      "ar": "قَلَم",
+      "en": "pen"
+     },
+     {
+      "form_en": "feminine without ة",
+      "ar": "شَمْس",
+      "en": "sun"
+     },
+     {
+      "form_en": "feminine by meaning",
+      "ar": "أُمّ",
+      "en": "mother"
+     },
+     {
+      "form_en": "feminine, ending in ت",
+      "ar": "بِنْت",
+      "en": "girl"
+     }
+    ],
+    "steps": [
+     "Every Arabic noun is masculine or feminine, things as well as people: قَلَم, pen, is masculine; سَيَّارَة, car, is feminine.",
+     "The usual sign of the feminine is ة at the end: طَالِب is a student who's a man, طَالِبَة a student who's a woman.",
+     "A few feminine nouns have no ة: some by meaning, like أُمّ, mother; others you simply learn, like شَمْس, sun, and أَرْض, earth.",
+     "A word describing a feminine noun takes ة too: الشَّمْسُ كَبِيرَةٌ, the sun is big.",
+     "So learn each new noun with its gender, the way you learn its meaning."
+    ],
+    "examples": [
+     {
+      "ar": "الْأُمُّ طَبِيبَةٌ وَالْأَبُ مُعَلِّمٌ.",
+      "en": "The mother is a doctor and the father is a teacher.",
+      "words": [
+       {
+        "ar": "الْأُمُّ",
+        "en": "the mother (feminine, with no ة)"
+       },
+       {
+        "ar": "طَبِيبَةٌ",
+        "en": "(is) a doctor (with ة, to match)"
+       },
+       {
+        "ar": "وَالْأَبُ",
+        "en": "and the father"
+       },
+       {
+        "ar": "مُعَلِّمٌ",
+        "en": "(is) a teacher"
+       }
+      ]
+     },
+     {
+      "ar": "الشَّمْسُ حَارَّةٌ الْيَوْمَ.",
+      "en": "The sun is hot today.",
+      "words": [
+       {
+        "ar": "الشَّمْسُ",
+        "en": "the sun (feminine, with no ة)"
+       },
+       {
+        "ar": "حَارَّةٌ",
+        "en": "(is) hot (with ة, to match)"
+       },
+       {
+        "ar": "الْيَوْمَ",
+        "en": "today"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ بِنْتٌ صَغِيرَةٌ.",
+      "en": "This is a little girl.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this (feminine)"
+       },
+       {
+        "ar": "بِنْتٌ",
+        "en": "(is) a girl (feminine, ending in ت)"
+       },
+       {
+        "ar": "صَغِيرَةٌ",
+        "en": "little (with ة, to match)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "If شَمْس has no ة, how do I know it's feminine?",
+     "a_en": "From the words that go with it: you say الشَّمْسُ كَبِيرَةٌ, with a feminine describing word, and هَذِهِ, not هَذَا. Dictionaries mark it too. That's why it's worth learning a noun's gender along with the noun."
+    },
+    "selftest": [
+     {
+      "q_en": "Which noun is feminine?",
+      "choices": [
+       "سَيَّارَة",
+       "قَلَم",
+       "بَيْت"
+      ],
+      "answer": "سَيَّارَة",
+      "why_en": "سَيَّارَة ends in ة. قَلَم and بَيْت are masculine."
+     },
+     {
+      "q_en": "Which is right?",
+      "choices": [
+       "الْأَرْضُ كَبِيرَةٌ",
+       "الْأَرْضُ كَبِيرٌ"
+      ],
+      "answer": "الْأَرْضُ كَبِيرَةٌ",
+      "why_en": "أَرْض is feminine, even without ة, so its describing word takes ة: كَبِيرَةٌ."
+     },
+     {
+      "q_en": "How do you say \"a teacher\" when the teacher is a woman?",
+      "choices": [
+       "مُعَلِّمَة",
+       "مُعَلِّم",
+       "مُعَلِّمَات"
+      ],
+      "answer": "مُعَلِّمَة",
+      "why_en": "Add ة: مُعَلِّمَة. مُعَلِّم is a man, and مُعَلِّمَات means several women teachers."
+     }
+    ],
+    "phrases_ar": [
+     "الشَّمْسُ كَبِيرَةٌ"
+    ]
+   },
+   {
+    "id": "explainer.arabic-sun-moon-letters",
+    "title_en": "The article الْـ: sun letters and moon letters",
+    "family_en": "How \"the\" sounds before different letters",
+    "course_words": [
+     "lexeme.arabic-gender-definiteness-2"
+    ],
+    "table": [
+     {
+      "form_en": "a moon letter: the ل is said",
+      "ar": "الْقَمَر",
+      "en": "the moon"
+     },
+     {
+      "form_en": "a moon letter",
+      "ar": "الْكِتَاب",
+      "en": "the book"
+     },
+     {
+      "form_en": "a moon letter",
+      "ar": "الْبَيْت",
+      "en": "the house"
+     },
+     {
+      "form_en": "a sun letter: the ل isn't said",
+      "ar": "الشَّمْس",
+      "en": "the sun"
+     },
+     {
+      "form_en": "a sun letter",
+      "ar": "الدَّرْس",
+      "en": "the lesson"
+     },
+     {
+      "form_en": "a sun letter",
+      "ar": "النُّور",
+      "en": "the light"
+     },
+     {
+      "form_en": "a sun letter",
+      "ar": "الطَّالِب",
+      "en": "the student"
+     }
+    ],
+    "steps": [
+     "الْـ means \"the\". It's written the same way every time, but it sounds different depending on the letter after it.",
+     "Before a moon letter, you hear its ل: الْقَمَر, الْكِتَاب. The ل has a sukūn.",
+     "Before a sun letter, the ل isn't said. The next letter is doubled instead, which the shadda shows: الشَّمْس, الدَّرْس.",
+     "The sun letters are the ones said with the tip of the tongue: ت, ث, د, ذ, ر, ز, س, ش, ص, ض, ط, ظ, ل, ن. All the others are moon letters.",
+     "The spelling doesn't change: the ل stays on the page either way."
+    ],
+    "examples": [
+     {
+      "ar": "الشَّمْسُ فِي السَّمَاءِ.",
+      "en": "The sun is in the sky.",
+      "words": [
+       {
+        "ar": "الشَّمْسُ",
+        "en": "the sun (ش is a sun letter)"
+       },
+       {
+        "ar": "فِي",
+        "en": "(is) in"
+       },
+       {
+        "ar": "السَّمَاءِ",
+        "en": "the sky (س is a sun letter)"
+       }
+      ]
+     },
+     {
+      "ar": "الْقَمَرُ جَمِيلٌ اللَّيْلَةَ.",
+      "en": "The moon is beautiful tonight.",
+      "words": [
+       {
+        "ar": "الْقَمَرُ",
+        "en": "the moon (ق is a moon letter)"
+       },
+       {
+        "ar": "جَمِيلٌ",
+        "en": "(is) beautiful"
+       },
+       {
+        "ar": "اللَّيْلَةَ",
+        "en": "tonight (ل is itself a sun letter)"
+       }
+      ]
+     },
+     {
+      "ar": "الطَّالِبُ فِي الْمَكْتَبَةِ.",
+      "en": "The student is in the library.",
+      "words": [
+       {
+        "ar": "الطَّالِبُ",
+        "en": "the student (ط is a sun letter)"
+       },
+       {
+        "ar": "فِي",
+        "en": "(is) in"
+       },
+       {
+        "ar": "الْمَكْتَبَةِ",
+        "en": "the library (م is a moon letter)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why isn't الشَّمْس spelled the way it's said?",
+     "a_en": "The spelling keeps \"the\" the same in every word, so you can always see it. The shadda on the next letter tells you to skip the ل and double that letter instead."
+    },
+    "selftest": [
+     {
+      "q_en": "In الدَّرْس, is the ل of الْـ said?",
+      "choices": [
+       "No: د is a sun letter",
+       "Yes: د is a moon letter"
+      ],
+      "answer": "No: د is a sun letter",
+      "why_en": "د is said with the tip of the tongue, so it's a sun letter: the ل is silent and د is doubled."
+     },
+     {
+      "q_en": "Which word has a moon letter after الْـ?",
+      "choices": [
+       "الْبَاب",
+       "السَّيَّارَة",
+       "النُّور"
+      ],
+      "answer": "الْبَاب",
+      "why_en": "ب is a moon letter, so the ل is said. س and ن are sun letters."
+     },
+     {
+      "q_en": "What shows that the ل isn't said?",
+      "choices": [
+       "a shadda on the next letter",
+       "a sukūn on the ل",
+       "an extra alif"
+      ],
+      "answer": "a shadda on the next letter",
+      "why_en": "The shadda doubles the sun letter in place of the ل. A sukūn on the ل means it is said."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-adjective-agreement": [
+   {
+    "id": "explainer.arabic-describing-words",
+    "title_en": "Describing words: after the noun, and matching it",
+    "family_en": "An adjective copies its noun: masculine or feminine, الْـ or not",
+    "course_words": [
+     "lexeme.arabic-adjective-agreement-1",
+     "lexeme.arabic-adjective-agreement-4",
+     "lexeme.arabic-adjective-agreement-5"
+    ],
+    "table": [
+     {
+      "form_en": "a … (no الْـ on either)",
+      "ar": "كِتَابٌ جَدِيدٌ",
+      "en": "a new book"
+     },
+     {
+      "form_en": "the … (الْـ on both)",
+      "ar": "الْكِتَابُ الْجَدِيدُ",
+      "en": "the new book"
+     },
+     {
+      "form_en": "a sentence (الْـ on the noun only)",
+      "ar": "الْكِتَابُ جَدِيدٌ",
+      "en": "the book is new"
+     },
+     {
+      "form_en": "feminine",
+      "ar": "سَيَّارَةٌ جَدِيدَةٌ",
+      "en": "a new car"
+     },
+     {
+      "form_en": "feminine, with الْـ",
+      "ar": "السَّيَّارَةُ الْجَدِيدَةُ",
+      "en": "the new car"
+     },
+     {
+      "form_en": "feminine, a sentence",
+      "ar": "السَّيَّارَةُ جَدِيدَةٌ",
+      "en": "the car is new"
+     }
+    ],
+    "steps": [
+     "A describing word comes after its noun: كِتَابٌ جَدِيدٌ, a new book (literally \"book new\").",
+     "It copies the noun: feminine if the noun is feminine (سَيَّارَةٌ جَدِيدَةٌ), and with الْـ if the noun has الْـ (السَّيَّارَةُ الْجَدِيدَةُ).",
+     "If only the noun has الْـ, you've made a sentence: السَّيَّارَةُ جَدِيدَةٌ, the car is new.",
+     "You can do both at once: السَّيَّارَةُ الْجَدِيدَةُ سَرِيعَةٌ, the new car is fast.",
+     "It copies the ending too: in فِي بَيْتٍ قَدِيمٍ, in an old house, both words end in -in."
+    ],
+    "examples": [
+     {
+      "ar": "هَذِهِ قِصَّةٌ قَصِيرَةٌ.",
+      "en": "This is a short story.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "قِصَّةٌ",
+        "en": "(is) a story"
+       },
+       {
+        "ar": "قَصِيرَةٌ",
+        "en": "short (feminine, like قِصَّةٌ)"
+       }
+      ]
+     },
+     {
+      "ar": "الطَّالِبُ الْجَدِيدُ سَعِيدٌ.",
+      "en": "The new student is happy.",
+      "words": [
+       {
+        "ar": "الطَّالِبُ",
+        "en": "the student"
+       },
+       {
+        "ar": "الْجَدِيدُ",
+        "en": "the new one (with الْـ: part of the name)"
+       },
+       {
+        "ar": "سَعِيدٌ",
+        "en": "(is) happy (no الْـ: what you say about him)"
+       }
+      ]
+     },
+     {
+      "ar": "أَسْكُنُ فِي شَقَّةٍ صَغِيرَةٍ.",
+      "en": "I live in a small flat.",
+      "words": [
+       {
+        "ar": "أَسْكُنُ",
+        "en": "I live"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "شَقَّةٍ",
+        "en": "a flat (-in after فِي)"
+       },
+       {
+        "ar": "صَغِيرَةٍ",
+        "en": "small (-in too, and feminine)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does the describing word take الْـ too?",
+     "a_en": "In Arabic a describing word matches its noun in everything: masculine or feminine, الْـ or not, and the ending. الْكِتَابُ الْجَدِيدُ is literally \"the book the new\". Leaving الْـ off the second word turns it into a sentence: الْكِتَابُ جَدِيدٌ, the book is new."
+    },
+    "selftest": [
+     {
+      "q_en": "Which means \"a big room\"?",
+      "choices": [
+       "غُرْفَةٌ كَبِيرَةٌ",
+       "الْغُرْفَةُ كَبِيرَةٌ",
+       "الْغُرْفَةُ الْكَبِيرَةُ"
+      ],
+      "answer": "غُرْفَةٌ كَبِيرَةٌ",
+      "why_en": "No الْـ on either word: \"a big room\". الْغُرْفَةُ كَبِيرَةٌ is \"the room is big\", and الْغُرْفَةُ الْكَبِيرَةُ \"the big room\"."
+     },
+     {
+      "q_en": "\"The long story\": which is right?",
+      "choices": [
+       "الْقِصَّةُ الطَّوِيلَةُ",
+       "الْقِصَّةُ الطَّوِيلُ",
+       "قِصَّةٌ الطَّوِيلَةُ"
+      ],
+      "answer": "الْقِصَّةُ الطَّوِيلَةُ",
+      "why_en": "The describing word copies the noun: feminine, with ة, and with الْـ."
+     },
+     {
+      "q_en": "What does الْوَلَدُ سَعِيدٌ mean?",
+      "choices": [
+       "The boy is happy",
+       "the happy boy",
+       "a happy boy"
+      ],
+      "answer": "The boy is happy",
+      "why_en": "Only الْوَلَدُ has الْـ, so it's a sentence: the boy (is) happy."
+     }
+    ],
+    "phrases_ar": [
+     "فِي بَيْتٍ قَدِيمٍ",
+     "السَّيَّارَةُ الْجَدِيدَةُ سَرِيعَةٌ",
+     "الْغُرْفَةُ كَبِيرَةٌ",
+     "الْغُرْفَةُ الْكَبِيرَةُ",
+     "الْوَلَدُ سَعِيدٌ"
+    ]
+   }
+  ],
+  "lesson.arabic-plural-basics": [
+   {
+    "id": "explainer.arabic-plurals",
+    "title_en": "Plurals: added endings, reshaped words, and \"she\" for things",
+    "family_en": "Two kinds of plural, and how a plural of things is described",
+    "course_words": [
+     "lexeme.arabic-plural-basics-1",
+     "lexeme.arabic-plural-basics-2",
+     "lexeme.arabic-plural-basics-3",
+     "lexeme.arabic-plural-basics-4",
+     "lexeme.arabic-plural-basics-5",
+     "lexeme.arabic-plural-basics-6",
+     "lexeme.arabic-plural-basics-8"
+    ],
+    "table": [
+     {
+      "form_en": "men, or a mixed group: add ـُونَ",
+      "ar": "مُعَلِّمُونَ",
+      "en": "teachers"
+     },
+     {
+      "form_en": "after a preposition: ـِينَ",
+      "ar": "مَعَ الْمُعَلِّمِينَ",
+      "en": "with the teachers"
+     },
+     {
+      "form_en": "women: ة becomes ـَات",
+      "ar": "مُعَلِّمَات",
+      "en": "teachers (women)"
+     },
+     {
+      "form_en": "things: ـَات",
+      "ar": "سَيَّارَات",
+      "en": "cars"
+     },
+     {
+      "form_en": "reshaped (from كِتَاب)",
+      "ar": "كُتُب",
+      "en": "books"
+     },
+     {
+      "form_en": "reshaped (from بَيْت)",
+      "ar": "بُيُوت",
+      "en": "houses"
+     },
+     {
+      "form_en": "reshaped (from قَلَم)",
+      "ar": "أَقْلَام",
+      "en": "pens"
+     },
+     {
+      "form_en": "reshaped (from طَالِب)",
+      "ar": "طُلَّاب",
+      "en": "students"
+     }
+    ],
+    "steps": [
+     "Some plurals add an ending: ـُونَ for men or a mixed group (مُعَلِّمُونَ), and ـَات for women and for many things (مُعَلِّمَات, سَيَّارَات).",
+     "After a preposition, or as the object, ـُونَ becomes ـِينَ: مَعَ الْمُعَلِّمِينَ, with the teachers.",
+     "Many plurals reshape the word inside instead: كِتَاب, كُتُب; بَيْت, بُيُوت. You can't work these out, so learn each plural with its singular.",
+     "Things in the plural count as \"she\": هَذِهِ كُتُبٌ, these are books; الْبُيُوتُ قَدِيمَةٌ, the houses are old.",
+     "People in the plural take plural words: هُمْ طُلَّابٌ, they're students."
+    ],
+    "examples": [
+     {
+      "ar": "الْأَقْلَامُ عَلَى الْمَكْتَبِ.",
+      "en": "The pens are on the desk.",
+      "words": [
+       {
+        "ar": "الْأَقْلَامُ",
+        "en": "the pens (reshaped plural of قَلَم)"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(are) on"
+       },
+       {
+        "ar": "الْمَكْتَبِ",
+        "en": "the desk"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ سَيَّارَاتٌ جَدِيدَةٌ.",
+      "en": "These are new cars.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "these (\"this\": a plural of things)"
+       },
+       {
+        "ar": "سَيَّارَاتٌ",
+        "en": "(are) cars"
+       },
+       {
+        "ar": "جَدِيدَةٌ",
+        "en": "new (feminine singular, for a plural of things)"
+       }
+      ]
+     },
+     {
+      "ar": "الْمُعَلِّمُونَ فِي الْغُرْفَةِ.",
+      "en": "The teachers are in the room.",
+      "words": [
+       {
+        "ar": "الْمُعَلِّمُونَ",
+        "en": "the teachers (ـُونَ: men, or a mixed group)"
+       },
+       {
+        "ar": "فِي",
+        "en": "(are) in"
+       },
+       {
+        "ar": "الْغُرْفَةِ",
+        "en": "the room"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why do things in the plural take \"she\" words?",
+     "a_en": "That's how Arabic groups them: a plural of things is treated as one feminine whole. So you say هَذِهِ, not هَؤُلَاءِ, and جَدِيدَةٌ, not a plural describing word. هَؤُلَاءِ and plural describing words are for people."
+    },
+    "selftest": [
+     {
+      "q_en": "What's the plural of بَيْت?",
+      "choices": [
+       "بُيُوت",
+       "بَيْتُونَ",
+       "بَيْتَات"
+      ],
+      "answer": "بُيُوت",
+      "why_en": "بَيْت has a reshaped plural, بُيُوت, which you learn with it."
+     },
+     {
+      "q_en": "Which says \"the pens are new\"?",
+      "choices": [
+       "الْأَقْلَامُ جَدِيدَةٌ",
+       "الْأَقْلَامُ جَدِيدُونَ",
+       "الْأَقْلَامُ جَدِيدٌ"
+      ],
+      "answer": "الْأَقْلَامُ جَدِيدَةٌ",
+      "why_en": "Pens are things, so the plural takes the feminine singular: جَدِيدَةٌ. جَدِيدُونَ would be for people."
+     },
+     {
+      "q_en": "Several teachers, all women: which plural?",
+      "choices": [
+       "مُعَلِّمَات",
+       "مُعَلِّمُونَ",
+       "مُعَلِّمِينَ"
+      ],
+      "answer": "مُعَلِّمَات",
+      "why_en": "For women, ة becomes ـَات. مُعَلِّمُونَ and مُعَلِّمِينَ are for men, or a mixed group."
+     }
+    ],
+    "phrases_ar": [
+     "هَذِهِ كُتُبٌ",
+     "الْبُيُوتُ قَدِيمَةٌ",
+     "هُمْ طُلَّابٌ"
+    ]
+   }
+  ],
+  "lesson.arabic-demonstratives": [
+   {
+    "id": "explainer.arabic-this-that",
+    "title_en": "This and that: هَذَا, هَذِهِ, ذَلِكَ, تِلْكَ",
+    "family_en": "Pointing words, near and far",
+    "course_words": [
+     "lexeme.arabic-demonstratives-1",
+     "lexeme.arabic-demonstratives-2",
+     "lexeme.arabic-demonstratives-3",
+     "lexeme.arabic-demonstratives-4",
+     "lexeme.arabic-demonstratives-8"
+    ],
+    "table": [
+     {
+      "form_en": "this (masculine)",
+      "ar": "هَذَا",
+      "en": "this"
+     },
+     {
+      "form_en": "this (feminine, or things in the plural)",
+      "ar": "هَذِهِ",
+      "en": "this; these (things)"
+     },
+     {
+      "form_en": "these (people)",
+      "ar": "هَؤُلَاءِ",
+      "en": "these"
+     },
+     {
+      "form_en": "that (masculine)",
+      "ar": "ذَلِكَ",
+      "en": "that"
+     },
+     {
+      "form_en": "that (feminine, or things in the plural)",
+      "ar": "تِلْكَ",
+      "en": "that; those (things)"
+     },
+     {
+      "form_en": "those (people)",
+      "ar": "أُولَئِكَ",
+      "en": "those"
+     }
+    ],
+    "steps": [
+     "هَذَا and هَذِهِ point to something near: هَذَا for a masculine noun, هَذِهِ for a feminine one.",
+     "ذَلِكَ and تِلْكَ point to something further away, in the same way.",
+     "For people in the plural, use هَؤُلَاءِ (near) and أُولَئِكَ (far). Things in the plural take هَذِهِ and تِلْكَ, as they take \"she\" words.",
+     "هَذَا بَيْتٌ is a sentence: this is a house. With الْـ, هَذَا الْبَيْتُ is just \"this house\", and needs more to be a sentence: هَذَا الْبَيْتُ كَبِيرٌ.",
+     "هَذَا, هَذِهِ, ذَلِكَ and هَؤُلَاءِ are said with a long ā after the first letter, which isn't written as a letter of its own."
+    ],
+    "examples": [
+     {
+      "ar": "هَذَا الْمَطْعَمُ جَدِيدٌ.",
+      "en": "This restaurant is new.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "الْمَطْعَمُ",
+        "en": "restaurant (with الْـ: \"this restaurant\")"
+       },
+       {
+        "ar": "جَدِيدٌ",
+        "en": "(is) new"
+       }
+      ]
+     },
+     {
+      "ar": "تِلْكَ صُورَةٌ قَدِيمَةٌ.",
+      "en": "That's an old picture.",
+      "words": [
+       {
+        "ar": "تِلْكَ",
+        "en": "that (feminine, further away)"
+       },
+       {
+        "ar": "صُورَةٌ",
+        "en": "(is) a picture"
+       },
+       {
+        "ar": "قَدِيمَةٌ",
+        "en": "old"
+       }
+      ]
+     },
+     {
+      "ar": "هَؤُلَاءِ أَصْدِقَائِي.",
+      "en": "These are my friends.",
+      "words": [
+       {
+        "ar": "هَؤُلَاءِ",
+        "en": "these (people)"
+       },
+       {
+        "ar": "أَصْدِقَائِي",
+        "en": "(are) my friends"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is it هَذِهِ كُتُبٌ, not هَؤُلَاءِ, for \"these are books\"?",
+     "a_en": "هَؤُلَاءِ is only for people. Things in the plural are treated as \"she\", so they take هَذِهِ: هَذِهِ كُتُبٌ."
+    },
+    "selftest": [
+     {
+      "q_en": "You point at a car parked far away. Which word do you use?",
+      "choices": [
+       "تِلْكَ",
+       "ذَلِكَ",
+       "هَذِهِ"
+      ],
+      "answer": "تِلْكَ",
+      "why_en": "سَيَّارَة is feminine and it's far away, so تِلْكَ. ذَلِكَ is for a masculine noun, and هَذِهِ for something near."
+     },
+     {
+      "q_en": "Which means \"this is a picture\"?",
+      "choices": [
+       "هَذِهِ صُورَةٌ",
+       "هَذِهِ الصُّورَةُ",
+       "هَذَا صُورَةٌ"
+      ],
+      "answer": "هَذِهِ صُورَةٌ",
+      "why_en": "With no الْـ on صُورَةٌ it's a sentence, and صُورَة is feminine, so هَذِهِ. هَذِهِ الصُّورَةُ is just \"this picture\"."
+     },
+     {
+      "q_en": "Which word points to people near you?",
+      "choices": [
+       "هَؤُلَاءِ",
+       "أُولَئِكَ",
+       "هَذِهِ"
+      ],
+      "answer": "هَؤُلَاءِ",
+      "why_en": "هَؤُلَاءِ is for people near you, and أُولَئِكَ for people further away. هَذِهِ is for things in the plural."
+     }
+    ],
+    "phrases_ar": [
+     "هَذَا بَيْتٌ",
+     "هَذَا الْبَيْتُ",
+     "هَذَا الْبَيْتُ كَبِيرٌ",
+     "هَذِهِ كُتُبٌ",
+     "هَذِهِ الصُّورَةُ"
+    ]
+   }
+  ],
+  "lesson.arabic-idafa-possession": [
+   {
+    "id": "explainer.arabic-whose",
+    "title_en": "Whose is it? كِتَابُ الطَّالِبِ and كِتَابِي",
+    "family_en": "Two ways to show who something belongs to: joining two nouns, or an ending",
+    "course_words": [
+     "lexeme.arabic-idafa-possession-1",
+     "lexeme.arabic-idafa-possession-2",
+     "lexeme.arabic-idafa-possession-3",
+     "lexeme.arabic-idafa-possession-4",
+     "lexeme.arabic-idafa-possession-5"
+    ],
+    "table": [
+     {
+      "form_en": "my",
+      "ar": "كِتَابِي",
+      "en": "my book"
+     },
+     {
+      "form_en": "your (to a man)",
+      "ar": "كِتَابُكَ",
+      "en": "your book"
+     },
+     {
+      "form_en": "your (to a woman)",
+      "ar": "كِتَابُكِ",
+      "en": "your book"
+     },
+     {
+      "form_en": "his",
+      "ar": "كِتَابُهُ",
+      "en": "his book"
+     },
+     {
+      "form_en": "her",
+      "ar": "كِتَابُهَا",
+      "en": "her book"
+     },
+     {
+      "form_en": "our",
+      "ar": "كِتَابُنَا",
+      "en": "our book"
+     },
+     {
+      "form_en": "the student's (two nouns joined)",
+      "ar": "كِتَابُ الطَّالِبِ",
+      "en": "the student's book"
+     },
+     {
+      "form_en": "with ة",
+      "ar": "سَيَّارَةُ الْمُعَلِّمِ",
+      "en": "the teacher's car"
+     }
+    ],
+    "steps": [
+     "To say whose something is, put the owner after the thing: كِتَابُ الطَّالِبِ is \"the book of the student\", the student's book.",
+     "The first word has no الْـ and no -un ending; the second ends in -i.",
+     "For \"my\", \"your\", \"his\" and so on, add an ending to the noun instead: كِتَابِي, my book; كِتَابُكَ, your book.",
+     "A word ending in ة writes it as ت when something follows, and says it as t: سَيَّارَتِي, my car; سَيَّارَةُ الْمُعَلِّمِ, the teacher's car.",
+     "The pair counts as \"the\" when the second word has الْـ: بَيْتُ الْمُعَلِّمِ already means \"the teacher's house\"."
+    ],
+    "examples": [
+     {
+      "ar": "اِبْنُ جَارِي طَبِيبٌ.",
+      "en": "My neighbour's son is a doctor.",
+      "words": [
+       {
+        "ar": "اِبْنُ",
+        "en": "the son (of)"
+       },
+       {
+        "ar": "جَارِي",
+        "en": "my neighbour"
+       },
+       {
+        "ar": "طَبِيبٌ",
+        "en": "(is) a doctor"
+       }
+      ]
+     },
+     {
+      "ar": "أَيْنَ مِفْتَاحُ السَّيَّارَةِ؟",
+      "en": "Where's the car key?",
+      "words": [
+       {
+        "ar": "أَيْنَ",
+        "en": "where (is)"
+       },
+       {
+        "ar": "مِفْتَاحُ",
+        "en": "the key (of): no الْـ, no -un"
+       },
+       {
+        "ar": "السَّيَّارَةِ",
+        "en": "the car (-i: the second word)"
+       }
+      ]
+     },
+     {
+      "ar": "بَيْتُنَا قَرِيبٌ مِنَ الْبَحْرِ.",
+      "en": "Our house is near the sea.",
+      "words": [
+       {
+        "ar": "بَيْتُنَا",
+        "en": "our house (-nā: our)"
+       },
+       {
+        "ar": "قَرِيبٌ",
+        "en": "(is) near"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "to (literally \"from\")"
+       },
+       {
+        "ar": "الْبَحْرِ",
+        "en": "the sea"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why doesn't the first word take الْـ?",
+     "a_en": "The second word already makes the pair definite: كِتَابُ الطَّالِبِ is \"the book of the student\", so \"the\" is there without الْـ on the first word. The pair works as one unit."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you say \"her house\"?",
+      "choices": [
+       "بَيْتُهَا",
+       "بَيْتُهُ",
+       "بَيْتِي"
+      ],
+      "answer": "بَيْتُهَا",
+      "why_en": "-hā is \"her\". -hu is \"his\", and -ī is \"my\"."
+     },
+     {
+      "q_en": "\"The school's door\": which is right?",
+      "choices": [
+       "بَابُ الْمَدْرَسَةِ",
+       "الْبَابُ الْمَدْرَسَةِ",
+       "بَابٌ الْمَدْرَسَةُ"
+      ],
+      "answer": "بَابُ الْمَدْرَسَةِ",
+      "why_en": "The first word has no الْـ and no -un, and the second ends in -i."
+     },
+     {
+      "q_en": "In سَيَّارَتِي, why is ة written ت?",
+      "choices": [
+       "Because something is added after it",
+       "Because the word is plural",
+       "Because it's a different word"
+      ],
+      "answer": "Because something is added after it",
+      "why_en": "When an ending follows, ة is written ت and said t: سَيَّارَة, سَيَّارَتِي."
+     }
+    ],
+    "phrases_ar": [
+     "بَيْتُ الْمُعَلِّمِ"
     ]
    }
   ]
