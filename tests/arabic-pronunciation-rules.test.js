@@ -304,6 +304,10 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   brokenAudio('unknown', c => { c.clips[firstText].check = 'maybe'; }, 'unknown check', 'a check that is not one of the known ones');
   brokenAudio('voice', c => { c.clips[firstText].voice = 'ar-XA-Other'; }, "made with a voice the audit doesn't list", 'a clip made with a voice the audit does not list');
   brokenAudio('no-voice', c => { delete c.clips[firstText].voice; }, "made with a voice the audit doesn't list (none recorded)", 'a clip with no voice recorded');
+  // A clip made again slower records its speaking rate (round nineteen); a rate is only ever slower.
+  check('a clip the owner heard too fast records the slower rate it was made again at', Object.values(audit.clips).some(c => c.rate === 0.9 && c.check === 'checked'));
+  brokenAudio('rate-faster', c => { c.clips[firstText].rate = 1.2; }, "a clip's speaking rate is only ever slower", 'a clip made faster than the usual speed');
+  brokenAudio('rate-word', c => { c.clips[firstText].rate = 'slow'; }, "a clip's speaking rate is only ever slower", 'a speaking rate that is not a number');
   brokenAudio('nameless-voice', c => { c.earlier_voices = [{ service: 'x' }]; }, 'every voice the audit lists needs its name', 'an earlier voice without a name');
   const firstPiece = Object.keys(realPieces).find(t => audit.clips[t]?.check === 'checked');
   brokenAudio('piece-unrecorded', c => { delete c.clips[firstPiece].spoken; }, 'must record the script it was made from', 'a scripted piece\'s clip that doesn\'t record what it was made from');
