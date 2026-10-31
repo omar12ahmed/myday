@@ -1,5 +1,17 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.99.0 — Ask MyDay says what it left out, and when it looked:** when Ask MyDay looks something up, the line above
+its answer now says what didn't go, not only the private things: how many there were when more than its limit
+went ("23 tasks planned (the first 20 sent)", "11 decisions (the oldest 8 sent)", a project's "25 tasks (4
+done; 20 sent, open ones first)"), a project's notes that went by title only (AI help with notes is off, or there was
+too much text), and the courses when they couldn't be searched just now. It ends with when it looked ("Checked at
+10:42."): an answer to a follow-up, or a second try, uses what was read the first time. These counts stay on the
+device; nothing more is sent. The side menu no longer marks Today on Search, Your account, Your backups, Your week or
+Delete everything, and What MyDay has noticed and What MyDay knows mark their own link. Also in this release: the
+vision's status table brought up to date (`../specs/myday-vision.md` §8), and a study of a live Arabic tutor that
+would bring in new Arabic (`../ai-eval/reviews/2026-10-30-arabic-tutor-quality.md`: not yet). No saved-data, sync or
+server change; going back to 1.98.0 is safe.
+
 **1.98.0 — Arabic explainers: How it works, step by step:** module 14's lessons on weak, irregular and derived verbs
 now have **How it works** in their Understand step: ten closed cards, one per verb family (say, be, live, invite,
 walk; stand, reply, take, ask; and عَلِمَ, عَلَّمَ, تَعَلَّمَ). Each starts from the root with the family as a table
@@ -95,7 +107,7 @@ everywhere's matching — your tasks (titles, notes and steps), projects (names,
 note titles (their text only with AI help with notes on), the calendar, and your study (your courses and their tasks,
 topics, books, and the Arabic and Cybersecurity lessons and course words) — and answers from up to 12 things it found,
 each sent as its name, what it is and where it is, never what it says. The answer names them and links each one (the
-links stay on the device); it says what it looked for, and how many private things were left out, above the answer. It
+links stay on the device); it says what it looked for, what didn't go and when it looked, above the answer. It
 stands in for "Search your notes", and a day, a named project, your open decisions, what you're waiting on and what to
 study next keep their own looks. It matches only on what may be sent, so a match never hints at anything held back:
 never anything private, Finance, Health, who a task waits on, research, case records, a project's links, outcome or
