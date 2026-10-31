@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–22 (B2): draft, waiting for the independent cross-check and the owner",
+ "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–22 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied), waiting for the owner",
  "version": "1.6",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -7294,7 +7294,7 @@
     {
      "id": "lexeme.arabic-news-digest-7",
      "form_ar": "مُوجَز",
-     "meaning_en": "summary, brief",
+     "meaning_en": "brief, digest (news)",
      "part_of_speech": "noun",
      "root_ar": "و-ج-ز",
      "root_reading": "w-j-z",
@@ -7431,7 +7431,7 @@
      "root_reading": "gh-l-b",
      "example_ar": "غَالِبًا مَا أَدْرُسُ فِي الصَّبَاحِ.",
      "example_meaning_en": "I usually study in the morning.",
-     "note": "غَالِبًا مَا with a verb means “often”."
+     "note": "غَالِبًا مَا with a habit means “usually, mostly”. Before a prediction it means “most likely”, close to عَلَى الْأَرْجَحِ."
     },
     {
      "id": "lexeme.arabic-stance-hedging-5",
@@ -7540,12 +7540,12 @@
     {
      "id": "lexeme.arabic-implicit-meaning-7",
      "form_ar": "ظَاهِر",
-     "meaning_en": "apparent, literal",
+     "meaning_en": "apparent, surface",
      "part_of_speech": "adjective",
      "root_ar": "ظ-ه-ر",
      "root_reading": "ẓ-h-r",
      "example_ar": "الْمَعْنَى الظَّاهِرُ بَسِيطٌ.",
-     "example_meaning_en": "The literal meaning is simple.",
+     "example_meaning_en": "The surface meaning is simple.",
      "note": "ظَاهِرُ النَّصِّ, “the surface meaning of the text”."
     }
    ]
@@ -7595,7 +7595,7 @@
      "root_reading": "ṣ-ḥ-ḥ",
      "example_ar": "صَحِيحٌ أَنَّ الطَّرِيقَ طَوِيلٌ، لَكِنَّهُ آمِنٌ.",
      "example_meaning_en": "It's true that the road is long, but it's safe.",
-     "note": "Usually followed by لَكِنَّ, “but”."
+     "note": "Builds on صَحِيح, “true”. Usually followed by لَكِنَّ, “but”."
     },
     {
      "id": "lexeme.arabic-counterargument-5",
@@ -7671,7 +7671,7 @@
     {
      "id": "lexeme.arabic-supported-debate-4",
      "form_ar": "خُلَاصَة",
-     "meaning_en": "summary, upshot",
+     "meaning_en": "upshot, bottom line",
      "part_of_speech": "noun",
      "root_ar": "خ-ل-ص",
      "root_reading": "kh-l-ṣ",
@@ -7683,7 +7683,7 @@
      "id": "lexeme.arabic-supported-debate-5",
      "form_ar": "أَتَفَهَّمُ",
      "meaning_en": "I understand (your point)",
-     "part_of_speech": "verb",
+     "part_of_speech": "chunk",
      "root_ar": "ف-ه-م",
      "root_reading": "f-h-m",
      "example_ar": "أَتَفَهَّمُ قَلَقَكَ.",
@@ -7768,7 +7768,7 @@
      "part_of_speech": "adjective",
      "root_ar": "ع-ق-ل",
      "root_reading": "ʿ-q-l",
-     "example_ar": "الطُّلَّابُ جَمْعُ عَاقِلٍ.",
+     "example_ar": "الطُّلَّابُ جَمْعٌ لِلْعَاقِلِ.",
      "example_meaning_en": "Ṭullāb is a human plural.",
      "note": "A thing or an animal is غَيْرُ عَاقِلٍ."
     },
@@ -7785,14 +7785,14 @@
     },
     {
      "id": "lexeme.arabic-word-order-agreement-7",
-     "form_ar": "فِعْلٌ مَاضٍ",
-     "meaning_en": "past verb",
-     "part_of_speech": "chunk",
-     "root_ar": "م-ض-ي",
-     "root_reading": "m-ḍ-y",
-     "example_ar": "كَتَبَ فِعْلٌ مَاضٍ.",
-     "example_meaning_en": "Kataba is a past verb.",
-     "note": "A present verb is فِعْلٌ مُضَارِعٌ."
+     "form_ar": "مُبْتَدَأ",
+     "meaning_en": "subject of a nominal sentence (topic)",
+     "part_of_speech": "noun",
+     "root_ar": "ب-د-أ",
+     "root_reading": "b-d-ʾ",
+     "example_ar": "فِي جُمْلَةِ الْمُعَلِّمَةُ وَصَلَتْ، الْمُعَلِّمَةُ مُبْتَدَأٌ.",
+     "example_meaning_en": "In al-muʿallimatu waṣalat, al-muʿallima is the mubtadaʾ.",
+     "note": "Its partner is خَبَر, the predicate. A subject placed before its verb is a مُبْتَدَأ, not a فَاعِل."
     }
    ]
   },
@@ -7856,6 +7856,17 @@
     },
     {
      "id": "lexeme.arabic-hal-tamyiz-6",
+     "form_ar": "غَاضِب",
+     "meaning_en": "angry",
+     "part_of_speech": "adjective",
+     "root_ar": "غ-ض-ب",
+     "root_reading": "gh-ḍ-b",
+     "example_ar": "خَرَجَ الْمُدِيرُ غَاضِبًا.",
+     "example_meaning_en": "The manager left angry.",
+     "note": "From غَضِبَ, “to be angry”. Here غَاضِبًا is a ḥāl."
+    },
+    {
+     "id": "lexeme.arabic-hal-tamyiz-7",
      "form_ar": "اِزْدَادَ",
      "meaning_en": "increased, grew",
      "part_of_speech": "verb",
@@ -8074,8 +8085,8 @@
      "part_of_speech": "adverb",
      "root_ar": "س-ه-و",
      "root_reading": "s-h-w",
-     "example_ar": "نَسِيتُ الْهَمْزَةَ سَهْوًا.",
-     "example_meaning_en": "I left out the hamza by mistake.",
+     "example_ar": "أَسْقَطْتُ الْهَمْزَةَ سَهْوًا.",
+     "example_meaning_en": "I dropped the hamza by mistake.",
      "note": "The noun سَهْو means “an oversight, a slip”."
     },
     {
@@ -8098,7 +8109,7 @@
      "root_reading": "ṣ-w-gh",
      "example_ar": "اِخْتَرْتُ صِيغَةَ الْجَمْعِ.",
      "example_meaning_en": "I chose the plural form.",
-     "note": "Plural صِيَغ."
+     "note": "Plural صِيَغ. The same root as صِيَاغَة, “wording”."
     },
     {
      "id": "lexeme.arabic-precision-edit-7",
