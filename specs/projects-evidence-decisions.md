@@ -16,7 +16,7 @@ kept. A milestone ("Shed base laid") has no idea which tasks lead to it.
 ## 2. The owner's decisions (31 October 2026)
 
 1. **From the finding:** a finding's "What it bears on" also lists your open decisions' options (supports / goes
-   against / relates to); each option shows "2 findings for · 1 against", opening them.
+   against / relates to); each option shows its evidence ("3 findings: 2 for · 1 against"), opening them.
 2. **Experiments can test a decision's options** ("Try both suppliers for a week"); a result saved as a finding lands on
    those options.
 3. **Choosing shows and keeps the evidence:** the choose form shows each option's evidence beside the reasons box, and
@@ -30,8 +30,9 @@ kept. A milestone ("Shed base laid") has no idea which tasks lead to it.
 - **Research → Add or edit a finding:** "What it bears on" lists questions, things that must be true, and now each open
   decision's options ("Option: Larch — Larch or pine?"), each as Supports / Contradicts / Relates to. A finding about an
   option says so ("Supports “Larch” (Larch or pine?)").
-- **Decisions tab:** each option shows its evidence when it has any — "2 findings for · 1 against" — which opens
-  Research. While choosing: "What the evidence says: Larch 2 for · 1 against; Pine 1 for" above "Why this one?". Once
+- **Decisions tab:** each option shows its evidence when it has any — "3 findings: 2 for · 1 against" — which opens
+  Research. While choosing: "What the evidence says" — "Larch — 2 for · 1 against", "Pine — nothing yet" — above "Why
+  this one?" (only with Research on; with it off, no evidence is shown or kept). Once
   decided: "Decided Tue 3 Nov: Larch — with 2 findings for, 1 against", and Previous choices remember theirs.
 - **Experiments:** "What it tests" also lists open decisions' options.
 - **Milestones tab:** each milestone with tasks toward it: "3 of 5 tasks done" (opens the list); once reached, "What got

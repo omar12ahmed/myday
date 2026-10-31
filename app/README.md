@@ -1340,6 +1340,17 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
+**Decisions backed by evidence; tasks toward milestones (unreleased; `specs/projects-evidence-decisions.md`):** with
+Research on, a finding can bear on an open decision's option (Supports / Contradicts / Relates to, in "What it bears
+on"), and an experiment can test options ("Try both suppliers for a week") — its result saved as a finding lands on
+them. Each option shows its evidence ("3 findings: 2 for · 1 against", opening Research); choosing shows "What the
+evidence says" beside "Why this one?", and the decision keeps the chosen option's counts with the choice ("Decided …:
+Larch — with 2 findings for, 1 against") and in Previous choices. Never a score or a pick. A project's task can be
+**toward a milestone** (its page: "Toward a milestone"); the milestone shows "3 of 5 tasks done" and, once reached, what
+got you there. Saved data: a finding's `about` and an experiment's `tests` gain the kind `option`, a decision
+`chosenEvidence` (and a previous choice `evidence`), a task `milestoneId` — optional fields in their existing records
+(no schema, migration or database change; earlier releases keep them unread). Never sent to AI.
+
 **Welcome back after a break (1.101.0; `specs/projects-welcome-back.md`):** opening a project after 7 days or
 more with no work on it (not a finished one), its Overview starts with **Welcome back**: how long you've been away and
 the day you last worked on it; what you did last (each with its day); what came up while you were away — what's today
