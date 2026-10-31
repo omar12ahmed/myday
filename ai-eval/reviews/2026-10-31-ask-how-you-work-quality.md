@@ -49,7 +49,7 @@ new miss. Two pre-existing ones remain: a milestone date, and an answer from Tod
 
 ## Cost
 
-About US$0.0006 a reply, with 5 s typical and 15 s at the slowest. These runs cost about US$0.09 in all.
+About US$0.0006 a reply, with 5 s typical and 15 s at the slowest. These runs cost about US$0.11 in all.
 
 ## Conclusion
 
