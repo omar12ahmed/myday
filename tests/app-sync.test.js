@@ -586,10 +586,11 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await goSync(mac);
   // Ask MyDay's last Undo holds copies of what it added or changed (ai/lastAsk.ts): it leaves the device with the data.
   await mac.ev(`localStorage.setItem('myday.ask.lastUndo', JSON.stringify({ kind: 'added', id: 'x1', words: 'a task', on: '2026-01-01', at: '10:00', undo: { tasks: ['tkAskGone'], notes: [], appointments: [], projects: [], after: { 'task:tkAskGone': '{"title":"A plan of mine"}' } } }))`);
+  await mac.ev(`localStorage.setItem('myday.ask.conversation', JSON.stringify({ id: 'c1', on: '2026-01-01', at: '10:00', turns: [{ asked: 'What about my plan?', answered: 'A plan of mine' }], held: [] }))`);
   await mac.click('#syncScreen [data-action=sync-signout]');
   await mac.until(`document.querySelector('dialog[open]')`); await mac.answer(true);
   await mac.until(`document.getElementById('signInGate')`, 15000);
-  check('signing out also forgets Ask MyDay\'s last Undo on this device (it holds copies of what it added)', (await mac.ev(`localStorage.getItem('myday.ask.lastUndo')`)) === null);
+  check('signing out also forgets Ask MyDay\'s last Undo and today\'s conversation on this device (they hold copies of what it added and said)', (await mac.ev(`localStorage.getItem('myday.ask.lastUndo')`)) === null && (await mac.ev(`localStorage.getItem('myday.ask.conversation')`)) === null);
   await signIn(mac, A);
   check('signing back in as you brings your MyDay back from your account', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return d.days['${Y}'] && d.lists.learning[0].title === 'Mac: Networking basics' && d.lists.admin.find(i => i.id === 'a3').title === 'Clean room (offline)'; })()`, 15000));
   check('…your Study, notes and Finance too', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return d.study.topics?.[0]?.title === 'Arabic' && d.notes.items.some(n => n.id === 'ntPhone') && d.finance.expenses.some(e => e.name === 'Rent'); })()`, 15000));

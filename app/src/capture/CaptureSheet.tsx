@@ -11,7 +11,8 @@ import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
 import { addAppointment, addCapturedTask, appointmentEnd, saveNote, startProject } from './save';
-import { AskPanel } from './AskPanel';
+import { AskPanel, type AskPanelHandle } from './AskPanel';
+import { KeptConversationLine } from './KeptConversationLine';
 import { LastAskLine } from './LastAskLine';
 import { CAPTURE_EVENT, type AskFocus } from './openCapture';
 import { AI_MODE } from '../ai/request';
@@ -47,6 +48,8 @@ const openProject = (id: string) => { location.hash = `projects/p/${id}`; };
 export function CaptureSheet({ data, initialText = '', focus, onClose }: { data: MyDayData; initialText?: string; focus?: AskFocus; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [text, setText] = useState(initialText);
+  const askPanel = useRef<AskPanelHandle>(null);       // to carry on today's kept conversation from the line above
+  const [asking, setAsking] = useState(false);          // Ask is in use here, so the line stops offering it
   const [libs, setLibs] = useState<CaptureLibs | null>(null);
   const [cat, setCat] = useState<Category | null>(null); // a list you chose for the task (otherwise the guess)
   const [now] = useState(() => new Date());               // "tomorrow" means from when Capture opened
@@ -87,6 +90,7 @@ export function CaptureSheet({ data, initialText = '', focus, onClose }: { data:
       <form className="p-5" onSubmit={e => { e.preventDefault(); if (text.trim()) ordered[0].run(); }}>
         <h2 id="capture-h" className="flex items-center gap-2"><Plus size={20} aria-hidden="true" className="text-primary" /> Capture</h2>
         {AI_MODE !== 'off' && <LastAskLine data={data} />}
+        {AI_MODE !== 'off' && <KeptConversationLine data={data} hidden={asking} onCarryOn={() => askPanel.current?.carryOn() ?? false} />}
         <Field label="Anything on your mind — a task, a time, an idea or a thought" htmlFor="captureText">
           <TextArea id="captureText" rows={3} autoFocus value={text} maxLength={2000} onChange={e => setText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (text.trim()) ordered[0].run(); } }}
@@ -117,7 +121,7 @@ export function CaptureSheet({ data, initialText = '', focus, onClose }: { data:
         </div>
         <Note className="mt-3 mb-0 text-sm">{AI_MODE === 'off' ? 'Everything is worked out on this device — nothing you type is sent anywhere.' : 'These suggestions are worked out on this device — nothing you type is sent unless you tap Ask MyDay.'}</Note>
       </form>
-      <div className="px-5 pb-5 -mt-1"><AskPanel data={data} text={text} focus={focus} onClose={close} /></div>
+      <div className="px-5 pb-5 -mt-1"><AskPanel ref={askPanel} data={data} text={text} focus={focus} onClose={close} onActive={() => setAsking(true)} /></div>
     </dialog>
   );
 }

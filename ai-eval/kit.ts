@@ -46,6 +46,7 @@ export { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup, sea
 export { courseIndex } from '../app/src/search/courseIndex';
 export { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, takeBackAsk, undoAsk, undoAskChanges } from '../app/src/ai/ask';
 export { forgetAsk, lastAsk, onLastAsk, rememberAsk, undoNow } from '../app/src/ai/lastAsk';
+export { forgetConversation, keepConversation, keptConversation, onKeptConversation } from '../app/src/ai/keptConversation';
 
 // ---------- Memory-only storage ----------
 export function useMemoryStorage() {

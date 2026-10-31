@@ -529,7 +529,29 @@ const SEED = `s => {
     await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => !['Call the bank', 'Renew passport', 'Email Sam'].includes(t.title)); }`);
     await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
-    check('…and so does closing the panel: opened again, there\'s no conversation', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'idle' && !(await mock.exists('[data-s=ask-thread]')));
+    check('…and so does closing the panel: opened again, the panel starts afresh', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'idle' && !(await mock.exists('[data-s=ask-thread]')));
+    // Today's conversation, kept on this device (specs/ask-keep-conversation.md).
+    const phaseNow = () => mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`);
+    check('…but + offers to carry it on today, at the top: "Your Ask MyDay conversation from 10:00 (2 messages)"', /^Your Ask MyDay conversation from \d\d:\d\d \(2 messages\)\.$/.test((await mock.text('[data-s=ask-kept] span')).trim()), await mock.text('[data-s=ask-kept]'));
+    await mock.click('[data-action=ask-carry-on]'); await sleep(250);
+    check('Carry on brings back the thread as it was kept, with the reply box ready (focused) and no suggestions to tick; the line goes', (await phaseNow()) === 'resumed' && (await thread()).length === 2 && !(await mock.exists('[data-s=ask-now]')) && !(await mock.exists('[data-action=ask-add]'))
+      && (await mock.ev(`document.activeElement?.dataset?.s || ''`)) === 'ask-more' && !(await mock.exists('[data-s=ask-kept]')), [await thread(), await phaseNow()]);
+    await mock.type('[data-s=ask-more]', 'and after that?'); await mock.click('[data-action=ask-again]');
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('after that')`, 10000);
+    check('…and a reply carries on from it, answered with the conversation above', (await thread()).length === 2 && (await mock.text('[data-s=ask-now]')) === 'You: and after that?' && await mock.exists('[data-s=ask-message]'), await thread());
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'calendar', 'call the bank, renew passport and email Sam');
+    check('…kept again after that answer, and offered on another page too (3 messages)', /\(3 messages\)/.test(await mock.text('[data-s=ask-kept]')), await mock.text('[data-s=ask-kept]'));
+    await askGo(mock);
+    check('a new question hides the line and, answered, replaces the kept one', !(await mock.exists('[data-s=ask-kept]')) && (await phaseNow()) === 'shown');
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    check('…(now one message)', /\(one message\)/.test(await mock.text('[data-s=ask-kept]')), await mock.text('[data-s=ask-kept]'));
+    await mock.click('[data-action=ask-carry-on]'); await sleep(250);
+    await mock.click('[data-action=ask-dismiss]'); await sleep(150);
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    check('Start over forgets it: opened again, nothing to carry on', !(await mock.exists('[data-s=ask-kept]')) && (await mock.ev(`localStorage.getItem('myday.ask.conversation')`)) === null);
     await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'today', 'delete all my tasks');
     await askGo(mock);

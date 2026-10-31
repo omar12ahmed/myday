@@ -986,6 +986,46 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…nor when nothing of it is left to take back (all removed, or another account\'s)', K.lastAsk(K.getSnapshot().data, D) === null);
     localStorage.setItem('myday.ask.lastUndo', '{"kind":"added","words":"x"}');
     check('…and something not shaped like one is forgotten, never offered', K.lastAsk(K.getSnapshot().data, D) === null && localStorage.getItem('myday.ask.lastUndo') === null);
+    // Today's conversation, kept on this device so + can offer to carry it on (specs/ask-keep-conversation.md).
+    {
+      const KC = 'myday.ask.conversation', data = () => K.getSnapshot().data;
+      const TURNS = [{ asked: 'What should I do first today?', answered: '“Pay council tax” is due today: start there.' }, { asked: 'and then?', answered: '(Not added.)\nHere is one more.\n- Task: Ring the bank' }];
+      const DL = { tool: 'day', query: D, weekday: 'Thursday', planned: false, rest: false, energy: null, tasks: [], minutesLeft: 0, freeMinutes: 60, due: [], busy: [], free: [{ start: '09:00', end: '10:00' }] };
+      let told = 0; const stop = K.onKeptConversation(() => told++);
+      K.keepConversation(data(), { id: 'cv1', at: '10:42', turns: TURNS, looked: { lookup: DL, leftOut: 0, at: `${D}T10:41:00.000Z` } });
+      let kc = K.keptConversation(data(), D);
+      check('kept: the exchanges as shown, when it began, the lookup behind the last answer, today', !!kc && kc.id === 'cv1' && kc.at === '10:42' && kc.on === D && eq(kc.turns, TURNS) && kc.looked.lookup.query === D && told === 1, kc);
+      check('…on this device only (not in your data, which is what syncs and exports)', !JSON.stringify(data()).includes('What should I do first today?') && localStorage.getItem(KC).includes('What should I do first today?'));
+      check('…not tomorrow (and then it\'s forgotten)', K.keptConversation(data(), '2099-01-01') === null && localStorage.getItem(KC) === null);
+      K.keepConversation(data(), { id: 'cv2', at: '11:00', turns: TURNS });
+      check('…a new one replaces it (one per device)', K.keptConversation(data(), D)?.id === 'cv2');
+      const damaged = [
+        ['not JSON', '{nope'], ['no exchanges', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: [], held: [] })],
+        ['an empty message', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: [{ asked: ' ', answered: 'y' }], held: [] })],
+        ['a message too long', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: [{ asked: 'q'.repeat(601), answered: 'y' }], held: [] })],
+        ['a lookup the server wouldn\'t take', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS, held: [], looked: { lookup: { tool: 'day', query: 'soon' }, leftOut: 0 } })],
+        ['a link that isn\'t the app\'s own', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS, held: [], looked: { lookup: DL, leftOut: 0, hrefs: { r1: 'https://example.com' } } })],
+        ['a bad time', JSON.stringify({ id: 'x', on: D, at: '25:00', turns: TURNS, held: [] })],
+        ['no list of what was private', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS })],
+      ];
+      for (const [why, v] of damaged) { localStorage.setItem(KC, v); check(`…a damaged copy is forgotten, never offered: ${why}`, K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null); }
+      // Made private since: forgotten, as an answer may name it.
+      K.updateSaved(d => { d.projects.items.push({ id: 'pjKC', title: 'Shed plans', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: `${D}T08:00`, updatedAt: `${D}T08:00` }); });
+      K.keepConversation(data(), { id: 'cv3', at: '12:00', turns: TURNS });
+      check('…something made private elsewhere that was never private stays offered', !!K.keptConversation(data(), D));
+      K.updateSaved(d => { d.projects.items.find(p => p.id === 'pjKC').private = true; });
+      check('made private since it was kept: forgotten, never offered (an answer may name it)', K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null);
+      K.keepConversation(data(), { id: 'cv4', at: '12:05', turns: TURNS });
+      check('…but private already when it was kept: still offered', K.keptConversation(data(), D)?.id === 'cv4');
+      const notesWere = data().patterns.prefs.aiNotes;
+      K.updateSaved(d => { d.patterns.prefs.aiNotes = true; }); K.keepConversation(data(), { id: 'cv5', at: '12:10', turns: TURNS });
+      K.updateSaved(d => { d.patterns.prefs.aiNotes = false; });
+      check('…and AI help with notes switched off since: forgotten too', K.keptConversation(data(), D) === null);
+      K.updateSaved(d => { d.patterns.prefs.aiNotes = notesWere; d.projects.items = d.projects.items.filter(p => p.id !== 'pjKC'); });
+      K.keepConversation(data(), { id: 'cv6', at: '12:15', turns: TURNS }); K.forgetConversation();
+      check('forgotten on request (Start over, Dismiss, Undo)', K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null);
+      stop();
+    }
     ul = addAll(); K.rememberAsk({ kind: 'added', undo: ul, words: 'a task, a note, an appointment and a project' });
     K.updateSaved(d => { const t = d.tasks.items.find(x => x.title === 'Email the roaster'); t.done = true; t.doneOn = D; });
     const un = K.undoNow(K.lastAsk(K.getSnapshot().data, D));

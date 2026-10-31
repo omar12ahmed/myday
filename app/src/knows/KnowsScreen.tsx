@@ -106,7 +106,7 @@ export function KnowsScreen({ data }: { data: MyDayData }) {
 
       <Card aria-labelledby="knows-memory-h" id="knowsMemory">
         <h3 id="knows-memory-h">The AI remembers nothing</h3>
-        <p className="text-[15px] m-0">The AI has no memory of you: each request stands on its own, sent by MyDay’s server without your name or account details. MyDay keeps your history itself, on your devices and in your account. In Ask MyDay you can keep replying while its panel is open, until the day’s requests run out: each reply sends the conversation so far with it (your messages and its answers as they were shown, the oldest left out when it’s long), and may look something up once. Nothing of the conversation is kept after you close it. MyDay’s server records how many requests you’ve made and what they cost — never what was in them.</p>
+        <p className="text-[15px] m-0">The AI has no memory of you: each request stands on its own, sent by MyDay’s server without your name or account details. MyDay keeps your history itself, on your devices and in your account. In Ask MyDay you can keep replying while its panel is open, until the day’s requests run out: each reply sends the conversation so far with it (your messages and its answers as they were shown, the oldest left out when it’s long), and may look something up once. Today’s conversation is kept on this device only, until midnight or your next question, so you can carry it on from +: it isn’t synced, exported or backed up, and signing out, Delete everything or making something private forgets it. MyDay’s server records how many requests you’ve made and what they cost — never what was in them.</p>
       </Card>
 
       <Card aria-labelledby="knows-models-h" id="knowsModels">

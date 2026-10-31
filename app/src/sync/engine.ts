@@ -23,7 +23,7 @@
 // Sync's notes are kept per account; nothing is sent or fetched while a different account is signed in, and the
 // cloud checks that too.
 import { clearFileCache } from '../data/fileCache';
-import { LAST_ASK_KEY } from '../ai/lastAskKey';
+import { KEPT_CONVERSATION_KEY, LAST_ASK_KEY } from '../ai/lastAskKey';
 import { deleteProjectResearch } from '../data/research';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
@@ -627,8 +627,9 @@ export async function wipeAccount(): Promise<{ ok: true; here: boolean; user: st
 // removed from this device ('done'). Something not saved yet (offline, a choice to make, a problem): 'unsaved', and
 // nothing changes — unless `anyway` (after you've downloaded a backup). Signed in without this device joining your
 // account (or as a different account from its MyDay's): just signs out, leaving the device's data as it is.
-// Ask MyDay's last Undo holds copies of what it added or changed, so it leaves the device with the data.
-function forgetLastAsk() { try { localStorage.removeItem(LAST_ASK_KEY); } catch { /* storage unavailable: nothing kept */ } }
+// Ask MyDay's last Undo holds copies of what it added or changed, and today's conversation what was said about your data,
+// so both leave the device with the data.
+function forgetLastAsk() { try { localStorage.removeItem(LAST_ASK_KEY); localStorage.removeItem(KEPT_CONVERSATION_KEY); } catch { /* storage unavailable: nothing kept */ } }
 export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 'failed'> {
   const read = readState();
   const mine = read.ok && !!read.state.link && !!account && read.state.link.user === account.id;

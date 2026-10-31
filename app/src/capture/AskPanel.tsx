@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListChecks, ListPlus, Minus, NotebookPen, PencilLine, Plus, Scale, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from 'react';
 import { rememberAsk, undoNow } from '../ai/lastAsk';
+import { forgetConversation, keepConversation, keptConversation, type KeptLooked } from '../ai/keptConversation';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice, conversationOf, latestOnly } from '../ai/askContext';
 import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup, type LookupMore } from '../ai/lookup';
@@ -24,7 +25,8 @@ import { startLearning, startRevision } from '../study/actions';
 // things to add (tick, rename, Add — one step of Undo), steps, changes to what's already saved (before → after, tick,
 // Apply — Undo puts the old values back), a short answer with at most one action, or "can't do that here". A conversation
 // goes on while the panel is open, until the day's requests run out (v25, specs/ask-conversation.md): each reply sends
-// what came before (conversationOf) and may look something up once; it's forgotten when the panel closes.
+// what came before (conversationOf) and may look something up once. Today's conversation is kept on this device after
+// each answer (ai/keptConversation.ts), so + can offer to carry it on later (`resume`) until midnight or a new question.
 // A lookup (ai/lookup.ts): what was sent, and how many private things matched (that count stays here).
 type Looked = { lookup: AskLookup; leftOut: number; hrefs?: Record<string, string>; more?: LookupMore; at?: Date }; // more and at: what didn't go, and when it was read, for its line; hrefs: where what it found opens (study's next steps, a look across MyDay's finds): the device's own
 type Shown = Exclude<AskChecked, { kind: 'lookup' }>;
@@ -37,6 +39,13 @@ type After = { r: Shown; looked?: Looked; left?: number };
 // MyDay's server takes requests up to 16,000 bytes: older exchanges are left out until it fits.
 const MAX_BYTES = 15500;
 const bytes = (c: AskContext) => new TextEncoder().encode(JSON.stringify({ context: c })).length;
+// A lookup as it's kept between visits (its time as text) and back.
+const toKept = (l: Looked): KeptLooked => ({ lookup: l.lookup, leftOut: l.leftOut, ...(l.hrefs ? { hrefs: l.hrefs } : {}), ...(l.more ? { more: l.more } : {}), ...(l.at ? { at: l.at.toISOString() } : {}) });
+const fromKept = (k: KeptLooked): Looked => ({ lookup: k.lookup, leftOut: k.leftOut, ...(k.hrefs ? { hrefs: k.hrefs } : {}), ...(k.more ? { more: k.more } : {}), ...(k.at ? { at: new Date(k.at) } : {}) });
+const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+const newConversationId = (d: Date) => `${d.getTime().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+// What + can ask of the panel: carry on today's kept conversation (`false` when there's none to carry on).
+export type AskPanelHandle = { carryOn: () => boolean };
 // MyDay's server keeps a few seconds between requests (AI_MIN_SECONDS_BETWEEN, 5 by default), so a lookup's second
 // request waits out the rest of them — and once more if the server still says it's too soon.
 const PACE_MS = 5500;
@@ -53,6 +62,7 @@ type Phase =
   | { at: 'shown'; r: Shown; model: string; looked?: Looked; left?: number; leftOut: number } // leftOut: earlier exchanges not sent with it
   | { at: 'added'; undo: AskUndo; words: string; id: string; after: After } // id: how it's kept for Undo from + later (ai/lastAsk.ts)
   | { at: 'applied'; undo: AskChangeUndo; words: string; id: string; after: After }
+  | { at: 'resumed'; looked?: Looked } // today's kept conversation, carried on: the thread and a reply box
   | { at: 'error'; message: string; retry?: Retry; stop?: boolean }; // retry.prior: what a lookup found, so trying again doesn't look twice; stop: the day's (or month's) limit, so no Try again
 
 const ICON: Record<AskProposal['type'], ReactNode> = {
@@ -76,7 +86,9 @@ function shownText(r: Shown): string {
 // After Undo the button that was focused goes, so focus goes back to the text field (a screen reader keeps its place).
 const backToField = () => document.getElementById('captureText')?.focus();
 
-export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text: string; focus?: AskFocus; onClose: () => void }) {
+// `ref`: + carries on today's kept conversation through it (AskPanelHandle); `onActive`: told once Ask is in use, so +
+// stops offering the kept one.
+export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: MyDayData; text: string; focus?: AskFocus; onClose: () => void; onActive?: () => void; ref?: Ref<AskPanelHandle> }) {
   const [phase, setPhase] = useState<Phase>({ at: 'idle' });
   const [picked, setPicked] = useState<boolean[]>([]);
   const [titles, setTitles] = useState<string[]>([]);
@@ -85,8 +97,20 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
   const [more, setMore] = useState('');
   const [turns, setTurns] = useState<Turn[]>([]);   // the conversation before the message now being answered
   const [current, setCurrent] = useState('');        // that message
+  const [conv, setConv] = useState({ id: '', at: '' }); // this conversation, as it's kept: its id and when it began
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
+  // Carry on today's kept conversation: its exchanges as the thread, and the lookup behind its last answer.
+  useImperativeHandle(ref, () => ({ carryOn: () => {
+    const kept = keptConversation(getSnapshot().data);
+    if (!kept) return false;
+    request.current?.abort();
+    setTurns(kept.turns); setConv({ id: kept.id, at: kept.at }); setMore('');
+    setPhase({ at: 'resumed', ...(kept.looked ? { looked: fromKept(kept.looked) } : {}) });
+    onActive?.();
+    requestAnimationFrame(() => document.querySelector<HTMLInputElement>('[data-s=ask-more]')?.focus());
+    return true;
+  } }));
   const [where] = useState(() => location.hash);
   const [slice, setSlice] = useState(() => askSlice(data, where, todayKey(), focus)); // the page the sheet was opened on (and what it's about); worked out afresh for each reply
   const [generation] = useState(() => getSnapshot().generation);
@@ -110,7 +134,10 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     request.current?.abort();
     const ctrl = new AbortController(); request.current = ctrl;
     setCurrent(message);
-    if (!earlier.length) setTurns([]); // a first question starts a new conversation
+    onActive?.();
+    // A first question starts a new conversation (kept in place of today's other one once it's answered).
+    const begun = new Date(clock()), c = earlier.length ? conv : { id: newConversationId(begun), at: hhmm(begun) };
+    if (!earlier.length) { setTurns([]); setConv(c); }
     setPhase({ at: 'asking' });
     // The first question goes exactly as previewed; a reply sees the page as it is now (what you added, say).
     const sl = earlier.length ? askSlice(getSnapshot().data, where, k, focus) : slice;
@@ -172,7 +199,11 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (r.kind === 'change') setPicked(r.changes.map(() => true));
     setMore('');
     setPhase({ at: 'shown', r, model: reply.model, ...(looked ? { looked } : {}), ...(reply.left !== undefined ? { left: reply.left } : {}), leftOut });
+    keep(c, [...earlier, { asked: message, answered: notDone(r) + shownText(r) }], looked);
   }
+  // Kept on this device after each answer and after Add or Apply (with what you did), so + can offer it later today.
+  const keep = (c: { id: string; at: string }, said: Turn[], looked?: Looked) => keepConversation(getSnapshot().data, { ...c, turns: said.map(t => ({ asked: t.asked, answered: t.answered })), ...(looked ? { looked: toKept(looked) } : {}) });
+  const notDone = (r: Shown) => (r.kind === 'add' || r.kind === 'steps' ? '(Not added.)\n' : r.kind === 'change' ? '(Not applied.)\n' : '');
   // A reply to the answer shown, after a note of what you did with it (`did`: first, so cutting a long answer never loses
   // it); the lookup behind that answer goes along with it.
   function sendReply(after: After, did: string) {
@@ -183,7 +214,14 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     void ask(m, earlier, after.looked, true);
   }
   // Dismiss, Done, Undo: back to the start, and the conversation is forgotten.
-  const startOver = () => { setTurns([]); setPhase({ at: 'idle' }); };
+  const startOver = () => { setTurns([]); setPhase({ at: 'idle' }); forgetConversation(); };
+  // A reply to today's kept conversation, carried on: what came before is the thread as it was kept.
+  function sendResumed(looked?: Looked) {
+    const m = more.trim();
+    if (!m) return;
+    setMore('');
+    void ask(m, turns, looked, true);
+  }
   function add(r: Extract<AskChecked, { kind: 'add' | 'steps' }>, after: After) {
     if (!previewIsCurrent()) return;
     const chosen = r.items.map((it, i) => ({ ...applyAskEdit(it, edits[i], k), title: titles[i]?.trim().slice(0, 120) || it.title })).filter((_, i) => picked[i]);
@@ -194,6 +232,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     toast(`Added ${words}.`);
     const id = rememberAsk({ kind: 'added', undo, words }); // undoable from + until midnight, after this panel has closed
     setPhase({ at: 'added', undo, words, id, after });
+    keep(conv, [...turns, { asked: current, answered: `(They added ${words}.)\n` + shownText(r) }], after.looked);
   }
   function apply(r: Extract<AskChecked, { kind: 'change' }>, after: After) {
     if (!previewIsCurrent()) return;
@@ -205,19 +244,20 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     toast(`Changed ${words}.`);
     const id = rememberAsk({ kind: 'changed', undo, words });
     setPhase({ at: 'applied', undo, words, id, after });
+    keep(conv, [...turns, { asked: current, answered: `(They applied the change to ${words}.)\n` + shownText(r) }], after.looked);
   }
 
   const label = (model: string) => (AI_MODE === 'mock' ? 'Ask MyDay · practice helper (no AI)' : `Ask MyDay · AI-written by ${model} — check before adding`);
   // The reply box, while the day's requests last (the server says how many are left; practice mode has no limit).
-  const replyBox = (after: After, did: string) => after.left === 0
+  const replyBox = (after: After | null, did: string, looked?: Looked) => after?.left === 0
     ? <p className="text-[14px] text-fg-2 m-0 mt-3" data-s="ask-limit">That’s all the AI suggestions for today, so there’s no replying now. Ask MyDay is back tomorrow.</p>
     : <div className="mt-3">
       <div className="flex gap-2 items-start">
         <TextInput value={more} maxLength={ASK_LIMITS.textChars} placeholder="Reply to MyDay…" aria-label="Reply to MyDay" data-s="ask-more" onChange={e => setMore(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && more.trim()) { e.preventDefault(); sendReply(after, did); } }} />
-        <Button inline variant="ghost" className="whitespace-nowrap" data-action="ask-again" disabled={!more.trim()} onClick={() => sendReply(after, did)}>Reply</Button>
+          onKeyDown={e => { if (e.key === 'Enter' && more.trim()) { e.preventDefault(); if (after) sendReply(after, did); else sendResumed(looked); } }} />
+        <Button inline variant="ghost" className="whitespace-nowrap" data-action="ask-again" disabled={!more.trim()} onClick={() => { if (after) sendReply(after, did); else sendResumed(looked); }}>Reply</Button>
       </div>
-      {after.left !== undefined && after.left <= 5 && <p className="text-xs text-fg-3 m-0 mt-1" data-s="ask-left">{after.left === 1 ? 'One request' : `${after.left} requests`} left today (a reply that looks something up uses two).</p>}
+      {after?.left !== undefined && after.left <= 5 && <p className="text-xs text-fg-3 m-0 mt-1" data-s="ask-left">{after.left === 1 ? 'One request' : `${after.left} requests`} left today (a reply that looks something up uses two).</p>}
     </div>;
   const inConversation = phase.at === 'error' ? !!phase.retry?.earlier.length : turns.length > 0;
   return (
@@ -226,7 +266,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
         {(phase.at === 'error' ? phase.retry!.earlier : turns).map((t, i) => <li key={i}><details data-s="ask-turn">
           <summary className="cursor-pointer min-h-11 flex items-center text-[14px] text-fg-2"><span className="truncate min-w-0">You: {t.asked}</span></summary>
           <p className="text-[14px] m-0 mb-2 pl-4 whitespace-pre-wrap break-words">{t.answered}</p></details></li>)}
-        <li className="text-[14px] font-semibold break-words py-1" data-s="ask-now">You: {phase.at === 'error' ? phase.retry!.message : current}</li>
+        {phase.at !== 'resumed' && <li className="text-[14px] font-semibold break-words py-1" data-s="ask-now">You: {phase.at === 'error' ? phase.retry!.message : current}</li>}
       </ol>}
       {(phase.at === 'idle' || (phase.at === 'error' && !inConversation)) && <>
         <Button variant="tonal" data-action="ask-go" disabled={!text.trim()} onClick={() => { void ask(text, [], phase.at === 'error' ? phase.retry?.prior : undefined); }}><Sparkles size={18} aria-hidden="true" /> Ask MyDay</Button>
@@ -253,6 +293,11 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
         <p className="text-[15px] m-0">Added {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => { const r = undoNow({ kind: 'added', undo: phase.undo, id: phase.id }); toast(r.message); if (r.done) { startOver(); backToField(); } }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
+      </div>}
+      {phase.at === 'resumed' && <div data-s="ask-resumed">
+        <p className="text-[13px] text-fg-2 m-0">Carrying on your conversation from {conv.at}. Its last answer’s suggestions are above as text: ask for them again to add them.</p>
+        {replyBox(null, '', phase.looked)}
+        <LinkButton data-action="ask-dismiss" onClick={startOver}>Start over</LinkButton>
       </div>}
       {phase.at === 'added' && replyBox(phase.after, `(They added ${phase.words}.)\n`)}
       {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">
