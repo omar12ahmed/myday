@@ -530,6 +530,43 @@ async function signIn(d, url) {
     await now.open(NOW + `#projects/p/${PBZ}/model`);
     check('…the experiment shows on the Model tab with its result, and its finding is there (no offer to save it again)', await now.until(`!!document.querySelector('[data-s=experiment][data-id=reBizBack] [data-s=experiment-result]') && !!document.querySelector('[data-s=experiment][data-id=reBizBack] [data-s=experiment-finding]') && !document.querySelector('[data-s=experiment-offer]')`, 15000), await now.text('#projectExperiments'));
     check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+    console.log('\n[20] Decisions backed by evidence and tasks toward milestones pass through the previous release unchanged (specs/projects-evidence-decisions.md)');
+    const PEV = 'pjEvBack', TEV = 'tkEvBack';
+    const decision = { id: 'dEvBack', question: 'Larch or pine?', options: [{ id: 'oLBack', text: 'Larch', pros: [], cons: [] }, { id: 'oPBack', text: 'Pine', pros: [], cons: [] }], chosen: 'oLBack', why: 'Lasts', decidedOn: today,
+      chosenEvidence: { for: 2, against: 1, futureBit: 1 }, history: [{ id: 'dhEvBack', text: 'Pine', on: today, why: '', evidence: { for: 0, against: 1 } }], createdAt: stamp, updatedAt: stamp };
+    const findingEv = { id: 'rfEvBack', type: 'finding', projectId: PEV, text: 'Larch lasts 25 years', limits: '', on: today, sourceIds: [], about: [{ kind: 'option', id: 'oLBack', stance: 'supports' }], createdAt: stamp, updatedAt: stamp };
+    const expEv = { id: 'reEvBack', type: 'experiment', projectId: PEV, title: 'Try both woods', tests: [{ kind: 'option', id: 'oPBack' }], how: '', expect: '', status: 'planned', startedOn: null, doneOn: null, result: '', conclusion: '', taskId: null, createdAt: stamp, updatedAt: stamp };
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PEV}', title: 'Garden shed (evidence)', summary: '', stage: 'decide', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', tools: ['research'],
+      milestones: [{ id: 'mEvBack', title: 'Base laid', aim: null, reachedOn: null, createdAt: '${stamp}' }], decisions: [${JSON.stringify(decision)}] });
+      s.tasks.items.push({ id: '${TEV}', title: 'Pour the slab', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${stamp}', postponed: 0, blockers: [], letGoOn: null, projectId: '${PEV}', milestoneId: 'mEvBack' });
+      s.research.items.push(${JSON.stringify(findingEv)}, ${JSON.stringify(expEv)}); }`);
+    // (A decision's previous choices are records of their own, project_choice.)
+    const decOf = async () => (await record('project_decision', `${hex(PEV)}.${hex('dEvBack')}`))?.data?.value;
+    const { history: _h, ...decisionOwn } = decision;
+    const choiceOf = async id => (await record('project_choice', `${hex(PEV)}.${hex('dEvBack')}.${hex(id)}`))?.data?.value;
+    check('this release sends the decision with its evidence (a previous choice\'s in its own record), the finding about an option, the experiment testing one and the task toward a milestone', await eventually(async () => same(await decOf(), decisionOwn)
+      && same(await choiceOf('dhEvBack'), decision.history[0])
+      && same((await record('research', 'rfEvBack'))?.data, findingEv) && same((await record('research', 'reEvBack'))?.data, expEv) && (await record('task', TEV))?.data?.milestoneId === 'mEvBack') && await synced(now), await decOf());
+    await before.returnToApp();
+    check('the previous release syncs normally and receives all four exactly', await synced(before) && await before.until(`!!JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TEV}')?.milestoneId`, 20000)
+      && same((await before.data()).projects.items.find(p => p.id === PEV).decisions[0], decision) && same((await before.data()).research.items.find(x => x.id === 'rfEvBack'), findingEv)
+      && same((await before.data()).research.items.find(x => x.id === 'reEvBack'), expEv), (await before.data()).projects.items.find(p => p.id === PEV)?.decisions);
+    await before.open(BEFORE + `#today/tasks/${TEV}`); await before.until(`!!document.querySelector('#tTitle')`, 15000);
+    await before.type('#tTitle', 'Pour the slab (renamed)');
+    check('a rename on the previous release\'s task page reaches the account with the milestone as it was', await eventually(async () => (await record('task', TEV))?.data?.title === 'Pour the slab (renamed)' && (await record('task', TEV))?.data?.milestoneId === 'mEvBack') && await synced(before));
+    // The previous release thinks again: its history entry has no evidence, and the open decision keeps the old counts —
+    // this release reads that as it is (nothing rewritten on load) and shows no evidence for an open decision.
+    await before.open(BEFORE + `#projects/p/${PEV}/decisions`); await before.until(`!!document.querySelector('[data-action=dc-again]')`, 15000);
+    await before.click('[data-action=dc-again]');
+    const beforeDec = async () => (await before.data()).projects.items.find(p => p.id === PEV).decisions[0];
+    check('"Think again" on the previous release reaches the account (the decision open, its last choice in the history)', await eventually(async () => (await decOf())?.chosen === null && (await beforeDec()).history?.length === 2) && await synced(before), await decOf());
+    const afterBefore = await beforeDec();
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PEV}/decisions`);
+    check('back on this release: the task\'s new title arrives with its milestone, the decision is open, with no evidence shown for a choice', await now.until(`!!document.querySelector('[data-action=opt-choose]')`, 30000)
+      && (await now.data()).tasks.items.find(t => t.id === TEV).title === 'Pour the slab (renamed)' && (await now.data()).tasks.items.find(t => t.id === TEV).milestoneId === 'mEvBack' && !(await now.exists('[data-s=dc-evidence]')));
+    check('…the decision reads exactly as the previous release saved it (loading rewrote nothing), and this release is in step', same((await now.data()).projects.items.find(p => p.id === PEV).decisions[0], afterBefore) && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

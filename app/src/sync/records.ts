@@ -461,7 +461,7 @@ export function recordLines(key: string, content: Content | null): string[] {
       const options = (Array.isArray(v.options) ? v.options : []) as { id: string; text: string; pros: string[]; cons: string[] }[];
       // One wrapping row per option keeps all its points visible within Compare's eight-row preview.
       return [String(v.question), ...options.map(o => `${o.text} — Pros: ${words(o.pros) || 'None'} · Cons: ${words(o.cons) || 'None'}`),
-        v.chosen ? `Chosen: ${options.find(o => o.id === v.chosen)?.text ?? v.chosen}${isObj(v.chosenEvidence) ? ` (${v.chosenEvidence.for} for, ${v.chosenEvidence.against} against)` : ''}` : 'Open decision',
+        v.chosen ? `Chosen: ${options.find(o => o.id === v.chosen)?.text ?? v.chosen}${isObj(v.chosenEvidence) && Number.isInteger(v.chosenEvidence.for) && Number.isInteger(v.chosenEvidence.against) ? ` (${v.chosenEvidence.for} for, ${v.chosenEvidence.against} against)` : ''}` : 'Open decision',
         `Reason: ${v.why || 'No reason given'}`, ...(v.decidedOn ? [`Decided: ${v.decidedOn}`] : [])];
     }
     if (kind === 'project_model') {

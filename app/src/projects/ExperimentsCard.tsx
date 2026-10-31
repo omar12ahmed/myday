@@ -47,9 +47,10 @@ export function ExperimentsCard({ data, p, planning, setPlanning }: { data: MyDa
 
 // Planning one (or changing what it is). Only what you'll try is needed.
 function ExperimentForm({ data, p, e, tests, onDone, onRemove }: { data: MyDayData; p: Project; e?: ResearchExperiment; tests?: Test[]; onDone: () => void; onRemove?: () => void }) {
-  const choices = testChoices(data, p);
+  // (What it already tests stays offered even when it no longer would be, e.g. a decision chosen since: never dropped by an edit.)
+  const offered = testChoices(data, p), choices = [...offered, ...(e ? testedThings(data, e).filter(t => !offered.some(o => o.kind === t.kind && o.id === t.id)) : [])];
   const [title, setTitle] = useState(e?.title ?? ''), [how, setHow] = useState(e?.how ?? ''), [expect, setExpect] = useState(e?.expect ?? '');
-  const [picked, setPicked] = useState<Test[]>(e ? e.tests.filter((t): t is Test => t.kind === 'assumption' || t.kind === 'question') : tests ?? []);
+  const [picked, setPicked] = useState<Test[]>(e ? e.tests.filter((t): t is Test => t.kind === 'assumption' || t.kind === 'question' || t.kind === 'option') : tests ?? []);
   const idp = e ? `exE-${e.id}` : 'exN', on = (t: Test) => picked.some(x => x.kind === t.kind && x.id === t.id);
   const toggle = (t: Test, yes: boolean) => setPicked(l => (yes ? [...l, t] : l.filter(x => !(x.kind === t.kind && x.id === t.id))));
   function save() {

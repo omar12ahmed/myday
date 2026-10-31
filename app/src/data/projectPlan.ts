@@ -7,7 +7,7 @@
 // Nothing here adds tasks, touches Today or moves the project on the board.
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
 import { projectRecordSizes, projectRecordsFit } from './projectSize';
-import { forgetOptions, optionEvidence } from './research';
+import { forgetOptions, hasResearch, optionEvidence } from './research';
 import { isDone } from './tasks';
 import type { DateKey, Decision, DecisionHistoryEntry, DecisionOption, Milestone, MyDayData, OptionEvidence, Project, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
@@ -30,9 +30,9 @@ export function normalizeMilestones(raw: unknown, report: { dropped: number }): 
   return out.length ? out : undefined;
 }
 const points = (v: unknown) => listOf(v).map(x => text(x, PLAN_LIMITS.point)).filter(Boolean);
-// What the evidence said about a choice (specs/projects-evidence-decisions.md): two whole counts, else none; anything a
-// newer MyDay keeps beside them stays.
-const count = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? Math.min(v, 1000) : null);
+// What the evidence said about a choice (specs/projects-evidence-decisions.md): two whole counts (anything a newer MyDay
+// keeps beside them stays), else null — and then it's left exactly as it was.
+const count = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : null);
 function evidenceOf(v: unknown): OptionEvidence | null {
   if (!isObj(v)) return null;
   const f = count(v.for), a = count(v.against);
@@ -49,7 +49,7 @@ export function normalizeHistory(raw: unknown, report: { dropped: number }): Dec
     seen.add(id);
     const e: DecisionHistoryEntry = { ...h, id, text: label, on: h.on, why: typeof h.why === 'string' ? h.why.slice(0, PLAN_LIMITS.why) : null };
     const ev = evidenceOf(h.evidence);
-    if (ev) e.evidence = ev; else delete e.evidence;
+    if (ev) e.evidence = ev;
     out.push(e);
   }
   return out.length ? out : undefined;
@@ -83,8 +83,10 @@ export function normalizeDecisions(raw: unknown, report: { dropped: number }): D
     else delete d.lastChoice;
     const history = normalizeHistory(x.history, report);
     if (history) d.history = history; else delete d.history;
+    // (Readable counts are tidied; anything else — even on an open decision, as an older MyDay may leave it — is kept as
+    // it is, so loading never rewrites the record. It's shown only with a choice.)
     const ev = evidenceOf(x.chosenEvidence);
-    if (ev && chosen) d.chosenEvidence = ev; else delete d.chosenEvidence;
+    if (ev) d.chosenEvidence = ev;
     out.push(d);
   }
   return out.length ? out : undefined;
@@ -259,8 +261,9 @@ export function decide(d: MyDayData, projectId: string, id: string, optionId: st
   const w = why.trim().slice(0, PLAN_LIMITS.why);
   if (!p || !x || !isDateKey(k) || !x.options.some(o => o.id === optionId)) return false;
   if (x.chosen === optionId && x.decidedOn === k && x.why === w) return false;
-  // (What the evidence says about it now, kept with the choice — never used to choose.)
-  const ev = optionEvidence(d, projectId, optionId);
+  // (What the evidence says about it now, kept with the choice — never used to choose; only with Research on, where
+  // the choosing form showed it.)
+  const ev = hasResearch(p) ? optionEvidence(d, projectId, optionId) : { for: 0, against: 0 };
   return saveChoice(p, x, next => {
     if (next.chosen) keepPreviousChoice(next);
     else if (!next.history?.length && next.lastChoice) next.history = decisionHistory(next);

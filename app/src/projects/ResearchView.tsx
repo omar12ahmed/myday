@@ -177,7 +177,7 @@ function FindingForm({ data, p, f, onDone }: { data: MyDayData; p: Project; f?: 
   const targets: { kind: 'question' | 'assumption' | 'option'; id: string; text: string }[] = [
     ...questionOrder(r.questions).map(q => ({ kind: 'question' as const, id: q.id, text: q.text })),
     ...(isBusiness(p) ? (p.model?.assumptions ?? []).map(a => ({ kind: 'assumption' as const, id: a.id, text: a.text })) : []),
-    ...(p.decisions ?? []).flatMap(x => x.options.filter(o => !x.chosen || about.some(a => a.kind === 'option' && a.id === o.id)).map(o => ({ kind: 'option' as const, id: o.id, text: `${o.text} — ${x.question}` }))),
+    ...(p.decisions ?? []).flatMap(x => x.options.filter(o => !x.chosen || (f?.about ?? []).some(a => a.kind === 'option' && a.id === o.id)).map(o => ({ kind: 'option' as const, id: o.id, text: `${o.text} — ${x.question}` }))),
   ];
   const stanceOf = (t: { kind: string; id: string }) => about.find(a => a.kind === t.kind && a.id === t.id)?.stance ?? '';
   const setStance = (t: { kind: 'question' | 'assumption' | 'option'; id: string }, s: string) => setAbout(list => [...list.filter(a => !(a.kind === t.kind && a.id === t.id)), ...(s ? [{ kind: t.kind, id: t.id, stance: s as Stance }] : [])]);

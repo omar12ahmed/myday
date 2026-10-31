@@ -107,17 +107,17 @@ export function MilestonesView({ data, p }: { data: MyDayData; p: Project }) {
 function MilestoneTasks({ data, p, m }: { data: MyDayData; p: Project; m: Milestone }) {
   const [open, setOpen] = useState(false), { all, done } = milestoneTasks(data, p, m.id);
   if (!all.length) return null;
-  const list = m.reachedOn ? done : all;
+  const list = m.reachedOn && done.length ? done : all;
   return (
     <div className="mt-1" data-s="ms-tasks">
       <LinkButton className="text-[15px]" data-action="ms-tasks" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {m.reachedOn ? `What got you there: ${done.length === 1 ? '1 task' : `${done.length} tasks`}` : `${done.length} of ${all.length} tasks done`}
+        {m.reachedOn && done.length ? `What got you there: ${done.length === 1 ? '1 task' : `${done.length} tasks`}` : `${done.length} of ${all.length} tasks done`}
       </LinkButton>
       {open && list.length > 0 && (
         <ul className="list-none p-0 m-0" data-s="ms-task-list">{list.map(t => (
           <li key={t.id}><a href={`#today/tasks/${encodeURIComponent(t.id)}`} className="flex items-start gap-2 min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words">
-            {isDone(data, t) ? <Check size={16} aria-label="Done" className="mt-1 flex-none text-done" /> : <span aria-hidden="true" className="mt-1.5 flex-none size-3 rounded-full border-2 border-outline-strong" />}
-            <span>{t.title}</span></a></li>
+            {isDone(data, t) ? <Check size={16} aria-hidden="true" className="mt-1 flex-none text-done" /> : <span aria-hidden="true" className="mt-1.5 flex-none size-3 rounded-full border-2 border-outline-strong" />}
+            <span><span className="sr-only">{isDone(data, t) ? 'Done: ' : 'To do: '}</span>{t.title}</span></a></li>
         ))}</ul>
       )}
     </div>

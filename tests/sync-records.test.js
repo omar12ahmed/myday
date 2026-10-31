@@ -376,6 +376,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('a one page\'s money travels inside its model record exactly as it is', R.fingerprint(R.cleanRecord(modelKey, clone(model))) === R.fingerprint(model), R.cleanRecord(modelKey, clone(model)));
   check('…and a conflict names it: "Money: Break-even: 429 orders a month · forecast from … · 1 real month", then each line with its amount', R.recordLines(modelKey, model).includes(`Money: Break-even: 429 orders a month · forecast from ${R.monthText('2027-01')} · 1 real month`)
     && R.recordLines(modelKey, model).includes('Commission 8%; Delivery fee 1.50; Rider −1.80; Office −900; Motorbike −3,000'), R.recordLines(modelKey, model));
+  // A choice's evidence and a task toward a milestone (specs/projects-evidence-decisions.md).
+  const decKey = 'project_decision:' + R.projectPartId('pj1', 'dE');
+  const dec = { projectId: 'pj1', index: 0, value: { id: 'dE', question: 'Larch or pine?', options: [{ id: 'oL', text: 'Larch', pros: [], cons: [] }], chosen: 'oL', why: '', decidedOn: '2026-11-01', chosenEvidence: { for: 2, against: 1 }, createdAt: '2026-10-01T09:00', updatedAt: '2026-11-01T09:00' } };
+  check('a decision\'s conflict line names the choice with its evidence: "Chosen: Larch (2 for, 1 against)"', R.recordLines(decKey, dec).includes('Chosen: Larch (2 for, 1 against)'), R.recordLines(decKey, dec));
+  check('…and a task toward a milestone says so', R.recordLines('task:tk1', { ...recs.get('task:tk1'), milestoneId: 'm1' }).includes('Toward a milestone') && !R.recordLines('task:tk1', recs.get('task:tk1')).includes('Toward a milestone'));
   check('…checked on a day, by no one named: "checked on …"', lineOf({ kind: 'firm', from: '', checkedBy: '', checkedOn: '2026-10-12' }).includes(`Firm deadline · checked on ${R.shortDate('2026-10-12')}`), lineOf({ kind: 'firm', from: '', checkedBy: '', checkedOn: '2026-10-12' }));
   // A project's tools and the Overview sections hidden on it (specs/projects-sections.md), likewise.
   const pj = [...recs.keys()].find(k => k.startsWith('project:'));

@@ -2484,8 +2484,20 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…choosing an option with no evidence keeps none, and the previous choice had none either', K.decide(w, 'pjE', 'd2', 'oB', '', k) === true && !('chosenEvidence' in D2()) && !('evidence' in D2().history.at(-1)));
     const read = K.normalizeDecisions([DEC('dR', 'q', [OPT('o1', 'a')], { chosen: 'o1', decidedOn: k, chosenEvidence: { for: 3, against: 0, futureBit: 1 }, history: [{ id: 'h1', text: 'b', on: k, why: '', evidence: { for: 'x', against: 1 } }] }),
       DEC('dS', 'q', [OPT('o1', 'a')], { chosenEvidence: { for: 1, against: 0 } })], { dropped: 0 });
-    check('reading: a choice\'s evidence kept (a newer MyDay\'s field too); unreadable counts left off; an open decision keeps none', eq(read[0].chosenEvidence, { for: 3, against: 0, futureBit: 1 }) && !('evidence' in read[0].history[0]) && !('chosenEvidence' in read[1]));
+    check('reading: a choice\'s evidence kept (a newer MyDay\'s field too); unreadable counts and an open decision\'s (as an older MyDay may leave it) kept exactly as they were — loading never rewrites them',
+      eq(read[0].chosenEvidence, { for: 3, against: 0, futureBit: 1 }) && eq(read[0].history[0].evidence, { for: 'x', against: 1 }) && eq(read[1].chosenEvidence, { for: 1, against: 0 }) && K.R.evidenceWords(read[0].history[0].evidence) === '');
 
+    // With Research switched off the choosing form shows no evidence, so none is kept with the choice.
+    const off = world(base('pjF', { decisions: [DEC('dF', 'q', [OPT('oF', 'a')])] })); off.research = { items: [{ id: 'rfF', type: 'finding', projectId: 'pjF', text: 't', limits: '', on: k, sourceIds: [], about: [{ kind: 'option', id: 'oF', stance: 'supports' }], createdAt: OLD, updatedAt: OLD }] };
+    check('with Research off, choosing keeps no evidence (the form didn\'t show any)', K.decide(off, 'pjF', 'dF', 'oF', '', k) === true && !('chosenEvidence' in off.projects.items[0].decisions[0]));
+    // Removing the chosen option: the choice moves to the history with its evidence, the decision opens, and the
+    // findings forget it; a finding that never pointed at it isn't touched.
+    const rc = world(base('pjR', { tools: ['research'], decisions: [DEC('dR', 'q', [OPT('oR1', 'a'), OPT('oR2', 'b')])] })), RD = () => rc.projects.items[0].decisions[0];
+    rc.research = { items: [{ id: 'rfR1', type: 'finding', projectId: 'pjR', text: 't', limits: '', on: k, sourceIds: [], about: [{ kind: 'option', id: 'oR1', stance: 'supports' }], createdAt: OLD, updatedAt: OLD },
+      { id: 'rfR2', type: 'finding', projectId: 'pjR', text: 'u', limits: '', on: k, sourceIds: [], about: [{ kind: 'option', id: 'oR2', stance: 'supports' }], createdAt: OLD, updatedAt: OLD }] };
+    K.decide(rc, 'pjR', 'dR', 'oR1', '', k);
+    check('removing the chosen option: the decision opens, the choice and its evidence go into the history, its findings forget it — and one that never pointed at it isn\'t touched', K.removeOption(rc, 'pjR', 'dR', 'oR1') === 'reopened' && !RD().chosen && !('chosenEvidence' in RD())
+      && eq(RD().history.at(-1).evidence, { for: 1, against: 0 }) && eq(rc.research.items[0].about, []) && rc.research.items[1].updatedAt === OLD);
     console.log('  removing options and decisions');
     K.removeOption(w, 'pjE', 'd1', 'oL');
     check('removing an option takes it out of the findings and experiments that pointed at it (they keep the rest)', !w.research.items.some(x => (x.about ?? x.tests ?? []).some(a => a.kind === 'option' && a.id === 'oL'))
@@ -2501,6 +2513,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
     let mt = K.milestoneTasks(w, P('pjE'), 'm1');
     check('the milestone: its tasks (not one let go) — "1 of 2 done"', eq(mt.all.map(t => t.id), ['t1', 't2']) && eq(mt.done.map(t => t.id), ['t1']));
     w.tasks.items.find(t => t.id === 't1').projectId = 'pjO';
+    w.tasks.items.find(t => t.id === 't2').plannedOn = k; w.tasks.items.find(t => t.id === 't2').planUid = 'puM';
+    w.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: true, tasks: [{ uid: 'puM', taskId: null, category: 'admin', title: 'Pour the slab', minutes: 15, baseMinutes: 15, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+    check('…a task ticked only on a day\'s plan counts as done (its own copy not yet marked): "1 of 1"', eq(K.milestoneTasks(w, P('pjE'), 'm1').done.map(t => t.id), ['t2']) && !w.tasks.items.find(t => t.id === 't2').done);
     check('…a task moved to another project no longer counts', eq(K.milestoneTasks(w, P('pjE'), 'm1').all.map(t => t.id), ['t2']));
     K.removeMilestone(w, 'pjE', 'm1');
     check('…a milestone removed counts nothing (its tasks keep the id, unseen)', K.milestoneTasks(w, P('pjE'), 'm1').all.length === 0 && w.tasks.items.find(t => t.id === 't2').milestoneId === 'm1');

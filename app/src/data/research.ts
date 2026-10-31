@@ -108,7 +108,9 @@ export function optionEvidenceLine(e: Record<Stance, ResearchFinding[]>): string
   const n = e.supports.length + e.contradicts.length + e.relates.length;
   return n ? `${n === 1 ? '1 finding' : `${n} findings`}: ${optionEvidenceCounts(e)}` : '';
 }
-export const evidenceWords = (e: OptionEvidence) => (e.for || e.against ? [e.for && `${e.for} finding${e.for === 1 ? '' : 's'} for`, e.against && `${e.against} against`].filter(Boolean).join(', ') : '');
+// "2 findings for, 1 against" ('' when there's none, or it isn't two counts).
+export const evidenceWords = (e: OptionEvidence) => (Number.isInteger(e.for) && Number.isInteger(e.against) && (e.for || e.against)
+  ? [e.for && `${e.for} finding${e.for === 1 ? '' : 's'} for`, e.against && `${e.against} against`].filter(Boolean).join(', ') : '');
 // A decision's option in this project, with its decision (by the option's id).
 export function optionOf(p: Project | undefined, optionId: string): { option: { id: string; text: string }; decision: { id: string; question: string } } | null {
   for (const x of p?.decisions ?? []) { const o = x.options.find(y => y.id === optionId); if (o) return { option: o, decision: x }; }
