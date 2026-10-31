@@ -29,7 +29,7 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
     ['وَاحِدٌ', 'wāḥidun'], ['وَافَقَ', 'wāfaqa'],
     // Tanween before a joining alif takes a helping i; no joining after a sukūn; a joining alif after a prefix, before a
     // doubled letter, after the plain article.
-    ['كِتَابٌ الْيَوْمَ', 'kitābuni l-yawma'], ['رَأَيْتُ رَجُلًا اسْمُهُ سَامِي', 'raʾaytu rajulani smuhu sāmī'], ['كِتَابٌ، الْيَوْمَ', 'kitābun, al-yawma'], ['قَلَمٌ الِامْتِحَانُ', 'qalamuni l-imtiḥānu'], ['مِنْ الْبَيْتِ', 'min al-bayti'], ['ثُمَّ الْتَقَى', 'thumma ltaqā'], ['فِي اللَّيْلِ', 'fī l-layli'],
+    ['كِتَابٌ الْيَوْمَ', 'kitābuni l-yawma'], ['رَأَيْتُ رَجُلًا اسْمُهُ سَامِي', 'raʾaytu rajulani smuhu sāmī'], ['كِتَابٌ، الْيَوْمَ', 'kitābun, al-yawma'], ['قَلَمٌ الِامْتِحَانُ', 'qalamuni l-imtiḥānu'], ['هَؤُلَاءِ', 'hāʾulāʾi'], ['أُولَئِكَ', 'ulāʾika'], ['لِهَذَا', 'li-hādhā'], ['كَذَلِكَ', 'ka-dhālika'], ['مِنْ الْبَيْتِ', 'min al-bayti'], ['ثُمَّ الْتَقَى', 'thumma ltaqā'], ['فِي اللَّيْلِ', 'fī l-layli'],
     ['بِاسْمِ', 'bismi'], ['لِلِاسْتِخْدَامِ', 'li-l-istikhdāmi'], ['فَاسْأَلُونِي', 'fasʾalūnī'], ['وَاتَّفَقَ', 'wattafaqa'],
     ['هِيَ اتَّصَلَتْ', 'hiya ttaṣalat'], ['فِي الاسْتِخْدَامِ', 'fī l-istikhdāmi'],
     // The relative pronouns' doubled ل, a doubled ل after لِ, an authored reading after a vowel, a misspelt article.

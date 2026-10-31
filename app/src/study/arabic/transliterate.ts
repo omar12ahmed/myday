@@ -44,6 +44,10 @@ function word(written: string, afterVowel = false): Reading {
   // Only where the spelling shows a joining alif (ٱ, the article, or a bare ا before a sukūn or a doubled letter), so an
   // unvowelled ا that's really a hamza (انا, الى) keeps its vowel.
   if (authored) return { text: afterVowel && /^(ٱ|ال|ا[^ًٌٍَُِّْ][ًٌٍَُِ]*[ّْ])/.test(word) && /^[aiu]/.test(authored) ? authored.slice(1) : authored, incomplete: false };
+  // A prefix (وَ, فَ, بِ, لِ, كَ) before a word with an authored reading: لِهَذَا is li-hādhā, كَذَلِكَ ka-dhālika. (Not
+  // before an alif: a joining alif after a prefix has its own rule, بِاسْمِ bismi.)
+  const pre = /^([وفبلك])([َِ])(.+)$/u.exec(word);
+  if (pre && !/^[اٱ]/.test(pre[3]) && readings[readingKey(pre[3])]) return { text: letters[pre[1]] + (pre[2] === 'ِ' ? 'i' : 'a') + '-' + readings[readingKey(pre[3])], incomplete: false };
   if (names[word]) return { text: names[word], incomplete: false };
   // The article cited on its own (الْـ, ال): al-.
   if (/^[اٱ]لْ?$/.test(word)) return { text: afterVowel ? 'l-' : 'al-', incomplete: false };
