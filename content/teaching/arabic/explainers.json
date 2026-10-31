@@ -7246,7 +7246,7 @@
     ],
     "why": {
      "q_en": "Why is \"twice\" مَرَّتَيْنِ?",
-     "a_en": "مَرَّة is \"one time\". The ending ـَتَيْنِ makes it \"two times\": Arabic has its own form for two of anything, so it needs no separate word for \"two\" here."
+     "a_en": "مَرَّة is \"one time\". For two of anything Arabic has its own ending: the ـَة becomes ـَتَيْنِ, so مَرَّتَيْنِ is \"two times\", with no separate word for \"two\"."
     },
     "selftest": [
      {
@@ -7303,12 +7303,12 @@
       "en": "open"
      },
      {
-      "form_en": "on a door",
+      "form_en": "from أَغْلَقَ, to close",
       "ar": "مُغْلَق",
       "en": "closed"
      },
      {
-      "form_en": "from مَنَعَ, to stop",
+      "form_en": "from مَنَعَ, to forbid",
       "ar": "مَمْنُوع",
       "en": "not allowed"
      },
@@ -7336,7 +7336,7 @@
     "steps": [
      "A sign is short. Read it for what it tells you to do; you don't need to work out every ending.",
      "Many sign words come from a verb you may know: مَدْخَل, entrance, is from دَخَلَ, to go in, and مَخْرَج, exit, from خَرَجَ, to go out.",
-     "On a sign, words are usually read without their endings, as if you paused after each one.",
+     "On a sign, words are usually read without their endings, as if you paused after each one. This card shows the endings in full.",
      "Answer from what the sign says, not from what seems likely: مُغْلَق says closed, but not why or until when."
     ],
     "examples": [
@@ -7582,7 +7582,7 @@
     ],
     "why": {
      "q_en": "Why do طَبْعًا and حَسَنًا end in -an?",
-     "a_en": "Many short words that say how or when end in -an, like صَبَاحًا, in the morning. طَبْعًا is literally \"naturally\", and حَسَنًا \"well, fine\". Learn them as they are."
+     "a_en": "Many words that say how or when end in -an, like غَدًا, tomorrow, and صَبَاحًا, in the morning. طَبْعًا is literally \"naturally\", and حَسَنًا \"well, fine\". Learn them as they are."
     },
     "selftest": [
      {
@@ -7644,7 +7644,7 @@
      {
       "form_en": "age",
       "ar": "عُمْرِي عِشْرُونَ سَنَةً",
-      "en": "I'm twenty (literally \"my age is twenty years\")"
+      "en": "I'm twenty (years old)"
      },
      {
       "form_en": "work",
@@ -7674,7 +7674,7 @@
     ],
     "steps": [
      "Short sentences are fine: one fact each, joined with وَ when they belong together.",
-     "Keep the speaker the same all the way through: a woman writes أَنَا مُتَزَوِّجَةٌ, with ـَة, and every word about herself takes ـَة too.",
+     "Keep the speaker the same all the way through: a woman writes أَنَا مُتَزَوِّجَةٌ, with ـَة, and every word that describes her takes ـَة too. Verbs with أَـ, like أَعْمَلُ, stay the same for everyone.",
      "For your age, write عُمْرِي, my age, then the number and سَنَةً: learn it as a phrase for now.",
      "Write what you mean first, then compare with a model and fix one or two things."
     ],
@@ -8167,7 +8167,7 @@
     "steps": [
      "Arabic needs no \"is\" in the present: الشَّارِعُ هَادِئٌ, the street is quiet. For the past, add كَانَ: كَانَ الشَّارِعُ هَادِئًا, the street was quiet.",
      "After كَانَ, the describing word ends in -an: هَادِئًا, not هَادِئٌ. The thing described keeps its -u.",
-     "كَانَ takes the past endings: كَانَتْ, she was; كُنْتُ, I was. Before ـْتُ, ـْنَا and the like, its long ā turns into a short u: كَانَ, but كُنْتُ.",
+     "كَانَ takes the past endings: كَانَتْ, she was; كُنْتُ, I was. Before an ending that starts with a consonant (ـْتُ, ـْتَ, ـْتِ, ـْنَا), its long ā turns into a short u: كَانَ, but كُنْتُ. Before ـَتْ and ـُوا it stays: كَانَتْ, كَانُوا.",
      "كَانَ with a present verb means \"was doing\" or \"used to do\": كُنْتُ أَعْمَلُ فِي مَطْعَمٍ. The context tells you which."
     ],
     "examples": [
@@ -8189,7 +8189,7 @@
        },
        {
         "ar": "يَوْمَ",
-        "en": "on"
+        "en": "on the day of"
        },
        {
         "ar": "الْجُمُعَةِ",
@@ -8355,7 +8355,7 @@
     "examples": [
      {
       "ar": "أَوَّلًا شَرِبْتُ الْقَهْوَةَ، ثُمَّ قَرَأْتُ الْجَرِيدَةَ.",
-      "en": "First I drank my coffee, then I read the newspaper.",
+      "en": "First I drank the coffee, then I read the newspaper.",
       "words": [
        {
         "ar": "أَوَّلًا",
@@ -8519,13 +8519,13 @@
     "steps": [
      "Open with ذَاتَ يَوْمٍ, one day, or فِي الْبِدَايَةِ, at the beginning, and close with فِي النِّهَايَةِ, in the end.",
      "A story about someone else uses he and she: ذَهَبَ, he went; ذَهَبَتْ, she went.",
-     "Stories often put the verb first: ذَهَبَ يُوسُفُ إِلَى الْبَحْرِ, Yūsuf went to the sea.",
+     "Stories often put the verb first: ذَهَبَ سَامِي إِلَى الْبَحْرِ, Sāmī went to the sea.",
      "To retell a story, keep its people, its events and their order, in your own words. Don't add what the story doesn't say."
     ],
     "examples": [
      {
-      "ar": "ذَاتَ يَوْمٍ، ذَهَبَ يُوسُفُ إِلَى الْبَحْرِ.",
-      "en": "One day, Yūsuf went to the sea.",
+      "ar": "ذَاتَ يَوْمٍ، ذَهَبَ سَامِي إِلَى الْبَحْرِ.",
+      "en": "One day, Sāmī went to the sea.",
       "words": [
        {
         "ar": "ذَاتَ",
@@ -8540,8 +8540,8 @@
         "en": "went"
        },
        {
-        "ar": "يُوسُفُ",
-        "en": "Yūsuf"
+        "ar": "سَامِي",
+        "en": "Sāmī"
        },
        {
         "ar": "إِلَى",
@@ -8623,8 +8623,8 @@
      }
     ],
     "why": {
-     "q_en": "Why does the verb come before the name in ذَهَبَ يُوسُفُ?",
-     "a_en": "Arabic often starts a sentence about what happened with the verb: ذَهَبَ يُوسُفُ, literally \"went Yūsuf\". You can also start with the name, يُوسُفُ ذَهَبَ, but stories usually lead with the verb."
+     "q_en": "Why does the verb come before the name in ذَهَبَ سَامِي?",
+     "a_en": "Arabic often starts a sentence about what happened with the verb: ذَهَبَ سَامِي, literally \"went Sāmī\". You can also start with the name, سَامِي ذَهَبَ, but stories usually lead with the verb."
     },
     "selftest": [
      {
@@ -8659,9 +8659,9 @@
      }
     ],
     "phrases_ar": [
-     "ذَهَبَ يُوسُفُ إِلَى الْبَحْرِ",
-     "ذَهَبَ يُوسُفُ",
-     "يُوسُفُ ذَهَبَ",
+     "ذَهَبَ سَامِي إِلَى الْبَحْرِ",
+     "ذَهَبَ سَامِي",
+     "سَامِي ذَهَبَ",
      "ذَهَبَتْ لَيْلَى إِلَى السُّوقِ وَاشْتَرَتْ خُبْزًا"
     ]
    }
