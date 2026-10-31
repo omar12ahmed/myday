@@ -2929,6 +2929,106 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     && (await ev('document.documentElement.scrollWidth')) <= 320, six);
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[50] Welcome back after a break');
+  const wbTk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const wbDay = (y, m, d, mi) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const wbShort = k => ev(`new Date('${k}T12:00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
+  const wbOpen = async (id, d, mi = 0) => { await go(`projects/p/${id}`, 2026, 11, d, 9, mi); await until(`!!document.getElementById('projectTitle')`); await sleep(200); };
+  const wbLinks = sel => ev(`[...document.querySelectorAll('${sel} a')].map(a => a.textContent.trim() + '|' + a.getAttribute('href'))`);
+  await go('projects', 2026, 11, 20, 9, 0); await reset(); await go('projects', 2026, 11, 20, 9, 0);
+  await seed([
+    pjObj('pjWb', 'Garden shed (welcome)', 'act', { createdAt: '2026-10-01T09:00', updatedAt: '2026-10-30T17:00', nextTaskId: 'tkWb4', leftOff: { text: 'Boards ordered; next: measure the door.', at: '2026-10-30T17:00' } }),
+    pjObj('pjWb2', 'Fence repair (welcome, not away)', 'act', { createdAt: '2026-10-01T09:00', updatedAt: '2026-11-19T09:00' }),
+    pjObj('pjWbN', 'Loft clear-out (welcome, no note)', 'act', { createdAt: '2026-10-01T09:00', updatedAt: '2026-10-10T09:00' }),
+    pjObj('pjWbD', 'Old shelf (welcome, finished)', 'act', { status: 'done', createdAt: '2026-10-01T09:00', updatedAt: '2026-10-21T09:00' }),
+  ]);
+  await editStorage(`s => { s.tasks.items.push(...${JSON.stringify([
+    wbTk('tkWb1', 'Order the boards', 'pjWb', { done: true, doneOn: '2026-11-02' }),
+    wbTk('tkWb2', 'Book the skip', 'pjWb', { due: '2026-11-15' }),
+    wbTk('tkWb3', 'Collect the window', 'pjWb', { due: '2026-11-23' }),
+    wbTk('tkWb4', 'Measure the door', 'pjWb'),
+  ])}); s.days['2026-11-20'] = { energy: 3, rest: false, builtAt: '2026-11-20T08:00', checkedIn: false, tasks: [] }; }`);
+
+  console.log('  The card, first on the Overview');
+  await wbOpen('pjWb', 20, 1);
+  const wbCards = await ev(`[...document.querySelectorAll('#app [id^=project]')].map(e => e.id).filter(i => ['projectWelcome', 'projectNext', 'projectLeftOff'].includes(i))`);
+  check('a project away 18 days opens with "Welcome back" as the first card on the Overview, before the next step', await exists('#projectWelcome[data-s=welcome-back]') && eq(wbCards, ['projectWelcome', 'projectNext']), wbCards);
+  const d02 = await wbShort('2026-11-02'), d15 = await wbShort('2026-11-15'), d23 = await wbShort('2026-11-23');
+  check('…it says "Away 2 weeks — last worked on" the day of the last work', (await text('[data-s=welcome-away]')).trim() === `Away 2 weeks — last worked on ${d02}`, await text('[data-s=welcome-away]'));
+  check('…"What you did last" lists "Done: Order the boards" first', (await text('[data-s=welcome-did] li')).includes('Done: Order the boards'), await text('[data-s=welcome-did]'));
+  const wbMeanwhile = await wbLinks('[data-s=welcome-meanwhile]');
+  check('…"While you were away" links the date that came and went, still open, to that task', wbMeanwhile.includes(`“Book the skip” — was due ${d15}, still open|#today/tasks/tkWb2`), wbMeanwhile);
+  check('…and the date coming up in the week ahead', wbMeanwhile.some(l => l.startsWith(`“Collect the window” — on ${d23}|`)), wbMeanwhile);
+  check('…"Where you left off" shows the note', (await text('[data-s=welcome-leftoff]')).includes('Boards ordered; next: measure the door.'), await text('[data-s=welcome-leftoff]'));
+  check('…its section is headed "Where I left off"', (await ev(`[...document.querySelectorAll('#projectWelcome h4')].map(h => h.textContent.trim())`)).includes('Where I left off'), await ev(`[...document.querySelectorAll('#projectWelcome h4')].map(h => h.textContent.trim())`));
+  check('…the separate "Where I left off" card is not shown while the welcome card is', !(await exists('#projectLeftOff')));
+  check('…the next step is shown with "Add to today"', (await text('[data-s=welcome-next]')).trim() === 'Measure the door' && (await text('[data-action=welcome-today]')).trim() === 'Add to today', await text('#projectWelcome'));
+
+  console.log('  Add to today, then "Got it"');
+  await click('[data-action=welcome-today]');
+  check('"Add to today" says "Added to today\'s plan." and the button becomes "On today’s plan"', await until(`document.getElementById('toast').textContent.includes("Added to today's plan.")`) && await until(`!document.querySelector('[data-action=welcome-today]') && document.getElementById('projectWelcome').textContent.includes('On today’s plan')`), [await toast(), await text('#projectWelcome')]);
+  check('…and the task is on today\'s plan', (await task('Measure the door')).plannedOn === '2026-11-20', await task('Measure the door'));
+  await click('[data-action=welcome-got-it]');
+  check('"Got it" puts the card away and shows "Where I left off" instead', await until(`!document.getElementById('projectWelcome') && !!document.getElementById('projectLeftOff')`));
+  check('…and moves the keyboard focus to the project\'s title', await until(`document.activeElement && document.activeElement.id === 'projectTitle'`), await ev(`document.activeElement && document.activeElement.id`));
+  const wbSaved = await ev(`localStorage.getItem('myday.projects.welcomed')`);
+  check('…this device remembers it, with the project\'s last-activity stamp', eq(JSON.parse(wbSaved), { pjWb: '2026-11-02T23:59' }), wbSaved);
+  await wbOpen('pjWb', 20, 5);
+  check('reloading the same day: the card stays away', !(await exists('#projectWelcome')) && (await exists('#projectLeftOff')));
+
+  console.log('  A new break greets again; a short one does not');
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkWb1').doneOn = '2026-11-10'; }`);
+  await wbOpen('pjWb', 20, 10);
+  check('after more work, a new break greets again: "Away 10 days"', (await exists('#projectWelcome')) && (await text('[data-s=welcome-away]')).trim().startsWith('Away 10 days — '), await text('[data-s=welcome-away]'));
+  await wbOpen('pjWb', 16, 0);
+  check('a project 6 days away has no welcome card', !(await exists('#projectWelcome')) && (await exists('#projectLeftOff')));
+
+  console.log('  No note, and a finished project');
+  await wbOpen('pjWbN', 20, 15);
+  check('away with no note: the card offers "No note from last time. Leave yourself one for next time?"', (await text('[data-action=welcome-note]')).trim() === 'No note from last time. Leave yourself one for next time?', await text('#projectWelcome'));
+  await click('[data-action=welcome-note]');
+  await until(`!!document.querySelector('#projectWelcome #welcomeLeftOffText')`);
+  await click('#projectWelcome [data-action=leftoff-cancel]');
+  check('cancelling the editor in the card puts the keyboard focus back on the "No note" button', await until(`document.activeElement && document.activeElement.id === 'welcomeNote'`), await ev(`document.activeElement && document.activeElement.id`));
+  await click('[data-action=welcome-note]');
+  check('…which opens the note editor inside the card', await until(`!!document.querySelector('#projectWelcome #welcomeLeftOffText')`));
+  await type('#welcomeLeftOffText', 'Boxes sorted; next: the attic ladder.'); await click('#projectWelcome [data-action=leftoff-save]');
+  await until(`!!document.querySelector('[data-s=welcome-leftoff]')`);
+  const wbN = await project('Loft clear-out (welcome, no note)');
+  check('saving a note there saves it on the project', wbN.leftOff && wbN.leftOff.text === 'Boxes sorted; next: the attic ladder.', wbN);
+  check('…the card stays for the rest of the visit, now showing the note, with the keyboard focus on it', (await exists('#projectWelcome')) && (await text('[data-s=welcome-leftoff]')).includes('Boxes sorted; next: the attic ladder.') && await until(`document.activeElement && document.activeElement.id === 'welcomeLeftOff'`), await ev(`document.activeElement && document.activeElement.id`));
+  await wbOpen('pjWbN', 20, 16);
+  check('opening it again later: saving was work on it, so there is no card, and "Where I left off" shows the note', !(await exists('#projectWelcome')) && (await text('#projectLeftOff')).includes('Boxes sorted; next: the attic ladder.'));
+  await wbOpen('pjWbD', 20, 20);
+  check('a finished project away 30 days has no welcome card', !(await exists('#projectWelcome')));
+
+  console.log('  Projects home');
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkWb1').doneOn = '2026-11-02'; }`);
+  await go('projects', 2026, 11, 20, 9, 25); await until(`!!document.querySelector('.project-card')`);
+  if (!(await exists('#projectList'))) { await click('[data-action=projects-view][data-id=board]'); await until(`!!document.getElementById('projectList')`); }
+  check('the board card of a project away 18 days says "Away 2 weeks"', (await text('.project-card[data-id=pjWb] [data-s=project-away]')).trim() === 'Away 2 weeks', await text('.project-card[data-id=pjWb]'));
+  check('…a project worked on yesterday shows a date, not "Away"', !(await exists('.project-card[data-id=pjWb2] [data-s=project-away]')) && !(await text('.project-card[data-id=pjWb2]')).includes('Away'), await text('.project-card[data-id=pjWb2]'));
+  await click('[data-action=projects-view][data-id=list]'); await until(`!!document.getElementById('projectsList')`);
+  check('in the List view the row says "Away 2 weeks"', (await text('[data-s=project-row][data-id=pjWb]')).includes('Away 2 weeks'), await text('[data-s=project-row][data-id=pjWb]'));
+  await click('[data-action=projects-view][data-id=board]'); await until(`!!document.getElementById('projectList')`);
+
+  console.log('  The card on a phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  await ev(`localStorage.removeItem('myday.projects.welcomed')`); // (the earlier "Got it" was for this same stamp)
+  await wbOpen('pjWb', 20, 30); await until(`!!document.getElementById('projectWelcome')`); await sleep(300);
+  const wbSmall = await ev(`[...document.querySelectorAll('#projectWelcome a, #projectWelcome button')].filter(b => b.getBoundingClientRect().height < 44).map(b => (b.dataset.action || b.textContent.trim().slice(0, 20)) + ':' + Math.round(b.getBoundingClientRect().height))`);
+  check('phone 320 px: the welcome card does not scroll the page sideways', (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
+  check('…and every link and button in it is at least 44 px tall', (await ev(`document.querySelectorAll('#projectWelcome a, #projectWelcome button').length`)) >= 5 && eq(wbSmall, []), wbSmall);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  // A next step waiting on someone, its expected day past: as the Next step card has it — its waiting words and Chase it,
+  // no Add to today.
+  await editStorage(`s => { const t = s.tasks.items.find(x => x.id === 'tkWb1'); s.tasks.items.push({ ...t, id: 'tkWbW', title: 'Fit the door (welcome)', done: false, doneOn: null, createdAt: '2026-10-20T09:00', waiting: { on: 'the joiner', since: '2026-11-01', until: '2026-11-18' } });
+    s.projects.items.find(p => p.id === 'pjWb').nextTaskId = 'tkWbW'; }`);
+  await ev(`localStorage.removeItem('myday.projects.welcomed')`);
+  await wbOpen('pjWb', 20, 35); await until(`!!document.getElementById('projectWelcome')`);
+  check('a next step waiting on someone: its waiting words and Chase it, no Add to today', (await text('[data-s=welcome-next]')) === 'Fit the door (welcome)' && (await text('#projectWelcome')).includes('the joiner')
+    && (await exists('#projectWelcome [data-action=chase]')) && !(await exists('#projectWelcome [data-action=welcome-today]')), await text('#projectWelcome'));
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
