@@ -1,6 +1,6 @@
 # Projects: welcome back after a break (Phase 5, recovery)
 
-**Status:** the owner's decisions in §2 (31 October 2026); being built on branch `welcome-back`. Nothing live without
+**Status:** the owner's decisions in §2 (31 October 2026); for 1.101.0 (branch `welcome-back`). Nothing live without
 the owner's yes. No saved-data, schema, migration or server change.
 **Based on:** source at 1.97.0. Plan: `specs/projects-vision.md` §9 ("Returning after a break": project recovery is an
 early priority; the user's "Where I left off" note, supplemented by changes supported by saved records; "Recently"

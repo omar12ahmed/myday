@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.101.0 — Welcome back after a break:** open a project you haven't worked on for 7 days or more and its Overview
+now starts with **Welcome back** — how long you've been away and the day you last worked on it; what you did last;
+what came up while you were away (what's today or tomorrow first, then dates that came and went and are still open,
+waits now due, later dates this week, decisions open a while, Test and Find out tasks done with nothing recorded —
+each task once and one tap away); your "Where I left off" note, or "Leave yourself one for next time?"; and the next
+step with Add to today. It stays while you work through it; **Got it** puts it away on this device until the next
+break. The Projects home says "Away 3 weeks" on the project's card and list row. Finished projects don't greet you.
+"Last worked on" now also counts a task done (also one ticked only on a day's plan) or let go, and research changes —
+so they also order Projects and Today's "From your projects". Nothing new is saved or synced (Got it is remembered on
+the device only), nothing is sent to AI; going back to 1.100.0 is safe (the card just isn't there).
+
 **1.100.0 — Arabic readings join up as they're said:** the Latin reading under fully vowelled Arabic now joins a word
 to the one before it the way Arabic is spoken. After a vowel the article loses its a — قُلِ الْحَقَّ is "quli l-ḥaqqa",
 فِي الْبَيْتِ "fī l-bayti" (the long vowel kept as written), عَنِ الطَّرِيقِ "ʿani ṭ-ṭarīqi" — and any joining alif is silent:
@@ -1306,7 +1317,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**Welcome back after a break (unreleased; `specs/projects-welcome-back.md`):** opening a project after 7 days or
+**Welcome back after a break (1.101.0; `specs/projects-welcome-back.md`):** opening a project after 7 days or
 more with no work on it (not a finished one), its Overview starts with **Welcome back**: how long you've been away and
 the day you last worked on it; what you did last (each with its day); what came up while you were away — what's today
 or tomorrow first, then dates that came and went and are still open, waits now due, later dates this week, decisions
