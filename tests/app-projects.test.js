@@ -3029,6 +3029,118 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('a next step waiting on someone: its waiting words and Chase it, no Add to today', (await text('[data-s=welcome-next]')) === 'Fit the door (welcome)' && (await text('#projectWelcome')).includes('the joiner')
     && (await exists('#projectWelcome [data-action=chase]')) && !(await exists('#projectWelcome [data-action=welcome-today]')), await text('#projectWelcome'));
 
+  console.log('\n[51] Decisions backed by evidence; tasks toward milestones');
+  const evTk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-10T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const evOpen = async (suffix, m) => { await go(`projects/p/pjEv${suffix}`, 2026, 10, 15, 11, m); await until(`!!document.querySelector('[data-s=project-tabs]')`); await sleep(150); };
+  const evToast = s => until(`document.getElementById('toast').textContent.includes(${JSON.stringify(s)})`);
+  const evFindings = async () => (await data()).research.items.filter(i => i.type === 'finding');
+  const evDc = async () => (await pAt('pjEv')).decisions.find(x => x.id === 'd1');
+  await go('projects', 2026, 10, 15, 11, 0); await reset(); await go('projects', 2026, 10, 15, 11, 0);
+  await seed([pjObj('pjEv', 'Evidence: garden shed', 'decide', {
+    tools: ['research'],
+    milestones: [msObj('m1', 'Base laid'), msObj('m2', 'Walls up')],
+    decisions: [dcObj('d1', 'Larch or pine?', [opObj('oL', 'Larch'), opObj('oP', 'Pine')])],
+  })]);
+  await editStorage(`s => { s.tasks.items.push(...${JSON.stringify([
+    evTk('tkE1', 'Level the ground', 'pjEv', { done: true, doneOn: '2026-10-12' }),
+    evTk('tkE2', 'Pour the slab', 'pjEv'),
+    evTk('tkE3', 'Frame the walls', 'pjEv'),
+    evTk('tkE4', 'Buy stamps (no project)', null),
+  ])}); }`);
+
+  console.log('  The finding form');
+  await evOpen('/research', 1); await until(`!!document.querySelector('[data-action=research-finding-add]')`);
+  await click('[data-action=research-finding-add]'); await until(`!!document.querySelector('[data-s=research-finding-form]')`);
+  const evTargets = await ev(`[...[...document.querySelectorAll('[data-s=research-finding-form] fieldset')].find(f => f.textContent.includes('What it bears on')).querySelectorAll('span.break-words')].map(s => s.textContent.trim())`);
+  check('"What it bears on" lists each option of the decision, with its question', eq(evTargets, ['Option: Larch — Larch or pine?', 'Option: Pine — Larch or pine?']), evTargets);
+  check('…and each has a stance select labelled with how it bears on that option', (await exists('select[aria-label="How it bears on “Larch — Larch or pine?”"]')) && (await exists('select[aria-label="How it bears on “Pine — Larch or pine?”"]')));
+  await type('#rfN-text', 'Larch lasts 25 years (made up)');
+  await type('select[aria-label="How it bears on “Larch — Larch or pine?”"]', 'supports');
+  await click('[data-action=research-finding-save]');
+  await until(`document.querySelectorAll('[data-s=research-finding]').length === 1`);
+  let evF = (await evFindings())[0];
+  check('a finding with Larch = Supports saves what it bears on as that option, supporting', evF && evF.text === 'Larch lasts 25 years (made up)' && eq(evF.about, [{ kind: 'option', id: 'oL', stance: 'supports' }]), evF);
+  check('…and its row says "Supports “Larch” (Larch or pine?)"', (await text('[data-s=research-finding]')).includes('Supports “Larch” (Larch or pine?)'), await text('[data-s=research-finding]'));
+
+  console.log('  The Decisions tab');
+  await editStorage(`s => { s.research.items.push({ id: 'rfE2', type: 'finding', projectId: 'pjEv', createdAt: '2026-10-15T11:05', updatedAt: '2026-10-15T11:05', text: 'Larch splits in frost (made up)', limits: '', on: null, sourceIds: [], about: [{ kind: 'option', id: 'oL', stance: 'contradicts' }] }); }`);
+  await evOpen('/decisions', 3);
+  const evLine = id => `[data-s=option][data-id=${id}] [data-s=opt-evidence]`;
+  await until(`!!document.querySelector('${evLine('oL')}')`);
+  check('Larch shows "2 findings: 1 for · 1 against", linking to the Research tab', (await text(evLine('oL'))).trim() === '2 findings: 1 for · 1 against' && (await ev(`document.querySelector('${evLine('oL')}').getAttribute('href')`)) === '#projects/p/pjEv/research', await text(evLine('oL')));
+  check('…and Pine, with nothing against it, shows no evidence line', !(await exists(evLine('oP'))));
+
+  console.log('  Choosing');
+  await click('[data-s=option][data-id=oL] [data-action=opt-choose]'); await until(`!!document.querySelector('[data-s=dc-choosing-evidence]')`);
+  const evChoosing = await text('[data-s=dc-choosing-evidence]');
+  check('"Choose this" on Larch shows "What the evidence says": Larch 1 for · 1 against, Pine nothing yet', evChoosing.includes('What the evidence says') && evChoosing.includes('Larch — 1 for · 1 against') && evChoosing.includes('Pine — nothing yet'), evChoosing);
+  await click('[data-action=dc-decide]'); await until(`!!document.querySelector('[data-s=dc-decided]')`);
+  check('"Decide" saves what the evidence said on the decision', eq((await evDc()).chosenEvidence, { for: 1, against: 1 }) && (await evDc()).chosen === 'oL', await evDc());
+  check('…and the decided panel says " — with 1 finding for, 1 against"', (await text('[data-s=dc-evidence]')) === ' — with 1 finding for, 1 against', await text('[data-s=dc-evidence]'));
+
+  console.log('  Think again');
+  await click('[data-action=dc-again]'); await until(`!document.querySelector('[data-s=dc-decided]')`);
+  const evHist = ((await evDc()).history || []);
+  check('thinking again keeps the evidence in the last entry of the decision\'s history', evHist.length >= 1 && eq(evHist[evHist.length - 1].evidence, { for: 1, against: 1 }), evHist);
+  await click('[data-s=dc-history] summary'); await until(`!!document.querySelector('[data-s=dc-history-evidence]')`);
+  check('"Previous choices" shows " · with 1 finding for, 1 against"', (await text('[data-s=dc-history-evidence]')) === ' · with 1 finding for, 1 against', await text('[data-s=dc-history-evidence]'));
+
+  console.log('  Experiments');
+  await evOpen('/research', 5); await until(`!!document.querySelector('[data-action=experiment-plan]')`);
+  await click('[data-action=experiment-plan]'); await until(`!!document.querySelector('[data-s=experiment-form]')`);
+  const evTests = await ev(`[...document.querySelectorAll('[data-s=experiment-test]')].map(c => c.closest('label').textContent.trim())`);
+  check('"Plan an experiment" offers the options to test, each starting "Option: "', evTests.length >= 2 && evTests.every(t => t.startsWith('Option: ')) && evTests.some(t => t.includes('Larch')) && evTests.some(t => t.includes('Pine')), evTests);
+  await click('[data-s=experiment-test][data-id=oP]'); await type('#exN-title', 'Leave a pine plank out in the rain (made up)');
+  await click('[data-action=experiment-save]'); await until(`!!document.querySelector('[data-s=experiment]')`);
+  const evX = (await data()).research.items.find(i => i.type === 'experiment');
+  check('planning one that tests Pine saves it as testing that option', evX && eq(evX.tests, [{ kind: 'option', id: 'oP' }]), evX);
+  await click('[data-action=experiment-edit]'); await until(`!!document.querySelector('[data-s=experiment-form]')`);
+  check('editing it starts with the option it tests ticked', await ev(`document.querySelector('[data-s=experiment-test][data-id=oP]').checked`) === true);
+  await type(`#exE-${evX.id}-title`, 'Leave a pine plank out for a week (made up)'); await click('[data-action=experiment-save]');
+  await until(`!document.querySelector('[data-s=experiment-form]')`);
+  const evX2 = (await data()).research.items.find(i => i.type === 'experiment');
+  check('changing only its title keeps the option it tests', evX2 && evX2.title === 'Leave a pine plank out for a week (made up)' && eq(evX2.tests, [{ kind: 'option', id: 'oP' }]), evX2);
+
+  console.log('  Toward a milestone, from the task');
+  await go('today/tasks/tkE2', 2026, 10, 15, 11, 10); await until(`!!document.getElementById('taskMilestone')`);
+  const evOpts = await ev(`[...document.querySelectorAll('#tMilestone option')].map(o => o.textContent.trim())`);
+  check('a task of a project with milestones has a "Toward a milestone" card offering None, Base laid and Walls up', eq(evOpts, ['None', 'Base laid', 'Walls up']), evOpts);
+  await type('#tMilestone', 'm1');
+  check('choosing Base laid saves it on the task and says "It counts toward that milestone now."', await evToast('It counts toward that milestone now.') && (await task('Pour the slab')).milestoneId === 'm1', [await toast(), await task('Pour the slab')]);
+  await sleep(300);
+  await type('#tMilestone', '');
+  check('choosing None takes it off and says "Toward no milestone now."', await evToast('Toward no milestone now.') && !('milestoneId' in (await task('Pour the slab'))), [await toast(), await task('Pour the slab')]);
+  await go('today/tasks/tkE4', 2026, 10, 15, 11, 12); await until(`!!document.getElementById('tProject')`); await sleep(200);
+  check('a task with no project has no milestone card', !(await exists('#taskMilestone')));
+
+  console.log('  The Milestones tab');
+  await editStorage(`s => { for (const t of s.tasks.items) if (t.id === 'tkE1' || t.id === 'tkE2') t.milestoneId = 'm1'; }`);
+  await evOpen('/milestones', 15); await until(`!!document.querySelector('[data-action=ms-tasks]')`);
+  check('Base laid, with one task done and one open toward it, reads "1 of 2 tasks done"', (await text('[data-action=ms-tasks]')).trim() === '1 of 2 tasks done', await text('[data-action=ms-tasks]'));
+  await click('[data-action=ms-tasks]'); await until(`!!document.querySelector('[data-s=ms-task-list]')`);
+  const evList = await text('[data-s=ms-task-list]');
+  check('…opening it lists both tasks', evList.includes('Level the ground') && evList.includes('Pour the slab') && !evList.includes('Frame the walls'), evList);
+  await click('[data-action=ms-reach]'); await until(`(document.querySelector('[data-action=ms-tasks]')?.textContent || '').includes('What got you there')`);
+  if (!(await exists('[data-s=ms-task-list]'))) { await click('[data-action=ms-tasks]'); await until(`!!document.querySelector('[data-s=ms-task-list]')`); }
+  const evAfter = await text('[data-s=ms-task-list]');
+  check('once reached it reads "What got you there: 1 task", and lists only the task that was done', (await text('[data-action=ms-tasks]')).trim() === 'What got you there: 1 task' && evAfter.includes('Level the ground') && !evAfter.includes('Pour the slab'), [await text('[data-action=ms-tasks]'), evAfter]);
+
+  console.log('  On a phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 2, mobile: true });
+  await evOpen('/decisions', 20); await until(`!!document.querySelector('${evLine('oL')}')`);
+  await click('[data-s=option][data-id=oL] [data-action=opt-choose]'); await until(`!!document.querySelector('[data-s=dc-choosing-evidence]')`); await sleep(300);
+  const evPhone = await ev(`['${evLine('oL')}', '[data-action=dc-decide]', '[data-action=dc-cancel]', '[data-s=option][data-id=oP] [data-action=opt-choose]'].map(s => ({ s, h: Math.round(document.querySelector(s).getBoundingClientRect().height) }))`);
+  check('phone 390 px: the Decisions tab while choosing does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  check('…and the evidence link and the buttons are at least 44 px tall', evPhone.every(x => x.h >= 44), evPhone);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('  With Research switched off');
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjEv').tools = []; }`);
+  await evOpen('/decisions', 25); await until(`!!document.querySelector('[data-s=option][data-id=oP] [data-action=opt-choose]')`);
+  await click('[data-s=option][data-id=oP] [data-action=opt-choose]'); await until(`!!document.querySelector('[data-action=dc-decide]')`);
+  await click('[data-action=dc-decide]'); await until(`!!document.querySelector('[data-s=dc-decided]')`);
+  check('with Research off, choosing records no evidence and shows none', (await evDc()).chosen === 'oP' && !('chosenEvidence' in (await evDc())) && !(await exists('[data-s=dc-evidence]')), await evDc());
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

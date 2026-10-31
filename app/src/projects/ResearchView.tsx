@@ -143,10 +143,12 @@ function from(data: MyDayData, f: ResearchFinding): string {
 function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFinding }) {
   const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
+  // What it bears on, quoted ("“Larch” (Larch or pine?)" for an option, so its decision is named outside the quotes).
+  const q = (t: string | undefined, none: string) => (t ? `“${t}”` : none);
   const what = (a: { kind: string; id: string }) => {
-    if (a.kind === 'question') return (data.research.items.find(x => x.id === a.id) as ResearchQuestion | undefined)?.text ?? 'a question';
+    if (a.kind === 'question') return q((data.research.items.find(x => x.id === a.id) as ResearchQuestion | undefined)?.text, 'a question');
     if (a.kind === 'option') { const o = optionOf(p, a.id); return o ? `“${o.option.text}” (${o.decision.question})` : 'an option'; }
-    return p.model?.assumptions.find(x => x.id === a.id)?.text ?? 'something that must be true';
+    return q(p.model?.assumptions.find(x => x.id === a.id)?.text, 'something that must be true');
   };
   async function remove() {
     if (!(await confirm({ title: 'Remove this finding?', body: 'Its sources stay.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
@@ -158,7 +160,7 @@ function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFi
       <p className="m-0 break-words whitespace-pre-line">{f.text}</p>
       <p className="m-0 text-sm text-fg-3">{[f.on && `Found ${shortDate(f.on)}`, from(data, f)].filter(Boolean).join(' · ')}</p>
       {f.limits && <p className="m-0 text-sm text-fg-2 break-words" data-s="research-limits"><span className="font-semibold">Limits:</span> {f.limits}</p>}
-      {f.about.length > 0 && <ul className="list-none p-0 m-0 mt-1">{f.about.map(a => <li key={a.kind + a.id} className="text-sm text-fg-2 break-words">{STANCE_WORD[(STANCES as readonly string[]).includes(a.stance) ? a.stance as Stance : 'relates']} “{what(a)}”</li>)}</ul>}
+      {f.about.length > 0 && <ul className="list-none p-0 m-0 mt-1">{f.about.map(a => <li key={a.kind + a.id} className="text-sm text-fg-2 break-words">{STANCE_WORD[(STANCES as readonly string[]).includes(a.stance) ? a.stance as Stance : 'relates']} {what(a)}</li>)}</ul>}
       <div className="flex flex-wrap gap-x-5 mt-1">
         <LinkButton className="text-[15px]" data-action="research-finding-edit" onClick={() => setEditing(true)}>Edit</LinkButton>
         <LinkButton className="text-[15px]" data-action="research-finding-remove" onClick={remove}>Remove</LinkButton>
