@@ -26,7 +26,7 @@ function check(label, ok) {
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
       'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
       'export { markReady, flagRevisit } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
-      'export { arabicPlan, arabicProgress, arabicSkills, arabicState, checksOf, journeyFor, lengthOn, pathLessons, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
+      'export { arabicPlan, arabicProgress, arabicRoute, arabicSkills, arabicState, checksOf, journeyFor, lengthOn, pathLessons, stepTowards, towardsText, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
       'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
     ].join('\n'));
     const rule = await import(pathToFileURL(await bundle(path.join(dir, 'entry.ts'), path.join(dir, 'out'))).href);
@@ -278,6 +278,88 @@ function check(label, ok) {
         && rule.arabicSkills(a2).skills.every(s => s.guide && s.guide.stage === 'A2' && s.guide.task === ms2.sample_tasks[s.modality]));
       const before = JSON.stringify(g); rule.arabicSkills(g);
       check('working out the four skills saves nothing', JSON.stringify(g) === before);
+    }
+
+    console.log('\n[Route] Arabic: your goal as stages in course order, and where a lesson sits on it');
+    {
+      const cat = rule.arabicCatalogue, idx = cat.lessonIndex;
+      const goalOf = id => { const d = fresh(); d.arabic.pathId = id; return d; };
+      const stageIds = (id, key) => { const g = cat.paths.get(id); return cat.moduleList.filter(m => g.required_module_ids.includes(m.id) && (m.path_class === 'core' ? m.stage_target : 'branch') === key).sort((a, b) => a.sequence - b.sequence).flatMap(m => m.lesson_ids.filter(l => key === 'branch' || !idx[l].optional)); };
+      const summary = d => rule.arabicRoute(d).stages.map(s => s.key + ':' + s.label).join(' | ');
+      const core = goalOf('path.arabic-core-b2'), tech = goalOf('path.arabic-technology'), lit = goalOf('path.arabic-literature');
+      const coreStages = ['Pre-A1:Start · Script and sound foundations', 'A1:A1 · Everyday starting Fuṣḥā', 'A2:A2 · Connected everyday Fuṣḥā', 'B1:B1 · Independent familiar-domain Fuṣḥā', 'B2:B2 · Common core'];
+      const litStages = [...coreStages.slice(0, 4), 'B2:B2 · Argument, viewpoint and critical reading', 'branch:Literary Arabic, stories and style'];
+      check('The core B2 goal is five stages in course order, named from the course\'s own path names', summary(core) === coreStages.join(' | '), summary(core));
+      check('Technology has Start, A1, A2, B1 and its own branch, and no B2', summary(tech) === [...coreStages.slice(0, 4), 'branch:Fuṣḥā for technology and cybersecurity communication'].join(' | '), summary(tech));
+      check('Literature has six stages: its B2 stage takes one module and is named after it, then its branch named after the goal', summary(lit) === litStages.join(' | '), summary(lit));
+      check('A core stage counts its required lessons, but a branch counts all its lessons (they are all optional in the course), so no stage has none', [['path.arabic-core-b2', core], ['path.arabic-technology', tech], ['path.arabic-literature', lit]]
+        .every(([id, d]) => rule.arabicRoute(d).stages.every(s => s.lessons === stageIds(id, s.key).length)) && rule.arabicRoute(core).stages.map(s => s.lessons).join() === '17,25,25,30,25' && rule.arabicRoute(tech).stages[4].lessons === 5 && rule.arabicRoute(lit).stages.map(s => s.lessons).join() === '17,25,25,30,5,5' && rule.arabicRoute(goalOf('path.arabic-quranic')).stages[5].lessons === 10 && ['path.arabic-technology', 'path.arabic-literature', 'path.arabic-translation'].every(id => rule.arabicRoute(goalOf(id)).stages.every(s => s.lessons > 0)), rule.arabicRoute(tech).stages.map(s => s.lessons));
+      check('A new learner starts at the first stage: it is where they are, every later stage is ahead, and nothing is done', rule.arabicRoute(core).stages[0].state === 'here'
+        && rule.arabicRoute(core).stages.slice(1).every(s => s.state === 'ahead') && rule.arabicRoute(core).stages.every(s => s.done === 0), rule.arabicRoute(core).stages.map(s => s.state));
+      check('The route says which goal it is for, by id and by name', rule.arabicRoute(tech).goalId === 'path.arabic-technology' && rule.arabicRoute(tech).goal === 'Fuṣḥā for technology and cybersecurity communication' && rule.arabicRoute(core).goalId === 'path.arabic-core-b2');
+      check('An unknown goal falls back to the core course\'s route', rule.arabicRoute(goalOf('path.nonsense')).goalId === 'path.arabic-core-b2' && summary(goalOf('path.nonsense')) === summary(core));
+      const s0 = stageIds('path.arabic-core-b2', 'Pre-A1'), s1 = stageIds('path.arabic-core-b2', 'A1'), done = (d, ids) => ids.forEach(id => rule.markReady(d, id, rule.checksOf(id), '2026-10-01'));
+      const prog = goalOf('path.arabic-core-b2');
+      done(prog, s0.slice(0, 3));
+      let st = rule.arabicRoute(prog).stages;
+      check('Some of the first stage\'s lessons ready: it shows how many and is still where you are', st[0].done === 3 && st[0].state === 'here' && st[1].state === 'ahead', st.map(s => s.key + ' ' + s.done + ' ' + s.state));
+      for (const id of s0.slice(3)) rule.finishSession(prog, rule.beginSession(prog, id, 'short'));
+      st = rule.arabicRoute(prog).stages;
+      check('Lessons only practised, not marked ready, do not finish a stage', st[0].done === 3 && st[0].state === 'here', st.map(s => s.key + ' ' + s.done + ' ' + s.state));
+      done(prog, s0.slice(3));
+      st = rule.arabicRoute(prog).stages;
+      check('Every lesson of the first stage ready: it is done and you are at the next stage', st[0].state === 'done' && st[0].done === s0.length && st[1].state === 'here' && st[2].state === 'ahead', st.map(s => s.state));
+      done(prog, s1);
+      st = rule.arabicRoute(prog).stages;
+      check('Finishing A1 as well moves "here" on to A2 and leaves exactly one stage "here"', st.map(s => s.state).join() === 'done,done,here,ahead,ahead', st.map(s => s.state));
+      const flagged = JSON.parse(JSON.stringify(prog)); rule.flagRevisit(flagged, s1[0], 'the register words');
+      check('A lesson that needs revision does not count as done: its stage is behind you (the next step is in the next stage), with one to revise', rule.arabicState(flagged, s1[0]) === 'needs-revision' && rule.arabicPlan(flagged).step.lessonId === stageIds('path.arabic-core-b2', 'A2')[0] && rule.arabicRoute(flagged).stages.map(s => s.state).join() === 'done,behind,here,ahead,ahead' && rule.arabicRoute(flagged).stages[1].done === s1.length - 1 && rule.arabicRoute(flagged).stages[1].needs === 1 && rule.arabicRoute(flagged).stages[0].state === 'done', rule.arabicRoute(flagged).stages.map(s => s.state));
+      const all = goalOf('path.arabic-technology');
+      for (const k of ['Pre-A1', 'A1', 'A2', 'B1']) done(all, stageIds('path.arabic-technology', k));
+      check('With every required lesson ready but the optional branch not begun, the core stages are done and you are at the branch', rule.arabicRoute(all).stages.map(s => s.state).join() === 'done,done,done,done,here', rule.arabicRoute(all).stages.map(s => s.state));
+      done(all, stageIds('path.arabic-technology', 'branch'));
+      check('With the branch\'s lessons ready too, every stage is done and none is "here"', rule.arabicRoute(all).stages.every(s => s.state === 'done') && rule.arabicRoute(all).stages[4].done === 5, rule.arabicRoute(all).stages.map(s => s.state));
+      const coreAll = goalOf('path.arabic-core-b2');
+      for (const k of ['Pre-A1', 'A1', 'A2', 'B1', 'B2']) done(coreAll, stageIds('path.arabic-core-b2', k));
+      check('The core B2 goal with every required lesson ready is all done: no stage is "here"', rule.arabicRoute(coreAll).stages.every(s => s.state === 'done'), rule.arabicRoute(coreAll).stages.map(s => s.state));
+      // The reviewer's case: one Start lesson needs revision while the next step is in B1.
+      const rev = goalOf('path.arabic-core-b2');
+      for (const k of ['Pre-A1', 'A1', 'A2']) done(rev, stageIds('path.arabic-core-b2', k));
+      rule.flagRevisit(rev, s0[2], 'the register words');
+      const revPlan = rule.arabicPlan(rev), revStages = rule.arabicRoute(rev).stages;
+      check('One lesson needing revision in Start while the next step is in B1: Start is behind you with one to revise, A1 and A2 are done and B1 is where you are', revStages.map(s => s.state).join() === 'behind,done,done,here,ahead' && revStages[0].needs === 1 && revStages[0].done === s0.length - 1 && revStages[3].needs === 0, [revPlan.step, revStages.map(s => s.state + ' ' + s.needs)]);
+      check('…the route follows the plan it is given: with the plan passed in, "here" is that plan\'s stage', JSON.stringify(rule.arabicRoute(rev, revPlan).stages.map(s => s.state)) === JSON.stringify(revStages.map(s => s.state)));
+      const ms = key => cat.milestones.find(m => m.stage_target === key), skillWord = { listening: 'Listening', reading: 'Reading', speaking: 'Speaking', writing: 'Writing' };
+      const rc = rule.arabicRoute(core).stages;
+      check('A1 to B2 stages list the course milestone\'s sample tasks, one line per skill, as "Skill: task"', ['A1', 'A2', 'B1', 'B2'].every(k => { const s = rc.find(x => x.key === k); return JSON.stringify(s.can) === JSON.stringify(Object.entries(ms(k).sample_tasks).map(([sk, t]) => skillWord[sk] + ': ' + t)) && s.can.length === 4 && /^(Listening|Reading|Speaking|Writing): /.test(s.can[0]); }), rc[1].can);
+      check('Every stage also counts the lessons needing revision (none yet)', rule.arabicRoute(core).stages.every(s => s.needs === 0));
+      check('…for example A2 begins with its Listening task, taken straight from the milestone', rc[2].can[0] === 'Listening: ' + ms('A2').sample_tasks.listening, rc[2].can[0]);
+      const startMods = cat.moduleList.filter(m => cat.paths.get('path.arabic-core-b2').required_module_ids.includes(m.id) && m.stage_target === 'Pre-A1' && m.path_class === 'core').sort((a, b) => a.sequence - b.sequence);
+      check('Start has no milestone, so it lists its modules\' purposes', !ms('Pre-A1') && JSON.stringify(rc[0].can) === JSON.stringify(startMods.map(m => m.purpose)) && rc[0].can.length === 3, rc[0].can);
+      const bm = cat.moduleList.filter(m => cat.paths.get('path.arabic-literature').required_module_ids.includes(m.id) && m.path_class !== 'core').sort((a, b) => a.sequence - b.sequence);
+      check('A branch lists its modules\' purposes too (literature one, Qur\'anic Arabic two), never milestone tasks', JSON.stringify(rule.arabicRoute(lit).stages[5].can) === JSON.stringify(bm.map(m => m.purpose))
+        && rule.arabicRoute(goalOf('path.arabic-quranic')).stages[5].can.length === 2 && !rule.arabicRoute(lit).stages[5].can.some(c => /^(Listening|Reading|Speaking|Writing): /.test(c)), rule.arabicRoute(lit).stages[5].can);
+      const litB2Module = cat.moduleList.filter(m => cat.paths.get('path.arabic-literature').required_module_ids.includes(m.id) && m.path_class === 'core' && m.stage_target === 'B2');
+      check('On the literature goal the B2 stage is one module, "B2 · <module name>", and what it lists is that module\'s purpose, not the B2 milestone\'s tasks', litB2Module.length === 1 && rule.arabicRoute(lit).stages[4].label === 'B2 · ' + litB2Module[0].name
+        && JSON.stringify(rule.arabicRoute(lit).stages[4].can) === JSON.stringify([litB2Module[0].purpose]) && ['path.arabic-classical', 'path.arabic-quranic'].every(id => { const st = rule.arabicRoute(goalOf(id)).stages[4]; return st.label.startsWith('B2 · ') && st.can.length === 1 && !/^Listening: /.test(st.can[0]); }), rule.arabicRoute(lit).stages[4]);
+      check('…while the core B2 goal keeps the milestone\'s four tasks, because B2\'s closing module is on it', rc[4].can.length === 4 && rc[4].can[0] === 'Listening: ' + ms('B2').sample_tasks.listening);
+      const reg = 'lesson.arabic-fusha-register', branchLesson = cat.moduleList.find(m => m.path_class !== 'core' && cat.paths.get('path.arabic-technology').required_module_ids.includes(m.id)).lesson_ids[0];
+      check('A lesson in the first stage is stage 1 of 5 towards the core B2 goal, with the stage\'s label', JSON.stringify(rule.stepTowards(core, reg)) === JSON.stringify({ goal: 'Common core: B2 target', stage: 'Start · Script and sound foundations', at: 1, of: 5, branch: false }), rule.stepTowards(core, reg));
+      const a2Lesson = stageIds('path.arabic-literature', 'A2')[0];
+      check('A lesson in A2 is stage 3 of 6 towards the literature goal', JSON.stringify(rule.stepTowards(lit, a2Lesson)) === JSON.stringify({ goal: 'Literary Arabic, stories and style', stage: 'A2 · Connected everyday Fuṣḥā', at: 3, of: 6, branch: false }), rule.stepTowards(lit, a2Lesson));
+      check('A branch lesson is the last stage of its own goal (5 of 5 for technology), marked as the branch', JSON.stringify(rule.stepTowards(tech, branchLesson)) === JSON.stringify({ goal: 'Fuṣḥā for technology and cybersecurity communication', stage: 'Fuṣḥā for technology and cybersecurity communication', at: 5, of: 5, branch: true }), rule.stepTowards(tech, branchLesson));
+      check('The same branch lesson is not on the route to the core B2 goal: null', rule.stepTowards(core, branchLesson) === null, rule.stepTowards(core, branchLesson));
+      const b2Lesson = stageIds('path.arabic-core-b2', 'B2')[0];
+      check('A B2 lesson is stage 5 of 5 on the core goal but not on the technology route, which stops at B1', rule.stepTowards(tech, b2Lesson) === null && rule.stepTowards(core, b2Lesson).at === 5, rule.stepTowards(tech, b2Lesson));
+      check('A lesson the course doesn\'t have is on no route: null', rule.stepTowards(core, 'lesson.arabic-not-a-lesson') === null);
+      check('"A step towards" says stage i of n and the stage for a core lesson', rule.towardsText(rule.stepTowards(core, reg)) === 'A step towards “Common core: B2 target”: stage 1 of 5, Start · Script and sound foundations', rule.towardsText(rule.stepTowards(core, reg)));
+      check('…says "the goal\'s own stage" for a branch lesson', rule.towardsText(rule.stepTowards(tech, branchLesson)) === 'A step towards “Fuṣḥā for technology and cybersecurity communication”, the goal’s own stage (5 of 5)', rule.towardsText(rule.stepTowards(tech, branchLesson)));
+      const startGoal = goalOf('path.arabic-start');
+      check('…and just the goal for a goal of one stage (Script and sound foundations)', rule.towardsText(rule.stepTowards(startGoal, reg)) === 'A step towards “Script and sound foundations”' && rule.arabicRoute(startGoal).stages.length === 1, rule.towardsText(rule.stepTowards(startGoal, reg)));
+      const snap = JSON.stringify(prog); rule.arabicRoute(prog); rule.stepTowards(prog, s1[0]);
+      check('Working out the route and a step saves nothing', JSON.stringify(prog) === snap);
+      check('Study home\'s glance has no step when every required lesson is ready (the path is complete) or none for a goal with no next lesson', rule.learningGlance(coreAll).arabic.towards === null && rule.learningGlance(all).arabic.towards === null, [rule.learningGlance(coreAll).arabic.towards, rule.learningGlance(all).arabic.towards]);
+      check('Study home\'s glance carries the step for the next Arabic lesson: the first lesson, stage 1 of 5, on the core goal', JSON.stringify(rule.learningGlance(core).arabic.towards) === JSON.stringify(rule.stepTowards(core, reg)) && rule.learningGlance(core).arabic.towards.at === 1, rule.learningGlance(core).arabic.towards);
     }
 
     console.log('\n[Arabic] Selected required paths and open sessions');

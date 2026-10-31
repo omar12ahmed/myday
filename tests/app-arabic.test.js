@@ -732,5 +732,131 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('at 360 px a known word\'s row, with its check button, doesn\'t scroll sideways', await exists(`${row(KN)} [data-action="ar-word-check"]`) && await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`(() => { const r = document.querySelector('${row(KN)}').getBoundingClientRect(); return r.right <= innerWidth && document.querySelector('${row(KN)} [data-action="ar-word-check"]').getBoundingClientRect().right <= innerWidth; })()`), await ev('[document.documentElement.scrollWidth, innerWidth]'));
   await send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[17] Your route: the goal as stages on the map, "A step towards …" on lessons and Study home');
+  {
+    const KEYD = 'myday.data.v4', HOME = 'myday.arabic.towardshome';
+    const edit = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); (${fn})(s); localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    const raw = () => ev(`localStorage.getItem('${KEYD}')`), homeKey = () => ev(`localStorage.getItem('${HOME}')`);
+    const until = async (predicate, label, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return true; await sleep(100); } throw new Error('Timed out waiting for ' + label); };
+    const stages = () => ev(`[...document.querySelectorAll('[data-ar-route] [data-ar-route-stage]')].map(e => e.dataset.arRouteStage + ':' + e.dataset.state)`);
+    const labels = () => ev(`[...document.querySelectorAll('[data-ar-route] [data-ar-route-stage] > p:first-child')].map(e => e.textContent)`);
+    const setGoal = async id => { await ev(`(() => { const s = document.querySelector('[data-s="ar-path"]'); s.value = ${JSON.stringify(id)}; s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await until(async () => (await ev(`document.querySelector('[data-ar-route]')?.dataset.arRoute`)) === id, 'the route for ' + id); };
+    const mods = id => curriculum.modules.filter(m => curriculum.paths.find(p => p.id === id).required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence);
+    const startLessons = mods('path.arabic-start').flatMap(m => m.lesson_ids.filter(l => !byId.get(l).optional));
+    const milestone = k => curriculum.milestones.find(m => m.stage_target === k);
+    const CORE = 'Common core: B2 target', LIT = 'Literary Arabic, stories and style';
+    const a2Lesson = mods('path.arabic-literature').filter(m => m.path_class === 'core' && m.stage_target === 'A2').flatMap(m => m.lesson_ids.filter(l => !byId.get(l).optional))[0];
+    const branchLesson = mods('path.arabic-technology').filter(m => m.path_class !== 'core')[0].lesson_ids[0];
+    const towardsOf = () => ev(`document.querySelector('[data-ar-towards]')?.textContent ?? null`);
+
+    await go('study'); await ev('localStorage.clear()'); await go('study/arabic'); await wait('[data-ar-route]');
+    await edit(s => { s.arabic.pathId = 'path.arabic-core-b2'; s.arabic.attempts = []; s.arabic.lessons = []; s.arabic.cards = []; });
+    await go('study/arabic'); await wait('[data-ar-route]');
+    check('under Your goal the map shows Your route for the core B2 goal: five stages in course order, you are at the first and the rest are ahead', await exists('section[data-ar-route="path.arabic-core-b2"]')
+      && (await stages()).join() === 'Pre-A1:here,A1:ahead,A2:ahead,B1:ahead,B2:ahead', await stages());
+    check('…named from the course: Start, A1, A2, B1 and B2, with how many lessons are ready', (await labels()).join(' | ') === 'Start · Script and sound foundations | A1 · Everyday starting Fuṣḥā | A2 · Connected everyday Fuṣḥā | B1 · Independent familiar-domain Fuṣḥā | B2 · Common core'
+      && (await T.text('[data-ar-route-stage="Pre-A1"]')).includes(`0 of ${startLessons.length} lessons ready`) && startLessons.length === 17, await labels());
+    check('where you are shows what you\'ll be able to do, open: the purposes of the Start modules', await ev(`(() => { const e = document.querySelector('[data-ar-route-stage="Pre-A1"]'); return !e.querySelector('details') && e.querySelectorAll('ul li').length === 3 && e.textContent.includes('By the end of it:'); })()`));
+    check('every stage ahead folds its can-do list in a closed disclosure, with the course milestone\'s four tasks', await ev(`['A1','A2','B1','B2'].every(k => { const d = document.querySelector('[data-ar-route-stage="' + k + '"] details'); return !!d && d.open === false && d.querySelectorAll('li').length === 4; })`));
+    check('…A2 begins with the milestone\'s own Listening task, and writes "Skill: task"', (await T.text('[data-ar-route-stage="A2"] details li')) === 'Listening: ' + milestone('A2').sample_tasks.listening, await T.text('[data-ar-route-stage="A2"] details li'));
+    // The next-step card and the lesson header.
+    check('the next-step card says "A step towards …" under its title', await exists('[data-ar-next] [data-ar-towards]') && (await T.text('[data-ar-next] [data-ar-towards]')) === `A step towards “${CORE}”: stage 1 of 5, Start · Script and sound foundations`
+      && await ev(`(() => { const c = document.querySelector('[data-ar-next]'), t = c.querySelector('[data-ar-towards]'), h = c.querySelector('h3'); return !!(h.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING); })()`), await T.text('[data-ar-next]'));
+    // Stages become done as lessons become ready.
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.lessons = ${JSON.stringify(startLessons.slice(0, 5).map(id => ({ id, readyOn: '2026-10-10' })))}; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    await go('study/arabic'); await wait('[data-ar-route]');
+    check('with five Start lessons ready the stage says 5 of 17 and you are still there', (await T.text('[data-ar-route-stage="Pre-A1"]')).includes('5 of 17 lessons ready') && (await stages())[0] === 'Pre-A1:here', await stages());
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.lessons = ${JSON.stringify(startLessons.map(id => ({ id, readyOn: '2026-10-10' })))}; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    await go('study/arabic'); await wait('[data-ar-route]');
+    check('with every Start lesson ready, Start is done and you are at A1, whose can-do list is now open', (await stages()).join() === 'Pre-A1:done,A1:here,A2:ahead,B1:ahead,B2:ahead' && await ev(`(() => { const e = document.querySelector('[data-ar-route-stage="A1"]'); return !e.querySelector('details') && e.querySelectorAll('ul li').length === 4; })()`)
+      && await exists('[data-ar-route-stage="Pre-A1"] details'), await stages());
+    check('…and the next-step card now says stage 2 of 5, A1', (await T.text('[data-ar-next] [data-ar-towards]')) === `A step towards “${CORE}”: stage 2 of 5, A1 · Everyday starting Fuṣḥā`, await T.text('[data-ar-next] [data-ar-towards]'));
+    // A revision round has no line.
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.cards = [{ id: 'lexeme.arabic-seed-001:recognise', addedOn: '2026-10-01', review: { reps: 1, interval: 1, lapses: 0, due: '2026-10-05' } }]; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    await go('study/arabic'); await wait('[data-ar-next]');
+    check('when the next step is a revision round, the card shows no "step towards" line, though the route stays', await exists('[data-ar-next="revise"]') && !(await exists('[data-ar-next] [data-ar-towards]')) && await exists('[data-ar-route]'), await ev(`document.querySelector('[data-ar-next]')?.dataset.arNext`));
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.cards = []; s.arabic.lessons = []; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    check('the route is a list whose current stage is marked, and a folded stage\'s summary also says which stage it follows (for screen readers)', await ev(`(() => { const ol = document.querySelector('[data-ar-route] ol'); return ol.getAttribute('role') === 'list' && ol.querySelectorAll('[aria-current="step"]').length === 1 && ol.querySelector('[aria-current="step"]').dataset.state === 'here'
+      && document.querySelector('[data-ar-route-stage="B2"] summary .sr-only').textContent === ' after B2 · Common core' && document.querySelector('[data-ar-route-stage="B2"] summary').textContent.startsWith('What you’ll be able to do'); })()`));
+    // No line once the whole path is ready.
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.pathId = 'path.arabic-start'; s.arabic.lessons = ${JSON.stringify(startLessons.map(id => ({ id, readyOn: '2026-10-10' })))}; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    await go('study/arabic'); await wait('[data-ar-next]');
+    check('when every lesson on the goal is ready, the next-step card shows no "step towards" line and no stage is where you are', await exists('[data-ar-next="complete"]') && !(await exists('[data-ar-next] [data-ar-towards]')) && (await stages()).join() === 'Pre-A1:done', await stages());
+    await ev(`localStorage.removeItem('${HOME}')`);
+    await go('study'); await wait('.arabic-entry'); await sleep(600);
+    check('…and Study home\'s Arabic card shows no line either', !(await exists('[data-ar-home-towards]')) && !(await exists('[data-ar-home-towards-hidden]')));
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.pathId = 'path.arabic-core-b2'; s.arabic.lessons = ${JSON.stringify(startLessons.slice(0, 16).map(id => ({ id, readyOn: '2026-10-10' })).concat([{ id: startLessons[16], readyOn: '2026-10-10', revisit: { since: '2026-10-11', what: 'the register words' } }]))}; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    await go('study/arabic'); await wait('[data-ar-route]');
+    check('a lesson that needs revision shows in its stage\'s status line: "· 1 to revise", and Start is not done', (await T.text('[data-ar-route-stage="Pre-A1"] > p:nth-child(2)')).endsWith('16 of 17 lessons ready · 1 to revise') && (await stages())[0] !== 'Pre-A1:done', await T.text('[data-ar-route-stage="Pre-A1"] > p:nth-child(2)'));
+    await ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEYD}')); s.arabic.lessons = []; localStorage.setItem('${KEYD}', JSON.stringify(s)); })()`);
+    // Changing the goal.
+    await go('study/arabic'); await wait('[data-s="ar-path"]');
+    await setGoal('path.arabic-technology');
+    check('choosing Technology changes the route to Start, A1, A2, B1 and its own branch, with no B2', (await stages()).map(x => x.split(':')[0]).join() === 'Pre-A1,A1,A2,B1,branch'
+      && (await labels())[4] === 'Fuṣḥā for technology and cybersecurity communication' && (await AR()).pathId === 'path.arabic-technology', await stages());
+    check('…its branch stage lists its module purpose, not milestone tasks, and says its five lessons are optional in the course', await ev(`(() => { const li = document.querySelector('[data-ar-route-stage="branch"]'); return li.querySelectorAll('li').length === 1 && !/^(Listening|Reading|Speaking|Writing):/.test(li.querySelector('li').textContent); })()`)
+      && (await T.text('[data-ar-route-stage="branch"] > p:nth-child(2)')) === 'Ahead · 0 of 5 lessons ready (optional lessons in the course)', await T.text('[data-ar-route-stage="branch"] > p:nth-child(2)'));
+    check('…and the next-step card follows it', (await T.text('[data-ar-next] [data-ar-towards]')) === 'A step towards “Fuṣḥā for technology and cybersecurity communication”: stage 1 of 5, Start · Script and sound foundations', await T.text('[data-ar-next] [data-ar-towards]'));
+    await setGoal('path.arabic-literature');
+    check('choosing Literature gives six stages: its B2 stage is one module, named after it, then a branch named after the goal', (await stages()).map(x => x.split(':')[0]).join() === 'Pre-A1,A1,A2,B1,B2,branch' && (await labels())[5] === LIT
+      && (await labels())[4] === 'B2 · ' + mods('path.arabic-literature').find(m => m.path_class === 'core' && m.stage_target === 'B2').name, await labels());
+    check('…and that B2 stage lists the one module\'s purpose, not the B2 milestone\'s four tasks', await ev(`document.querySelectorAll('[data-ar-route-stage="B2"] li').length === 1 && !/^Listening:/.test(document.querySelector('[data-ar-route-stage="B2"] li').textContent)`));
+    // A lesson's header.
+    await go('study/arabic/' + a2Lesson); await wait('[data-ar-session]');
+    check('a lesson on the route says what it is a step towards, in its header', await towardsOf() === `A step towards “${LIT}”: stage 3 of 6, A2 · Connected everyday Fuṣḥā`, await towardsOf());
+    check('…and says it just once on the page', await count('[data-ar-towards]') === 1);
+    await go('study/arabic/' + branchLesson); await wait('[data-ar-session]');
+    check('a lesson that is not on the goal\'s route (a Technology branch lesson, with Literature as the goal) shows no line', !(await exists('[data-ar-towards]')), await towardsOf());
+    await go('study/arabic'); await wait('[data-s="ar-path"]'); await setGoal('path.arabic-technology');
+    await go('study/arabic/' + branchLesson); await wait('[data-ar-session]');
+    check('the same branch lesson, with Technology as the goal, is the goal\'s own stage (5 of 5)', await towardsOf() === 'A step towards “Fuṣḥā for technology and cybersecurity communication”, the goal’s own stage (5 of 5)', await towardsOf());
+    await go('study/arabic'); await wait('[data-s="ar-path"]'); await setGoal('path.arabic-core-b2');
+    // Study home.
+    await ev(`localStorage.removeItem('${HOME}')`);
+    await go('study'); await until(() => exists('[data-ar-home-towards]'), 'the line on Study home');
+    const goalLine = `Your next lesson is a step towards “${CORE}”: stage 1 of 5, Start · Script and sound foundations`;
+    check('Study home\'s Arabic card says what the next lesson is a step towards, with a Hide button', (await T.text('.arabic-entry [data-ar-home-towards] p')) === goalLine && await exists('.arabic-entry [data-ar-home-towards] [data-action="ar-towards-hide"]') && await ev(`document.querySelector('[data-action="ar-towards-hide"]').getAttribute('aria-label')`) === 'Hide this line', await T.text('.arabic-entry [data-ar-home-towards]'));
+    const before = await raw();
+    check('before Hide, the status line is there but empty and not marked hidden', await ev(`(() => { const p = document.querySelector('.arabic-entry p[role="status"]'); return !!p && p.textContent === '' && !p.hasAttribute('data-ar-home-towards-hidden'); })()`));
+    await click('[data-action="ar-towards-hide"]'); await until(() => exists('[data-ar-home-towards-hidden]'), 'the hidden note');
+    check('Hide removes the line and says how to bring it back, in the status line', !(await exists('[data-ar-home-towards]')) && (await T.text('p[role="status"][data-ar-home-towards-hidden]')) === 'Hidden here. To show it again: Arabic, under Your route.', await T.text('.arabic-entry'));
+    check('…and focus moves to that status line, so it is read out', await until(() => ev(`document.activeElement === document.querySelector('p[role="status"][data-ar-home-towards-hidden]')`), 'focus on the status line').catch(() => false));
+    check('…remembering it on this device only', await homeKey() === 'hidden');
+    check('…and the hidden line leaves the saved MyDay data exactly as it was', await raw() === before);
+    await go('study'); await wait('.arabic-entry');
+    check('after a reload the line stays hidden, with no note either', !(await exists('[data-ar-home-towards]')) && !(await exists('[data-ar-home-towards-hidden]')) && await T.text('.arabic-entry p[role="status"]') === '' && await homeKey() === 'hidden');
+    await go('study/arabic'); await wait('[data-action="ar-towards-home"]');
+    check('under Your route, "Show it on Study home" is a switch that is off', await ev(`document.querySelector('[data-action="ar-towards-home"]').getAttribute('role') === 'switch' && document.querySelector('[data-action="ar-towards-home"]').getAttribute('aria-checked') === 'false'`) && await ev(`(() => { const b = document.querySelector('[data-action="ar-towards-home"]'), n = document.getElementById(b.getAttribute('aria-describedby')); return b.textContent.trim() === 'Show the next step’s goal on Study home' && !!n && n.textContent === 'On Study’s Arabic card. Remembered on this device.'; })()`));
+    await click('[data-action="ar-towards-home"]'); await sleep(200);
+    check('turning it on remembers "shown" and flips the switch', await homeKey() === 'shown' && await ev(`document.querySelector('[data-action="ar-towards-home"]').getAttribute('aria-checked') === 'true'`));
+    await go('study'); await until(() => exists('[data-ar-home-towards]'), 'the line back on Study home');
+    check('…and the line is back on Study home\'s Arabic card', (await T.text('[data-ar-home-towards] p')) === goalLine && !(await exists('[data-ar-home-towards-hidden]')));
+    check('…and after another reload it is still there', await (async () => { await go('study'); await sleep(300); return until(() => exists('[data-ar-home-towards]'), 'the line after reload').catch(() => false); })());
+    await go('study/arabic'); await wait('[data-action="ar-towards-home"]'); await click('[data-action="ar-towards-home"]'); await sleep(200);
+    await go('study'); await wait('.arabic-entry'); await sleep(500);
+    check('turning it off from the map hides the line on Study home without the note, and stores "hidden"', await homeKey() === 'hidden' && !(await exists('[data-ar-home-towards]')) && !(await exists('[data-ar-home-towards-hidden]')));
+    check('none of this changed the saved MyDay data', await raw() === before, 'raw data compared');
+    // Today's Study card never shows it.
+    await ev(`localStorage.setItem('${HOME}', 'shown')`);
+    await edit(s => { s.study.settings.primarySubject = 'arabic'; });
+    await go('today'); await until(() => exists('#slot-study [data-subject="arabic"] a[data-action="continue-learning"]'), 'Today\'s Arabic choice');
+    check('Today\'s Study card offers the Arabic lesson but never says what it is a step towards, even with the line shown', !(await exists('#slot-study [data-ar-home-towards]')) && !(await exists('#slot-study [data-ar-towards]')) && !(await T.text('#slot-study')).includes('step towards'), await T.text('#slot-study'));
+    // 360 px.
+    await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
+    await go('study/arabic'); await wait('[data-s="ar-path"]'); await setGoal('path.arabic-literature');
+    await ev(`document.querySelectorAll('[data-ar-route] details').forEach(d => { d.open = true; })`); await sleep(300);
+    check('at 360 px Your route (with every stage open, on the six-stage Literature goal) doesn\'t scroll sideways', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`(() => { const r = document.querySelector('[data-ar-route]'); return [...r.querySelectorAll('*')].every(e => e.getBoundingClientRect().right <= innerWidth + 1); })()`), await ev('[document.documentElement.scrollWidth, innerWidth]'));
+    await setGoal('path.arabic-core-b2');
+    await click('[data-action="ar-towards-home"]'); await sleep(200); await go('study/arabic'); await wait('[data-action="ar-towards-home"]');
+    check('…and the switch under it is at least 44 px tall within the screen', await ev(`(() => { const r = document.querySelector('[data-action="ar-towards-home"]').getBoundingClientRect(); return r.height >= 44 && r.right <= innerWidth; })()`));
+    await ev(`localStorage.setItem('${HOME}', 'shown')`);
+    await go('study'); await until(() => exists('[data-ar-home-towards]'), 'the line on Study home at 360 px');
+    check('at 360 px the line on Study home, with its Hide button, doesn\'t scroll sideways and Hide is at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`(() => { const r = document.querySelector('[data-action="ar-towards-hide"]').getBoundingClientRect(); return r.height >= 44 && r.right <= innerWidth; })()`));
+    await click('[data-action="ar-towards-hide"]'); await until(() => exists('[data-ar-home-towards-hidden]'), 'the note at 360 px');
+    check('…and neither does the note that replaces it', await ev('document.documentElement.scrollWidth === innerWidth'));
+    await send('Emulation.clearDeviceMetricsOverride');
+  }
+
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });
