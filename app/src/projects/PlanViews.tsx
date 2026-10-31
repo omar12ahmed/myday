@@ -13,7 +13,7 @@ import {
   addDecision, addMilestone, addOption, addPoint, chosenOption, decide, decisionHistory, decisionsInOrder, editMilestone, editOption, editPoint, editQuestion,
   milestoneProgress, milestoneTasks, moveMilestone, PLAN_LIMITS, removeDecision, removeMilestone, removeOption, setReached, thinkAgain, type Side,
 } from '../data/projectPlan';
-import { evidenceWords, findingsAbout, hasResearch, optionEvidenceLine } from '../data/research';
+import { evidenceWords, findingsAbout, hasResearch, optionEvidenceCounts, optionEvidenceLine } from '../data/research';
 import { isDone } from '../data/tasks';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
@@ -259,7 +259,7 @@ function DecisionCard({ data, p, x }: { data: MyDayData; p: Project; x: Decision
                   {anyEvidence && (
                     <div className="text-[15px]" data-s="dc-choosing-evidence">
                       <p className="m-0 font-semibold">What the evidence says</p>
-                      <ul className="list-none p-0 m-0">{x.options.map(y => <li key={y.id} className="break-words">{y.text}: {evidence(y) || 'nothing yet'}</li>)}</ul>
+                      <ul className="list-none p-0 m-0">{x.options.map(y => <li key={y.id} className="break-words">{y.text} — {optionEvidenceCounts(findingsAbout(data, p.id, 'option', y.id)) || 'nothing yet'}</li>)}</ul>
                     </div>
                   )}
                   <Field label="Why this one? (optional)" htmlFor={`dcWhy-${x.id}`}><TextArea id={`dcWhy-${x.id}`} rows={3} maxLength={PLAN_LIMITS.why} value={why} onChange={e => setWhy(e.target.value)} /></Field>

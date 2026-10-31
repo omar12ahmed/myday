@@ -101,11 +101,12 @@ export function optionEvidence(d: MyDayData, projectId: string, optionId: string
   const e = findingsAbout(d, projectId, 'option', optionId);
   return { for: e.supports.length, against: e.contradicts.length };
 }
+// "2 for · 1 against · 1 related" ('' when none).
+export const optionEvidenceCounts = (e: Record<Stance, ResearchFinding[]>) =>
+  [e.supports.length && `${e.supports.length} for`, e.contradicts.length && `${e.contradicts.length} against`, e.relates.length && `${e.relates.length} related`].filter(Boolean).join(' · ');
 export function optionEvidenceLine(e: Record<Stance, ResearchFinding[]>): string {
   const n = e.supports.length + e.contradicts.length + e.relates.length;
-  if (!n) return '';
-  return [e.supports.length && `${e.supports.length} for`, e.contradicts.length && `${e.contradicts.length} against`, e.relates.length && `${e.relates.length} related`]
-    .filter(Boolean).join(' · ').replace(/^/, `${n === 1 ? '1 finding' : `${n} findings`}: `);
+  return n ? `${n === 1 ? '1 finding' : `${n} findings`}: ${optionEvidenceCounts(e)}` : '';
 }
 export const evidenceWords = (e: OptionEvidence) => (e.for || e.against ? [e.for && `${e.for} finding${e.for === 1 ? '' : 's'} for`, e.against && `${e.against} against`].filter(Boolean).join(', ') : '');
 // A decision's option in this project, with its decision (by the option's id).
