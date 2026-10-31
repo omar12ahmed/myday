@@ -19,6 +19,10 @@ import { HomelessDeletedFiles } from '../files/FilesCard';
 import { NeedsYouCard, ProjectList } from './NeedsYou';
 import { needsYou } from '../data/attention';
 import { awayFor, awayWords, isAway } from '../data/welcomeBack';
+import { archive, AREA_COLOURS, areaOfProject, areasOf, areaVar, COLOUR_LABEL, finishedLabel, recolourArea, renameArea, type Area } from '../data/areas';
+import { editProject } from '../data/projects';
+import { CommitInput } from '../components/Field';
+import { AreaDot, AreaLabel } from './AreaBits';
 
 // Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>), your notes
 // (#projects/notes…) and how they connect (#projects/connections, the knowledge graph). A project gathers everything
@@ -45,11 +49,21 @@ export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }
 // The Projects home's Board · List choice, kept on this device (`myday.projects.view`; anything else reads as the board).
 const VIEW_KEY = 'myday.projects.view';
 const savedView = (): 'board' | 'list' => { try { return localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'board'; } catch { return 'board'; } };
+// The area shown (specs/projects-areas-archive.md), likewise kept on this device (`myday.projects.area`): 'all', 'none'
+// or an area's name; an area no longer used reads as all.
+const AREA_KEY = 'myday.projects.area';
+const savedArea = () => { try { return localStorage.getItem(AREA_KEY) || 'all'; } catch { return 'all'; } };
+const sameName = (a: string, b: string) => a.toLocaleLowerCase() === b.toLocaleLowerCase();
 function ProjectsHome({ data }: { data: MyDayData }) {
   const [text, setText] = useState('');
   const [kind, setKind] = useState<TemplateChoice>('general');
-  const active = projectsInOrder(data, 'active'), paused = projectsInOrder(data, 'paused'), done = projectsInOrder(data, 'done');
   const [view, setView] = useState<'board' | 'list'>(savedView);
+  const [areaPick, setAreaPick] = useState(savedArea), [managing, setManaging] = useState(false);
+  const areas = areasOf(data), pick = areaPick === 'all' || areaPick === 'none' || areas.some(a => sameName(a.name, areaPick)) ? areaPick : 'all';
+  const fits = (p: Project) => (pick === 'all' ? true : pick === 'none' ? !p.area : !!p.area && sameName(p.area, pick));
+  const showArea = (a: string) => { setAreaPick(a); try { localStorage.setItem(AREA_KEY, a); } catch { /* kept for this visit */ } };
+  const allActive = projectsInOrder(data, 'active'), active = allActive.filter(fits), paused = projectsInOrder(data, 'paused').filter(fits), done = archive(data);
+  const noArea = allActive.filter(p => !p.area).length;
   const needs = useMemo(() => needsYou(data), [data]); // once per change of your data, for the card and the list
   const show = (v: 'board' | 'list') => { setView(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* storage unavailable: kept for this visit */ } };
   function start() {
@@ -88,13 +102,30 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           </div>
         </form>
       </Card>
-      {active.length > 0 && (
+      {areas.length > 0 && (
+        // Areas (specs/projects-areas-archive.md): show one, kept on this device; each with its dot and count.
+        <div className="mb-2" data-s="project-areas">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Show an area">
+            <Button inline variant={pick === 'all' ? 'selected' : 'ghost'} aria-pressed={pick === 'all'} className="!min-h-11" data-action="area-pick" data-id="all" onClick={() => showArea('all')}>All <span className="tabular-nums text-fg-2">{allActive.length}</span></Button>
+            {areas.map(a => (
+              <Button key={a.name} inline variant={pick !== 'all' && pick !== 'none' && sameName(pick, a.name) ? 'selected' : 'ghost'} aria-pressed={pick !== 'all' && pick !== 'none' && sameName(pick, a.name)} className="!min-h-11" data-action="area-pick" data-id={a.name} onClick={() => showArea(a.name)}>
+                <AreaDot colour={a.colour} /> {a.name} <span className="tabular-nums text-fg-2">{a.count}</span>
+              </Button>
+            ))}
+            {noArea > 0 && <Button inline variant={pick === 'none' ? 'selected' : 'ghost'} aria-pressed={pick === 'none'} className="!min-h-11" data-action="area-pick" data-id="none" onClick={() => showArea('none')}>No area <span className="tabular-nums text-fg-2">{noArea}</span></Button>}
+            <Button inline variant="ghost" className="!min-h-11" aria-expanded={managing} data-action="areas-manage" onClick={() => setManaging(!managing)}>Areas…</Button>
+          </div>
+          {managing && <AreasPanel areas={areas} />}
+        </div>
+      )}
+      {allActive.length > 0 && (
         // Board or List, remembered on this device only (not your data, not synced).
         <div className="flex flex-wrap gap-2 mb-1" role="group" aria-label="Show your projects as" data-s="projects-view">
           {(['board', 'list'] as const).map(v => <Button key={v} inline variant={view === v ? 'selected' : 'ghost'} aria-pressed={view === v} className="!min-h-11" data-action="projects-view" data-id={v} onClick={() => show(v)}>{v === 'board' ? 'Board' : 'List'}</Button>)}
         </div>
       )}
-      {active.length > 0 ? (view === 'list' ? <ProjectList data={data} all={needs} /> : <Board data={data} />) : (
+      {allActive.length > 0 && !active.length && <Card className="max-w-[720px] mx-auto" data-s="area-empty"><p className="m-0 text-[15px] text-fg-2">No active projects in {pick === 'none' ? 'no area' : `“${pick}”`} right now.</p></Card>}
+      {active.length > 0 ? (view === 'list' ? <ProjectList data={data} all={needs} fits={fits} grouped={pick === 'all' && areas.length > 0} /> : <Board data={data} fits={fits} />) : allActive.length > 0 ? null : (
         <Card id="projectsEmpty" className="max-w-[720px] mx-auto">
           <h3>No projects yet</h3>
           <p className="text-[15px] text-fg-2 m-0">Anything you'd like to make happen can be one — "Start a podcast", "Move house",
@@ -103,7 +134,8 @@ function ProjectsHome({ data }: { data: MyDayData }) {
       )}
       {(paused.length > 0 || done.length > 0) && (
         <div className="max-w-[720px] mx-auto">
-          {([['paused', 'Paused', paused], ['done', 'Done', done]] as [string, string, Project[]][]).map(([key, label, list]) => list.length > 0 && (
+          {done.length > 0 && <ArchiveCard data={data} list={done} />}
+          {([['paused', 'Paused', paused]] as [string, string, Project[]][]).map(([key, label, list]) => list.length > 0 && (
             <Card key={key} aria-labelledby={`pj-${key}`} id={`projects-${key}`}>
               <details>
                 <summary className="flex justify-between items-center min-h-11 list-none"><h3 id={`pj-${key}`} className="m-0">{label} <span className="text-fg-3 font-normal tabular-nums">{list.length}</span></h3><span className="text-primary font-semibold text-[15px]">Show</span></summary>
@@ -127,8 +159,61 @@ function ProjectsHome({ data }: { data: MyDayData }) {
 // One tap moves a project to the next or previous column. Past your own rule of thumb (three being explored, two being
 // done), the column says so, gently — nothing is stopped. Columns stack on phones, sit side by side on wide screens.
 const moved = (to: BoardColumn) => COLUMNS.find(c => c.id === to)!.label;
-function Board({ data }: { data: MyDayData }) {
-  const cols = board(data);
+// The archive (specs/projects-areas-archive.md): finished projects, the most recently finished first, each with its
+// area and how it ended; one tap brings one back.
+function ArchiveCard({ data, list }: { data: MyDayData; list: Project[] }) {
+  function back(p: Project) { if (update(d => (editProject(d, p.id, { status: 'active' }) ? undefined : false))) toast(`“${p.title}” is back in your projects.`); }
+  return (
+    <Card aria-labelledby="pj-archive" id="projects-archive">
+      <details>
+        <summary className="flex justify-between items-center min-h-11 list-none"><h3 id="pj-archive" className="m-0">Archive <span className="text-fg-3 font-normal tabular-nums">{list.length}</span></h3><span className="text-primary font-semibold text-[15px]">Show</span></summary>
+        <ul className="list-none p-0 m-0 mt-1">
+          {list.map(p => {
+            const a = areaOfProject(data, p);
+            return (
+              <li key={p.id} className="border-t border-outline first:border-t-0 flex flex-wrap items-center gap-x-3 py-1" data-s="archive-row" data-id={p.id}>
+                <a href={`#projects/p/${p.id}`} className="flex-1 min-w-[12rem] min-h-11 py-1.5 text-fg no-underline">
+                  <span className="block font-medium break-words">{p.title}{p.private && <Lock size={13} aria-label="Private" className="inline ml-1.5 text-fg-3 align-[-1px]" />}</span>
+                  <span className="flex flex-wrap items-center gap-x-2 text-sm text-fg-2">{a && <AreaLabel name={a.name} colour={a.colour} />}<span data-s="archive-how">{finishedLabel(p)}{p.finished?.on ? ` · ${shortDate(p.finished.on)}` : ''}</span></span>
+                </a>
+                <Button inline variant="ghost" data-action="archive-back" aria-label={`Bring back “${p.title}”`} onClick={() => back(p)}>Bring back</Button>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
+    </Card>
+  );
+}
+
+// Renaming an area (to one already used: the two become one) and choosing its colour.
+function AreasPanel({ areas }: { areas: Area[] }) {
+  return (
+    <ul className="list-none p-0 m-0 mt-3 grid gap-3 rounded-tile bg-surface-2 border border-outline p-3" data-s="areas-panel" aria-label="Your areas">
+      {areas.map(a => (
+        <li key={a.name} className="grid gap-2" data-s="area-row" data-id={a.name}>
+          <Field label={`Area: ${a.name}`} htmlFor={`area-${a.name}`}>
+            <CommitInput id={`area-${a.name}`} key={a.name} defaultValue={a.name} maxLength={PROJECT_LIMITS.area}
+              onCommit={el => { const to = el.value.trim(); if (!to) { el.value = a.name; return; } const into = areas.find(x => sameName(x.name, to) && !sameName(x.name, a.name));
+                if (update(d => (renameArea(d, a.name, to) ? undefined : false))) toast(into ? `Merged into “${into.name}”.` : `Renamed to “${to}”.`); }} />
+          </Field>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={`Colour for ${a.name}`}>
+            {AREA_COLOURS.map(c => (
+              <button key={c} type="button" aria-pressed={a.colour === c} aria-label={COLOUR_LABEL[c]} title={COLOUR_LABEL[c]} data-action="area-colour" data-id={c}
+                className={`size-11 grid place-items-center rounded-full border-2 cursor-pointer bg-transparent ${a.colour === c ? 'border-fg' : 'border-transparent'}`}
+                onClick={() => update(d => (recolourArea(d, a.name, c) ? undefined : false))}>
+                <span aria-hidden="true" className="block size-6 rounded-full" style={{ background: areaVar(c) }} />
+              </button>
+            ))}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Board({ data, fits }: { data: MyDayData; fits: (p: Project) => boolean }) {
+  const all = board(data), cols = { ideas: all.ideas.filter(fits), exploring: all.exploring.filter(fits), doing: all.doing.filter(fits) };
   function move(p: Project, to: BoardColumn) {
     if (!update(d => (moveToColumn(d, p.id, to) ? undefined : false))) return;
     const col = COLUMNS.find(c => c.id === to)!, n = cols[to].length + 1;
@@ -157,16 +242,18 @@ function Board({ data }: { data: MyDayData }) {
 
 // A project at a glance: its stage on the progression, its one next step, and what's in it — and the board's moves.
 function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Project; back: BoardColumn | null; on: BoardColumn | null; onMove: (to: BoardColumn) => void }) {
+  const area = areaOfProject(data, p); // (its area: a soft edge and its name — specs/projects-areas-archive.md)
   const step = nextStep(data, p), t = projectTasks(data, p), notes = projectNotes(data, p).length, appts = projectAppointments(data, p).length;
   const bits = [notes && `${notes} note${notes === 1 ? '' : 's'}`, t.open.length && `${t.open.length} to do`, t.done.length && `${t.done.length} done`, appts && `${appts} appointment${appts === 1 ? '' : 's'}`].filter(Boolean);
   return (
-    <div className="project-card flex flex-col rounded-card border border-outline bg-surface shadow-card text-fg" data-id={p.id}>
+    <div className="project-card flex flex-col rounded-card border border-outline bg-surface shadow-card text-fg" data-id={p.id} data-area={area?.name ?? ''} style={area ? { borderLeft: `5px solid ${areaVar(area.colour)}` } : undefined}>
     <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
         <span className="flex flex-wrap items-baseline gap-x-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{(isBusiness(p) || isCase(p)) && <span className="text-xs text-fg-3" data-s="project-kind-label">{isCase(p) ? 'Case' : 'Business idea'}</span>}{inFocus(p) && <span className="text-xs font-semibold text-primary" data-s="project-focus">This week’s focus</span>}</span>
         <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{isAway(data, p) ? <span data-s="project-away">Away {awayWords(awayFor(data, p))}</span> : shortDate(lastActivity(data, p).slice(0, 10))}</span>
       </span>
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>
+      {area && <AreaLabel name={area.name} colour={area.colour} className="-mt-1.5 text-sm font-semibold text-fg-2" />}
       <Progression stage={p.stage} compact />
       <span className="block text-[15px] text-fg-2" data-s="project-next">{step ? <><span className="font-semibold text-fg">Next:</span> {step.title}</> : 'No next step yet — what\'s the smallest one?'}</span>
       {bits.length > 0 && <span className="block text-sm text-fg-3">{bits.join(' · ')}</span>}

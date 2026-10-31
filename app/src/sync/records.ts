@@ -18,7 +18,7 @@
 //                         workouts, saved recipes — so something added on each device is simply both kept
 // Stays on each device: the theme and animations, a running focus timer or rest countdown, the bank holidays
 // downloaded from gov.uk, and MyDay's own notes (nudges, celebrations, save signatures).
-import { prettyDate, shortDate } from '../data/dates';
+import { isDateKey, prettyDate, shortDate } from '../data/dates';
 import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/normalize';
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
@@ -482,7 +482,10 @@ export function recordLines(key: string, content: Content | null): string[] {
     const own = kind === 'project' ? [v.outcome ? `Aiming for: ${v.outcome}` : null, v.finishedWhen ? `Finished when: ${v.finishedWhen}` : null,
       isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null, kept.length ? `Links: ${kept.join('; ')}` : null,
       // …and its tools and the Overview sections hidden on it, so two versions that differ only there can be told apart.
-      words(v.tools) ? `Tools: ${words(v.tools)}` : null, words(v.hiddenSections) ? `Hidden on the Overview: ${words((v.hiddenSections as unknown[]).map(x => SECTIONS.find(s => s.id === x)?.label ?? x))}` : null] : [];
+      words(v.tools) ? `Tools: ${words(v.tools)}` : null,
+      // …its area and how it ended (specs/projects-areas-archive.md).
+      typeof v.area === 'string' && v.area ? `Area: ${v.area}${typeof v.areaColour === 'string' ? ` (${v.areaColour})` : ''}` : null,
+      isObj(v.finished) && typeof v.finished.how === 'string' ? `Finished: ${v.finished.how === 'achieved' ? 'achieved' : v.finished.how === 'stopped' ? 'stopped on purpose' : v.finished.how}${isDateKey(v.finished.on) ? ` ${shortDate(v.finished.on)}` : ''}${typeof v.finished.note === 'string' && v.finished.note ? ` — ${v.finished.note}` : ''}` : null, words(v.hiddenSections) ? `Hidden on the Overview: ${words((v.hiddenSections as unknown[]).map(x => SECTIONS.find(s => s.id === x)?.label ?? x))}` : null] : [];
     return [v.title, ...own, v.text, v.summary, v.details, v.notes,
       kind === 'project_choice' ? (v.why === null ? 'Reason not saved' : v.why || 'No reason given') : v.why,
       v.on, v.date ? `${v.about ? 'About ' : ''}${v.date}` : null,

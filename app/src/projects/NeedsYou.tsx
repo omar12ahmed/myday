@@ -7,10 +7,12 @@ import { LinkButton } from '../components/parts';
 import { GROUP_LABEL, type Need, type NeedGroup } from '../data/attention';
 import { isBusiness, isCase } from '../data/businessModel';
 import { nextStep, projectById, projectsInOrder, stageOf } from '../data/projects';
-import type { MyDayData } from '../data/types';
+import type { MyDayData, Project } from '../data/types';
 import { inFocus } from '../data/weekReview';
 import { ChaseIt } from '../tasks/ChaseIt';
 import { awayFor, awayWords, isAway } from '../data/welcomeBack';
+import { areasOf, type Area } from '../data/areas';
+import { AreaLabel } from './AreaBits';
 
 // "Needs you" (specs/projects-attention.md): what needs you across your active projects, at the top of the Projects
 // home. Each line says what and why, and opens the thing itself; the five that matter soonest, then "Show N more".
@@ -74,12 +76,21 @@ function NeedRow({ data, n }: { data: MyDayData; n: Need }) {
 
 // Your active projects as a list (the Board · List choice): one row each, most recently worked on first, with its
 // stage, its next step and how many things need you there.
-export function ProjectList({ data, all }: { data: MyDayData; all: Need[] }) {
+// With areas (specs/projects-areas-archive.md): only the area you're showing, or — showing all — grouped by area, in
+// name order, "No area" last.
+export function ProjectList({ data, all, fits = () => true, grouped = false }: { data: MyDayData; all: Need[]; fits?: (p: Project) => boolean; grouped?: boolean }) {
   const count = new Map<string, number>();
   for (const n of all) count.set(n.projectId, (count.get(n.projectId) ?? 0) + 1);
+  const list = projectsInOrder(data, 'active').filter(fits);
+  const groups: { area: Area | null; items: Project[] }[] = grouped
+    ? [...areasOf(data).map(a => ({ area: a, items: list.filter(p => p.area?.toLocaleLowerCase() === a.name.toLocaleLowerCase()) })), { area: null, items: list.filter(p => !p.area) }].filter(g => g.items.length)
+    : [{ area: null, items: list }];
   return (
     <Card id="projectsList" aria-label="Your active projects">
-      <ul className="list-none p-0 m-0">{projectsInOrder(data, 'active').map(p => {
+      {groups.map((g, gi) => (
+      <section key={g.area?.name ?? 'none'} aria-label={grouped ? g.area?.name ?? 'No area' : undefined} data-s="list-group" data-id={g.area?.name ?? ''}>
+      {grouped && <h3 className={`flex items-center gap-2 m-0 text-[15px] ${gi ? 'mt-4' : ''}`} data-s="list-group-head">{g.area ? <AreaLabel name={g.area.name} colour={g.area.colour} /> : 'No area'} <span className="text-fg-3 font-normal tabular-nums">{g.items.length}</span></h3>}
+      <ul className="list-none p-0 m-0">{g.items.map(p => {
         const step = nextStep(data, p), n = count.get(p.id) ?? 0;
         // (Away a week or more: specs/projects-welcome-back.md.)
         const about = [stageOf(p.stage).label, isCase(p) ? 'Case' : isBusiness(p) ? 'Business idea' : null, inFocus(p) ? 'This week’s focus' : null, isAway(data, p) ? `Away ${awayWords(awayFor(data, p))}` : null].filter(Boolean).join(' · ');
@@ -95,6 +106,8 @@ export function ProjectList({ data, all }: { data: MyDayData; all: Need[] }) {
           </li>
         );
       })}</ul>
+      </section>
+      ))}
     </Card>
   );
 }

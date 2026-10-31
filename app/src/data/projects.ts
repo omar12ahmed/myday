@@ -21,7 +21,7 @@ import { forgetStartsAfter, isDone, onTodaysPlan, taskOrder, startsAfter } from 
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
-export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200, outcome: 200, finishedWhen: 600, leftOff: 800 };
+export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200, outcome: 200, finishedWhen: 600, leftOff: 800, area: 40, finishedNote: 400 };
 
 export const STAGES: { id: ProjectStage; label: string; hint: string }[] = [
   { id: 'capture', label: 'Capture', hint: "It's out of your head and safe here." },
@@ -98,6 +98,14 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const sections = [...new Set(listOf(p.hiddenSections).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))];
     report.dropped += Math.max(0, sections.length - 20);
     if (sections.length) item.hiddenSections = sections.slice(0, 20); else delete item.hiddenSections;
+    // Its area and colour, and how it ended (specs/projects-areas-archive.md): kept when there's one (a colour or an
+    // ending from a newer MyDay as it is); a shape this version can't read is counted.
+    const area = typeof p.area === 'string' ? p.area.replace(/\s+/g, ' ').trim().slice(0, PROJECT_LIMITS.area) : '';
+    if (area) item.area = area; else { if (p.area !== undefined && p.area !== null && typeof p.area !== 'string') report.dropped++; delete item.area; }
+    if (area && typeof p.areaColour === 'string' && p.areaColour) item.areaColour = p.areaColour; else delete item.areaColour;
+    const f = p.finished;
+    if (isObj(f) && typeof f.how === 'string' && f.how) item.finished = { ...f, how: f.how, note: typeof f.note === 'string' ? f.note.slice(0, PROJECT_LIMITS.finishedNote) : '', on: isDateKey(f.on) ? f.on : null };
+    else { if (f !== undefined && f !== null) report.dropped++; delete item.finished; }
     seen.add(item.id);
     out.items.push(item);
   }
@@ -126,7 +134,10 @@ export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Projec
   if (patch.title !== undefined) { const t = patch.title.trim().slice(0, PROJECT_LIMITS.title); if (t && t !== p.title) { p.title = t; changed = true; } }
   if (patch.summary !== undefined) { const s = patch.summary.slice(0, PROJECT_LIMITS.summary); if (s !== p.summary) { p.summary = s; changed = true; } }
   if (patch.stage && STAGE_IDS.includes(patch.stage) && patch.stage !== p.stage) { p.stage = patch.stage; changed = true; }
-  if (patch.status && STATUSES.includes(patch.status) && patch.status !== p.status) { p.status = patch.status; changed = true; }
+  if (patch.status && STATUSES.includes(patch.status) && patch.status !== p.status) {
+    p.status = patch.status; changed = true;
+    if (p.status !== 'done') delete p.finished; // brought back: no longer finished (specs/projects-areas-archive.md)
+  }
   for (const key of ['outcome', 'finishedWhen'] as const) {
     const v = patch[key];
     if (v === undefined) continue;

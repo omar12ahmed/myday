@@ -8,7 +8,7 @@ import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { useConfirm } from '../components/confirm';
 import { CommitInput, CommitTextarea, Field, Select, TextArea, TextInput } from '../components/Field';
-import { BackLink, Eyebrow, LinkButton, Note, NotFound } from '../components/parts';
+import { BackLink, Choice, Choices, Eyebrow, LinkButton, Note, NotFound } from '../components/parts';
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
@@ -21,6 +21,7 @@ import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, deadlineLabel, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
+import { finishedLabel, finishProject, type FinishedHow } from '../data/areas';
 import { awayWords, breakOf, greets, welcomeView, type WelcomeBack } from '../data/welcomeBack';
 import { bothMention, mightBelong } from '../data/understand';
 import { ChaseIt } from '../tasks/ChaseIt';
@@ -29,6 +30,7 @@ import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
 import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews';
 import { AtAGlance, WorthALook } from './AtAGlance';
+import { AreaField, ProjectArea } from './AreaBits';
 import { ModelView } from './ModelView';
 import { MoneyView } from './MoneyView';
 import { ResearchView } from './ResearchView';
@@ -71,7 +73,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
   return (
     <>
       <BackLink to="projects" label="Projects" />
-      <ProjectTop p={p} tab={tab} query={query} onQuery={setQuery} status={query.trim() ? matchCount(hits.length, query) : ''} />
+      <ProjectTop data={data} p={p} tab={tab} query={query} onQuery={setQuery} status={query.trim() ? matchCount(hits.length, query) : ''} />
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
@@ -80,7 +82,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       <WelcomeOrLeftOff data={data} p={p} />
       <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />
-      <ProjectHead p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
+      <ProjectHead data={data} p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">
           <TasksCard data={data} p={p} />
@@ -158,14 +160,17 @@ function focusItem(h: SearchHit) {
 
 // The project's name and its sections: Overview · Milestones · Decisions, with Model after Overview for a business idea
 // (each its own address, so Back works).
-function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: ProjectTab; query: string; onQuery: (q: string) => void; status: string }) {
+function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData; p: Project; tab: ProjectTab; query: string; onQuery: (q: string) => void; status: string }) {
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
     <Card aria-labelledby="projectTitle" id="projectTop" className="!pb-2.5">
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="min-w-0">
-          {p.status !== 'active' && <Eyebrow>{STATUS_LABEL[p.status]}</Eyebrow>}
+          {p.status !== 'active' && <Eyebrow>{p.status === 'done' ? 'In the archive' : STATUS_LABEL[p.status]}</Eyebrow>}
           <h2 id="projectTitle" tabIndex={-1} className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
+          {/* Its area (specs/projects-areas-archive.md), and once finished how it ended. */}
+          <ProjectArea data={data} p={p} className="mt-1 text-sm font-semibold text-fg-2" />
+          {p.status === 'done' && <p className="m-0 mt-1 text-[15px] break-words" data-s="project-finished"><span className="font-semibold">{finishedLabel(p)}</span>{p.finished?.on ? ` · ${shortDate(p.finished.on)}` : ''}{p.finished?.note ? ` — ${p.finished.note}` : ''}</p>}
           {p.outcome && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words" data-s="project-outcome"><span className="font-semibold text-fg">Aiming for:</span> {p.outcome}</p>}
         </div>
         {/* Private (your choice): Ask MyDay sends nothing of this project. */}
@@ -205,7 +210,7 @@ function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: Proje
 }
 
 // `onHide`: a card you switch off leaves the page now, even one you opened on this visit.
-function ProjectHead({ p, onHide }: { p: Project; onHide: (s: Section) => void }) {
+function ProjectHead({ data, p, onHide }: { data: MyDayData; p: Project; onHide: (s: Section) => void }) {
   const [editing, setEditing] = useState(false), [noting, setNoting] = useState(false);
   const save = (patch: Partial<Pick<Project, 'title' | 'summary' | 'stage' | 'outcome' | 'finishedWhen'>>) => update(d => (editProject(d, p.id, patch) ? undefined : false));
   // A business idea has a one page (the Model tab). Back to general keeps it, out of sight.
@@ -228,6 +233,7 @@ function ProjectHead({ p, onHide }: { p: Project; onHide: (s: Section) => void }
           <Field label="What is it, and why does it matter to you?" htmlFor="projectSummary"><CommitTextarea id="projectSummary" rows={4} key={p.summary} defaultValue={p.summary} maxLength={PROJECT_LIMITS.summary} onCommit={el => save({ summary: el.value })} /></Field>
           <Field label="What are you aiming for?" htmlFor="projectOutcome"><CommitInput id="projectOutcome" key={p.outcome ?? ''} defaultValue={p.outcome ?? ''} maxLength={PROJECT_LIMITS.outcome} placeholder="A result, e.g. a quiet corner I read in every evening" onCommit={el => save({ outcome: el.value })} /></Field>
           <Field label="What would count as finished?" htmlFor="projectFinished"><CommitTextarea id="projectFinished" rows={2} key={p.finishedWhen ?? ''} defaultValue={p.finishedWhen ?? ''} maxLength={PROJECT_LIMITS.finishedWhen} onCommit={el => save({ finishedWhen: el.value })} /></Field>
+          <AreaField data={data} p={p} />
           {knownTemplate(p) && (
             <Field label="Kind of project" htmlFor="projectKind">
               <Select id="projectKind" className="!w-auto" value={isBusiness(p) ? 'business' : isCase(p) ? 'case' : isResearchKind(p) ? 'research' : 'general'} onChange={e => changeKind(e.target.value as TemplateChoice)}>
@@ -623,6 +629,11 @@ function RecentlyCard({ data, p }: { data: MyDayData; p: Project }) {
 
 function ManageCard({ p }: { p: Project }) {
   const confirm = useConfirm();
+  // Finishing asks how it ended (specs/projects-areas-archive.md): achieved or stopped on purpose, with a note if you like.
+  const [finishing, setFinishing] = useState(false), [how, setHow] = useState<FinishedHow>('achieved'), [note, setNote] = useState('');
+  function finish() {
+    if (update(d => (finishProject(d, p.id, how, note) ? undefined : false))) { setFinishing(false); setNote(''); toast(how === 'achieved' ? 'Achieved — well done. It\'s in the archive.' : 'Stopped — it\'s in the archive, if you ever want it back.'); focusSoon('projectTitle'); }
+  }
   const status = (s: Project['status'], msg: string) => { if (update(d => (editProject(d, p.id, { status: s }) ? undefined : false))) toast(msg); };
   async function remove() {
     const yes = await confirm({ title: 'Delete this project?', body: `Its ${p.case ? 'timeline, evidence and issues, ' : ''}${p.model ? 'one page, ' : ''}milestones and decisions go with it; its notes, tasks and appointments stay.`, confirmLabel: 'Delete project', cancelLabel: 'Keep it' });
@@ -634,7 +645,21 @@ function ManageCard({ p }: { p: Project }) {
       <div className="grid gap-2.5">
         {p.status === 'active' ? <Button inline variant="ghost" className="w-full" data-action="project-pause" onClick={() => status('paused', 'Paused — it\'ll be here when you come back to it.')}><Pause size={18} aria-hidden="true" /> Pause for now</Button>
           : <Button inline variant="ghost" className="w-full" data-action="project-resume" onClick={() => status('active', 'Back in your projects.')}><Play size={18} aria-hidden="true" /> {p.status === 'done' ? 'Open it again' : 'Pick it up again'}</Button>}
-        {p.status !== 'done' && <Button inline variant="ghost" className="w-full" data-action="project-finish" onClick={() => status('done', 'Marked done — well done.')}><Check size={18} aria-hidden="true" /> Mark as done</Button>}
+        {p.status !== 'done' && (finishing ? (
+          <form className="grid gap-3 rounded-tile bg-surface-2 border border-outline p-3" data-s="finish-form" onSubmit={e => { e.preventDefault(); finish(); }}>
+            <Choices label="How did it end?">
+              <Choice on={how === 'achieved'} data-action="finish-how" data-id="achieved" onClick={() => setHow('achieved')}>Achieved</Choice>
+              <Choice on={how === 'stopped'} data-action="finish-how" data-id="stopped" onClick={() => setHow('stopped')}>Stopped on purpose</Choice>
+            </Choices>
+            <Field label={how === 'achieved' ? 'What did you get out of it? (optional)' : 'Why did you stop? (optional)'} htmlFor="finishNote">
+              <TextArea id="finishNote" rows={2} value={note} maxLength={PROJECT_LIMITS.finishedNote} onChange={e => setNote(e.target.value)} />
+            </Field>
+            <div className="flex flex-wrap gap-2.5">
+              <Button inline type="submit" variant="primary" data-action="finish-save">Finish</Button>
+              <Button inline variant="ghost" data-action="finish-cancel" onClick={() => { setFinishing(false); focusSoon('projectFinishBtn'); }}>Cancel</Button>
+            </div>
+          </form>
+        ) : <Button inline variant="ghost" className="w-full" id="projectFinishBtn" data-action="project-finish" aria-expanded={false} onClick={() => setFinishing(true)}><Check size={18} aria-hidden="true" /> Mark as done</Button>)}
         <Button inline variant="ghost" className="w-full" data-action="project-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete project</Button>
       </div>
     </Card>

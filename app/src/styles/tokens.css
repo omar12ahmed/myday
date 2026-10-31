@@ -38,6 +38,12 @@
   --rest: #604a85;     --rest-c: #ece5f6;
   --work: #87432f;     --work-c: #f7e3dd;
   --appt: #434a8c;     --appt-c: #e3e5f7;
+  /* Areas (specs/projects-areas-archive.md): a soft edge colour (3:1 or more on the surface) and a tint for chips, where
+     text stays --text. Always beside the area's name, never colour alone. */
+  --area-sage: #4d8a59;  --area-sage-c: #e2efe4;  --area-sky: #3b78ad;   --area-sky-c: #dfeaf6;
+  --area-sand: #9a7428;  --area-sand-c: #f3ead6;  --area-rose: #b0506a;  --area-rose-c: #f6e1e7;
+  --area-lilac: #775cab; --area-lilac-c: #ebe5f6; --area-teal: #2a857e;  --area-teal-c: #dbefec;
+  --area-clay: #a95f37;  --area-clay-c: #f5e3d9;  --area-slate: #5d6978; --area-slate-c: #e5e8ed;
   --warn-c: #fbedd5;   --on-warn-c: #5b3a00;
   --inverse: #25302b;  --on-inverse: #f0f7f3;
   --primary-2: #0b5d56;
@@ -81,6 +87,10 @@
   --rest: #c3b2d6;     --rest-c: #2b2436;
   --work: #ddae9f;     --work-c: #3a2520;
   --appt: #b3b9de;     --appt-c: #25283a;
+  --area-sage: #7fbf8b;  --area-sage-c: #233229;  --area-sky: #7fb0dd;   --area-sky-c: #22303f;
+  --area-sand: #d2ad62;  --area-sand-c: #35301f;  --area-rose: #e08aa0;  --area-rose-c: #3a2530;
+  --area-lilac: #ad97de; --area-lilac-c: #2e2840; --area-teal: #6cc4bb;  --area-teal-c: #1e3533;
+  --area-clay: #e0976c;  --area-clay-c: #3a2a21;  --area-slate: #a3afc0; --area-slate-c: #2a2f37;
   --warn-c: #3a2f1a;   --on-warn-c: #f0d4a4;
   --inverse: #eef7f2;  --on-inverse: #1d2823;
   --primary-2: #95e0d0;
@@ -125,6 +135,10 @@
     --rest: #c3b2d6;     --rest-c: #2b2436;
     --work: #ddae9f;     --work-c: #3a2520;
     --appt: #b3b9de;     --appt-c: #25283a;
+    --area-sage: #7fbf8b;  --area-sage-c: #233229;  --area-sky: #7fb0dd;   --area-sky-c: #22303f;
+    --area-sand: #d2ad62;  --area-sand-c: #35301f;  --area-rose: #e08aa0;  --area-rose-c: #3a2530;
+    --area-lilac: #ad97de; --area-lilac-c: #2e2840; --area-teal: #6cc4bb;  --area-teal-c: #1e3533;
+    --area-clay: #e0976c;  --area-clay-c: #3a2a21;  --area-slate: #a3afc0; --area-slate-c: #2a2f37;
     --warn-c: #3a2f1a;   --on-warn-c: #f0d4a4;
     --inverse: #eef7f2;  --on-inverse: #1d2823;
     --primary-2: #95e0d0;
