@@ -40,7 +40,9 @@ const wasl = (a: Unit[], i: number) => i <= 2 && a.slice(0, i).every(proclitic) 
 function word(written: string, afterVowel = false): Reading {
   const word = written.normalize('NFC').replaceAll('ـ', '');
   const authored = readings[readingKey(word)];
-  if (authored) return { text: afterVowel && /^(ٱ|ا(?![ًٌٍَُِْ]))/.test(word) && /^[aiu]/.test(authored) ? authored.slice(1) : authored, incomplete: false };
+  // Only where the spelling shows a joining alif (ٱ, the article, or a bare ا before a sukūn or a doubled letter), so an
+  // unvowelled ا that's really a hamza (انا, الى) keeps its vowel.
+  if (authored) return { text: afterVowel && /^(ٱ|ال|ا[^ًٌٍَُِّْ][ًٌٍَُِ]*[ّْ])/.test(word) && /^[aiu]/.test(authored) ? authored.slice(1) : authored, incomplete: false };
   if (names[word]) return { text: names[word], incomplete: false };
   if (word === 'كتب') return { text: 'kataba / kutub / kutiba…', incomplete: false, note: 'Several readings are possible; use the sentence context.' };
   const a = units(word);
@@ -51,9 +53,13 @@ function word(written: string, afterVowel = false): Reading {
   if (a[start] && ['ب', 'ك'].includes(a[start].c) && hasVowel(a[start].m) && ['ا', 'ٱ'].includes(a[start + 1]?.c) && a[start + 2]?.c === 'ل') {
     prefix += letters[a[start].c] + (a[start].m.includes('ِ') ? 'i-' : 'a-'); start++;
   }
-  const alifL = ['ا', 'ٱ'].includes(a[start]?.c) && a[start + 1]?.c === 'ل';
-  // The relative pronouns write the article's ل and their own as one doubled ل: الَّذِي, الَّذِينَ, alladhīna.
-  const relative = alifL && a[start + 1].m.includes('ّ');
+  // The article's ل carries no vowel (unless doubled, as in الَّذِي), or i only before a word's own joining alif
+  // (الِامْتِحَانُ): وَالِدِي is wālidī, not the article.
+  const lam = a[start + 1]?.m ?? '';
+  const alifL = ['ا', 'ٱ'].includes(a[start]?.c) && a[start + 1]?.c === 'ل'
+    && (!/[ًٌٍَُِ]/.test(lam) || lam.includes('ّ') || (lam === 'ِ' && joins(a, start + 2)));
+  // The relative pronouns write the article's ل and their own as one doubled ل: الَّذِي, الَّتِي, الَّذِينَ, alladhīna.
+  const relative = alifL && lam.includes('ّ') && !/[ًٌٍَُِْ]/.test(a[start].m) && ['ذ', 'ت'].includes(a[start + 2]?.c ?? '');
   // Form VIII of a root beginning with ل, not the article: لْ, or an alif with a vowel, before an undoubled ت (اِلْتَقَى, iltaqā).
   const formVIII = alifL && a[start + 2]?.c === 'ت' && !a[start + 2].m.includes('ّ') && (a[start + 1].m.includes('ْ') || /[ُِ]/.test(a[start].m));
   let article = alifL && !relative && !formVIII;
