@@ -183,8 +183,9 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     && (await text(`#projectList .project-card[data-id="${PID}"] [data-s=project-next]`)).includes('Ask three offices what they pay'));
   await go(`projects/p/${P2}`, 2026, 10, 15, 11, 10);
   await click('[data-action=project-resume]'); await sleep(200);
-  await click('[data-action=project-finish]'); await sleep(200);
-  check('"Pick it up again", then "Mark as done"', (await project('Move closer to work')).status === 'done');
+  await click('[data-action=project-finish]'); await until(`!!document.querySelector('[data-action=finish-save]')`);
+  await click('[data-action=finish-save]'); await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.title === 'Move closer to work')?.status === 'done'`);
+  check('"Pick it up again", then "Mark as done" (and Finish: achieved, as it starts)', (await project('Move closer to work')).status === 'done' && (await project('Move closer to work')).finished?.how === 'achieved');
   await click('[data-action=project-delete]'); await answer(false);
   check('"Delete project" asks first ("Keep it" keeps it)', !!(await project('Move closer to work')));
   await go(`projects/p/${PID}`, 2026, 10, 15, 11, 15);
@@ -3140,6 +3141,115 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await click('[data-s=option][data-id=oP] [data-action=opt-choose]'); await until(`!!document.querySelector('[data-action=dc-decide]')`);
   await click('[data-action=dc-decide]'); await until(`!!document.querySelector('[data-s=dc-decided]')`);
   check('with Research off, choosing records no evidence and shows none', (await evDc()).chosen === 'oP' && !('chosenEvidence' in (await evDc())) && !(await exists('[data-s=dc-evidence]')), await evDc());
+
+  console.log('\n[52] Areas, and the archive');
+  const arToast = s => until(`document.getElementById('toast').textContent.includes(${JSON.stringify(s)})`);
+  const arOpen = async (id, m) => { await go(`projects/p/${id}`, 2026, 10, 15, 12, m); await until(`!!document.querySelector('[data-action=project-edit]')`); await sleep(150); };
+  const arEdit = async (id, m) => { await arOpen(id, m); await click('[data-action=project-edit]'); await until(`!!document.getElementById('projectArea')`); };
+  const arSetArea = async (id, name, m) => { await arEdit(id, m); await type('#projectArea', name); };
+  const arChips = () => ev(`[...document.querySelectorAll('[data-s=project-areas] [data-action=area-pick]')].map(b => ({ id: b.dataset.id, t: b.textContent.replace(/\\s+/g, ' ').trim(), on: b.getAttribute('aria-pressed') }))`);
+  const arCards = () => ev(`[...document.querySelectorAll('.project-card[data-id]')].map(c => c.dataset.id).sort()`);
+  const arHome = async m => { await go('projects', 2026, 10, 15, 12, m); await until(`!!document.querySelector('[data-s=project-areas]')`); await sleep(150); };
+  await go('projects', 2026, 10, 15, 12, 0); await reset(); await go('projects', 2026, 10, 15, 12, 0);
+  await seed([pjObj('pjAr1', 'Paint the hall', 'organise'), pjObj('pjAr2', 'Fix the gate', 'organise'), pjObj('pjAr3', 'Plan the team away day', 'organise'), pjObj('pjAr4', 'Learn to bake bread', 'organise'),
+    pjObj('pjArOld', 'Sort the loft', 'organise', { status: 'done' })]);
+
+  console.log('  An area on a project');
+  await arEdit('pjAr1', 0);
+  check('About it → Edit has an Area field that offers the areas already used', (await exists('#projectArea')) && (await ev(`document.getElementById('projectArea').getAttribute('list')`)) === 'projectAreas');
+  const arUpd = (await pAt('pjAr1')).updatedAt;
+  await type('#projectArea', 'Home'); await arToast('In “Home” now.');
+  let ar = await pAt('pjAr1');
+  check('typing Home saves the area Home with the first colour, sage, and says "In “Home” now."', ar.area === 'Home' && ar.areaColour === 'sage' && (await toast()).includes('In “Home” now.'), [ar, await toast()]);
+  check('choosing an area leaves the project\'s updated time as it was', ar.updatedAt === arUpd, [arUpd, ar.updatedAt]);
+  await until(`!!document.querySelector('#projectTop [data-s=area-label]')`);
+  check('the project\'s top shows its area, Home', (await text('#projectTop [data-s=area-label]')).trim() === 'Home', await text('#projectTop'));
+  await arSetArea('pjAr2', 'home', 2); await arToast('In “Home” now.');
+  ar = await pAt('pjAr2');
+  check('typing "home" on a second project joins Home, with Home\'s capitals and its colour sage', ar.area === 'Home' && ar.areaColour === 'sage', ar);
+  await arSetArea('pjAr3', 'Work', 4); await arToast('In “Work” now.'); await sleep(200);
+  ar = await pAt('pjAr3');
+  check('a third project typed Work starts a new area with the next colour, sky', ar.area === 'Work' && ar.areaColour === 'sky', ar);
+  await type('#projectArea', ''); await arToast('No area now.');
+  ar = await pAt('pjAr3');
+  check('clearing the field saves no area and says "No area now."', !('area' in ar) && !('areaColour' in ar) && (await toast()).includes('No area now.'), [ar, await toast()]);
+  await type('#projectArea', 'Work'); await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pjAr3').area === 'Work'`);
+
+  console.log('  The Projects home');
+  await arHome(10);
+  const ar_chips = await arChips();
+  check('the area chips are All, Home, Work, No area, in that order, reading All 4, Home 2, Work 1 and No area 1', eq(ar_chips.map(c => c.t), ['All 4', 'Home 2', 'Work 1', 'No area 1']) && eq(ar_chips.map(c => c.id), ['all', 'Home', 'Work', 'none']), ar_chips);
+  check('…and All is the one pressed', eq(ar_chips.map(c => c.on), ['true', 'false', 'false', 'false']), ar_chips);
+  const ar_cardAreas = await ev(`[...document.querySelectorAll('.project-card[data-id]')].map(c => c.dataset.id + ':' + c.dataset.area + ':' + (c.querySelector('[data-s=area-label]')?.textContent.trim() ?? '')).sort()`);
+  check('each board card says its area (a data-area and an area label with the name), and a project with none says nothing', eq(ar_cardAreas, ['pjAr1:Home:Home', 'pjAr2:Home:Home', 'pjAr3:Work:Work', 'pjAr4::']), ar_cardAreas);
+  await click('[data-action=area-pick][data-id=Home]'); await until(`document.querySelectorAll('.project-card[data-id]').length === 2`);
+  check('choosing Home shows only Home\'s cards, and keeps the choice on this device', eq(await arCards(), ['pjAr1', 'pjAr2']) && (await ev(`localStorage.getItem('myday.projects.area')`)) === 'Home', [await arCards(), await ev(`localStorage.getItem('myday.projects.area')`)]);
+  await arHome(12);
+  check('after reloading, Home is still the one chosen and shown', (await arChips()).find(c => c.id === 'Home').on === 'true' && eq(await arCards(), ['pjAr1', 'pjAr2']), [await arChips(), await arCards()]);
+  await click('[data-action=area-pick][data-id=all]'); await until(`document.querySelectorAll('.project-card[data-id]').length === 4`);
+  await click('[data-action=projects-view][data-id=list]'); await until(`!!document.querySelector('[data-s=list-group]')`);
+  const ar_groups = await ev(`[...document.querySelectorAll('[data-s=list-group]')].map(g => g.querySelector('h3').textContent.replace(/\\s+/g, ' ').trim() + '=' + [...g.querySelectorAll('[data-s=project-row]')].map(r => r.dataset.id).sort().join(','))`);
+  check('the List with All chosen has sections Home, Work and No area (last), each with its projects', eq(ar_groups, ['Home 2=pjAr1,pjAr2', 'Work 1=pjAr3', 'No area 1=pjAr4']), ar_groups);
+  await click('[data-action=area-pick][data-id=Home]'); await until(`document.querySelectorAll('[data-s=project-row]').length === 2`);
+  check('the List with Home chosen shows only Home\'s projects and no group heads', eq(await ev(`[...document.querySelectorAll('[data-s=project-row]')].map(r => r.dataset.id).sort()`), ['pjAr1', 'pjAr2']) && !(await exists('[data-s=list-group-head]')));
+  await click('[data-action=area-pick][data-id=all]'); await until(`document.querySelectorAll('[data-s=project-row]').length === 4`);
+  await click('[data-action=projects-view][data-id=board]'); await until(`document.querySelectorAll('.project-card[data-id]').length === 4`);
+
+  console.log('  Areas…');
+  await click('[data-action=areas-manage]'); await until(`!!document.querySelector('[data-s=areas-panel]')`);
+  const ar_rows = await ev(`[...document.querySelectorAll('[data-s=area-row]')].map(r => r.dataset.id)`);
+  check('Areas… lists a row for each area, Home and Work', eq(ar_rows, ['Home', 'Work']), ar_rows);
+  await click('[data-s=area-row][data-id=Home] [data-action=area-colour][data-id=rose]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pjAr1').areaColour === 'rose'`);
+  check('choosing Rose in Home\'s row gives both Home projects the colour rose', (await pAt('pjAr1')).areaColour === 'rose' && (await pAt('pjAr2')).areaColour === 'rose' && (await pAt('pjAr3')).areaColour === 'sky', [await pAt('pjAr1'), await pAt('pjAr2')]);
+  check('…and the Rose button is pressed', await until(`document.querySelector('[data-s=area-row][data-id=Home] [data-action=area-colour][data-id=rose]').getAttribute('aria-pressed') === 'true'`));
+  await ev(`(() => { const el = document.querySelector('[data-s=area-row][data-id=Work] input'); el.focus(); el.select(); })()`);
+  await T.send('Input.insertText', { text: 'home' });
+  await T.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+  await T.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+  await arToast('Merged into “Home”.');
+  const ar_merged = (await projects()).filter(p => /^pjAr[123]$/.test(p.id));
+  check('renaming Work to "home" merges it: all three projects are in Home, and it says "Merged into “Home”."', ar_merged.length === 3 && ar_merged.every(p => p.area === 'Home') && (await toast()).includes('Merged into “Home”.'), [ar_merged, await toast()]);
+
+  check('after Enter on the rename, focus is in the input of the merged area\'s row (Home)', await until(`document.activeElement && document.activeElement.tagName === 'INPUT' && !!document.activeElement.closest('[data-s=area-row][data-id=Home]')`), await ev(`document.activeElement.outerHTML.slice(0, 120)`));
+
+  console.log('  Finishing');
+  await arOpen('pjAr1', 20);
+  await click('[data-action=project-finish]'); await until(`!!document.querySelector('[data-s=finish-form]')`);
+  check('"Mark as done" opens the finish form with Achieved chosen and asks "What did you get out of it? (optional)"', (await ev(`document.querySelector('[data-action=finish-how][data-id=achieved]').getAttribute('aria-pressed')`)) === 'true' && (await text('[data-s=finish-form] label')).trim() === 'What did you get out of it? (optional)', await text('[data-s=finish-form]'));
+  await click('[data-action=finish-how][data-id=stopped]');
+  check('choosing Stopped on purpose changes the question to "Why did you stop? (optional)"', await until(`document.querySelector('[data-s=finish-form] label').textContent.trim() === 'Why did you stop? (optional)'`), await text('[data-s=finish-form]'));
+  await type('#finishNote', 'The landlord is repainting it (made up)'); await click('[data-action=finish-save]'); await arToast('Stopped — it\'s in the archive');
+  ar = await pAt('pjAr1');
+  check('finishing as stopped says "Stopped — it\'s in the archive", and saves done with how, note and today', ar.status === 'done' && eq(ar.finished, { how: 'stopped', note: 'The landlord is repainting it (made up)', on: '2026-10-15' }) && (await toast()).startsWith('Stopped — it\'s in the archive'), [ar, await toast()]);
+  await until(`!!document.querySelector('[data-s=project-ended]')`);
+  check('the project\'s top says "Stopped on purpose" with the note, and the eyebrow says "In the archive"', (await text('[data-s=project-ended]')).trim().startsWith('Stopped on purpose') && (await text('#projectTop')).includes('In the archive'), await text('#projectTop'));
+
+  console.log('  The Archive');
+  await arHome(25);
+  await until(`!!document.getElementById('projects-archive')`);
+  const arRow = '[data-s=archive-row][data-id=pjAr1]';
+  check('the finished project is in the Archive, with its area and "Stopped on purpose ·"', (await exists('#projects-archive ' + arRow + ' [data-s=area-label]')) && (await text(arRow + ' [data-s=area-label]')).trim() === 'Home' && (await text(arRow + ' [data-s=archive-how]')).startsWith('Stopped on purpose ·'), await text(arRow));
+  check('there is no "Done" card any more', !(await exists('#projects-done')));
+  check('a project finished before this release, with no finished record, reads "Finished"', (await text('[data-s=archive-row][data-id=pjArOld] [data-s=archive-how]')).trim() === 'Finished', await text('#projects-archive'));
+  await ev(`document.querySelector('#projects-archive details').open = true`);
+  await click(arRow + ' [data-action=archive-back]'); await arToast('is back in your projects.');
+  ar = await pAt('pjAr1');
+  check('"Bring back" says "“Paint the hall” is back in your projects.", and it is active with no finished record', (await toast()).includes('“Paint the hall” is back in your projects.') && ar.status === 'active' && !('finished' in ar), [ar, await toast()]);
+  check('after "Bring back", focus is still inside the Archive, or on the brought-back card\'s link once the Archive has gone', await until(`(() => { const a = document.activeElement, arc = document.getElementById('projects-archive'); return !!a && ((!!arc && arc.contains(a)) || (!arc && a.tagName === 'A' && (a.getAttribute('href') || '').includes('pjAr1'))); })()`), await ev(`document.activeElement.outerHTML.slice(0, 120)`));
+  check('…and it is on the board again, no longer in the Archive', await until(`!!document.querySelector('.project-card[data-id=pjAr1]') && !document.querySelector('[data-s=archive-row][data-id=pjAr1]')`));
+
+  console.log('  On a phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 2, mobile: true });
+  await arHome(30); await sleep(300);
+  check('phone 390 px: the Projects home with the area chips does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  const ar_chipH = await ev(`[...document.querySelectorAll('[data-action=area-pick]')].map(b => Math.round(b.getBoundingClientRect().height))`);
+  check('…and every area button is at least 44 px tall', ar_chipH.length === 3 && ar_chipH.every(h => h >= 44), ar_chipH);
+  await click('[data-action=areas-manage]'); await until(`!!document.querySelector('[data-s=areas-panel]')`); await sleep(300);
+  const ar_colH = await ev(`[...document.querySelectorAll('[data-action=area-colour]')].map(b => Math.round(b.getBoundingClientRect().height))`);
+  check('with Areas… open, the page does not scroll sideways and the panel stays inside the screen', (await ev('document.documentElement.scrollWidth')) <= 390 && (await ev(`document.querySelector('[data-s=areas-panel]').getBoundingClientRect().right`)) <= 390, [await ev('document.documentElement.scrollWidth'), await ev(`document.querySelector('[data-s=areas-panel]').getBoundingClientRect().right`)]);
+  check('…and every colour button is at least 44 px tall', ar_colH.length >= 8 && ar_colH.every(h => h >= 44), ar_colH);
+  await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
