@@ -1,5 +1,28 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.101.0 — The Arabic in key ideas, tasks and the timetable, and the explainers, voiced:** the Arabic that lessons show
+without vowel marks in their key ideas and objectives, teaching examples, practical tasks and mini challenges, and
+the weekly timetable now has a voice: 124 more pieces, read from MyDay's own vowelled copy
+(`content/teaching/arabic/voice-scripts.json`), which an independent reviewer cross-checked with no errors and the
+owner's fluent checker approved. The page keeps the course's spelling. Nine more stay silent on purpose: word endings
+such as ون and ات, the article ال on its own, كتب where the lesson leaves its reading open, and a sentence written
+with digits and percent signs. In all, 381 pieces are voiced from MyDay's copy and 22 stay silent. A list of separate
+words in a key idea (مَنْ، مَا، أَيْنَ، هَلْ) is read with a short pause between the words. There are new play
+buttons for the key ideas (Understand), the lesson's objectives (at the top of the lesson), the practical task and
+mini challenge (Try), and each Arabic cell of the timetable (a place or activity's button names its day too). Each
+place has the usual honest label under it. While you check yourself, the objectives', key ideas' and tasks' voice
+waits as the explanation folds away, since a vowelled model there could give away a check's answer (قُلْتُ, لَمْ أَدْرُسْ);
+"Show the explanation again", or moving to another step, brings it back. The explainers ("How it works", from 1.98.0)
+now play each form in their tables, each whole sentence and the Arabic in their steps (160 clips); the word-by-word
+pieces and the self-test don't. 44 of those words already had clips in the earlier voice, from the course words; the
+owner chose to make them again in the current voice (WaveNet B), so each explainer is in one voice, and those course
+words now play it too. 286 new clips (126 for the new places, two of them Arabic the course vowels itself, and 160 for
+the explainers) were each transcribed blind and listened to by the owner ("all
+good"), 2,684 clips in all. The build now also refuses a voice script shown in a voiced place it hasn't been checked
+in, and a script that drops a comma the course shows. No saved-data, sync or database change, and no new kind of
+information goes to AI. Going back to 1.100.0 is safe: those pieces and the explainers lose their voice again, and the
+44 course words play their earlier clips.
+
 **1.101.0 — Welcome back after a break:** open a project you haven't worked on for 7 days or more and its Overview
 now starts with **Welcome back** — how long you've been away and the day you last worked on it; what you did last;
 what came up while you were away (what's today or tomorrow first, then dates that came and went and are still open,
@@ -1587,8 +1610,22 @@ letters, every mark the course shows kept, marked all through, not also left out
 source of the place that shows it (the shared `mixed` in `scripts/arabic-voice-sources.mjs`), and the build stops on a
 script no voiced place shows. `spokenFor` gives the voice the script, and `voice-clips.json` lists the
 `scriptedPieces` that ship, so the label under Arabic in English (`MixedVoiceLabel`) can say it reads MyDay's vowelled
-copy. Check audio still plays only once the answer is shown. Next: the key concepts, tasks, objectives, timetable and
-teaching pieces (about 130), which also need play controls where they appear.
+copy. Check audio still plays only once the answer is shown. Those key concepts, tasks, objectives, timetable and
+teaching pieces (about 130) were voiced in 1.101.0 (see below).
+
+**Key ideas, tasks, the timetable and the explainers (rounds twelve and thirteen, 1.101.0):** `scripts/arabic-voice-sources.mjs`
+gains the sources `key-ideas` (key concepts and objectives), `tasks` (the instructions of practical tasks and mini challenges,
+not how they're judged), `timetable` (its day, activity and place cells) and `explainers` (round thirteen: table forms, whole
+sentences and the Arabic runs in the steps of `content/teaching/arabic/explainers.json`, filtered by `courseVoiceable`, so a
+root's letters or a prefix on its own is never voiced). Each piece in voice-scripts.json now lists in `checked_in` the voiced
+places whose context its script was checked in (`lesson-checks`, `teaching`, `key-ideas`, `tasks`, `timetable`); the build
+stops on a piece shown in a voiced place its list doesn't name, or no longer shown in one it does. Sound pairs, word families,
+course-word notes and the reading texts' questions never take a script. `voicePieces` (`scripts/arabic-reading-sentences.mjs`)
+lets a script add an Arabic comma before a space (`listPauses`) but keep every comma the course shows (`keepsCommas`). In
+`ArabicScreen.tsx`, `hold` (the learner jumped to Check and hasn't asked for the explanation again) withholds the voice of the
+objectives, key ideas, task and challenge; the timetable's cells are `Cell`, whose button label names the day.
+`scripts/make-arabic-audio.mjs` no longer deletes an old clip that another text's entry still uses (the same words spoken the same way
+can come back as the same audio file: `لَمْ` and the piece `لم`).
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
