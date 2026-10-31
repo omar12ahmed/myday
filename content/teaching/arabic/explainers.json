@@ -18493,8 +18493,8 @@
     "steps": [
      "With a plural doer, word order changes the verb. Verb first, it stays singular and matches only the gender: وَصَلَ الْمُوَظَّفُونَ; وَصَلَتِ الْمُوَظَّفَاتُ.",
      "Doer first, the verb matches in number too: الْمُوَظَّفُونَ وَصَلُوا; الْمُوَظَّفَاتُ وَصَلْنَ.",
-     "Plurals of things, not people, are treated as feminine singular: الْكُتُبُ جَدِيدَةٌ, the books are new; الْكُتُبُ وَصَلَتْ, the books arrived.",
-     "In a sentence with no verb, the describing word matches the مُبْتَدَأ, the subject, in gender and number: الْمُوَظَّفُونَ مُجْتَهِدُونَ."
+     "Plurals of things and animals, not people, are treated as feminine singular: الْكُتُبُ جَدِيدَةٌ, the books are new; الْكُتُبُ وَصَلَتْ, the books arrived.",
+     "In a sentence with no verb, the describing word follows the same rules: with people it matches the مُبْتَدَأ, the subject, in gender and number, الْمُوَظَّفُونَ مُجْتَهِدُونَ; with things it is feminine singular, الْكُتُبُ جَدِيدَةٌ."
     ],
     "examples": [
      {
@@ -18558,7 +18558,7 @@
     ],
     "why": {
      "q_en": "Why الْكُتُبُ جَدِيدَةٌ, feminine singular, when كِتَاب is masculine?",
-     "a_en": "Plurals of things, not people, are treated as feminine singular, whatever the singular's gender: الْكُتُبُ جَدِيدَةٌ, هَذِهِ الْأَسْئِلَةُ. Plurals of people follow the people: الْمُهَنْدِسُونَ مُجْتَهِدُونَ."
+     "a_en": "Plurals of things and animals, not people, are treated as feminine singular, whatever the singular's gender: الْكُتُبُ جَدِيدَةٌ, هَذِهِ الْأَسْئِلَةُ. Plurals of people follow the people: الْمُهَنْدِسُونَ مُجْتَهِدُونَ."
     },
     "selftest": [
      {
@@ -18645,7 +18645,7 @@
      }
     ],
     "steps": [
-     "Two kinds of word end in -an without being an object: the حَال, which says what state someone was in, and the تَمْيِيز, which says what is meant or counted.",
+     "Two common kinds of word end in -an without being an object: the حَال, which says what state someone was in, and the تَمْيِيز, which says what is meant or counted.",
      "A حَال answers \"in what state?\": رَجَعَ سَامِي مُبْتَسِمًا, Sāmī came back smiling. It matches the person: دَخَلَتِ الْمُدِيرَةُ غَاضِبَةً.",
      "A تَمْيِيز answers \"of what?\" or \"in what respect?\": after 11 to 99, خَمْسَةَ عَشَرَ قَلَمًا; after a comparison, أَكْثَرُ خِبْرَةً, more experienced.",
      "Ask what question the word answers before you name it."
@@ -18780,7 +18780,7 @@
   "lesson.arabic-numbers-exceptions": [
    {
     "id": "explainer.arabic-numbers-past-ten",
-    "title_en": "Numbers past ten, and words that never take -un",
+    "title_en": "Numbers past ten, and words that never take tanween",
     "family_en": "11 to 19, the tens, a hundred and a thousand, and the مَمْنُوعٌ مِنَ الصَّرْفِ",
     "course_words": [
      "lexeme.arabic-numbers-exceptions-1",
@@ -18834,11 +18834,11 @@
      }
     ],
     "steps": [
-     "From 11 to 19, both parts of the number end in -a, and the noun after them is singular with -an: خَمْسَةَ عَشَرَ يَوْمًا.",
+     "From 11 to 19, both parts of the number end in -a, except the first part of 12, which changes like a word for two: اِثْنَا عَشَرَ, اِثْنَيْ عَشَرَ. The noun after them is singular with -an: خَمْسَةَ عَشَرَ يَوْمًا.",
      "In 13 to 19, the first part takes the opposite gender, as 3 to 10 do, while عَشَرَ or عَشْرَةَ matches the noun: خَمْسَ عَشْرَةَ سَاعَةً. In 11 and 12, both parts match: أَحَدَ عَشَرَ شَهْرًا.",
      "The tens, from عِشْرُونَ to تِسْعُونَ, also take a singular noun with -an: عِشْرُونَ طَالِبًا.",
      "مِئَة and أَلْف take a singular noun ending in -i: مِئَةُ سَنَةٍ, أَلْفُ كِتَابٍ.",
-     "Some words never take tanween: the مَمْنُوعٌ مِنَ الصَّرْفِ, like مَدَارِس. Without الْـ, they end in -a where others end in -i: فِي مَدَارِسَ; with الْـ, the -i comes back: فِي الْمَدَارِسِ."
+     "Some words never take tanween: the مَمْنُوعٌ مِنَ الصَّرْفِ, like مَدَارِس. On their own they end in -a where other words end in -i: فِي مَدَارِسَ. With الْـ, or as the first word of an إِضَافَة, the -i comes back: فِي الْمَدَارِسِ, فِي مَدَارِسِ الْمَدِينَةِ."
     ],
     "examples": [
      {
@@ -18966,7 +18966,10 @@
     ],
     "phrases_ar": [
      "مَمْنُوعٌ مِنَ الصَّرْفِ",
-     "فِي مَدَارِسَ"
+     "اِثْنَا عَشَرَ",
+     "اِثْنَيْ عَشَرَ",
+     "فِي مَدَارِسَ",
+     "فِي مَدَارِسِ الْمَدِينَةِ"
     ]
    }
   ],
@@ -19025,7 +19028,7 @@
      "A negative followed by إِلَّا means \"only\": مَا بَقِيَ إِلَّا يَوْمَانِ, only two days are left. It doesn't mean that none are left.",
      "With no negative before it, إِلَّا means \"except\": حَضَرَ الْجَمِيعُ إِلَّا لَيْلَى, everyone came except Laylā.",
      "لَا before a noun with a plain -a means \"no … at all\": لَا أَحَدَ, nobody; لَا شَكَّ, no doubt.",
-     "إِنَّمَا narrows the point to what follows it, and فَقَطْ, only, comes after the word it limits.",
+     "إِنَّمَا restricts the sentence to its last part: إِنَّمَا الْمُشْكِلَةُ فِي الْوَقْتِ, the problem is only in the time. فَقَطْ, only, comes after the word it limits.",
      "Check how far a negative reaches: لَمْ يَحْضُرِ الْجَمِيعُ, not everyone came, isn't لَمْ يَحْضُرْ أَحَدٌ, nobody came."
     ],
     "examples": [
@@ -19114,7 +19117,7 @@
     ],
     "why": {
      "q_en": "Why يَوْمَانِ, with -āni, in مَا بَقِيَ إِلَّا يَوْمَانِ?",
-     "a_en": "After a negative, إِلَّا leaves the word's ending as its role needs. Here the two days are what's left, the subject of بَقِيَ, so -āni."
+     "a_en": "When a negative sentence has nothing before إِلَّا for it to except from, the word after إِلَّا takes the ending its role needs. Here the two days are what's left, the subject of بَقِيَ, so -āni."
     },
     "selftest": [
      {
@@ -19216,16 +19219,16 @@
     ],
     "examples": [
      {
-      "ar": "حُذِفَتْ جُمْلَةُ النَّفْيِ سَهْوًا، فَانْقَلَبَ الْمَعْنَى.",
-      "en": "The negative clause was deleted by mistake, so the meaning was reversed.",
+      "ar": "حُذِفَتْ أَدَاةُ النَّفْيِ سَهْوًا، فَانْقَلَبَ الْمَعْنَى.",
+      "en": "The negative particle was deleted by mistake, so the meaning was reversed.",
       "words": [
        {
         "ar": "حُذِفَتْ",
         "en": "was deleted"
        },
        {
-        "ar": "جُمْلَةُ",
-        "en": "the sentence (of)"
+        "ar": "أَدَاةُ",
+        "en": "the particle (of)"
        },
        {
         "ar": "النَّفْيِ",
@@ -19276,35 +19279,39 @@
       ]
      },
      {
-      "ar": "رَاجَعْتُ النَّصَّ بِأَمَانَةٍ قَبْلَ النَّشْرِ.",
-      "en": "I checked the text faithfully before publishing.",
+      "ar": "نَقَلْتُ الْمَعْنَى بِأَمَانَةٍ دُونَ أَيِّ زِيَادَةٍ.",
+      "en": "I conveyed the meaning faithfully, without adding anything.",
       "words": [
        {
-        "ar": "رَاجَعْتُ",
-        "en": "I checked over"
+        "ar": "نَقَلْتُ",
+        "en": "I conveyed"
        },
        {
-        "ar": "النَّصَّ",
-        "en": "the text"
+        "ar": "الْمَعْنَى",
+        "en": "the meaning"
        },
        {
         "ar": "بِأَمَانَةٍ",
         "en": "faithfully"
        },
        {
-        "ar": "قَبْلَ",
-        "en": "before"
+        "ar": "دُونَ",
+        "en": "without"
        },
        {
-        "ar": "النَّشْرِ",
-        "en": "publishing"
+        "ar": "أَيِّ",
+        "en": "any"
+       },
+       {
+        "ar": "زِيَادَةٍ",
+        "en": "addition"
        }
       ]
      }
     ],
     "why": {
-     "q_en": "Why حُذِفَتْ, with u and i, in حُذِفَتْ جُمْلَةُ النَّفْيِ?",
-     "a_en": "It's the passive: حَذَفَ, he deleted; حُذِفَ, it was deleted, with no one named. The ـَتْ matches جُمْلَة, which is feminine."
+     "q_en": "Why حُذِفَتْ, with u and i, in حُذِفَتْ أَدَاةُ النَّفْيِ?",
+     "a_en": "It's the passive: حَذَفَ, he deleted; حُذِفَ, it was deleted, with no one named. The ـَتْ matches أَدَاة, which is feminine."
     },
     "selftest": [
      {
@@ -19341,7 +19348,7 @@
     "phrases_ar": [
      "قَدْ يُفْتَحُ غَدًا",
      "فُتِحَ أَمْسِ",
-     "حُذِفَتْ جُمْلَةُ النَّفْيِ"
+     "حُذِفَتْ أَدَاةُ النَّفْيِ"
     ]
    }
   ],
@@ -20058,7 +20065,7 @@
     ],
     "why": {
      "q_en": "Why أَبْسَطَ, with -a, after بِعِبَارَةٍ?",
-     "a_en": "أَبْسَط, simpler, is on the أَفْعَل pattern, which never takes tanween: where other describing words would end in -in, it ends in -a: بِعِبَارَةٍ أَبْسَطَ."
+     "a_en": "أَبْسَط, simpler, is a comparative on the أَفْعَل pattern, like أَكْبَر and أَفْضَل. These comparatives never take tanween, so where another describing word would end in -in after بِعِبَارَةٍ, this one ends in -a: بِعِبَارَةٍ أَبْسَطَ."
     },
     "selftest": [
      {
@@ -20069,7 +20076,7 @@
        "a style"
       ],
       "answer": "a technical term",
-      "why_en": "A beginner is مُبْتَدِئ, and a style أُسْلُوب."
+      "why_en": "A مُصْطَلَح is a word with a fixed meaning in one field; a style is أُسْلُوب."
      },
      {
       "q_en": "What does بَسَّطَ mean?",
