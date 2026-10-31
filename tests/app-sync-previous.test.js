@@ -638,6 +638,22 @@ async function signIn(d, url) {
       && !(await now.exists('[data-action=project-wait]')) && (await now.text('#projectTop')).includes('In the archive'), await now.text('#projectTop'));
     check('…both read exactly as the previous release saved them (loading rewrote nothing), and this release is in step', same((await now.data()).projects.items.find(p => p.id === PWN), finishedThere) && same((await now.data()).projects.items.find(p => p.id === PWB), renamedThere)
       && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+
+    console.log('\n[23] How you work (Ask MyDay) passes through the previous release unchanged (specs/ask-how-you-work.md)');
+    const howSeen = [{ on: today, type: 'task', category: 'learning', proposed: 30, minutes: 15, added: true, renamed: false }];
+    const patOf = async () => (await record('patterns', 'patterns'))?.data;
+    await now.returnToApp();
+    await now.setData(`s => { s.patterns.prefs.askUse = true; s.patterns.prefs.askAsked = '${today}'; s.patterns.askSeen = ${JSON.stringify(howSeen)}; }`);
+    check('this release sends the switch, your answer about Ask and the counts in the patterns record', await eventually(async () => { const r = await patOf(); return r?.prefs?.askUse === true && r?.prefs?.askAsked === today && same(r?.askSeen, howSeen); }), await patOf());
+    await before.returnToApp();
+    check('the previous release syncs normally and holds them exactly in its saved data', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.askUse === true`, 20000)
+      && same((await before.data()).patterns.askSeen, howSeen) && (await before.data()).patterns.prefs.askAsked === today, (await before.data()).patterns);
+    await before.open(BEFORE + '#noticed'); await before.until(`!!document.getElementById('prefMin-admin')`, 15000);
+    await before.ev(`(() => { const s = document.getElementById('prefMin-admin'); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, '20'); s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    check('a preference changed on the previous release reaches the account with the switch, your answer and the counts as they were', await eventually(async () => { const r = await patOf(); return r?.prefs?.maxMinutes?.admin?.value === 20 && r?.prefs?.askUse === true && r?.prefs?.askAsked === today && same(r?.askSeen, howSeen); }) && await synced(before), await patOf());
+    await now.returnToApp();
+    check('back on this release: the preference arrived, and Ask MyDay still uses how you work, with the counts as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 20`, 20000)
+      && (await now.data()).patterns.prefs.askUse === true && same((await now.data()).patterns.askSeen, howSeen) && await synced(now), (await now.data()).patterns);
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
