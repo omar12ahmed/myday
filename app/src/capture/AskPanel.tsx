@@ -102,6 +102,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
   useEffect(() => () => request.current?.abort(), []);
   // Carry on today's kept conversation: its exchanges as the thread, and the lookup behind its last answer.
   useImperativeHandle(ref, () => ({ carryOn: () => {
+    catchUp(); // another tab's change first, so what's checked is the newest data
     const kept = keptConversation(getSnapshot().data);
     if (!kept) return false;
     request.current?.abort();
@@ -202,7 +203,8 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     keep(c, [...earlier, { asked: message, answered: notDone(r) + shownText(r) }], looked);
   }
   // Kept on this device after each answer and after Add or Apply (with what you did), so + can offer it later today.
-  const keep = (c: { id: string; at: string }, said: Turn[], looked?: Looked) => keepConversation(getSnapshot().data, { ...c, turns: said.map(t => ({ asked: t.asked, answered: t.answered })), ...(looked ? { looked: toKept(looked) } : {}) });
+  // (A first question can be longer than a request takes — 2,000 characters in + — so it's kept as it's sent.)
+  const keep = (c: { id: string; at: string }, said: Turn[], looked?: Looked) => keepConversation(getSnapshot().data, { ...c, turns: said.map(t => ({ asked: t.asked.trim().slice(0, ASK_LIMITS.textChars), answered: t.answered })), ...(looked ? { looked: toKept(looked) } : {}) });
   const notDone = (r: Shown) => (r.kind === 'add' || r.kind === 'steps' ? '(Not added.)\n' : r.kind === 'change' ? '(Not applied.)\n' : '');
   // A reply to the answer shown, after a note of what you did with it (`did`: first, so cutting a long answer never loses
   // it); the lookup behind that answer goes along with it.
@@ -214,7 +216,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     void ask(m, earlier, after.looked, true);
   }
   // Dismiss, Done, Undo: back to the start, and the conversation is forgotten.
-  const startOver = () => { setTurns([]); setPhase({ at: 'idle' }); forgetConversation(); };
+  const startOver = () => { setTurns([]); setPhase({ at: 'idle' }); forgetConversation(conv.id); };
   // A reply to today's kept conversation, carried on: what came before is the thread as it was kept.
   function sendResumed(looked?: Looked) {
     const m = more.trim();
@@ -297,7 +299,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
       {phase.at === 'resumed' && <div data-s="ask-resumed">
         <p className="text-[13px] text-fg-2 m-0">Carrying on your conversation from {conv.at}. Its last answer’s suggestions are above as text: ask for them again to add them.</p>
         {replyBox(null, '', phase.looked)}
-        <LinkButton data-action="ask-dismiss" onClick={startOver}>Start over</LinkButton>
+        <LinkButton data-action="ask-dismiss" onClick={() => { startOver(); backToField(); }}>Start over</LinkButton>
       </div>}
       {phase.at === 'added' && replyBox(phase.after, `(They added ${phase.words}.)\n`)}
       {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">

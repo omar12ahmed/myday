@@ -24,7 +24,10 @@ question starts a new conversation, which replaces the kept one. At midnight it'
   last answer comes back as text; "add those" in a reply proposes them again, checked against your data as it is then.
 - **Nothing new reaches the AI.** A reply sends the conversation exactly as in 1.104.0.
 - **Made private since:** a kept answer may name a project or note you've since made private, so if anything has been
-  made private since it was kept (or AI help with notes switched off), it's forgotten rather than offered.
+  made private since it was kept (or AI help with notes switched off), it's forgotten rather than offered — even if no
+  answer named it, on the safe side.
+- **Also forgotten** by either Undo (the panel's, or Undo from +), since the kept copy would say the things were added.
+  Nothing is kept until a question is answered, so a first question that fails leaves the earlier one on offer.
 
 ## 3. What changes where
 

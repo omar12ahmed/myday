@@ -1007,6 +1007,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         ['a link that isn\'t the app\'s own', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS, held: [], looked: { lookup: DL, leftOut: 0, hrefs: { r1: 'https://example.com' } } })],
         ['a bad time', JSON.stringify({ id: 'x', on: D, at: '25:00', turns: TURNS, held: [] })],
         ['no list of what was private', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS })],
+        ['something in that list that isn\'t text', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS, held: [1] })],
+        ['a lookup\'s count it doesn\'t know', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS, held: [], looked: { lookup: DL, leftOut: 0, more: { secret: 1 } } })],
+        ['a lookup without what it left out', JSON.stringify({ id: 'x', on: D, at: '10:00', turns: TURNS, held: [], looked: { lookup: DL } })],
       ];
       for (const [why, v] of damaged) { localStorage.setItem(KC, v); check(`…a damaged copy is forgotten, never offered: ${why}`, K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null); }
       // Made private since: forgotten, as an answer may name it.
@@ -1022,7 +1025,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       K.updateSaved(d => { d.patterns.prefs.aiNotes = false; });
       check('…and AI help with notes switched off since: forgotten too', K.keptConversation(data(), D) === null);
       K.updateSaved(d => { d.patterns.prefs.aiNotes = notesWere; d.projects.items = d.projects.items.filter(p => p.id !== 'pjKC'); });
-      K.keepConversation(data(), { id: 'cv6', at: '12:15', turns: TURNS }); K.forgetConversation();
+      K.keepConversation(data(), { id: 'cv6', at: '12:15', turns: TURNS }); K.forgetConversation('another');
+      check('Start over forgets only its own (another tab may have kept a newer one)', K.keptConversation(data(), D)?.id === 'cv6');
+      K.forgetConversation('cv6');
       check('forgotten on request (Start over, Dismiss, Undo)', K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null);
       stop();
     }

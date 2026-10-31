@@ -553,6 +553,20 @@ const SEED = `s => {
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
     check('Start over forgets it: opened again, nothing to carry on', !(await mock.exists('[data-s=ask-kept]')) && (await mock.ev(`localStorage.getItem('myday.ask.conversation')`)) === null);
     await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam. ' + 'Some more about my week. '.repeat(30));
+    await askGo(mock); await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'x');
+    check('a first question longer than a request takes is still kept (as it was sent)', /\(one message\)/.test(await mock.text('[data-s=ask-kept]')), await mock.text('[data-s=ask-kept]'));
+    await mock.click('[data-action=ask-carry-on]'); await sleep(200); await mock.click('[data-action=ask-dismiss]'); await sleep(150);
+    await closeSheet(mock); await sleep(200);
+    await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => !['Call the bank', 'Renew passport', 'Email Sam'].includes(t.title)); }`);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    await askGo(mock); await mock.click('[data-action=ask-add]'); await sleep(250); await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'x');
+    check('after Add, + offers both Undo and Carry on', await mock.exists('[data-action=ask-last-undo]') && await mock.exists('[data-action=ask-carry-on]'));
+    await mock.click('[data-action=ask-last-undo]'); await sleep(250);
+    check('…and Undo from + forgets the conversation too (it would say they were added)', !(await mock.exists('[data-s=ask-kept]')) && (await mock.ev(`localStorage.getItem('myday.ask.conversation')`)) === null);
+    await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'today', 'delete all my tasks');
     await askGo(mock);
     check('"delete all my tasks": it can\'t, says so kindly, and nothing changes', (await mock.text('[data-s=ask-message]')).includes("can't do that") && !(await mock.exists('[data-action=ask-add]')) && !(await mock.exists('[data-action=ask-action]')));
@@ -593,6 +607,15 @@ const SEED = `s => {
     await D.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('thanks')`, 15000);
     check('…and after the day\'s last one, no reply box: it says Ask MyDay is back tomorrow', !(await D.exists('[data-s=ask-more]')) && (await D.text('[data-s=ask-limit]')).includes('back tomorrow'), await D.text('[data-s=ask-panel]'));
     setAi({ AI_DAILY_LIMIT: '50' });
+    // Carried on from + later: the reply sends the conversation as it was kept.
+    await closeSheet(D); await sleep(200);
+    await openAsk(D, 'today', 'x');
+    await D.click('[data-action=ask-carry-on]'); await sleep(250);
+    await D.type('[data-s=ask-more]', 'and one more thing'); await D.click('[data-action=ask-again]');
+    await D.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('one more thing')`, 15000);
+    const sentK = aiCalls().slice(-1)[0].body.context;
+    check('carried on from + later, a reply sends the conversation as it was kept: all three exchanges, the first after its "(Not added.)", and the page you\'re on now', sentK.text === 'and one more thing' && sentK.conversation?.earlier.length === 3
+      && sentK.conversation.earlier[0].asked === 'Break this into smaller steps' && sentK.conversation.earlier[0].answered.startsWith('(Not added.)') && sentK.page === 'today', sentK.conversation);
     await closeSheet(D);
     await openAsk(D, 'projects/p/pjAsk', 'Break this into smaller steps');
     const beforePrivacyCalls = aiCalls().length;

@@ -22,11 +22,13 @@ export function onKeptConversation(fn: () => void): () => void { listeners.add(f
 const told = () => { for (const fn of listeners) fn(); };
 
 // What the AI may not see right now: anything private (or in a private project), and notes' text when AI help with
-// notes is off — the same filter every request goes through (reach.ts).
+// notes is off — the same filter every request goes through (reach.ts). Any of it that's new since a conversation was kept
+// forgets that conversation, even if no answer named it (the safe side).
 function heldNow(data: MyDayData): string[] {
   const reach = aiReach(data);
   return [...data.projects.items.filter(p => !reach.project(p)).map(p => `p:${p.id}`), ...data.notes.items.filter(n => !reach.note(n)).map(n => `n:${n.id}`),
-    ...data.tasks.items.filter(t => !reach.task(t)).map(t => `t:${t.id}`), ...(data.patterns.prefs.aiNotes ? [] : ['notes-off'])];
+    ...data.tasks.items.filter(t => !reach.task(t)).map(t => `t:${t.id}`), ...data.commitments.filter(c => !reach.appointment(c)).map(c => `c:${c.id}`),
+    ...(data.patterns.prefs.aiNotes ? [] : ['notes-off'])];
 }
 
 export function keepConversation(data: MyDayData, x: { id: string; at: string; turns: KeptTurn[]; looked?: KeptLooked }) {
@@ -34,8 +36,12 @@ export function keepConversation(data: MyDayData, x: { id: string; at: string; t
   catch { try { localStorage.removeItem(KEY); } catch { /* storage unavailable: nothing kept */ } } // never an older one offered instead
   told();
 }
-export function forgetConversation() {
-  try { localStorage.removeItem(KEY); } catch { /* nothing to forget */ }
+// Forgets the one with this id (another tab may have kept a newer one since); with no id, whatever is kept.
+export function forgetConversation(id?: string) {
+  try {
+    const kept = id ? (JSON.parse(localStorage.getItem(KEY) ?? 'null') as { id?: unknown } | null)?.id : undefined;
+    if (!id || kept === id) localStorage.removeItem(KEY);
+  } catch { /* nothing to forget */ }
   told();
 }
 
