@@ -82,15 +82,17 @@ const voiceScripts = root => {
 export const scriptedReadings = root => Object.keys(voiceScripts(root).readings ?? {});
 // Short pieces ("pieces": the exact Arabic shown inside English, such as a check's question or answer) and the ones kept
 // without a voice on purpose ("left_out", each with its reason). Each piece's script must have its letters, keep its
-// marks and be marked all through, like a reading script.
+// marks and be marked all through, like a reading script. A script may add an Arabic comma between the words of a list
+// (مَنْ، مَا، أَيْنَ، هَلْ), so the voice pauses between them; nothing else may differ.
+const listPauses = s => s.replace(/\u060C(?= )/g, '');
 export function voicePieces(root) {
   const { pieces = {}, left_out = {} } = voiceScripts(root);
   for (const [text, script] of Object.entries(pieces)) {
     const where = `Arabic voice script for “${text}”`;
     if (left_out[text]) throw new Error(`${where}: it is also listed as left out`);
     if (voiceable(text)) throw new Error(`${where}: the course already gives it with vowel marks`);
-    if (unmarked(script) !== unmarked(text)) throw new Error(`${where} has other letters than the course text`);
-    if (!keepsMarks(text, script)) throw new Error(`${where} contradicts a vowel mark the course shows`);
+    if (unmarked(listPauses(script)) !== unmarked(listPauses(text))) throw new Error(`${where} has other letters than the course text`);
+    if (!keepsMarks(listPauses(text), listPauses(script))) throw new Error(`${where} contradicts a vowel mark the course shows`);
     if (!markedThrough(script)) throw new Error(`${where} is not fully vowelled`);
   }
   return { pieces, left_out };
