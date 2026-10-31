@@ -136,7 +136,7 @@ export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner
     } finally { setBusy(false); }
   }
   const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); void add(Array.from(e.dataTransfer.files)); };
-  const what = owner.kind === 'project' ? 'project' : 'note';
+  const what = owner.kind === 'project' ? 'project' : owner.kind === 'video' ? 'video' : 'note';
   const body = (<>
     {files.length > 0 ? <ul className="list-none p-0 m-0">{files.map(f => <FileRow key={f.id} f={f} owner={owner} />)}</ul>
       : <Note className="mt-0">Keep photos, PDFs and documents with this {what}.</Note>}
