@@ -5369,7 +5369,7 @@
      },
      {
       "ar": "مَاذَا تَشْرَبُونَ؟",
-      "en": "What would you all like to drink?",
+      "en": "What are you all drinking?",
       "words": [
        {
         "ar": "مَاذَا",
@@ -5489,7 +5489,7 @@
      }
     ],
     "steps": [
-     "The thing an action is done to comes straight after the verb and ends in -a: أَقْرَأُ الْكِتَابَ. Without الْـ, it ends in -an: أَقْرَأُ كِتَابًا.",
+     "The thing an action is done to comes after the verb (and after the doer, if one is named) and ends in -a: أَقْرَأُ الْكِتَابَ. Without الْـ, it ends in -an: أَقْرَأُ كِتَابًا.",
      "Some verbs take a small word first, and the noun after it ends in -i: أَرْجِعُ إِلَى الْبَيْتِ.",
      "Arabic and English don't always agree on the small word. أَنْتَظِرُ, I wait for, needs none; أَبْحَثُ, I look, takes عَنْ. So learn each verb with what follows it.",
      "One sentence can have both: أَقْرَأُ كِتَابًا فِي الْمَكْتَبَةِ, I read a book in the library."
@@ -5560,7 +5560,7 @@
     ],
     "why": {
      "q_en": "Why does كِتَابًا end in -an here, when it's كِتَابٌ elsewhere?",
-     "a_en": "The ending shows the word's job. As the thing being read, it's كِتَابًا. As the subject (هَذَا كِتَابٌ), it's كِتَابٌ. After a small word like فِي, it's كِتَابٍ. Same book, different job."
+     "a_en": "The ending shows the word's job. As the thing being read, it's كِتَابًا. As what you say something is, in هَذَا كِتَابٌ, this is a book, it's كِتَابٌ. After a small word like فِي, it's كِتَابٍ. Same book, different job."
     },
     "selftest": [
      {
@@ -5664,24 +5664,24 @@
       ]
      },
      {
-      "ar": "أُحِبُّ هَذِهِ الْأُغْنِيَةَ وَأَسْمَعُهَا كَثِيرًا.",
-      "en": "I love this song and listen to it a lot.",
+      "ar": "هَذِهِ حَقِيبَةٌ جَدِيدَةٌ، وَأُحِبُّهَا كَثِيرًا.",
+      "en": "This is a new bag, and I like it a lot.",
       "words": [
-       {
-        "ar": "أُحِبُّ",
-        "en": "I love"
-       },
        {
         "ar": "هَذِهِ",
         "en": "this"
        },
        {
-        "ar": "الْأُغْنِيَةَ",
-        "en": "song"
+        "ar": "حَقِيبَةٌ",
+        "en": "a bag"
        },
        {
-        "ar": "وَأَسْمَعُهَا",
-        "en": "and I hear it (-hā: it, the song)"
+        "ar": "جَدِيدَةٌ",
+        "en": "new"
+       },
+       {
+        "ar": "وَأُحِبُّهَا",
+        "en": "and I like it (-hā: it, the bag)"
        },
        {
         "ar": "كَثِيرًا",
@@ -5812,7 +5812,7 @@
      }
     ],
     "steps": [
-     "Arabic has no verb \"to have\" here. It says the thing is \"at\" you: عِنْدِي أَخٌ, I have a brother (literally \"at me, a brother\").",
+     "Arabic has no everyday verb for \"to have\". It says the thing is \"at\" you: عِنْدِي أَخٌ, I have a brother (literally \"at me, a brother\").",
      "The ending shows who has it, just as on a noun: عِنْدِي, عِنْدَكَ, عِنْدَهُ, عِنْدَنَا.",
      "The thing you have is the subject of the sentence, so it ends in -un: عِنْدِي سُؤَالٌ, I have a question.",
      "أُحِبُّ takes what you like straight after it, usually with الْـ: أُحِبُّ الْقَهْوَةَ. أَحْتَاجُ takes إِلَى: أَحْتَاجُ إِلَى مُسَاعَدَةٍ.",
@@ -5843,11 +5843,11 @@
      },
      {
       "ar": "أُحِبُّ السِّبَاحَةَ كَثِيرًا.",
-      "en": "I love swimming.",
+      "en": "I like swimming a lot.",
       "words": [
        {
         "ar": "أُحِبُّ",
-        "en": "I love"
+        "en": "I like"
        },
        {
         "ar": "السِّبَاحَةَ",
@@ -6164,7 +6164,7 @@
     "steps": [
      "Arabic has its own digits, shown in the table, and many Arabic texts use 0–9 instead. Learn to read both.",
      "Words run from right to left, but a number's digits keep the order you know: ٤٧ is 47, never 74.",
-     "Said aloud, numbers from 21 to 99 put the units first: ٤٧ is سَبْعَةٌ وَأَرْبَعُونَ, \"seven and forty\". It's still written ٤٧.",
+     "Said aloud, numbers like 13 and 47 put the units first: ٤٧ is سَبْعَةٌ وَأَرْبَعُونَ, \"seven and forty\", and ١٣ is ثَلَاثَةَ عَشَرَ, \"three-ten\". They're still written ٤٧ and ١٣.",
      "To ask a price, say كَمِ السِّعْرُ؟, what's the price? or بِكَمْ هَذَا؟, how much is this?",
      "A price comes with its currency: بِعَشَرَةِ جُنَيْهَاتٍ, for ten pounds. If you're not sure you heard it right, say it back as a question.",
      "How a number changes the noun after it comes later. For now, learn prices as whole phrases."
@@ -6268,6 +6268,7 @@
     "phrases_ar": [
      "كَمِ السِّعْرُ؟",
      "سَبْعَةٌ وَأَرْبَعُونَ",
+     "ثَلَاثَةَ عَشَرَ",
      "بِكَمْ هَذَا؟",
      "بِعَشَرَةِ جُنَيْهَاتٍ",
      "أَيْنَ هَذَا؟",
@@ -6330,7 +6331,7 @@
      "The hour is said as \"the fourth\", \"the fifth\": السَّاعَةُ الرَّابِعَةُ is four o'clock, literally \"the fourth hour\". One o'clock is السَّاعَةُ الْوَاحِدَةُ, \"the one hour\".",
      "These hour words end in ـَة because سَاعَة is feminine, and they match it.",
      "For half past, add وَالنِّصْفُ, \"and the half\"; for quarter past, وَالرُّبْعُ. Quarter to is إِلَّا رُبْعًا, \"less a quarter\", after the next hour.",
-     "\"At\" a time is فِي السَّاعَةِ, and the hour then ends in -i too: فِي السَّاعَةِ الرَّابِعَةِ, at four.",
+     "\"At\" a time is فِي السَّاعَةِ, and the hour then ends in -i too: فِي السَّاعَةِ الرَّابِعَةِ, at four. Only the two-word hours, 11 and 12, never change: فِي السَّاعَةِ الثَّانِيَةَ عَشْرَةَ, at twelve.",
      "Add the part of the day when it matters: صَبَاحًا, in the morning; بَعْدَ الظُّهْرِ, in the afternoon; مَسَاءً, in the evening."
     ],
     "examples": [
@@ -6446,6 +6447,7 @@
      "إِلَّا رُبْعًا",
      "فِي السَّاعَةِ",
      "فِي السَّاعَةِ الرَّابِعَةِ",
+     "فِي السَّاعَةِ الثَّانِيَةَ عَشْرَةَ",
      "بَعْدَ الظُّهْرِ",
      "خَمْسُ سَاعَاتٍ"
     ]
@@ -6501,8 +6503,8 @@
     "steps": [
      "Each day is \"the day of …\": يَوْمُ الْأَحَدِ, Sunday. You can also leave out يَوْمُ and say just الْأَحَدُ.",
      "Sunday to Thursday are named after numbers, because the week is counted from Sunday: الْأَحَد is \"one\", and الْخَمِيس \"five\".",
-     "To say \"on\" a day, use يَوْمَ, with -a, and no other word: أُسَافِرُ يَوْمَ الْخَمِيسِ, I'm travelling on Thursday.",
-     "Put the day first, then the time: يَوْمَ الْأَحَدِ فِي السَّاعَةِ الْعَاشِرَةِ, on Sunday at ten.",
+     "To say \"on\" a day, you don't need a word for \"on\": يَوْمَ, with -a, does the job. أُسَافِرُ يَوْمَ الْخَمِيسِ, I'm travelling on Thursday.",
+     "Usually the day comes first, then the time: يَوْمَ الْأَحَدِ فِي السَّاعَةِ الْعَاشِرَةِ, on Sunday at ten.",
      "When a day and a time both matter, say them back to check: either one can be misheard."
     ],
     "examples": [
@@ -6567,7 +6569,7 @@
     ],
     "why": {
      "q_en": "Why is it يَوْمَ, with -a, in عِنْدِي مَوْعِدٌ يَوْمَ الْأَرْبِعَاءِ, but يَوْمُ in the table?",
-     "a_en": "In the table, يَوْمُ الْأَرْبِعَاءِ is just the day's name. In a sentence, the -a on يَوْمَ means \"on that day\", so Arabic needs no separate word for \"on\"."
+     "a_en": "In the table, يَوْمُ الْأَرْبِعَاءِ is just the day's name. When the day says when something happens, يَوْمَ takes -a, meaning \"on that day\", so Arabic needs no separate word for \"on\"."
     },
     "selftest": [
      {
@@ -6835,7 +6837,7 @@
     ],
     "steps": [
      "A shop visit has a few steps: ask for something, check they have it, ask the price, and say thank you.",
-     "Ask with أُرِيدُ and the thing, ending in -an: أُرِيدُ شَايًا, I'd like some tea. Then add \"please\".",
+     "Ask with أُرِيدُ and the thing, ending in -an when it has no الْـ: أُرِيدُ شَايًا, I'd like some tea. Then add \"please\".",
      "\"Please\" changes with who you're talking to: مِنْ فَضْلِكَ to a man, مِنْ فَضْلِكِ to a woman. Only the last vowel changes.",
      "Listen for the reply. تَفَضَّلْ, here you are, means they have it. لَيْسَ عِنْدَنَا, we haven't got any, means you'll need something else.",
      "Describing words match the thing: الْخُبْزُ رَخِيصٌ, the bread is cheap, but الْقَهْوَةُ رَخِيصَةٌ, the coffee is cheap."
@@ -6855,7 +6857,7 @@
        },
        {
         "ar": "تُفَّاحٍ",
-        "en": "apples (-in after كِيلُو)"
+        "en": "apples (-in: \"of apples\")"
        },
        {
         "ar": "مِنْ",
@@ -6910,7 +6912,7 @@
     ],
     "why": {
      "q_en": "Why is \"expensive\" غَالٍ, with no ي at the end?",
-     "a_en": "The word ends in a long ī, but with the -in ending and no الْـ, the ي drops in writing: غَالٍ. With الْـ it comes back: الْغَالِي, the expensive one. For a feminine word, it's غَالِيَة."
+     "a_en": "The word ends in a long ī, but with the -in ending and no الْـ, that ī drops: you write and say غَالٍ. With الْـ it comes back: الْغَالِي, the expensive one. For a feminine word, it's غَالِيَة."
     },
     "selftest": [
      {
