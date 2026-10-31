@@ -718,6 +718,34 @@ async function signIn(d, url) {
     await now.open(NOW + `#projects/p/${PSD}`);
     check('back on this release: the project at Act, read exactly as the previous release saved it, and not asked about', await now.until(`(document.querySelector('#projectTitle')?.textContent || '') === 'Kiln choice (renamed)'`, 30000)
       && same((await now.data()).projects.items.find(p => p.id === PSD), movedThere) && !(await now.exists('#projectExploring')) && await synced(now) && (await now.status()) === 'synced', await now.text('#projectTop'));
+
+    console.log('\n[26] Ambitions pass by the previous release untouched (specs/projects-ambitions.md)');
+    const knowsAmbitions = builtText.includes('ambition-add');
+    console.log(`The previous release ${knowsAmbitions ? 'knows' : 'doesn’t know'} ambitions.`);
+    const PAM = 'pjAmbBack';
+    const amb = { id: 'amBack1', title: 'Work in cybersecurity (made up)', why: 'A steady job I care about', links: [{ id: 'alB1', kind: 'project', ref: PAM }, { id: 'alB2', kind: 'arabic' }, { id: 'alB3', kind: 'newer-thing', futureBit: 1 }],
+      steps: [{ id: 'asB1', text: 'Learn networking', done: true }, { id: 'asB2', text: 'Security+', linkId: 'alB1' }], createdAt: stamp, updatedAt: stamp, futureBit: { keep: ['ambition', 1] } };
+    const ambOf = async () => (await record('ambition', 'amBack1'))?.data;
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PAM}', title: 'Security+ prep (made up)', summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' });
+      s.ambitions = s.ambitions || { items: [] }; s.ambitions.items.push(${JSON.stringify(amb)}); }`);
+    check('this release sends the ambition as its own record, exactly (a newer MyDay\'s link kind and keys too)', await eventually(async () => same(await ambOf(), amb)) && await synced(now), await ambOf());
+    const ambV = (await record('ambition', 'amBack1'))?.version;
+    await before.returnToApp();
+    check('the previous release syncs normally and receives the linked project', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PAM}')`, 20000));
+    await before.open(BEFORE + `#projects/p/${PAM}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Security+ prep (renamed)');
+    check('a rename of the linked project on the previous release reaches the account, and the ambition is untouched (same version)', await eventually(async () => (await record('project', PAM))?.data?.value?.title === 'Security+ prep (renamed)') && await synced(before)
+      && (await record('ambition', 'amBack1'))?.version === ambV && same(await ambOf(), amb), (await record('ambition', 'amBack1'))?.version);
+    // The previous release deletes the linked project: the ambition keeps its link, and this release says it's gone.
+    await before.open(BEFORE + `#projects/p/${PAM}`); await before.until(`!!document.querySelector('[data-action=project-delete]')`, 15000);
+    await before.click('[data-action=project-delete]'); await before.until(`!!document.querySelector('[data-action=dialog-confirm]')`, 5000); await before.click('[data-action=dialog-confirm]');
+    check('deleting the linked project on the previous release reaches the account; the ambition is still untouched', await eventually(async () => !!(await record('project', PAM))?.deleted) && await synced(before) && (await record('ambition', 'amBack1'))?.version === ambV);
+    await now.returnToApp();
+    await now.open(NOW + '#projects/a/amBack1');
+    check('back on this release: the ambition reads exactly as sent, its project link says it\'s gone, and this release is in step', await now.until(`!!document.querySelector('[data-s=ambition-link][data-kind=project]') && /No longer in your projects/.test(document.querySelector('[data-s=ambition-link][data-kind=project]').textContent)`, 30000)
+      && same((await now.data()).ambitions.items.find(a => a.id === 'amBack1'), amb) && await synced(now) && (await now.status()) === 'synced', await now.text('[data-s=ambition-page]'));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
