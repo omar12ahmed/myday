@@ -172,6 +172,10 @@ Round fifteen (modules 4–5's thirteen A1 explainers, released with their text)
 again from Charon, mostly A1 starter and course words, which now play WaveNet B everywhere. Ten first came back as the
 very same audio as a scripted piece and were made again until each had its own; two retakes after blind transcription.
 عَنِ said alone was still heard as عَنِّي and was approved by ear ("all good"). The key was deleted.
+Round sixteen (the B2 course words, modules 20–22): 105 words, their examples and notes, 315 clips in WaveNet B.
+The owner heard ضِعْف said alone begin with b and the jīm of حُجَّةً slightly off; WaveNet gave the same audio on a retake,
+so the headword became ضِعْفُ الْعَدَدِ and the example لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ, both then heard right. Six forms said
+alone were still transcribed as a commoner word and were approved by ear ("all good"). The key was deleted.
 Round seventeen (modules 6–7's twelve A1 explainers, released with their text): 181 clips, 110 new texts and 71 made
 again from Charon. One came back as a scripted piece's audio and was made again; هُمْ said alone was still heard as
 هُنَّ on a new take and was approved by ear ("all good").
