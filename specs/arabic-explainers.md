@@ -1,7 +1,8 @@
 # Proposal: Arabic explainers ("How this works")
 
 **Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Module 14 (ten) shipped in 1.98.0 and was
-voiced in 1.102.0; module 15 (eight) and modules 4–5 (thirteen) ship with their voice in 1.105.0. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
+voiced in 1.102.0; module 15 (eight) and modules 4–5 (thirteen) ship with their voice in 1.105.0. Modules 6–7 (twelve)
+are cross-checked and with the owner's checker. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
 checker, voiced and listened to, then released.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).

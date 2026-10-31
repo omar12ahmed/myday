@@ -606,7 +606,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
   const linkText = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-explainer-link]')?.textContent`);
   const linkCount = await count('[data-ar-explainer-link]');
-  check('Vocabulary has 92 links to explainers under course words (52 in modules 4–5, 13 in module 14, 27 in module 15)', linkCount === 92, linkCount);
+  check('Vocabulary has 147 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 13 in module 14, 27 in module 15)', linkCount === 147, linkCount);
   check('a verb\'s link reads "How this verb works, step by step"', await linkText('lexeme.arabic-weak-verbs-1') === 'How this verb works, step by step', await linkText('lexeme.arabic-weak-verbs-1'));
   check('a phrase\'s link reads "How it works, step by step"', await linkText('lexeme.arabic-verb-moods-4') === 'How it works, step by step', await linkText('lexeme.arabic-verb-moods-4'));
   check('…and each link\'s accessible name adds its word, so the list of links can be told apart', await ev(`document.querySelector('[data-ar-word="lexeme.arabic-weak-verbs-1"] [data-ar-explainer-link]')?.getAttribute('aria-label')`) === 'How this verb works, step by step: قَالَ');
@@ -650,6 +650,13 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-inna-sisters"]').open = true`); await sleep(300);
   const label = await ev(`(() => { const row = document.querySelector('details[data-ar-explainer="explainer.arabic-inna-sisters"] [data-ar-explainer-row="إِنَّ الْجَوَّ جَمِيلٌ"]'); const cell = row?.firstElementChild; const ar = cell?.querySelector('[lang="ar"]'); return { text: cell?.textContent, ar: ar?.textContent, dir: ar ? getComputedStyle(ar).direction : null }; })()`);
   check('module 15: the إِنَّ and كَانَ lesson has its two explainers, and a table label\'s Arabic ("with إِنَّ") is marked as Arabic, right to left', (label.text || '').startsWith('with ') && label.ar === 'إِنَّ' && label.dir === 'rtl', label);
+  await fresh('study/arabic/lesson.arabic-clock-calendar'); await wait('[data-ar-explainers]', 5000);
+  check('module 7: the time and days lesson has its two explainers, the time and the days of the week', (await ev(`[...document.querySelectorAll('[data-ar-explainers] details[data-ar-explainer]')].map(d => d.dataset.arExplainer).join()`)) === 'explainer.arabic-telling-the-time,explainer.arabic-days-of-the-week');
+  await fresh('study/arabic/lesson.arabic-digits-prices'); await wait('[data-ar-explainers="1"]', 5000);
+  await ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-digits-prices"]').open = true`); await sleep(300);
+  const digits = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-digits-prices"]'); const cell = d?.querySelector('[data-ar-explainer-row] td'); const n = cell?.querySelector('bdi[lang="ar"]'); const word = d?.querySelector('[data-ar-explainer-step] bdi[lang="ar"]:not(.ar-digits)'); const px = e => e ? parseFloat(getComputedStyle(e).fontSize) / parseFloat(getComputedStyle(e.parentElement).fontSize) : null; return { rows: d?.querySelectorAll('[data-ar-explainer-row]').length, text: cell?.textContent, digit: n?.textContent, digitClass: n?.className, digitScale: px(n), wordClass: word?.className, wordScale: px(word) }; })()`);
+  check('module 7: the digits explainer shows the eleven digits ٠ to ١٠, each label\'s Arabic digit marked as Arabic', digits.rows === 11 && digits.text === '٠ · 0' && digits.digit === '٠', digits);
+  check('…and a digit on its own is drawn larger than Arabic words (Naskh draws digits small), so ٤٧ reads at the size of the text', /\bar-digits\b/.test(digits.digitClass || '') && digits.digitScale > 1.3 && !/ar-digits/.test(digits.wordClass || '') && digits.wordScale < 1.2, digits);
   await fresh('study/arabic/lesson.arabic-past-suffixes'); await wait('[data-ar-check]', 5000);
   check('a lesson without explainers shows no "How it works" section', !(await exists('[data-ar-explainers]')));
 

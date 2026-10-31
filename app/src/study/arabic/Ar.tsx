@@ -33,7 +33,7 @@ export function Mixed({ text, voice }: { text: string; voice?: string }) {
   let last = 0;
   for (const m of arabicRuns(text)) {
     if (m.index > last) parts.push(text.slice(last, m.index));
-    parts.push(<bdi key={m.index} lang="ar" className="ar-inline">{m.text}</bdi>);
+    parts.push(<bdi key={m.index} lang="ar" className={/[ء-ي]/.test(m.text) ? 'ar-inline' : 'ar-inline ar-digits'}>{m.text}</bdi>);
     parts.push(<Reading key={'reading-' + m.index} text={m.text} />);
     if (voice) parts.push(<PlayButton key={'voice-' + m.index} text={m.text.trim()} name={`${voice}:${m.index}`} label={m.text.trim()} />);
     last = m.index + m.text.length;

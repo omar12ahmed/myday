@@ -195,6 +195,8 @@
   .ar { font-family: 'Noto Naskh Arabic Variable', 'Noto Naskh Arabic', serif; font-size: 1.2em; line-height: 1.95; }
   .ar-block { display: block; text-align: start; }
   .ar-inline { font-family: 'Noto Naskh Arabic Variable', 'Noto Naskh Arabic', serif; font-size: 1.12em; }
+  /* Arabic digits on their own (٤٧) are drawn small in this typeface: enlarge them to the size of the text around them. */
+  .ar-digits { font-size: 1.4em; line-height: 1; }
   .ar-transliteration { font-family: var(--font-sans); font-size: .88em; font-weight: 400; color: var(--text-2); unicode-bidi: isolate; overflow-wrap: anywhere; }
   .ar-transliteration-block { display: block; text-align: left; margin: .25rem 0 .5rem; line-height: 1.65; }
   .ar-input { font-family: "Plus Jakarta Sans Variable", 'Noto Naskh Arabic Variable', system-ui, sans-serif; }

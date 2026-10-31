@@ -1,7 +1,7 @@
 // Live check of the Arabic explainers on the site (tests/live/run.py), on a disposable account and one throwaway device
 // (a Mac, then a 320 px phone width): the weak-verbs lesson's Understand step has How it works with its five cards; a
 // card opens with its table, and its questions answer when you choose (one wrong, one right); module 15's إِنَّ and
-// كَانَ lesson has its two (1.105.0); Vocabulary has the 92
+// كَانَ lesson has its two (1.105.0), and module 7's time and days lesson its two; Vocabulary has the 147
 // links, and one opens the irregular-families lesson with the Take card open and its title clear of the step bar; at
 // 320 px a card doesn't scroll sideways. Nothing is saved: the device's learning data and the account's Arabic and
 // Study records are as before. Never prints account details. Reads the live database (no writes of its own beyond
@@ -68,9 +68,14 @@ const WV = 'study/arabic/lesson.arabic-weak-verbs', SAY = 'details[data-ar-expla
   await mac.ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-inna-sisters"]'); if (d) d.open = true; })()`); await D.sleep(300);
   check('module 15: the إِنَّ and كَانَ lesson has its two explainers, with a table label\'s Arabic marked as Arabic', m15 && await mac.ev(`!!document.querySelector('details[data-ar-explainer="explainer.arabic-inna-sisters"] [data-ar-explainer-table] td [lang="ar"]')`));
 
+  // Module 7: the time and days lesson has its two cards.
+  await mac.open(BASE + '#study/arabic/lesson.arabic-clock-calendar');
+  const m7 = await mac.until(`!!document.querySelector('#ar-step-understand [data-ar-explainers="2"]')`, 60000);
+  check('module 7: the time and days lesson has its two explainers, the time and the days of the week', m7 && await mac.ev(`[...document.querySelectorAll('[data-ar-explainers] details[data-ar-explainer]')].map(d => d.dataset.arExplainer).join() === 'explainer.arabic-telling-the-time,explainer.arabic-days-of-the-week'`));
+
   // Vocabulary's links, and following one.
   await mac.open(BASE + '#study/arabic/vocabulary');
-  check('Vocabulary has 92 links to explainers under course words (52 in modules 4–5, 13 in module 14, 27 in module 15)', await mac.until(`document.querySelectorAll('[data-ar-explainer-link]').length === 92`, 60000), await mac.ev(`document.querySelectorAll('[data-ar-explainer-link]').length`));
+  check('Vocabulary has 147 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 13 in module 14, 27 in module 15)', await mac.until(`document.querySelectorAll('[data-ar-explainer-link]').length === 147`, 60000), await mac.ev(`document.querySelectorAll('[data-ar-explainer-link]').length`));
   await mac.click('[data-ar-word="lexeme.arabic-irregular-families-5"] [data-ar-explainer-link]');
   const opened = await mac.until(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-take"]'), s = d?.querySelector('summary'), bar = document.querySelector('nav.journey-steps'); return location.hash === '#study/arabic/lesson.arabic-irregular-families' && !!d?.open && !!s && !!bar && s.getBoundingClientRect().top >= bar.getBoundingClientRect().bottom && s.getBoundingClientRect().top < innerHeight; })()`, 60000);
   check('following the link under أَخَذَ opens its lesson with the Take card open, its title below the step bar', opened,
