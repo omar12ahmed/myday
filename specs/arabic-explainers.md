@@ -144,6 +144,16 @@ the authored file exactly and stays small.
 short profile, a notice, sorting something out), in the same shape, rather than a card on technique. The portfolio
 lessons get one too, at the owner's request (31 October 2026): the words for talking about your learning and level.
 
+**Modules 1–3 (owner, 31 October 2026):** the same card, adapted. Module 2 (the script): a table of letter shapes in
+short real words, steps on joining and the vowel marks, and two or three tiny phrases. Module 3 (sound): pairs of words
+that differ by one sound (قَلْب, كَلْب), voiced. Module 1 (orientation): the words for talking about Arabic and learning
+(فُصْحَى, لَهْجَة).
+
+**Module 28, Qur'anic Arabic (owner, 31 October 2026):** short quoted Qur'anic phrases may serve as language examples,
+fully vowelled and analysed only as language (spelling, morphology, grammar), with no interpretation. This is the
+owner's choice beyond the brief's "no religious framing". Each quote keeps its exact spelling, and the fluent checker
+verifies it; whether quotes are voiced is decided with the owner first.
+
 ## 7. Where this leads, and a second go (owner, 31 October 2026)
 
 From the owner's direction for how MyDay should think (`myday-vision.md` §1): level 5, showing how a lesson fits the
