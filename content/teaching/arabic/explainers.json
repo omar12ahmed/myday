@@ -218,7 +218,7 @@
      }
     ],
     "steps": [
-     "The root ك-و-ن has و in the middle, so كَانَ / يَكُونُ behaves just like قَالَ / يَقُولُ.",
+     "The root ك-و-ن has و in the middle, and its present يَكُونُ has a long ū, just like يَقُولُ. So كَانَ / يَكُونُ behaves just like قَالَ / يَقُولُ.",
      "Where the ن has a sukūn, the long vowel shortens to u: كُنْتُ (I was), كُنْ (be!) and لَمْ يَكُنْ (he wasn't).",
      "In the present, Arabic usually leaves \"is\" out: يُوسُفُ مُعَلِّمٌ means \"Yūsuf is a teacher\", with no verb at all.",
      "For the past you need كَانَ, and the description after it takes the -a ending: كَانَ يُوسُفُ مُعَلِّمًا, Yūsuf was a teacher.",
@@ -456,7 +456,7 @@
     ],
     "why": {
      "q_en": "Where has the ي gone in عِشْتُ?",
-     "a_en": "It's still in the root, ع-ي-ش. In عَاشَ it's hidden in the long ā, and in يَعِيشُ it shows as a long ī. In عِشْتُ the ش has a sukūn, so the long vowel shortens, and the short i is what's left of the ي."
+     "a_en": "It's still in the root, ع-ي-ش. In عَاشَ it's hidden in the long ā, and in يَعِيشُ it shows as a long ī. In عِشْتُ the ش has a sukūn, so the long vowel shortens, to i, the short form of the ī in يَعِيشُ."
     },
     "selftest": [
      {
@@ -467,7 +467,7 @@
        "عَاشْتُ"
       ],
       "answer": "عِشْتُ",
-      "why_en": "The root has ي in the middle, so the shortened vowel is i. A long ā can't stay before the sukūn."
+      "why_en": "The present يَعِيشُ has a long ī, so the shortened vowel is i. A long ā can't stay before the sukūn."
      },
      {
       "q_en": "What does نَعِيشُ mean?",
