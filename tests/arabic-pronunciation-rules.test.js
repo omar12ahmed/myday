@@ -18,12 +18,18 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
     ['مَدْرَسَة', 'madrasa'], ['مَدْرَسَةٌ', 'madrasatun'], ['مَدْرَسَتُهَا', 'madrasatuhā'],
     ['شُكْرًا', 'shukran'], ['شُكْراً', 'shukran'], ['مَاءً', 'māʾan'], ['سُؤَال', 'suʾāl'],
     ['رَسَائِل', 'rasāʾil'], ['إِلَى', 'ilā'], ['آمَنَ', 'āmana'], ['قُلْتُ', 'qultu'],
-    ['يَدْعُو', 'yadʿū'], ['يَدْرُسُوا', 'yadrusū'], ['دَعَوْا', 'daʿaw'], ['مَشَوْا', 'mashaw'], ['عَفْوًا', 'ʿafwan'], ['هَذَا', 'hādhā'], ['هَذِهِ', 'hādhihi'],
+    ['يَدْعُو', 'yadʿū'], ['يَدْرُسُوا', 'yadrusū'], ['دَعَوْا', 'daʿaw'], ['مَشَوْا', 'mashaw'], ['عَفْوًا', 'ʿafwan'],
+    // A joining alif after a vowel is silent, the article's too; after a comma it's said again (1.99.0).
+    ['قُلِ الْحَقَّ', 'quli l-ḥaqqa'], ['فِي الْبَيْتِ', 'fī l-bayti'], ['عَنِ الطَّرِيقِ', 'ʿani ṭ-ṭarīqi'],
+    ['الَّتِي اشْتَرَيْتُهَا', 'allatī shtaraytuhā'], ['مَا اسْمُ الْمَكَانِ؟', 'mā smu l-makāni?'], ['وَاسْتَخْدَمَ', 'wastakhdama'],
+    ['أَنَّ الِامْتِحَانَ', 'anna l-imtiḥāna'], ['بِٱلنَّجَاحِ', 'bi-n-najāḥi'], ['بِٱلْقَلَمِ', 'bi-l-qalami'], ['فِي ٱلْبَيْتِ', 'fī l-bayti'],
+    ['اِلْتَقَى', 'iltaqā'], ['مَاذَا قُلْتَ، الْيَوْمَ', 'mādhā qulta, al-yawma'], ['هَذَا', 'hādhā'], ['هَذِهِ', 'hādhihi'],
     ['ذَلِكَ', 'dhālika'], ['لَكِنَّ', 'lākinna'], ['الَّذِي', 'alladhī'], ['اسْمِي', 'ismī'],
   ]) { const r = t(ar); check(`${ar} → ${latin}`, r.text === latin && !r.incomplete); }
   check('Unicode mark order cannot change a doubled consonant', t('دَرَ\u0651سَ').text === t('دَرّ\u064eسَ').text);
   check('unvowelled كتب keeps several readings instead of choosing a meaning', t('كتب').text.includes('kataba / kutub') && !!t('كتب').note);
   check('unknown missing vowels are flagged instead of invented', t('الجملة').incomplete && t('الجملة').text.includes('['));
+  check('a joining alif where speech starts, without its vowel, is flagged, not read as a long ā (اسْمُ)', t('اسْمُ').incomplete && !t('اسْمُ').text.includes('ā'));
   check('unsupported Arabic-script letters are not passed off as Latin pronunciation', t('پژ').incomplete);
   check('Arabic questions and numbers keep their order', t('أَيْنَ؟ ١٢').text === 'ayna? 12');
   const json = p => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
