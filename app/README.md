@@ -1620,7 +1620,8 @@ sentences and the Arabic runs in the steps of `content/teaching/arabic/explainer
 root's letters or a prefix on its own is never voiced). Each piece in voice-scripts.json now lists in `checked_in` the voiced
 places whose context its script was checked in (`lesson-checks`, `teaching`, `key-ideas`, `tasks`, `timetable`); the build
 stops on a piece shown in a voiced place its list doesn't name, or no longer shown in one it does. Sound pairs, word families,
-course-word notes and the reading texts' questions never take a script. `voicePieces` (`scripts/arabic-reading-sentences.mjs`)
+course words and their notes, starter words, lessons' headline examples, the explainers and the reading texts'
+questions never take a script (a note's Arabic is read between its roots, as the app shows it). `voicePieces` (`scripts/arabic-reading-sentences.mjs`)
 lets a script add an Arabic comma before a space (`listPauses`) but keep every comma the course shows (`keepsCommas`). In
 `ArabicScreen.tsx`, `hold` (the learner jumped to Check and hasn't asked for the explanation again) withholds the voice of the
 objectives, key ideas, task and challenge; the timetable's cells are `Cell`, whose button label names the day.

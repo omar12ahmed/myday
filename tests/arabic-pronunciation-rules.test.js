@@ -147,6 +147,20 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/word-families.json'), JSON.stringify({ families: [] }));
   fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/course-words.json'), JSON.stringify({ lessons: { 'lesson.arabic-example': { words: [{ form_ar: 'كِتَاب', example_ar: 'هَذَا كِتَابٌ.', note: 'Compare إنّ.' }] } } }));
   check('a piece also shown in a course-word note stops the build', strayThrows({ pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks', 'teaching'] } }, 'also shown in course-word notes'));
+  const strayInn = { pieces: { 'إنّ': 'إِنَّ' }, checked_in: { 'إنّ': ['lesson-checks', 'teaching'] } };
+  const strayWords = note => fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/course-words.json'), JSON.stringify({ lessons: { 'lesson.arabic-example': { words: [{ form_ar: 'كِتَاب', example_ar: 'هَذَا كِتَابٌ.', note }] } } }));
+  strayWords('Root ك-ت-ب إنّ here.');
+  check('a note\'s Arabic is read between its roots, as the app shows it: a piece right after a root is caught', strayThrows(strayInn, 'also shown in course-word notes'));
+  strayWords('No Arabic here.');
+  const strayCourse = JSON.parse(fs.readFileSync(path.join(strayRoot, 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json'), 'utf8'));
+  const strayCourseWith = extra => fs.writeFileSync(path.join(strayRoot, 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json'), JSON.stringify({ ...strayCourse, ...extra }));
+  strayCourseWith({ assets: [...strayCourse.assets, { comprehension_questions: [{ prompt: 'Why إنّ?' }] }] });
+  check('a piece also shown in a reading text\'s question stops the build', strayThrows(strayInn, 'also shown in reading-text questions'));
+  strayCourseWith({ lessons: [{ example: { text_ar: 'إنّ' } }] });
+  check('a piece that is also a lesson\'s headline example stops the build (that button plays the example\'s own clip)', strayThrows(strayInn, 'also shown in lessons’ headline examples'));
+  strayCourseWith({});
+  fs.writeFileSync(path.join(strayRoot, 'content/teaching/arabic/explainers.json'), JSON.stringify({ lessons: { 'lesson.arabic-example': [{ id: 'explainer.x', table: [], examples: [], steps: ['Compare إنّ.'] }] } }));
+  check('a piece also shown in an explainer stops the build', strayThrows(strayInn, 'also shown in explainers'));
   // Round twelve: a lesson's key concepts and objectives, its task and challenge instructions (not how they're judged),
   // and the timetable's Arabic.
   const twelveRoot = path.join(temp, 'voice-sources-twelve'); fs.cpSync(fixtureRoot, twelveRoot, { recursive: true });

@@ -81,8 +81,18 @@ export function voiceSources(root) {
   // it's been read there (درس, read دَرَسَ in a check, would be wrong as "lesson" in an objective).
   const places = [['lesson-checks', checkValues], ['teaching', teachingValues], ['key-ideas', keyValues], ['tasks', taskValues], ['timetable', timetableValues]].map(([id, values]) => [id, new Set(runsOf(values))]);
   const inVoiced = new Set(places.flatMap(([, runs]) => [...runs]));
-  const comprehension = course.assets.flatMap(a => (a.comprehension_questions || []).map(q => q.prompt));
-  const elsewhere = [['sound pairs and word families', familyValues], ['course-word notes', noteValues], ['reading-text questions', comprehension]].map(([where, values]) => [where, new Set(runsOf(values))]);
+  // The places that play only Arabic the course marks, or a text's own clip: a piece shown there stops the build, as
+  // its script was read in none of them. A note's runs are found between its roots (ك-ت-ب), as the app shows them.
+  const ROOT_IN_NOTE = /[ء-ي](?:-[ء-ي]){2,3}/g;
+  const shownAs = values => { const texts = values.filter(v => typeof v === 'string'); return new Set([...texts, ...runsOf(texts.flatMap(v => v.split(ROOT_IN_NOTE)))]); };
+  const elsewhere = [
+    ['sound pairs and word families', familyValues], ['course-word notes', noteValues],
+    ['reading-text questions', course.assets.flatMap(a => (a.comprehension_questions || []).map(q => q.prompt))],
+    ['starter words and their examples', course.lexicon_seed.flatMap(w => [w.form_ar, w.example_ar])],
+    ['lessons’ headline examples', course.lessons.map(l => l.example?.text_ar)],
+    ['course words and their examples', words.flatMap(w => [w.form_ar, w.example_ar])],
+    ['explainers', explainers.flatMap(e => [...e.table.map(r => r.ar), ...e.examples.map(x => x.ar), ...e.steps])],
+  ].map(([where, values]) => [where, shownAs(values)]);
   for (const text of Object.keys(pieces)) {
     const shownIn = places.filter(([, runs]) => runs.has(text)).map(([id]) => id), checked = checked_in[text] ?? [];
     if (!shownIn.length) throw new Error(`Arabic voice script for “${text}”: no voiced place in the course shows it`);
