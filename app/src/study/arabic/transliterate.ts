@@ -29,8 +29,9 @@ const bare = (u: Unit | undefined) => !!u && !/[ًٌٍَُِّٰ]/.test(u.m);
 // الشَّمْسُ). It's said only where speech starts; after a vowel it's silent. `joins` looks at the alif and what follows;
 // `wasl` also asks where it is: at the start of the word, or after وَ, فَ, بِ or لِ, and not before the word's last letter.
 // Anywhere else a bare ا is a long ā (قَالَ, دَابَّةٌ, كِتَابْ, أَلْمَانْيَا), and كَ is left out (كَانْتُ is kāntu).
-const joins = (a: Unit[], i: number) => a[i]?.c === 'ٱ' || (a[i]?.c === 'ا' && !/[ًٌٍَُِْ]/.test(a[i].m) && !!a[i + 1]
-  && i + 1 < a.length - 1 && (/[ّْ]/.test(a[i + 1].m) || (a[i + 1].c === 'ل' && !a[i + 1].m && !!a[i + 2]?.m.includes('ّ'))));
+const joins = (a: Unit[], i: number): boolean => a[i]?.c === 'ٱ' || (a[i]?.c === 'ا' && !/[ًٌٍَُِْ]/.test(a[i].m) && !!a[i + 1]
+  && i + 1 < a.length - 1 && (/[ّْ]/.test(a[i + 1].m) || (a[i + 1].c === 'ل' && !a[i + 1].m && !!a[i + 2]?.m.includes('ّ'))
+    || (a[i + 1].c === 'ل' && a[i + 1].m === 'ِ' && joins(a, i + 2))));
 const proclitic = (u: Unit) => (['و', 'ف'].includes(u.c) && u.m.includes('َ')) || (['ب', 'ل'].includes(u.c) && u.m.includes('ِ'));
 const wasl = (a: Unit[], i: number) => i <= 2 && a.slice(0, i).every(proclitic) && joins(a, i);
 
