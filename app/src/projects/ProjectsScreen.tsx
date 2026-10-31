@@ -18,6 +18,7 @@ import { ProjectView, type ProjectTab } from './ProjectView';
 import { HomelessDeletedFiles } from '../files/FilesCard';
 import { NeedsYouCard, ProjectList } from './NeedsYou';
 import { needsYou } from '../data/attention';
+import { awayFor, awayWords, isAway } from '../data/welcomeBack';
 
 // Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>), your notes
 // (#projects/notes…) and how they connect (#projects/connections, the knowledge graph). A project gathers everything
@@ -163,7 +164,7 @@ function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Projec
     <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
         <span className="flex flex-wrap items-baseline gap-x-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{(isBusiness(p) || isCase(p)) && <span className="text-xs text-fg-3" data-s="project-kind-label">{isCase(p) ? 'Case' : 'Business idea'}</span>}{inFocus(p) && <span className="text-xs font-semibold text-primary" data-s="project-focus">This week’s focus</span>}</span>
-        <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{shortDate(lastActivity(data, p).slice(0, 10))}</span>
+        <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{isAway(data, p) ? <span data-s="project-away">Away {awayWords(awayFor(data, p))}</span> : shortDate(lastActivity(data, p).slice(0, 10))}</span>
       </span>
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>
       <Progression stage={p.stage} compact />

@@ -21,6 +21,7 @@ import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, deadlineLabel, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
+import { awayWords, welcomeBack, type WelcomeBack } from '../data/welcomeBack';
 import { bothMention, mightBelong } from '../data/understand';
 import { ChaseIt } from '../tasks/ChaseIt';
 import { dueText, waitingText } from '../tasks/route';
@@ -76,7 +77,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       <div hidden={!!query.trim()} data-s="project-tab">
       {tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
-      <LeftOffCard p={p} />
+      <WelcomeOrLeftOff data={data} p={p} />
       <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />
       <ProjectHead p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
@@ -164,7 +165,7 @@ function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: Proje
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="min-w-0">
           {p.status !== 'active' && <Eyebrow>{STATUS_LABEL[p.status]}</Eyebrow>}
-          <h2 id="projectTitle" className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
+          <h2 id="projectTitle" tabIndex={-1} className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
           {p.outcome && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words" data-s="project-outcome"><span className="font-semibold text-fg">Aiming for:</span> {p.outcome}</p>}
         </div>
         {/* Private (your choice): Ask MyDay sends nothing of this project. */}
@@ -266,6 +267,56 @@ function ProjectHead({ p, onHide }: { p: Project; onHide: (s: Section) => void }
 // Where you left off (1.48.0): your note for next time, at the top of the Overview once written, with its day.
 // When the editor closes, the keyboard focus goes back to where you'd carry on (never left on the page itself).
 const focusSoon = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
+// ---------- Welcome back (specs/projects-welcome-back.md) ----------
+// After 7 days or more with no work on the project, the thread to pick up comes first on its Overview, and "Where I
+// left off" is folded into it. "Got it" puts it away on this device until the next break (`myday.projects.welcomed`:
+// each project's last-activity stamp when you put it away — like Board · List, not your data and not synced).
+const WELCOMED_KEY = 'myday.projects.welcomed';
+const welcomed = (): Record<string, string> => { try { const v = JSON.parse(localStorage.getItem(WELCOMED_KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch { return {}; } };
+function putAway(data: MyDayData, projectId: string, stamp: string) {
+  // (Only projects still here are kept, so the list never grows.)
+  try { const v = Object.fromEntries(Object.entries(welcomed()).filter(([id]) => data.projects.items.some(p => p.id === id))); v[projectId] = stamp; localStorage.setItem(WELCOMED_KEY, JSON.stringify(v)); } catch { /* without storage it simply greets again next time */ }
+}
+function WelcomeOrLeftOff({ data, p }: { data: MyDayData; p: Project }) {
+  const wb = welcomeBack(data, p);
+  const [away, setAway] = useState(() => welcomed()[p.id] ?? '');
+  if (!wb || away === wb.stamp) return <LeftOffCard p={p} />;
+  return <WelcomeBackCard data={data} p={p} wb={wb} onGotIt={() => { putAway(data, p.id, wb.stamp); setAway(wb.stamp); focusSoon('projectTitle'); }} />;
+}
+function WelcomeBackCard({ data, p, wb, onGotIt }: { data: MyDayData; p: Project; wb: WelcomeBack; onGotIt: () => void }) {
+  const [noting, setNoting] = useState(false), k = todayKey(), next = wb.next;
+  const part = 'm-0 mt-4 text-[15px] font-semibold', link = 'block min-h-11 py-2 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2 break-words';
+  return (
+    <Card tone="accent" aria-labelledby="pjWelcomeH" id="projectWelcome" data-s="welcome-back">
+      <h3 id="pjWelcomeH" className="!text-primary m-0">Welcome back</h3>
+      <p className="m-0 mt-1 text-[15px] text-fg-2" data-s="welcome-away">Away {awayWords(wb.days)} — last worked on {shortDate(wb.since)}</p>
+      <h4 className={part}>What you did last</h4>
+      {wb.did.length ? (
+        <ul className="list-none p-0 m-0" data-s="welcome-did">{wb.did.map((h, i) => <li key={i}><a href={h.href} className={link}><span className="text-fg-2">{HAPPENED[h.what]}:</span> {h.title}</a></li>)}</ul>
+      ) : <p className="m-0 mt-1 text-[15px]" data-s="welcome-did">You started it on {shortDate(p.createdAt.slice(0, 10))}.</p>}
+      <h4 className={part}>While you were away</h4>
+      {wb.meanwhile.length ? <>
+        <ul className="list-none p-0 m-0" data-s="welcome-meanwhile">{wb.meanwhile.map(m => <li key={m.key} data-key={m.key}><a href={m.href} className={link}>{m.text}</a></li>)}</ul>
+        {wb.more > 0 && <p className="m-0 text-sm text-fg-2" data-s="welcome-more">and {wb.more} more — Coming up and Needs you have them all</p>}
+      </> : <p className="m-0 mt-1 text-[15px]" data-s="welcome-meanwhile">Nothing came due while you were away.</p>}
+      <h4 className={part}>Where you left off</h4>
+      {p.leftOff ? <p className="m-0 mt-1 text-[16px] whitespace-pre-line break-words" data-s="welcome-leftoff">{p.leftOff.text} <span className="text-sm text-fg-2 tabular-nums">· {shortDate(p.leftOff.at.slice(0, 10))}</span></p>
+        : noting ? <LeftOffEditor p={p} onDone={() => { setNoting(false); focusSoon('pjWelcomeH'); }} />
+        : <button type="button" id="welcomeNote" className="block min-h-11 mt-1 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4 text-left" data-action="welcome-note" onClick={() => setNoting(true)}>No note from last time. Leave yourself one for next time?</button>}
+      {next && <>
+        <h4 className={part}>Next step</h4>
+        <p className="m-0 mt-1 text-[17px] font-semibold break-words" data-s="welcome-next">{next.title}</p>
+        <div className="flex flex-wrap items-center gap-2.5 mt-2">
+          {heldBack(data, next) ? <span className="text-[15px] text-fg-2">{next.waiting ? waitingText(next) : startsAfterText(data, next)}</span>
+            : onTodaysPlan(data, next, k) ? <span className="inline-flex items-center gap-1.5 min-h-11 text-[15px] font-semibold"><Check size={16} aria-hidden="true" /> On today’s plan</span>
+            : <Button inline variant="primary" data-action="welcome-today" onClick={() => toToday(data, next)}>Add to today</Button>}
+        </div>
+      </>}
+      <div className="mt-5"><Button inline data-action="welcome-got-it" onClick={onGotIt}>Got it</Button></div>
+    </Card>
+  );
+}
+
 function LeftOffCard({ p }: { p: Project }) {
   const [editing, setEditing] = useState(false);
   if (!p.leftOff) return null;

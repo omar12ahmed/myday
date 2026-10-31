@@ -10,6 +10,7 @@ import { nextStep, projectById, projectsInOrder, stageOf } from '../data/project
 import type { MyDayData } from '../data/types';
 import { inFocus } from '../data/weekReview';
 import { ChaseIt } from '../tasks/ChaseIt';
+import { awayFor, awayWords, isAway } from '../data/welcomeBack';
 
 // "Needs you" (specs/projects-attention.md): what needs you across your active projects, at the top of the Projects
 // home. Each line says what and why, and opens the thing itself; the five that matter soonest, then "Show N more".
@@ -80,7 +81,8 @@ export function ProjectList({ data, all }: { data: MyDayData; all: Need[] }) {
     <Card id="projectsList" aria-label="Your active projects">
       <ul className="list-none p-0 m-0">{projectsInOrder(data, 'active').map(p => {
         const step = nextStep(data, p), n = count.get(p.id) ?? 0;
-        const about = [stageOf(p.stage).label, isCase(p) ? 'Case' : isBusiness(p) ? 'Business idea' : null, inFocus(p) ? 'This week’s focus' : null].filter(Boolean).join(' · ');
+        // (Away a week or more: specs/projects-welcome-back.md.)
+        const about = [stageOf(p.stage).label, isCase(p) ? 'Case' : isBusiness(p) ? 'Business idea' : null, inFocus(p) ? 'This week’s focus' : null, isAway(data, p) ? `Away ${awayWords(awayFor(data, p))}` : null].filter(Boolean).join(' · ');
         return (
           <li key={p.id} className="border-t border-outline first:border-t-0" data-s="project-row" data-id={p.id}>
             <a href={`#projects/p/${p.id}`} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 items-center py-2.5 min-h-11 text-fg no-underline hover:underline underline-offset-4">

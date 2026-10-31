@@ -288,11 +288,18 @@ export function comingUp(data: MyDayData, p: Project, k: DateKey = todayKey()) {
 export function stillOpen(data: MyDayData, p: Project, k: DateKey = todayKey()): TaskItem[] {
   return projectTasks(data, p).open.filter(t => !!t.due && t.due < k);
 }
-// The latest change anywhere in the project (its own details, a note, a task), for "last worked on".
+// The latest change anywhere in the project (its own details, a note, a task added or done, its research), for "last
+// worked on" — and for Welcome back (specs/projects-welcome-back.md). A task done counts from the start of its day
+// (its time isn't kept).
 export function lastActivity(data: MyDayData, p: Project): string {
   let at = p.updatedAt;
   for (const n of data.notes.items) if (n.projectId === p.id && n.updatedAt > at) at = n.updatedAt;
-  for (const t of data.tasks.items) if (t.projectId === p.id && t.createdAt > at) at = t.createdAt;
+  for (const t of data.tasks.items) {
+    if (t.projectId !== p.id) continue;
+    if (t.createdAt > at) at = t.createdAt;
+    if (t.doneOn && `${t.doneOn}T00:00` > at) at = `${t.doneOn}T00:00`;
+  }
+  for (const r of data.research.items) if (r.projectId === p.id && r.updatedAt > at) at = r.updatedAt;
   return at;
 }
 // Projects in the order they're listed: active ones first (most recently worked on first), then paused, then done.
