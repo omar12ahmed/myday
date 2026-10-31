@@ -427,16 +427,19 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const expSource = JSON.parse(read(expPath));
   // The build's split for loading (prepare-explainers.mjs): one file per module, loaded when a lesson in it opens, and
   // a small index; written to its own folder, so prepare-arabic.mjs (which empties data/) leaves it be.
-  const expOut = path.join(ROOT, 'app/src/study/arabic/explainer-data'), prepExp = () => execFileSync('node', [path.join(ROOT, 'app/scripts/prepare-explainers.mjs')], { stdio: 'pipe' });
+  const expOut = path.join(ROOT, 'app/src/study/arabic/explainer-data');
   const prepSteps = (JSON.parse(read(path.join(ROOT, 'app/package.json'))).scripts['curriculum:prepare'] || '').split(' && ');
   check('the build splits the explainers: curriculum:prepare runs prepare-explainers.mjs, after prepare-arabic.mjs', prepSteps.indexOf('node scripts/prepare-explainers.mjs') > prepSteps.indexOf('node scripts/prepare-arabic.mjs') && prepSteps.includes('node scripts/prepare-arabic.mjs'));
-  fs.mkdirSync(expOut, { recursive: true }); fs.writeFileSync(path.join(expOut, 'explainers-arabic-stray.json'), '{}');
-  prepExp();
-  const expRead = f => JSON.parse(read(path.join(expOut, f))), expIndex = expRead('explainers-index.json');
+  // Prepared into a folder of its own here, holding a stray file from before and a file that isn't the script's.
+  const expSplit = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-explainer-data-'));
+  fs.writeFileSync(path.join(expSplit, 'explainers-arabic-stray.json'), '{}'); fs.writeFileSync(path.join(expSplit, 'notes.txt'), 'kept');
+  execFileSync('node', [path.join(ROOT, 'app/scripts/prepare-explainers.mjs'), expSplit], { stdio: 'pipe' });
+  const expFiles = dir => fs.readdirSync(dir).filter(f => /^explainers-.*\.json$/.test(f)).sort();
+  const expRead = f => JSON.parse(read(path.join(expSplit, f))), expIndex = expRead('explainers-index.json');
   const moduleOfLesson = Object.fromEntries(source.lessons.map(l => [l.id, l.module_id.split('.').pop()]));
-  const expModules = Object.fromEntries(fs.readdirSync(expOut).filter(f => f !== 'explainers-index.json').map(f => [f.replace(/^explainers-|\.json$/g, ''), expRead(f).lessons]));
+  const expModules = Object.fromEntries(expFiles(expSplit).filter(f => f !== 'explainers-index.json').map(f => [f.replace(/^explainers-|\.json$/g, ''), expRead(f).lessons]));
   const expWantModules = [...new Set(Object.keys(expSource.lessons).map(id => moduleOfLesson[id]))].sort();
-  check('one file per module with explainers (21: modules 4 to 24), and a stray file from before is gone', JSON.stringify(Object.keys(expModules).sort()) === JSON.stringify(expWantModules) && expWantModules.length === 21);
+  check('one file per module with explainers (21: modules 4 to 24); a stray file from before is gone, and nothing else is touched', JSON.stringify(Object.keys(expModules).sort()) === JSON.stringify(expWantModules) && expWantModules.length === 21 && read(path.join(expSplit, 'notes.txt')) === 'kept');
   check('each module\'s file holds exactly its own lessons\' explainers, as authored', Object.entries(expSource.lessons).every(([id, list]) => JSON.stringify(expModules[moduleOfLesson[id]]?.[id]) === JSON.stringify(list))
     && Object.values(expModules).reduce((n, m) => n + Object.keys(m).length, 0) === Object.keys(expSource.lessons).length);
   const expCards = Object.entries(expSource.lessons).flatMap(([id, list]) => list.map(e => [id, e]));
@@ -445,7 +448,8 @@ check('vowelled and unvowelled versions are both kept where the package has them
     && JSON.stringify(expIndex.cards) === JSON.stringify(Object.fromEntries(expCards.map(([id, e]) => [e.id, [id, e.title_en]])))
     && JSON.stringify(expIndex.words) === JSON.stringify(Object.fromEntries(expCards.flatMap(([, e]) => (e.course_words ?? []).map(w => [w, e.id]))))
     && Object.keys(expIndex.chunks).length === 103 && Object.keys(expIndex.cards).length === 119 && Object.keys(expIndex.words).length === 640);
-  const gz = f => require('zlib').gzipSync(fs.readFileSync(path.join(expOut, f))).length;
+  check('the app\'s copy (app/src/study/arabic/explainer-data) is exactly this: prepared from the authored file as it is now', JSON.stringify(expFiles(expOut)) === JSON.stringify(expFiles(expSplit)) && expFiles(expOut).every(f => read(path.join(expOut, f)) === read(path.join(expSplit, f))));
+  const gz = f => require('zlib').gzipSync(fs.readFileSync(path.join(expSplit, f))).length;
   check('sizes stay bounded: the index (loaded for links) under 16 KB compressed, each module\'s explainers under 16 KB', gz('explainers-index.json') < 16000 && Object.keys(expModules).every(m => gz(`explainers-${m}.json`) < 16000));
   const expHash = () => fs.readdirSync(expOut).sort().map(f => f + ':' + require('crypto').createHash('sha256').update(fs.readFileSync(path.join(expOut, f))).digest('hex')).join();
   const expBefore = expHash();
@@ -490,7 +494,7 @@ check('vowelled and unvowelled versions are both kept where the package has them
   badExp('lead-vowel', f => { sayOf(f).leads_to[0].en = 'قال in reporting.'; }, 'is not fully vowelled', 'a "Where this leads" line holding unvowelled Arabic');
   badExp('hint-answer', f => { const q = sayOf(f).selftest[0]; q.hint_en = `Think of ${q.answer} here.`; }, 'the hint gives away its own answer', 'a self-test hint containing its own question\'s answer');
   check('the real explainers file reports how many cards lead on to a later explainer: 53', realExp.out.includes('; 53 lead on to a later explainer.'), realExp.out);
-  fs.rmSync(expTemp, { recursive: true, force: true });
+  fs.rmSync(expTemp, { recursive: true, force: true }); fs.rmSync(expSplit, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

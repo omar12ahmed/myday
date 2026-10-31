@@ -705,6 +705,8 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('…and a digit on its own is drawn larger than Arabic words (Naskh draws digits small), so ٤٧ reads at the size of the text', /\bar-digits\b/.test(digits.digitClass || '') && digits.digitScale > 1.3 && !/ar-digits/.test(digits.wordClass || '') && digits.wordScale < 1.2, digits);
   await fresh('study/arabic/lesson.arabic-technical-demo'); await wait('[data-ar-check]', 5000);
   check('a lesson without explainers (module 30\'s technical demo) shows no "How it works" section', !(await exists('[data-ar-explainers]')));
+  await sleep(500);
+  check('…and loads no module\'s explainers, only the index', await exChunks() === 'index', await exChunks());
 
   await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
   await go(wvHash); await wait(exSel, 5000);

@@ -2,13 +2,14 @@
 // content/teaching/arabic/explainers.json (checked by validate-explainers.mjs). Here it's split for loading, like the
 // course itself (prepare-arabic.mjs): one file per module, loaded when a lesson in it opens, and a small index of where
 // each card lives, its title and the course words that link to it, for Vocabulary's links and a card's
-// "where this leads". Written to src/study/arabic/explainer-data/, which this script empties and rewrites (so a module
-// that loses its explainers loses its file) — kept out of src/study/arabic/data/, which prepare-arabic.mjs empties.
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+// "where this leads". Written to src/study/arabic/explainer-data/ (its explainers-*.json files replaced, so a module that
+// loses its explainers loses its file) — kept out of src/study/arabic/data/, which prepare-arabic.mjs empties. A test can
+// pass another folder.
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const read = p => JSON.parse(readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8'));
-const target = fileURLToPath(new URL('../src/study/arabic/explainer-data/', import.meta.url));
+const target = process.argv[2] ? process.argv[2].replace(/\/?$/, '/') : fileURLToPath(new URL('../src/study/arabic/explainer-data/', import.meta.url));
 const course = read('../../content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json');
 const { lessons } = read('../../content/teaching/arabic/explainers.json');
 const short = id => id.split('.').pop();
@@ -18,6 +19,7 @@ const index = { chunks: {}, cards: {}, words: {} }, byModule = {};
 for (const [lessonId, list] of Object.entries(lessons)) {
   const m = moduleOf.get(lessonId);
   if (!m) throw new Error(`Explainers: ${lessonId} isn't a lesson in the course`);
+  if (m === 'index') throw new Error('Explainers: a module named "index" would overwrite the index');
   index.chunks[lessonId] = m;
   (byModule[m] ??= {})[lessonId] = list;
   for (const e of list) {
@@ -25,8 +27,8 @@ for (const [lessonId, list] of Object.entries(lessons)) {
     for (const w of e.course_words ?? []) index.words[w] = e.id;
   }
 }
-rmSync(target, { recursive: true, force: true });
 mkdirSync(target, { recursive: true });
+for (const f of readdirSync(target)) if (/^explainers-.*\.json$/.test(f)) rmSync(target + f);
 // Named "explainers-…" so each loads as a chunk of its own name (explainers-arabic-verb-expansion-….js), apart from
 // the course's module of the same name.
 writeFileSync(target + 'explainers-index.json', JSON.stringify(index));

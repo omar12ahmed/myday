@@ -23,7 +23,7 @@ export interface ExplainerIndex { chunks: Record<string, string>; cards: Record<
 let index: Promise<ExplainerIndex> | null = null;
 const loadIndex = () => (index ??= import('./explainer-data/explainers-index.json')
   .then(m => m.default as unknown as ExplainerIndex, e => { index = null; throw e; }));
-const files = import.meta.glob<{ lessons: Record<string, Explainer[]> }>('./explainer-data/explainers-arabic-*.json', { import: 'default' });
+const files = import.meta.glob<{ lessons: Record<string, Explainer[]> }>(['./explainer-data/explainers-*.json', '!./explainer-data/explainers-index.json'], { import: 'default' });
 const modules = new Map<string, Promise<Record<string, Explainer[]>>>();
 const loadModule = (m: string) => {
   let p = modules.get(m);

@@ -1133,7 +1133,10 @@ Understand with the card open (an in-memory request, like a step a link asks for
 forms, sentences and steps. MyDay's own file, `../content/teaching/arabic/explainers.json`; only the Arabic is stored,
 and the app adds the transliteration. `scripts/prepare-explainers.mjs` splits it at every build into
 `src/study/arabic/explainer-data/`, like the course: a lesson loads only its module's explainers, and Vocabulary's links
-and a card's "where this leads" need only a small index of each card's lesson and title and each course word's card. `scripts/validate-explainers.mjs` checks it
+and a card's "where this leads" need only a small index of each card's lesson and title and each course word's card.
+After editing the authored file, run `node scripts/prepare-explainers.mjs` (or `npm run curriculum:prepare`) to see it
+in `npm run dev` and to commit the split with it; the rules test fails while the two differ, and a build always
+prepares it afresh. `scripts/validate-explainers.mjs` checks it
 at every build: shape, full vowelling with endings in phrases, the house spelling, no two Arabic pieces run together,
 each sentence the sum of its words, and nothing that gives away the lesson check's answer (including any lesson whose words link to it). `--readings` also
 checks that the app can read every piece completely (the rules test runs it). Each batch is cross-checked independently,

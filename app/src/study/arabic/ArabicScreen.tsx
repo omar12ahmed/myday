@@ -42,7 +42,7 @@ import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX
 import { KeepAWord } from './KeepAWord';
 import { WordNote } from './WordNote';
 import { ExplainerLink, LessonExplainers } from './Explainers';
-import { explainerFor, useExplainers, type ExplainerRef } from './explainerData';
+import { explainerFor, useExplainers, useLessonExplainers, type ExplainerRef } from './explainerData';
 import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
 import { starterFor } from './starter';
 import { ARABIC_TINY, toStep } from '../journey/dom';
@@ -937,7 +937,9 @@ function CourseWords({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord)
 // A lesson's words under its explanation (folded away with it while you check yourself): its own words, then the
 // starter words it uses. They join revision when you mark the lesson ready to move on (markReady).
 function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) {
-  const takeOut = useTakeOut(), { own, starter } = lessonWords(lessonId), explainers = useExplainers();
+  const takeOut = useTakeOut(), { own, starter } = lessonWords(lessonId), explainers = useExplainers(), here = useLessonExplainers(lessonId);
+  // A link to a card in this lesson shows once that card has loaded here too, so following it always finds the card.
+  const linkFor = (id: string) => { const f = explainerFor(explainers, id); return f && (f.lessonId !== lessonId || here?.some(e => e.id === f.e.id)) ? f : null; };
   if (!own.length) return null;
   const all = [...own, ...starter], inRev = all.filter(w => wordInRevision(data, w.id)).length;
   return <details className="mt-4 rounded-tile border border-outline bg-surface px-4 py-2" data-ar-lesson-words={own.length}>
@@ -945,7 +947,7 @@ function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) 
     <p className="text-sm text-fg-2 mt-1" data-ar-lesson-words-in={inRev}>{inRev === all.length ? 'All of them are in your revision.'
       : inRev ? `${inRev} of ${all.length} are in your revision; the rest join when you mark the lesson ready to move on.`
       : 'They join your revision when you mark the lesson ready to move on, a few a day.'}</p>
-    <ul className="list-none p-0 m-0 divide-y divide-outline">{own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={explainerFor(explainers, w.id)} />)}</ul>
+    <ul className="list-none p-0 m-0 divide-y divide-outline">{own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={linkFor(w.id)} />)}</ul>
     {starter.length > 0 && <><h4 className="mb-0 mt-3">Starter words it uses</h4>
       <ul className="list-none p-0 m-0 divide-y divide-outline">{starter.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul></>}
   </details>;
