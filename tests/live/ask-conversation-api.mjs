@@ -4,7 +4,7 @@
 // free time below zero. Then one real request with a conversation (one of the account's 20 a day): accepted, with a
 // "left" count and a reply the app can read. Straight after it, the older single follow-up (as the published app sends
 // it) is held only by the pause between requests, never refused as a bad request. `--expect v24` checks the old server
-// instead (it refuses every conversation). Never prints the account's details or tokens. Only with the owner's yes.
+// instead (it refuses every conversation). `MYDAY_EXPECT=v26` also sends "how you work" with the conversation. Never prints the account's details or tokens. Only with the owner's yes.
 const env = process.env, URL_ = (env.SUPABASE_URL || '').replace(/\/+$/, ''), KEY = env.SUPABASE_PUBLISHABLE_KEY || '', SITE = 'https://omar12ahmed.github.io';
 if (!process.argv.includes('--live') || !env.MYDAY_LIVE_EMAIL?.endsWith('@example.com') || !KEY.startsWith('sb_publishable_')) {
   console.log('Refused: run it through tests/live/run.py (a disposable account and the publishable key).'); process.exit(2);
@@ -26,7 +26,7 @@ const now = new Date(), pad = n => String(n).padStart(2, '0');
 const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`, weekday = now.toLocaleDateString('en-GB', { weekday: 'long' });
 const base = { version: 1, action: 'ask', date, weekday, time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, page: 'other', context: {}, can: ['day', 'search'] };
 const EX = { asked: 'What does a good weekly review look like? (made up)', answered: 'Look back at what moved, what you’re waiting on and what matters next week, in about 20 minutes.' };
-const conv = { ...base, text: 'and how long should it take?', conversation: { earlier: [EX], leftOut: 0 } };
+const conv = { ...base, text: 'and how long should it take?', conversation: { earlier: [EX], leftOut: 0 }, ...(process.env.MYDAY_EXPECT === 'v26' ? { howYouWork: ['Learning tasks: 20 min at most'] } : {}) };
 const day = { tool: 'day', query: date, weekday, planned: false, rest: false, energy: null, tasks: [], minutesLeft: 0, due: [], busy: [], free: [{ start: '09:00', end: '17:00' }] };
 
 const bad = [
@@ -34,6 +34,8 @@ const bad = [
   ['a lookup "made for an earlier message" without a lookup', { ...conv, conversation: { ...conv.conversation, lookupFromEarlier: true } }],
   ['13 exchanges', { ...conv, conversation: { earlier: Array.from({ length: 13 }, () => EX), leftOut: 0 } }],
   ['a day\'s free time below zero', { ...base, text: 'Am I free today?', lookup: { ...day, freeMinutes: -1 } }],
+  ['how you work: more than 8 lines (v26)', { ...base, text: 'x', howYouWork: Array.from({ length: 9 }, (_, i) => `Line ${i}`) }],
+  ['how you work: a line over 120 characters (v26)', { ...base, text: 'x', howYouWork: ['x'.repeat(121)] }],
 ];
 for (const [why, c] of bad) { const x = await ask(c); check(`refused as a bad request: ${why}`, x.status === 400, `${x.status} ${JSON.stringify(x.j).slice(0, 120)}`); }
 
