@@ -44,6 +44,7 @@ import { tabHref } from './planText';
 import { ProjectWaitForm, ProjectWaitingCard, WaitOfferLine } from './ProjectWaiting';
 import { ContentCard, VideosView } from './ContentView';
 import { CompareView, ExploringCard } from './ExploringView';
+import { ProjectTowards } from './AmbitionsView';
 
 // One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
@@ -176,6 +177,7 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
           <h2 id="projectTitle" tabIndex={-1} className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
           {/* Its area (specs/projects-areas-archive.md), and once finished how it ended. */}
           <ProjectArea data={data} p={p} className="mt-1 text-sm font-semibold text-fg-2" />
+          <ProjectTowards data={data} p={p} />
           {p.status === 'done' && <p className="m-0 mt-1 text-[15px] break-words" data-s="project-ended"><span className="font-semibold">{finishedLabel(p)}</span>{p.finished?.on ? ` · ${shortDate(p.finished.on)}` : ''}{p.finished?.note ? ` — ${p.finished.note}` : ''}</p>}
           {p.outcome && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words" data-s="project-outcome"><span className="font-semibold text-fg">Aiming for:</span> {p.outcome}</p>}
         </div>

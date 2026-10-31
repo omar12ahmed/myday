@@ -17,6 +17,7 @@ import { Progression } from './parts';
 import { ProjectView, type ProjectTab } from './ProjectView';
 import { HomelessDeletedFiles } from '../files/FilesCard';
 import { NeedsYouCard, ProjectList } from './NeedsYou';
+import { AmbitionPage, AmbitionsStrip } from './AmbitionsView';
 import { needsYou } from '../data/attention';
 import { awayFor, awayWords, isAway } from '../data/welcomeBack';
 import { isProjectWaiting, waitLine } from '../data/projectWaiting';
@@ -30,6 +31,7 @@ import { AreaDot, AreaLabel } from './AreaBits';
 // about one intention; notes are the raw material, linked to a project or not (yet).
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
+  if (parts[1] === 'a' && parts[2]) return <AmbitionPage data={data} id={parts[2]} />; // an ambition (specs/projects-ambitions.md)
   if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={['model', 'money', 'milestones', 'decisions', 'timeline', 'evidence', 'issues', 'research', 'videos', 'compare'].includes(parts[3]) ? parts[3] as ProjectTab : 'overview'} sub={parts[3] === 'videos' ? parts[4] : undefined} /></div>;
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
@@ -80,6 +82,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   }
   return (
     <>
+      <AmbitionsStrip data={data} />
       {active.length > 0 && <NeedsYouCard data={data} all={needs} />}
       <Card aria-labelledby="projects-h" id="projectsIntro" className="max-w-[720px] mx-auto">
         <div className="projects-intro-copy">
