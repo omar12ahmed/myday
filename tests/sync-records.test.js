@@ -387,6 +387,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
   if (pj) {
     const pv = recs.get(pj), pc = { ...pv, value: { ...pv.value, tools: ['research'], hiddenSections: ['files', 'notes', 'newer-thing'] } };
     check('a project\'s lines name its tools and the Overview cards hidden on it ("Hidden on the Overview: Files; Notes; newer-thing")', R.recordLines(pj, pc).includes('Tools: research') && R.recordLines(pj, pc).includes('Hidden on the Overview: Files; Notes; newer-thing') && !R.recordLines(pj, pv).some(l => /^Tools|^Hidden on/.test(l)), R.recordLines(pj, pc));
+    // …and its area and how it ended (specs/projects-areas-archive.md), likewise.
+    const ended = (finished, area = { area: 'Home', areaColour: 'rose' }) => R.recordLines(pj, { ...pv, value: { ...pv.value, ...area, status: 'done', finished } });
+    check('…its area with its colour ("Area: Home (rose)") and how it ended ("Finished: stopped on purpose <date> — note"; achieved; a newer MyDay\'s way as written; no date or note left out)',
+      ended({ how: 'stopped', note: 'Too costly', on: '2026-10-30' }).includes('Area: Home (rose)') && ended({ how: 'stopped', note: 'Too costly', on: '2026-10-30' }).includes(`Finished: stopped on purpose ${R.shortDate('2026-10-30')} — Too costly`)
+      && ended({ how: 'achieved', note: '', on: null }).includes('Finished: achieved') && ended({ how: 'paused', note: '', on: null }, {}).includes('Finished: paused') && !ended({ how: 'paused', note: '', on: null }, {}).some(l => /^Area/.test(l))
+      && !R.recordLines(pj, pv).some(l => /^Area|^Finished/.test(l)), [ended({ how: 'stopped', note: 'Too costly', on: '2026-10-30' }), ended({ how: 'achieved', note: '', on: null })]);
   } else check('(test setup: a project record to show the lines of)', false, [...recs.keys()].slice(0, 20));
 
   fs.rmSync(dir, { recursive: true, force: true });
