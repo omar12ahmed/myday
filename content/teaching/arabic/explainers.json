@@ -1669,6 +1669,710 @@
     "phrases_ar": []
    }
   ],
+  "lesson.arabic-verb-moods": [
+   {
+    "id": "explainer.arabic-three-moods",
+    "title_en": "Three endings for one present verb: يَكْتُبُ, لَنْ يَكْتُبَ, لَمْ يَكْتُبْ",
+    "family_en": "The moods of the present verb: what each ending is called, and the small words that call for it",
+    "course_words": [
+     "lexeme.arabic-verb-moods-1",
+     "lexeme.arabic-verb-moods-2",
+     "lexeme.arabic-verb-moods-3"
+    ],
+    "table": [
+     {
+      "form_en": "plain: -u",
+      "ar": "يَكْتُبُ",
+      "en": "he writes, he's writing"
+     },
+     {
+      "form_en": "after لَا, \"not\": -u",
+      "ar": "لَا يَكْتُبُ",
+      "en": "he doesn't write"
+     },
+     {
+      "form_en": "after أَنْ: -a",
+      "ar": "أَنْ يَكْتُبَ",
+      "en": "to write, that he writes"
+     },
+     {
+      "form_en": "after لَنْ: -a",
+      "ar": "لَنْ يَكْتُبَ",
+      "en": "he won't write"
+     },
+     {
+      "form_en": "after حَتَّى: -a",
+      "ar": "حَتَّى يَكْتُبَ",
+      "en": "until he writes, so that he writes"
+     },
+     {
+      "form_en": "after لِكَيْ: -a",
+      "ar": "لِكَيْ يَكْتُبَ",
+      "en": "so that he writes"
+     },
+     {
+      "form_en": "after لَمْ: sukūn",
+      "ar": "لَمْ يَكْتُبْ",
+      "en": "he didn't write"
+     },
+     {
+      "form_en": "after لَا, \"don't\": sukūn",
+      "ar": "لَا تَكْتُبْ",
+      "en": "don't write (to a man)"
+     }
+    ],
+    "steps": [
+     "A present verb, a مُضَارِع, changes its last vowel with the small word before it. On its own it ends in -u: يَكْتُبُ. Grammar calls this مَرْفُوع, the indicative.",
+     "After أَنْ, لَنْ, حَتَّى and لِكَيْ, it ends in -a: لَنْ يَكْتُبَ, he won't write. This is مَنْصُوب, the subjunctive.",
+     "After لَمْ, and after لَا meaning \"don't\", it ends in a sukūn: لَمْ يَكْتُبْ, he didn't write. This is مَجْزُوم, the jussive.",
+     "The small word decides the ending, so learn each with its ending: لَمْ and a sukūn, لَنْ and -a.",
+     "These are the endings of a regular verb like يَكْتُبُ. Some verbs show the change in other ways (the next explainer)."
+    ],
+    "examples": [
+     {
+      "ar": "أُرِيدُ أَنْ أَكْتُبَ رِسَالَةً.",
+      "en": "I want to write a letter.",
+      "words": [
+       {
+        "ar": "أُرِيدُ",
+        "en": "I want"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "to"
+       },
+       {
+        "ar": "أَكْتُبَ",
+        "en": "(I) write: -a after أَنْ"
+       },
+       {
+        "ar": "رِسَالَةً",
+        "en": "a letter"
+       }
+      ]
+     },
+     {
+      "ar": "سَأَبْقَى هُنَا حَتَّى تَرْجِعَ سَلْمَى.",
+      "en": "I'll stay here until Salmā comes back.",
+      "words": [
+       {
+        "ar": "سَأَبْقَى",
+        "en": "I'll stay"
+       },
+       {
+        "ar": "هُنَا",
+        "en": "here"
+       },
+       {
+        "ar": "حَتَّى",
+        "en": "until"
+       },
+       {
+        "ar": "تَرْجِعَ",
+        "en": "(she) comes back: -a after حَتَّى"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       }
+      ]
+     },
+     {
+      "ar": "لَمْ يَكْتُبْ سَامِي الْوَاجِبَ.",
+      "en": "Sāmī didn't write the assignment.",
+      "words": [
+       {
+        "ar": "لَمْ",
+        "en": "didn't"
+       },
+       {
+        "ar": "يَكْتُبْ",
+        "en": "write: a sukūn after لَمْ"
+       },
+       {
+        "ar": "سَامِي",
+        "en": "Sāmī"
+       },
+       {
+        "ar": "الْوَاجِبَ",
+        "en": "the assignment, the homework"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does لَا تَكْتُبْ end in a sukūn, when لَا يَكْتُبُ keeps -u?",
+     "a_en": "They're two different words لَا. The one meaning \"not\" leaves the verb as it is: لَا يَكْتُبُ, he doesn't write. The one meaning \"don't\" tells someone not to, and the verb after it is مَجْزُوم: لَا تَكْتُبْ, don't write. The ending shows which one you're reading."
+    },
+    "selftest": [
+     {
+      "q_en": "Which ending does a present verb take after لَنْ?",
+      "choices": [
+       "-a",
+       "a sukūn",
+       "-u"
+      ],
+      "answer": "-a",
+      "why_en": "لَنْ, like أَنْ and حَتَّى, calls for the subjunctive, مَنْصُوب."
+     },
+     {
+      "q_en": "Which is \"he didn't write\"?",
+      "choices": [
+       "لَمْ يَكْتُبْ",
+       "لَمْ يَكْتُبُ",
+       "لَا يَكْتُبُ"
+      ],
+      "answer": "لَمْ يَكْتُبْ",
+      "why_en": "After لَمْ the verb is مَجْزُوم, with a sukūn. لَا with -u is \"he doesn't write\"."
+     },
+     {
+      "q_en": "In لَا تَكْتُبْ, what does لَا mean?",
+      "choices": [
+       "don't",
+       "not",
+       "no one"
+      ],
+      "answer": "don't",
+      "why_en": "The sukūn shows it: after لَا meaning \"not\", the verb would keep -u."
+     }
+    ],
+    "phrases_ar": [
+     "إِنْ تَدْرُسْ تَنْجَحْ",
+     "لِكَيْ أَصِلَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-if-when",
+      "en": "إِنْ, if, with the jussive: إِنْ تَدْرُسْ تَنْجَحْ."
+     },
+     {
+      "id": "explainer.arabic-why-what-for",
+      "en": "لِكَيْ, so that, with the -a ending: لِكَيْ أَصِلَ."
+     }
+    ]
+   },
+   {
+    "id": "explainer.arabic-moods-other-signs",
+    "title_en": "When the mood isn't a vowel: لَمْ يَكْتُبُوا, لَا تَنْسَ",
+    "family_en": "How the five verbs and verbs with a long vowel show the subjunctive and the jussive",
+    "course_words": [
+     "lexeme.arabic-verb-moods-5",
+     "lexeme.arabic-verb-moods-6"
+    ],
+    "table": [
+     {
+      "form_en": "they (men), plain",
+      "ar": "يَكْتُبُونَ",
+      "en": "they write"
+     },
+     {
+      "form_en": "they (men), after لَنْ",
+      "ar": "لَنْ يَكْتُبُوا",
+      "en": "they won't write"
+     },
+     {
+      "form_en": "they (men), after لَمْ",
+      "ar": "لَمْ يَكْتُبُوا",
+      "en": "they didn't write"
+     },
+     {
+      "form_en": "you (a woman), plain",
+      "ar": "تَكْتُبِينَ",
+      "en": "you write"
+     },
+     {
+      "form_en": "you (a woman), after لَنْ",
+      "ar": "لَنْ تَكْتُبِي",
+      "en": "you won't write"
+     },
+     {
+      "form_en": "they two, plain",
+      "ar": "يَكْتُبَانِ",
+      "en": "they (two) write"
+     },
+     {
+      "form_en": "they two, after لَمْ",
+      "ar": "لَمْ يَكْتُبَا",
+      "en": "they (two) didn't write"
+     },
+     {
+      "form_en": "a long vowel at the end, after لَا, \"don't\"",
+      "ar": "لَا تَنْسَ",
+      "en": "don't forget (to a man)"
+     },
+     {
+      "form_en": "a long vowel inside, after لَمْ",
+      "ar": "لَمْ يَقُلْ",
+      "en": "he didn't say"
+     }
+    ],
+    "steps": [
+     "Five present forms end in نَ after a long vowel: يَكْتُبُونَ, they write; تَكْتُبُونَ, you all write; تَكْتُبِينَ, you write (to a woman); يَكْتُبَانِ and تَكْتُبَانِ, the two of them, the two of you. Grammar calls them the five verbs.",
+     "They show the mood with that نَ, not with a vowel: plain, it stays; after لَنْ, لَمْ, أَنْ and لَا meaning \"don't\", it goes.",
+     "When ـُونَ loses its نَ, an alif is written after the wāw and not said, as in the past كَتَبُوا: لَمْ يَكْتُبُوا.",
+     "A verb with a long vowel shortens it in the jussive. At the end, the long vowel's letter goes: تَنْسَى, you forget, becomes لَا تَنْسَ, don't forget. Inside, the vowel gets short before the sukūn: يَقُولُ becomes لَمْ يَقُلْ, as يَكُونُ becomes لَمْ يَكُنْ."
+    ],
+    "examples": [
+     {
+      "ar": "لَمْ يَحْضُرُوا الِاجْتِمَاعَ أَمْسِ.",
+      "en": "They didn't come to the meeting yesterday.",
+      "words": [
+       {
+        "ar": "لَمْ",
+        "en": "didn't"
+       },
+       {
+        "ar": "يَحْضُرُوا",
+        "en": "come, attend: no نَ after لَمْ"
+       },
+       {
+        "ar": "الِاجْتِمَاعَ",
+        "en": "the meeting"
+       },
+       {
+        "ar": "أَمْسِ",
+        "en": "yesterday"
+       }
+      ]
+     },
+     {
+      "ar": "عَلَيْكِ أَنْ تَرْتَاحِي قَلِيلًا.",
+      "en": "You should rest a little (to a woman).",
+      "words": [
+       {
+        "ar": "عَلَيْكِ",
+        "en": "you should (on you)"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "to"
+       },
+       {
+        "ar": "تَرْتَاحِي",
+        "en": "rest: no نَ after أَنْ"
+       },
+       {
+        "ar": "قَلِيلًا",
+        "en": "a little"
+       }
+      ]
+     },
+     {
+      "ar": "يَا سَلْمَى، لَا تَنْسَيْ مَوْعِدَ الطَّبِيبِ.",
+      "en": "Salmā, don't forget the doctor's appointment.",
+      "words": [
+       {
+        "ar": "يَا",
+        "en": "(calling someone)"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       },
+       {
+        "ar": "لَا",
+        "en": "don't"
+       },
+       {
+        "ar": "تَنْسَيْ",
+        "en": "forget (to a woman): no نَ"
+       },
+       {
+        "ar": "مَوْعِدَ",
+        "en": "the appointment (of)"
+       },
+       {
+        "ar": "الطَّبِيبِ",
+        "en": "the doctor"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "لَنْ يَكْتُبُوا and لَمْ يَكْتُبُوا look the same. How do you tell them apart?",
+     "a_en": "By the small word before them. For the five verbs, the subjunctive and the jussive both drop the نَ, so the verb alone can't show \"won't\" or \"didn't\": لَنْ looks ahead, لَمْ looks back."
+    },
+    "selftest": [
+     {
+      "q_en": "Which is \"they didn't write\"?",
+      "choices": [
+       "لَمْ يَكْتُبُوا",
+       "لَمْ يَكْتُبُونَ",
+       "لَمْ يَكْتُبْ"
+      ],
+      "answer": "لَمْ يَكْتُبُوا",
+      "why_en": "After لَمْ the نَ goes and an alif is written after the wāw. With no wāw, it's \"he didn't write\"."
+     },
+     {
+      "q_en": "To a woman, which is \"you won't be late\"?",
+      "choices": [
+       "لَنْ تَتَأَخَّرِي",
+       "لَنْ تَتَأَخَّرِينَ",
+       "لَنْ تَتَأَخَّرِيَ"
+      ],
+      "answer": "لَنْ تَتَأَخَّرِي",
+      "why_en": "تَتَأَخَّرِينَ is one of the five verbs: after لَنْ its نَ goes, and nothing is added."
+     },
+     {
+      "q_en": "Which is \"he didn't say\"?",
+      "choices": [
+       "لَمْ يَقُلْ",
+       "لَمْ يَقُولْ",
+       "لَمْ يَقُولُ"
+      ],
+      "answer": "لَمْ يَقُلْ",
+      "why_en": "Before the sukūn, the long ū of يَقُولُ gets short."
+     }
+    ],
+    "phrases_ar": [
+     "لَمْ يَكُنْ"
+    ]
+   }
+  ],
+  "lesson.arabic-passive-voice": [
+   {
+    "id": "explainer.arabic-passive",
+    "title_en": "The passive: فَتَحَ and فُتِحَ, يَفْتَحُ and يُفْتَحُ",
+    "family_en": "How vowels make a verb passive, in the past and the present",
+    "root_ar": "ف-ت-ح",
+    "root_reading": "f-t-ḥ",
+    "course_words": [
+     "lexeme.arabic-passive-voice-3",
+     "lexeme.arabic-passive-voice-4",
+     "lexeme.arabic-passive-voice-5",
+     "lexeme.arabic-passive-voice-6"
+    ],
+    "table": [
+     {
+      "form_en": "past, active",
+      "ar": "فَتَحَ",
+      "en": "he opened"
+     },
+     {
+      "form_en": "past, passive",
+      "ar": "فُتِحَ",
+      "en": "it was opened"
+     },
+     {
+      "form_en": "past, passive, she",
+      "ar": "فُتِحَتْ",
+      "en": "it (feminine) was opened"
+     },
+     {
+      "form_en": "present, active",
+      "ar": "يَفْتَحُ",
+      "en": "he opens"
+     },
+     {
+      "form_en": "present, passive",
+      "ar": "يُفْتَحُ",
+      "en": "it is opened"
+     },
+     {
+      "form_en": "a derived form, past passive",
+      "ar": "أُرْسِلَ",
+      "en": "it was sent"
+     },
+     {
+      "form_en": "a derived form, present passive",
+      "ar": "يُرْسَلُ",
+      "en": "it is sent"
+     },
+     {
+      "form_en": "a hollow verb, past passive",
+      "ar": "قِيلَ",
+      "en": "it was said"
+     },
+     {
+      "form_en": "a hollow verb, present passive",
+      "ar": "يُقَالُ",
+      "en": "it is said"
+     }
+    ],
+    "steps": [
+     "The passive says what was done, not who did it, and Arabic makes it by changing the verb's vowels.",
+     "In the past it has u on the first letter and i before the last: فَتَحَ, he opened, becomes فُتِحَ, it was opened.",
+     "In the present it has u on the prefix and a before the last letter: يَفْتَحُ, he opens, becomes يُفْتَحُ, it is opened.",
+     "Derived forms work the same way: أَرْسَلَ, he sent, becomes أُرْسِلَ, it was sent. In the present the prefix already has u, so only the vowel before the last letter changes: يُرْسِلُ, he sends, becomes يُرْسَلُ, it is sent.",
+     "The endings for who stay as in the active: فُتِحَتْ, it (feminine) was opened; وُلِدْتُ, I was born."
+    ],
+    "examples": [
+     {
+      "ar": "فُتِحَ الْمَتْحَفُ لِلزُّوَّارِ.",
+      "en": "The museum was opened to visitors.",
+      "words": [
+       {
+        "ar": "فُتِحَ",
+        "en": "was opened"
+       },
+       {
+        "ar": "الْمَتْحَفُ",
+        "en": "the museum"
+       },
+       {
+        "ar": "لِلزُّوَّارِ",
+        "en": "to the visitors"
+       }
+      ]
+     },
+     {
+      "ar": "يُقَالُ إِنَّ الْمَطْعَمَ مُمْتَازٌ.",
+      "en": "It is said that the restaurant is excellent.",
+      "words": [
+       {
+        "ar": "يُقَالُ",
+        "en": "it is said"
+       },
+       {
+        "ar": "إِنَّ",
+        "en": "that (after قَالَ)"
+       },
+       {
+        "ar": "الْمَطْعَمَ",
+        "en": "the restaurant"
+       },
+       {
+        "ar": "مُمْتَازٌ",
+        "en": "excellent"
+       }
+      ]
+     },
+     {
+      "ar": "أُرْسِلَتِ الرِّسَالَةُ صَبَاحًا.",
+      "en": "The letter was sent in the morning.",
+      "words": [
+       {
+        "ar": "أُرْسِلَتِ",
+        "en": "was sent (-i before the next word)"
+       },
+       {
+        "ar": "الرِّسَالَةُ",
+        "en": "the letter"
+       },
+       {
+        "ar": "صَبَاحًا",
+        "en": "in the morning"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is it قِيلَ, with a long ī, when فُتِحَ has u then i?",
+     "a_en": "قَالَ is a hollow verb: its middle letter is a long vowel. In the passive the u and i run together into a long ī: قِيلَ, it was said; بِيعَ, it was sold. The present follows يُفْتَحُ, with a long ā: يُقَالُ, it is said."
+    },
+    "selftest": [
+     {
+      "q_en": "What is the passive of سَمِعَ, he heard?",
+      "choices": [
+       "سُمِعَ",
+       "سَمِعَ",
+       "سُمَعَ"
+      ],
+      "answer": "سُمِعَ",
+      "why_en": "u on the first letter, i before the last: \"it was heard\"."
+     },
+     {
+      "q_en": "Which is \"it is sent\"?",
+      "choices": [
+       "يُرْسَلُ",
+       "يُرْسِلُ",
+       "أُرْسِلَ"
+      ],
+      "answer": "يُرْسَلُ",
+      "why_en": "The a before the last letter makes it passive. With i it's \"he sends\"; the past passive is \"it was sent\"."
+     },
+     {
+      "q_en": "What does يُقَالُ mean?",
+      "choices": [
+       "it is said",
+       "he says",
+       "it was said"
+      ],
+      "answer": "it is said",
+      "why_en": "The present passive of قَالَ, with u on the prefix and a long ā."
+     }
+    ],
+    "phrases_ar": []
+   },
+   {
+    "id": "explainer.arabic-passive-subject",
+    "title_en": "Who did it? نَائِبُ الْفَاعِلِ, and a doer left unnamed",
+    "family_en": "What the passive does to a sentence: the object takes the doer's place, and the doer goes unnamed",
+    "course_words": [
+     "lexeme.arabic-passive-voice-1",
+     "lexeme.arabic-passive-voice-2"
+    ],
+    "table": [
+     {
+      "form_en": "active: the doer, then the object",
+      "ar": "سَرَقَ اللِّصُّ الْحَقِيبَةَ",
+      "en": "the thief stole the bag"
+     },
+     {
+      "form_en": "passive: the object in the doer's place",
+      "ar": "سُرِقَتِ الْحَقِيبَةُ",
+      "en": "the bag was stolen"
+     },
+     {
+      "form_en": "the doer, in grammar",
+      "ar": "فَاعِل",
+      "en": "the doer, the subject"
+     },
+     {
+      "form_en": "the passive subject, in grammar",
+      "ar": "نَائِبُ الْفَاعِلِ",
+      "en": "the doer's deputy: the passive subject"
+     },
+     {
+      "form_en": "unknown",
+      "ar": "مَجْهُول",
+      "en": "unknown"
+     },
+     {
+      "form_en": "a passive verb, in grammar",
+      "ar": "الْمَبْنِيُّ لِلْمَجْهُولِ",
+      "en": "built for the unknown (doer)"
+     },
+     {
+      "form_en": "an active verb, in grammar",
+      "ar": "الْمَبْنِيُّ لِلْمَعْلُومِ",
+      "en": "built for the known (doer)"
+     }
+    ],
+    "steps": [
+     "In an active sentence the doer, the فَاعِل, ends in -u, and the object in -a: سَرَقَ اللِّصُّ الْحَقِيبَةَ, the thief stole the bag.",
+     "In the passive the doer goes, and the object takes its place and its -u: سُرِقَتِ الْحَقِيبَةُ, the bag was stolen. Grammar calls it نَائِبُ الْفَاعِلِ, the doer's deputy.",
+     "The verb agrees with it as with a doer: سُرِقَتْ, with -at, because حَقِيبَة is feminine.",
+     "The passive is for when the doer is unknown, obvious or beside the point, as often in the news. Read only what it says: سُرِقَتِ الْحَقِيبَةُ doesn't say who stole it, so don't add a doer.",
+     "Grammar calls a passive verb الْمَبْنِيُّ لِلْمَجْهُولِ, built for the unknown, and an active one الْمَبْنِيُّ لِلْمَعْلُومِ, built for the known."
+    ],
+    "examples": [
+     {
+      "ar": "سُرِقَتْ سَيَّارَةُ سَامِي لَيْلًا.",
+      "en": "Sāmī's car was stolen at night.",
+      "words": [
+       {
+        "ar": "سُرِقَتْ",
+        "en": "was stolen (-at for سَيَّارَة)"
+       },
+       {
+        "ar": "سَيَّارَةُ",
+        "en": "the car (of): -u, in the doer's place"
+       },
+       {
+        "ar": "سَامِي",
+        "en": "Sāmī"
+       },
+       {
+        "ar": "لَيْلًا",
+        "en": "at night"
+       }
+      ]
+     },
+     {
+      "ar": "أُغْلِقَ الطَّرِيقُ صَبَاحًا، وَلَمْ يُذْكَرِ السَّبَبُ.",
+      "en": "The road was closed in the morning, and no reason was given.",
+      "words": [
+       {
+        "ar": "أُغْلِقَ",
+        "en": "was closed"
+       },
+       {
+        "ar": "الطَّرِيقُ",
+        "en": "the road"
+       },
+       {
+        "ar": "صَبَاحًا",
+        "en": "in the morning"
+       },
+       {
+        "ar": "وَلَمْ",
+        "en": "and … not"
+       },
+       {
+        "ar": "يُذْكَرِ",
+        "en": "was given, was mentioned (-i before the next word)"
+       },
+       {
+        "ar": "السَّبَبُ",
+        "en": "the reason"
+       }
+      ]
+     },
+     {
+      "ar": "وُلِدَتْ لَيْلَى فِي مَدِينَةٍ صَغِيرَةٍ.",
+      "en": "Laylā was born in a small town.",
+      "words": [
+       {
+        "ar": "وُلِدَتْ",
+        "en": "was born (she)"
+       },
+       {
+        "ar": "لَيْلَى",
+        "en": "Laylā"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "مَدِينَةٍ",
+        "en": "a town"
+       },
+       {
+        "ar": "صَغِيرَةٍ",
+        "en": "small"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "If the passive leaves out the doer, how do you say who did it?",
+     "a_en": "Use the active: سَرَقَ اللِّصُّ الْحَقِيبَةَ, the thief stole the bag. Some formal writing, especially in the news, adds مِنْ قِبَلِ, by, after a passive verb. It's common, but style guides prefer the active: when you know the doer, the active is clearer."
+    },
+    "selftest": [
+     {
+      "q_en": "Which is \"the car was stolen\"?",
+      "choices": [
+       "سُرِقَتِ السَّيَّارَةُ",
+       "سُرِقَ السَّيَّارَةَ",
+       "سَرَقَتِ السَّيَّارَةُ"
+      ],
+      "answer": "سُرِقَتِ السَّيَّارَةُ",
+      "why_en": "Passive vowels, -at for a feminine noun, and the car with -u in the doer's place. With a then a, it would mean the car stole."
+     },
+     {
+      "q_en": "In the passive, which ending does the noun in the doer's place take?",
+      "choices": [
+       "-u",
+       "-a",
+       "-i"
+      ],
+      "answer": "-u",
+      "why_en": "It's نَائِبُ الْفَاعِلِ, so it ends in -u like a doer."
+     },
+     {
+      "q_en": "What does مَجْهُول mean in الْمَبْنِيُّ لِلْمَجْهُولِ?",
+      "choices": [
+       "unknown",
+       "passive",
+       "past"
+      ],
+      "answer": "unknown",
+      "why_en": "A passive verb is \"built for the unknown\": its doer isn't named."
+     }
+    ],
+    "phrases_ar": [
+     "مِنْ قِبَلِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-news-verbs",
+      "en": "In the news, the passive leaves a source unnamed: أُعْلِنَ, it was announced."
+     }
+    ]
+   }
+  ],
   "lesson.arabic-relative-clauses": [
    {
     "id": "explainer.arabic-who-which",
@@ -9433,6 +10137,10 @@
      {
       "id": "explainer.arabic-be",
       "en": "لَمْ with كَانَ: لَمْ يَكُنْ."
+     },
+     {
+      "id": "explainer.arabic-three-moods",
+      "en": "What the endings after لَنْ and لَمْ are called, and the other words that call for them."
      }
     ]
    }
