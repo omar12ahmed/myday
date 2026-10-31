@@ -1,6 +1,6 @@
 # Projects: decisions backed by evidence, and tasks toward milestones (Phase 3)
 
-**Status:** the owner's decisions in §2 (31 October 2026); being built on branch `evidence-decisions`. Nothing live
+**Status:** the owner's decisions in §2 (31 October 2026); for 1.103.0 (branch `evidence-decisions`). Nothing live
 without the owner's yes. No schema, migration or server change.
 **Based on:** source at 1.101.0. Plan: `specs/projects-vision.md` §5 capability table ("Decisions … better connections to
 supporting research and affected work"; "Milestones … optional connections to supporting tasks and completion

@@ -1,5 +1,18 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.103.0 — Decisions backed by evidence; tasks toward milestones:** with Research on, a finding can now bear on an
+open decision's option (Supports / Contradicts / Relates to), and an experiment can test options — its result saved as
+a finding lands on them. Each option shows its evidence ("3 findings: 2 for · 1 against", opening Research); choosing
+shows "What the evidence says" beside "Why this one?", and the decision keeps the chosen option's counts with the choice
+("Decided …: Larch — with 2 findings for, 1 against") and in Previous choices. MyDay never picks. A project's task can
+be **toward a milestone** (its page: "Toward a milestone"); the milestone shows "3 of 5 tasks done" and, once reached,
+what got you there. Saved data stays schema 5: the new fields (a finding's or experiment's option, a decision's
+`chosenEvidence`, a previous choice's `evidence`, a task's `milestoneId`) are optional fields in their existing records,
+which 1.102.0 keeps unread (checked with the actual previous release: it receives them, renames the task and thinks
+again on the decision without losing any, and this release reads that decision exactly as saved). Going back to 1.102.0
+shows a finding about an option as about "something that must be true" there, and an option removed there leaves its
+findings pointing at it until edited here. No migration or server change; nothing new sent to AI.
+
 **1.102.0 — The Arabic in key ideas, tasks and the timetable, and the explainers, voiced:** the Arabic that lessons show
 without vowel marks in their key ideas and objectives, teaching examples, practical tasks and mini challenges, and
 the weekly timetable now has a voice: 124 more pieces, read from MyDay's own vowelled copy
@@ -1340,7 +1353,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**Decisions backed by evidence; tasks toward milestones (unreleased; `specs/projects-evidence-decisions.md`):** with
+**Decisions backed by evidence; tasks toward milestones (1.103.0; `specs/projects-evidence-decisions.md`):** with
 Research on, a finding can bear on an open decision's option (Supports / Contradicts / Relates to, in "What it bears
 on"), and an experiment can test options ("Try both suppliers for a week") — its result saved as a finding lands on
 them. Each option shows its evidence ("3 findings: 2 for · 1 against", opening Research); choosing shows "What the
