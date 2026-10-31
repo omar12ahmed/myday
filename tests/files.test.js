@@ -29,7 +29,22 @@ const MB = 1024 * 1024;
       async firstBytes(key, n) { const o = objects.get(key); return new Uint8Array(o ? o.bytes.subarray(0, n) : []); },
       async list(prefix) { return [...objects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size, modified: o.modified })); },
       async remove(key) { objects.delete(key); },
-      async sign(method, key, headers, seconds) { signed.push({ method, key, headers, seconds }); return `https://r2.example/${method}/${signed.length}`; },
+      async sign(method, key, headers, seconds, query = {}) { signed.push({ method, key, headers, seconds, query }); return `https://r2.example/${method}/${signed.length}`; },
+      // R2's multipart uploads (as tests/supabase-standin.js's): upload id -> { key, headers, parts: Map(n -> { etag, size, bytes }) }. A test fills
+      // the parts in (sizes can be large without holding the bytes); completing checks every part named is there with its ETag, in order,
+      // then stores the object (its size the parts' total, its first bytes those of part 1), or throws as R2 would.
+      uploads: new Map(), completed: 0,
+      async mpCreate(key, headers) { const id = 'up' + (this.uploads.size + 1) + 'abcdefgh'; this.uploads.set(id, { key, headers, parts: new Map() }); return id; },
+      async mpParts(key, uploadId) { const u = this.uploads.get(uploadId); if (!u || u.key !== key) return null; return [...u.parts].sort((a, b) => a[0] - b[0]).map(([n, x]) => ({ n, etag: x.etag, size: x.size })); },
+      async mpComplete(key, uploadId, parts) {
+        this.completed++;
+        const u = this.uploads.get(uploadId);
+        if (!u || u.key !== key) throw new Error('NoSuchUpload');
+        const got = parts.map(p => { const x = u.parts.get(p.n); if (!x || x.etag.replace(/"/g, '') !== p.etag.replace(/"/g, '')) throw new Error('InvalidPart'); return x; });
+        this.put(key, got[0].bytes ?? Buffer.alloc(0), u.headers['Content-Type'], got.reduce((n, x) => n + x.size, 0));
+        this.uploads.delete(uploadId);
+      },
+      async mpAbort(key, uploadId) { const u = this.uploads.get(uploadId); if (u && u.key === key) this.uploads.delete(uploadId); },
     };
   };
   const reset = () => { store = memory(); logs = []; signed = []; origins = undefined; };
@@ -296,6 +311,160 @@ const MB = 1024 * 1024;
   check('…if the records can\'t be read, nothing is listed (502)', (await post({ action: 'stored' }, { over: { liveFileIds: async () => { throw new Error('db'); } } })).status === 502);
   check('…and signed out: refused first', (await post({ action: 'stored' }, { token: null })).status === 401);
   check('…its log line holds no ids', logs.every(l => /^files [a-z-]+ \d{3} \d+ms$/.test(l)), logs);
+
+
+  console.log('\n[12] Videos, in parts (specs/projects-content.md): upload, mp-begin, mp-parts, mp-list, mp-done, mp-abort, open and thumb');
+  {
+    reset();
+    const GB = 1024 * MB, PART = 64 * MB;
+    const MP4 = Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from('ftypisom'), Buffer.alloc(16)]), NOTVIDEO = Buffer.from('this is plain text, not a video at all, just words');
+    const FV = 'flvideo001', KEY = `${A}/content/${FV}`;
+    const vid = (action, x, o) => post({ action, fileId: FV, area: 'content', name: 'Market day.mp4', ...x }, o);
+    const begin = (x, o) => vid('mp-begin', { size: 100 * MB, ...x }, o);
+    const parts = (x, o) => vid('mp-parts', { size: 150 * MB, ...x }, o);
+    const done = (x, o) => vid('mp-done', x, o);
+    const E1 = { n: 1, etag: '"etag-one"' }, E2 = { n: 2, etag: '"etag-two"' };
+    // A started upload of 100 MB with both its parts sent (the first holds the video's first bytes).
+    const started = async (first = MP4, sizes = [PART, 36 * MB]) => { const id = (await json(await begin())).uploadId; store.uploads.get(id).parts.set(1, { etag: 'etag-one', size: sizes[0], bytes: first }); store.uploads.get(id).parts.set(2, { etag: 'etag-two', size: sizes[1] }); return id; };
+
+    console.log('  upload refuses a size over 64 MB');
+    const bigUp = (x, o) => vid('upload', { size: 100 * MB, md5: MD5, ...x }, o);
+    r = await bigUp({ size: 64 * MB + 1 });
+    check('a single upload of 64 MB plus a byte answers 400 (it goes in parts), and nothing is signed', r.status === 400 && (await json(r)).error === 'bad-request' && signed.length === 0);
+    r = await bigUp({ size: 64 * MB, fileId: 'flvideo002' }); j = await json(r);
+    check('a 64 MB video in the content area is signed for 300 seconds, with its type video/mp4', r.status === 200 && j.seconds === 300 && signed[signed.length - 1].headers['Content-Type'] === 'video/mp4' && signed[signed.length - 1].key === `${A}/content/flvideo002`, j);
+
+    console.log('  mp-begin');
+    reset();
+    check('a size of 64 MB or less is refused (400): that goes in one upload', (await Promise.all([begin({ size: 64 * MB }), begin({ size: 1000 }), begin({ size: 1 })])).every(x => x.status === 400) && store.uploads.size === 0);
+    r = await begin({ area: 'project' }); j = await json(r);
+    check('a video in the project area (or a note) is refused: 422 "not-allowed", nothing started', r.status === 422 && j.error === 'not-allowed' && (await begin({ area: 'note' })).status === 422 && store.uploads.size === 0, j);
+    check('a size that is not a whole number, text or over 15 GB is refused (422), as is a program', (await Promise.all([begin({ size: 100.5 }), begin({ size: '100000000' }), begin({ size: 15 * GB + 1 }), begin({ name: 'setup.exe' }), begin({ name: 'page.svg' })])).every(x => x.status === 422) && store.uploads.size === 0);
+    check('a bad file id, an unknown area and no area answer 400', (await Promise.all([begin({ fileId: 'nope' }), begin({ area: 'elsewhere' }), begin({ area: undefined })])).every(x => x.status === 400));
+    r = await begin(); j = await json(r);
+    check('a 100 MB video answers its upload id, the part size (64 MB) and the number of parts (2)', r.status === 200 && j.ok && typeof j.uploadId === 'string' && j.uploadId.length >= 8 && j.partBytes === PART && j.parts === 2, j);
+    const up0 = store.uploads.get(j.uploadId);
+    check('…the upload is started for <user>/content/<fileId> with the type video/mp4 and a Content-Disposition (inline)', up0.key === KEY && up0.headers['Content-Type'] === 'video/mp4' && /^inline; filename="Market day\.mp4"/.test(up0.headers['Content-Disposition']), up0);
+    check('the number of parts is the size over 64 MB, rounded up: 64 MB + 1 byte is 2, 128 MB is 2, 128 MB + 1 is 3, 15 GB is 240', (await Promise.all([[64 * MB + 1, 2], [128 * MB, 2], [128 * MB + 1, 3], [15 * GB, 240]].map(async ([size, n], i) => (await json(await begin({ size, fileId: 'flcount0000' + i }))).parts === n))).every(Boolean));
+    store.put(`${A}/content/flvideo004`, MP4, 'video/mp4', 100 * MB);
+    r = await begin({ fileId: 'flvideo004' });
+    check('a file id that already has an object answers 409 "exists" (no upload started)', r.status === 409 && (await json(r)).error === 'exists');
+    reset();
+    store.put(`${A}/content/flfull00001`, MP4, 'video/mp4', 150 * GB - 10 * MB);
+    r = await begin(); j = await json(r);
+    check('against the account\'s 150 GB total: 422 "full", saying what\'s left (rounded down) and the video\'s size', r.status === 422 && j.error === 'full' && j.message === 'There’s 10 MB left of 150 GB, and this file is 100 MB. To make room, remove files you don’t need, then use Delete now in Recently deleted.' && store.uploads.size === 0, j);
+    check('…a video that fits in what\'s left is accepted, and another account has its own total', (await begin({}, { token: 'h.tok-b.s' })).status === 200);
+    store.put(`${A}/content/flfull00002`, MP4, 'video/mp4', 10 * MB);
+    j = await json(await begin());
+    check('…and with nothing left: "Your 150 GB is full, and this file is 100 MB. …"', j.message === 'Your 150 GB is full, and this file is 100 MB. To make room, remove files you don’t need, then use Delete now in Recently deleted.', j);
+
+    console.log('  mp-parts');
+    reset();
+    const UP = (await json(await begin({ size: 150 * MB }))).uploadId, MD5B = 'BBBBBBBBBBBBBBBBBBBBBB==';
+    signed.length = 0;
+    r = await parts({ uploadId: UP, parts: [{ n: 1, md5: MD5 }, { n: 2, md5: MD5B }, { n: 3, md5: MD5 }] }); j = await json(r);
+    check('each part gets a link valid 3600 seconds (an hour), in order, with its number, a link and the MD5 to send', r.status === 200 && j.ok && j.seconds === 3600 && eq(j.parts.map(p => p.n), [1, 2, 3]) && j.parts.every(p => /^https:\/\/r2\.example\/PUT\//.test(p.url)) && eq(j.parts[1].headers, { 'Content-MD5': MD5B }), j);
+    check('every link is for PUT <user>/content/<fileId>, valid 3600 seconds, with the part number and the upload id in the query', signed.length === 3 && signed.every((s, i) => s.method === 'PUT' && s.key === KEY && s.seconds === 3600 && eq(s.query, { partNumber: String(i + 1), uploadId: UP })), signed);
+    check('each link signs the part\'s length and its MD5: 64 MB for each part but the last, which is the remainder (22 MB of 150 MB)', eq(signed.map(s => s.headers['Content-Length']), [String(PART), String(PART), String(22 * MB)]) && eq(signed.map(s => s.headers['Content-MD5']), [MD5, MD5B, MD5]) && signed.every(s => eq(Object.keys(s.headers).sort(), ['Content-Length', 'Content-MD5'])), signed.map(s => s.headers));
+    signed.length = 0;
+    await parts({ size: 128 * MB, uploadId: UP, parts: [{ n: 2, md5: MD5 }] }); await parts({ size: 128 * MB + 1, uploadId: UP, parts: [{ n: 3, md5: MD5 }] });
+    check('…an exact multiple of 64 MB makes its last part a full 64 MB, and one byte over makes a last part of 1 byte', eq(signed.map(s => s.headers['Content-Length']), [String(PART), '1']), signed.map(s => s.headers['Content-Length']));
+    signed.length = 0;
+    const bad = async (x, why) => { const n = signed.length; const x2 = await parts({ uploadId: UP, ...x }); return x2.status === 400 && signed.length === n; };
+    check('part numbers out of range are refused (400) and nothing is signed: 0, past the last part (4 of 3), negative, fractional, text, missing', (await Promise.all([[0], [4], [-1], [1.5], ['1'], [undefined]].map(([n]) => bad({ parts: [{ n, md5: MD5 }] })))).every(Boolean));
+    check('a bad MD5 (short, no "==", not text, missing) is refused (400)', (await Promise.all(['short', 'AAAAAAAAAAAAAAAAAAAAAA', 5, undefined].map(md5 => bad({ parts: [{ n: 1, md5 }] })))).every(Boolean));
+    check('one bad part among good ones refuses them all (400), and an empty list is refused', (await parts({ uploadId: UP, parts: [{ n: 1, md5: MD5 }, { n: 9, md5: MD5 }] })).status === 400 && await bad({ parts: [] }) && await bad({ parts: undefined }));
+    signed.length = 0;
+    check('a bad upload id (too short, odd characters, not text, missing) is refused (400)', (await Promise.all(['short', 'bad id with spaces!', 12345678, undefined].map(uploadId => bad({ uploadId, parts: [{ n: 1, md5: MD5 }] })))).every(Boolean));
+    check('a size of 64 MB or less, or not a whole number, is refused (400)', (await Promise.all([64 * MB, 1000, 150 * MB + 0.5, '150000000', undefined].map(size => bad({ size, parts: [{ n: 1, md5: MD5 }] })))).every(Boolean));
+    check('a size over the area\'s maximum is refused (400): over 15 GB in the content area, and any video-sized one in a project', await bad({ size: 15 * GB + 1, parts: [{ n: 1, md5: MD5 }] }) && await bad({ area: 'project', size: 150 * MB, parts: [{ n: 1, md5: MD5 }] }) && await bad({ area: 'elsewhere', parts: [{ n: 1, md5: MD5 }] }));
+    const fifty = Array.from({ length: 50 }, (_, i) => ({ n: i + 1, md5: MD5 })), fiftyOne = Array.from({ length: 51 }, (_, i) => ({ n: i + 1, md5: MD5 }));
+    r = await parts({ size: 4 * GB, uploadId: UP, parts: fifty }); j = await json(r);
+    check('exactly 50 parts at once are signed, and 51 are refused (400) with nothing signed', r.status === 200 && j.parts.length === 50 && signed.length === 50 && await bad({ size: 4 * GB, parts: fiftyOne }));
+
+    console.log('  mp-list');
+    reset();
+    const U2 = await started();
+    r = await vid('mp-list', { uploadId: U2 }); j = await json(r);
+    check('it lists the parts already stored (number, ETag, size), in order, to carry on from', r.status === 200 && j.ok && eq(j.parts, [{ n: 1, etag: 'etag-one', size: PART }, { n: 2, etag: 'etag-two', size: 36 * MB }]), j);
+    check('an upload that was never started or is gone answers 404 "not-found"', (await vid('mp-list', { uploadId: 'upnosuchupload' })).status === 404 && (await json(await vid('mp-list', { uploadId: 'upnosuchupload' }))).error === 'not-found');
+    check('…and so does a real upload id used with another file id (it belongs to its own file)', (await vid('mp-list', { uploadId: U2, fileId: 'flvideo009' })).status === 404);
+    check('…and another account cannot list it', (await vid('mp-list', { uploadId: U2 }, { token: 'h.tok-b.s' })).status === 404);
+    check('a bad upload id or file id answers 400', (await vid('mp-list', { uploadId: 'short' })).status === 400 && (await vid('mp-list', { uploadId: U2, fileId: 'nope' })).status === 400);
+
+    console.log('  mp-done');
+    reset();
+    const U3 = await started();
+    const callsBefore = store.completed;
+    const refusedDone = await Promise.all([[E2, E1], [E2], [{ n: 1, etag: 'etag-one' }, { n: 3, etag: 'etag-three' }], [{ n: 1 }], [{ n: 1, etag: 'not valid ✓' }], [{ n: 1, etag: 5 }], [{ n: '1', etag: 'a' }], []].map(list => done({ uploadId: U3, parts: list })));
+    check('the parts must be 1 to n in order, each with an ETag, or it is refused (400): out of order, not from 1, a gap, no ETag, a bad ETag, a number as the ETag, none', refusedDone.every(x => x.status === 400) && store.completed === callsBefore && store.objects.size === 0, refusedDone.map(x => x.status));
+    check('…and so are a bad upload id and a bad file id', (await done({ uploadId: 'short', parts: [E1] })).status === 400 && (await done({ uploadId: U3, fileId: 'nope', parts: [E1] })).status === 400 && store.completed === callsBefore);
+    r = await done({ uploadId: U3, parts: [E1, E2] }); j = await json(r);
+    check('it completes the upload and answers {ok, size}: the stored video is kept, 100 MB', r.status === 200 && j.ok === true && j.size === 100 * MB && eq(Object.keys(j).sort(), ['ok', 'size']) && store.objects.has(KEY) && store.uploads.size === 0, j);
+    reset();
+    const U4 = await started(NOTVIDEO);
+    r = await done({ uploadId: U4, parts: [E1, E2] }); j = await json(r);
+    check('a stored object whose first bytes are not a video is deleted, with 422 "not-allowed"', r.status === 422 && j.error === 'not-allowed' && !store.objects.has(KEY), j);
+    reset();
+    const U5 = await started(MP4, [4 * MB, 4 * MB]);
+    r = await done({ uploadId: U5, parts: [E1, E2] });
+    check('…and so is one of 64 MB or less (it should have been a single upload): deleted, 422', r.status === 422 && !store.objects.has(KEY));
+    reset();
+    const U6 = await started();
+    store.put(`${A}/content/flfill00001`, MP4, 'video/mp4', 150 * GB - 50 * MB);
+    r = await done({ uploadId: U6, parts: [E1, E2] }); j = await json(r);
+    check('if the account is over its 150 GB total once it has completed, it is deleted with 422 "full"', r.status === 422 && j.error === 'full' && typeof j.message === 'string' && /left of 150 GB|is full/.test(j.message) && !store.objects.has(KEY) && store.objects.has(`${A}/content/flfill00001`), j);
+    reset();
+    const U7 = await started();
+    store.put(`${A}/content/flfill00002`, MP4, 'video/mp4', 150 * GB - 100 * MB);
+    r = await done({ uploadId: U7, parts: [E1, E2] });
+    check('…exactly filling the 150 GB total is allowed (200)', r.status === 200 && store.objects.has(KEY));
+    reset();
+    const U8 = await started();
+    r = await done({ uploadId: U8, parts: [E1, { n: 2, etag: 'etag-wrong' }] });
+    check('R2 refusing the parts (a wrong ETag) answers 502 "storage" and keeps no video', r.status === 502 && (await json(r)).error === 'storage' && !store.objects.has(KEY));
+    check('a video of another account is not touched', (await done({ uploadId: U8, parts: [E1, E2] }, { token: 'h.tok-b.s' })).status === 502 && !store.objects.has(`${B}/content/${FV}`));
+
+    console.log('  mp-abort');
+    reset();
+    const U9 = await started();
+    r = await vid('mp-abort', { uploadId: U9 });
+    check('it drops the upload and what was sent (200 ok), and it can no longer be listed', r.status === 200 && (await json(r)).ok === true && store.uploads.size === 0 && (await vid('mp-list', { uploadId: U9 })).status === 404);
+    check('aborting one that is already gone is still fine (200), and a bad upload id answers 400', (await vid('mp-abort', { uploadId: U9 })).status === 200 && (await vid('mp-abort', { uploadId: 'short' })).status === 400);
+    const U10 = await started();
+    await vid('mp-abort', { uploadId: U10 }, { token: 'h.tok-b.s' }); await vid('mp-abort', { uploadId: U10, fileId: 'flvideo009' });
+    check('…and nobody else (another account, another file id) can drop it', store.uploads.has(U10));
+
+    console.log('  open and thumb for a video');
+    reset();
+    store.put(KEY, MP4, 'video/mp4', 100 * MB);
+    store.put(`${A}/content/flpdf000001`, PDF, 'application/pdf');
+    store.put(`${KEY}.thumb`, Buffer.from('webp'), 'image/webp');
+    signed.length = 0;
+    r = await vid('open', {}); j = await json(r);
+    check('opening a video gives a link valid 21,600 seconds (6 hours): it streams while you watch', r.status === 200 && j.seconds === 21600 && signed[0].method === 'GET' && signed[0].key === KEY && signed[0].seconds === 21600, j);
+    r = await vid('open', { fileId: 'flpdf000001' }); j = await json(r);
+    check('opening a PDF gives a link valid 300 seconds', r.status === 200 && j.seconds === 300 && signed[1].seconds === 300, j);
+    r = await vid('open', { thumb: true }); j = await json(r);
+    check('opening a video\'s preview gives a link valid 300 seconds (not 6 hours), for <key>.thumb', r.status === 200 && j.seconds === 300 && signed[2].key === `${KEY}.thumb` && signed[2].seconds === 300, j);
+    check('…and opening a video that isn\'t stored is 404', (await vid('open', { fileId: 'flvideo007' })).status === 404);
+    r = await vid('thumb', { size: 5000, md5: MD5 }); j = await json(r);
+    check('a preview is allowed for a stored video: a link for <key>.thumb, WebP, 300 seconds, length and MD5 signed', r.status === 200 && j.ok && j.seconds === 300 && signed[3].key === `${KEY}.thumb` && eq(signed[3].headers, { 'Content-Length': '5000', 'Content-MD5': MD5, 'Content-Type': 'image/webp', 'Content-Disposition': 'inline' }), [j, signed[3]]);
+    store.put(`${A}/content/flmov000001`, MP4, 'video/quicktime', 90 * MB); store.put(`${A}/content/flwebm00001`, MP4, 'video/webm', 90 * MB);
+    check('…for a MOV and a WebM too, and still not for a PDF', (await vid('thumb', { fileId: 'flmov000001', size: 5000, md5: MD5 })).status === 200 && (await vid('thumb', { fileId: 'flwebm00001', size: 5000, md5: MD5 })).status === 200 && (await vid('thumb', { fileId: 'flpdf000001', size: 5000, md5: MD5 })).status === 422);
+
+    console.log('  after Delete everything');
+    reset();
+    const wipedNow = { epochOf: async () => 2 };
+    check('a wiped account: mp-begin and mp-parts without the epoch header answer 409 "wiped", and nothing is started or signed', (await begin({}, { over: wipedNow })).status === 409 && (await json(await begin({}, { over: wipedNow }))).error === 'wiped'
+      && (await parts({ uploadId: 'upabcdefgh', parts: [{ n: 1, md5: MD5 }] }, { over: wipedNow })).status === 409 && store.uploads.size === 0 && signed.length === 0);
+    check('…with an old epoch too', (await begin({}, { over: wipedNow, headers: { 'x-myday-epoch': '1' } })).status === 409 && (await parts({ uploadId: 'upabcdefgh', parts: [{ n: 1, md5: MD5 }] }, { over: wipedNow, headers: { 'x-myday-epoch': '1' } })).status === 409);
+    r = await begin({}, { over: wipedNow, headers: { 'x-myday-epoch': '2' } }); j = await json(r);
+    check('…while the current epoch is accepted: mp-begin starts the upload and mp-parts signs its links', r.status === 200 && (await parts({ uploadId: j.uploadId, parts: [{ n: 1, md5: MD5 }] }, { over: wipedNow, headers: { 'x-myday-epoch': '2' } })).status === 200);
+    check('mp-done after a wipe is refused too (409), and mp-list and mp-abort need no header', (await done({ uploadId: j.uploadId, parts: [E1] }, { over: wipedNow })).status === 409 && (await vid('mp-list', { uploadId: j.uploadId }, { over: wipedNow })).status === 200 && (await vid('mp-abort', { uploadId: j.uploadId }, { over: wipedNow })).status === 200);
+    check('an account never wiped needs no header for the parts either', (await begin({}, { over: { epochOf: async () => 0 } })).status === 200);
+    check('the log lines of all this hold no ids, names or links', logs.every(l => /^files [a-z-]+ \d{3} \d+ms$/.test(l)), logs.filter(l => !/^files [a-z-]+ \d{3} \d+ms$/.test(l)));
+  }
 
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS ERROR', e); const s = summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

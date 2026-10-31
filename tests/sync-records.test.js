@@ -66,6 +66,18 @@ const clone = o => JSON.parse(JSON.stringify(o));
   // A project (1.12.0) with a task and a note in it and an appointment listed on it.
   raw.projects = { items: [{ id: 'pj1', title: 'Coffee subscription', summary: 'For offices', stage: 'explore', status: 'active', nextTaskId: 'tk1', commitmentIds: ['c1'], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-02T09:00' }] };
   raw.tasks.items[0].projectId = 'pj1';
+  // …a Content project's videos (specs/projects-content.md): a planned video with everything on it, and two ideas.
+  raw.content = { items: [
+    { id: 'cvsync00001', projectId: 'pj1', type: 'video', step: 'planning', title: 'Planting garlic', hook: 'Plant it now', notes: 'Before the frost',
+      options: [{ id: 'cosync00001', kind: 'title', text: 'Garlic in a day', chosen: true }, { id: 'cosync00002', kind: 'title', text: 'Garlic, simply' }],
+      examples: [{ id: 'cesync00001', url: 'https://example.com/v', at: '0:45' }], outline: [{ id: 'cbsync00001', text: 'Why garlic' }, { id: 'cbsync00002', text: 'How deep' }],
+      shots: [{ id: 'cssync00001', text: 'Bulbs going in', where: 'Back bed', done: true }, { id: 'cssync00002', text: 'Close-up' }], needs: [{ id: 'cnsync00001', text: 'Bulbs' }], steps: [{ id: 'cpsync00001', text: 'Book the sound check' }],
+      clips: [{ id: 'ccsync00001', kind: 'link', url: 'https://example.com/clip' }], fileIds: ['flsync00003'], script: 'a'.repeat(1200), transcript: 'A short one.',
+      postOn: '2026-11-10', postTaskId: 'tkSyncPost1', posts: [{ id: 'cqsync00001', platform: 'youtube', url: 'https://example.com/watch?v=1', on: '2026-11-12' }],
+      results: [{ id: 'crsync00001', platform: 'youtube', on: '2026-11-12', views: 12400, likes: 830, followers: 120 }], worked: 'The slow start', didnt: 'The long intro', futureBit: { keep: [1] },
+      createdAt: '2026-10-21T09:00', updatedAt: '2026-10-22T09:00' },
+    { id: 'cvsync00003', projectId: 'pj1', type: 'video', step: 'idea', title: 'Pruning roses', createdAt: '2026-10-20T09:00', updatedAt: '2026-10-20T09:00' },
+    { id: 'cvsync00002', projectId: 'pj1', type: 'video', step: 'idea', title: 'Mulching', notes: 'With leaves', createdAt: '2026-10-20T09:00', updatedAt: '2026-10-20T09:00' }] };
   raw.notes.items[0].projectId = 'pj1';
   Object.assign(raw.notes.items[0], { linkedBy: 'rules', linkWhy: 'van · budget', notProjects: ['pjOld'], private: true }); // 1.13.0
   // An Arabic lesson session (after 1.15.0): first answers, one revealed, a note to self.
@@ -93,7 +105,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -189,6 +201,35 @@ const clone = o => JSON.parse(JSON.stringify(o));
     { const gone = clone(d3); R.putRecord(gone, 'research:rqsync00001', null); check('a research record deleted elsewhere removes it here', !gone.research.items.some(x => x.id === 'rqsync00001') && gone.research.items.length === 4); }
     check('MyDay data with no research sends no research records, and one without the section reads as none', ![...R.localRecords(R.normalize(raw)).keys()].some(k => k.startsWith('research:')) && eq(R.normalize(raw).research, { items: [] }));
     check('a project with tools and the Research kind keeps both in its own record', (() => { const w = clone(raw); w.projects.items[0].tools = ['research']; w.projects.items[0].template = 'research'; const rec = [...R.localRecords(R.normalize(w))].filter(([k]) => k === 'project:' + w.projects.items[0].id)[0][1]; const v = rec.value ?? rec; return eq(v.tools, ['research']) && v.template === 'research'; })());
+  }
+
+  console.log('\n[1d] A Content project\'s ideas and videos (specs/projects-content.md)');
+  {
+    const c1 = recs.get('content:cvsync00001'), cIdea = recs.get('content:cvsync00003');
+    const rows = [...recs].filter(([k]) => k.startsWith('content:'));
+    check('each idea and video is its own "content" record, exactly as written, with a newer MyDay\'s field kept', rows.length === 3 && eq(c1, data.content.items[0]) && eq(c1.futureBit, { keep: [1] }) && c1.options[0].chosen === true && c1.fileIds[0] === 'flsync00003', rows.map(([k]) => k));
+    check('a content record is exactly the same when it arrives on another device (clean), so its fingerprint doesn\'t change', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, clone(c))) === R.fingerprint(c)) && R.fingerprint(R.cleanRecord('content:cvsync00001', clone(c1))) === R.fingerprint(c1));
+    check('…and cleaning it twice gives the same again', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, R.cleanRecord(k, clone(c)))) === R.fingerprint(c)));
+    const byOrder = items => [...items].sort((x, y) => x.createdAt.localeCompare(y.createdAt) || x.id.localeCompare(y.id)).map(x => x.id);
+    const back = clone(R.freshState());
+    for (const [k, c] of rows) R.putRecord(back, k, clone(c));
+    check('put into a new MyDay, the items come back with every field, ordered by when they were made and then by id', eq(back.content.items.map(x => x.id), ['cvsync00002', 'cvsync00003', 'cvsync00001']) && eq(back.content.items.map(x => x.id), byOrder(data.content.items))
+      && eq(back.content.items.map(x => JSON.stringify(x)).sort(), data.content.items.map(x => JSON.stringify(x)).sort()), back.content.items.map(x => x.id));
+    { const rev = clone(R.freshState()); for (const [k, c] of [...rows].reverse()) R.putRecord(rev, k, clone(c)); check('…the same whichever order the records arrive in', eq(rev.content.items.map(x => x.id), back.content.items.map(x => x.id))); }
+    check('a record with no project, no type or a bad id is not taken in', R.cleanRecord('content:cvsync00001', { id: 'cvsync00001', type: 'video' }) === null && R.cleanRecord('content:cvsync00001', { id: 'cvsync00001', projectId: 'pj1' }) === null && R.cleanRecord('content:bad id!', { id: 'bad id!', type: 'video', projectId: 'pj1' }) === null);
+    check('its summary says what it is: "Idea: …" for an idea, "Video: … · Planning" for a video', R.recordSummary('content:cvsync00003', cIdea) === 'Idea: Pruning roses' && R.recordSummary('content:cvsync00001', c1) === 'Video: Planting garlic · Planning'
+      && R.recordSummary('content:cvsync00001', { ...c1, step: 'editing' }) === 'Video: Planting garlic · Editing', [R.recordSummary('content:cvsync00003', cIdea), R.recordSummary('content:cvsync00001', c1)]);
+    check('a long title is shortened in its summary, and a missing one reads "(untitled)"', R.recordSummary('content:cvsync00001', { ...c1, title: 'w'.repeat(200) }).length <= 'Video: '.length + 81 + ' · Planning'.length && R.recordSummary('content:cvsync00001', { ...c1, title: '' }) === 'Video: (untitled) · Planning');
+    check('its label in words is "Video"', R.recordLabel('content:cvsync00001') === 'Video', R.recordLabel('content:cvsync00001'));
+    const sd = R.shortDate;
+    check('its lines name the hook, notes, options with "(chosen)", the counts, script and transcript sizes, the post day, where it was posted, the results and what worked and didn\'t', eq(R.recordLines('content:cvsync00001', c1), [
+      'Hook: Plant it now', 'Notes: Before the frost', 'Options: Garlic in a day (chosen); Garlic, simply', '1 example · 2 beats · 2 shots · 1 thing needed · 1 step · 1 clip link · 1 upload', 'Script: 1,200 characters', 'Transcript: 12 characters',
+      `Post on ${sd('2026-11-10')}`, `Posted on YouTube ${sd('2026-11-12')}`, `YouTube ${sd('2026-11-12')}: 12,400 views · 830 likes · 120 followers gained`, 'What worked: The slow start', 'What didn’t: The long intro'].map(x => x)), R.recordLines('content:cvsync00001', c1));
+    check('an idea\'s lines are just its notes, and an empty video has none', eq(R.recordLines('content:cvsync00002', recs.get('content:cvsync00002')), ['Notes: With leaves']) && eq(R.recordLines('content:cvsync00001', { id: 'cvsync00001', projectId: 'pj1', type: 'video', createdAt: '2026-10-21T09:00', updatedAt: '2026-10-21T09:00' }), []));
+    check('two versions of a video that differ only in a post, a result or a chosen option have different lines', !eq(R.recordLines('content:cvsync00001', c1), R.recordLines('content:cvsync00001', { ...c1, posts: [], results: [], options: c1.options.map(o => ({ ...o, chosen: false })) })));
+    { const gone = clone(data); R.putRecord(gone, 'content:cvsync00001', null); check('a content record deleted elsewhere removes it here', !gone.content.items.some(x => x.id === 'cvsync00001') && gone.content.items.length === 2); }
+    check('MyDay data with no content sends no content records, and one without the section reads as none', (() => { const w = clone(raw); delete w.content; return ![...R.localRecords(R.normalize(w)).keys()].some(k => k.startsWith('content:')) && eq(R.normalize(w).content, { items: [] }); })());
+    check('a project with the Content kind keeps it in its own record', (() => { const w = clone(raw); w.projects.items[0].template = 'content'; const rec = R.localRecords(R.normalize(w)).get('project:pj1'); return (rec.value ?? rec).template === 'content'; })());
   }
 
   console.log('\n[1b] A project with milestones and decisions');

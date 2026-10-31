@@ -19,6 +19,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('files')};`, `export { normalizeProjects, deleteProject } from ${src('projects')};`, `export { normalizeNotes, isBlank } from ${src('notes')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift } from ${src('dates')};`,
+    `export * as FR from ${JSON.stringify(path.join(ROOT, 'supabase/functions/_shared/files/rules'))};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00', SHA = 'c'.repeat(64);
@@ -182,6 +183,47 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const r = world(); r.cybersecurity.portfolio = [entry('pfentry0002')];
     K.addFileRecord(r, { kind: 'portfolio', id: 'pfentry0002' }, nf('flpfdrop0001', { area: 'portfolio' })); K.dropAdded(r, 'flpfdrop0001', { kind: 'portfolio', id: 'pfentry0002' });
     check('a file the server refused while being added comes off its entry, record and all', !r.files.items.length && !('fileIds' in r.cybersecurity.portfolio[0]));
+  }
+
+  console.log('\n[8] Videos for a Content project (specs/projects-content.md): types, first bytes, the area, the limits');
+  {
+    const bytes = (...parts) => { const b = new Uint8Array(16); let at = 0; for (const x of parts) { for (const c of (typeof x === 'string' ? [...x].map(ch => ch.charCodeAt(0)) : x)) b[at++] = c; } return b; };
+    const box = (name, brand = '') => bytes([0, 0, 0, 0x18], name, brand);
+    const MB = 1024 * 1024, GB = 1024 * MB;
+    const mp4 = box('ftyp', 'isom'), heic = box('ftyp', 'heic'), mov = box('ftyp', 'qt  '), oldMov = box('moov'), webm = bytes([0x1a, 0x45, 0xdf, 0xa3]), junk = bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    const is = (type, b) => K.FR.looksLike(type, b);
+    check('an MP4 is "ftyp" at byte 4 with the brand isom', is('video/mp4', mp4) && K.FR.typeOfName('Market day.mp4') === 'video/mp4' && K.FR.typeOfName('clip.m4v') === 'video/mp4');
+    check('a HEIC photo\'s "ftyp heic" is not a video (neither MP4 nor MOV), and is still a photo', !is('video/mp4', heic) && !is('video/quicktime', heic) && is('image/heic', heic));
+    check('every other photo brand (heix, mif1…) is not a video either', ['heix', 'hevc', 'hevx', 'mif1', 'msf1', 'heim', 'heis'].every(b => !is('video/mp4', box('ftyp', b)) && !is('video/quicktime', box('ftyp', b))));
+    check('a MOV is "ftyp" with the brand "qt  ", or a "moov" box at byte 4 (an older one)', is('video/quicktime', mov) && is('video/quicktime', oldMov) && K.FR.typeOfName('Phone clip.MOV') === 'video/quicktime');
+    check('…a "moov" box alone is not an MP4', !is('video/mp4', oldMov));
+    check('a WebM is the bytes 1A 45 DF A3', is('video/webm', webm) && K.FR.typeOfName('clip.webm') === 'video/webm' && !is('video/webm', mp4));
+    check('bytes that are none of these are not a video, and neither is a PDF or a WebM with a wrong first byte', ['video/mp4', 'video/quicktime', 'video/webm'].every(t => !is(t, junk) && !is(t, bytes('%PDF-1.7'))) && !is('video/webm', bytes([0x1b, 0x45, 0xdf, 0xa3])));
+    check('the three video types are VIDEOS, are served inline, and have a preview', eq(K.FR.VIDEOS, ['video/mp4', 'video/quicktime', 'video/webm']) && K.FR.VIDEOS.every(t => K.FR.FILE_TYPES[t].inline && K.FR.HAS_PREVIEW.includes(t)) && !K.FR.PREVIEWABLE.includes('video/mp4'));
+
+    const content = K.FR.AREA_RULES.content;
+    check('the content area allows 15 GB at most', content.maxBytes === 15 * GB, content.maxBytes);
+    check('its types include the three videos and the documents (photos, PDF, Word, Excel, PowerPoint, text, CSV)', K.FR.VIDEOS.every(t => content.types.includes(t)) && ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf', 'text/plain', 'text/csv',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].every(t => content.types.includes(t)), content.types);
+    check('a project or a note still refuses a video (and any file over 25 MB)', ['project', 'note'].every(a => K.FR.VIDEOS.every(t => !K.FR.AREA_RULES[a].types.includes(t)) && K.FR.refusal(a, 'Clip.mp4', 1000) !== '' && K.FR.refusal(a, 'Clip.mov', 1000) !== '' && K.FR.refusal(a, 'Clip.webm', 1000) !== '' && K.FR.AREA_RULES[a].maxBytes === 25 * MB));
+    check('a Content video of 15 GB is kept, and one byte more is refused', K.FR.refusal('content', 'Market day.mp4', 15 * GB) === '' && K.FR.refusal('content', 'Market day.mp4', 15 * GB + 1) === content.summary && K.FR.refusal('content', 'Market day.mp4', 15 * GB + 1) !== '');
+    check('…a document is kept there too, a program is not, and an empty file is not', K.FR.refusal('content', 'Script.pdf', 5000) === '' && K.FR.refusal('content', 'Thumb.png', 5000) === '' && K.FR.refusal('content', 'run.exe', 5000) !== '' && K.FR.refusal('content', 'page.svg', 5000) !== '' && K.FR.refusal('content', 'Clip.mp4', 0) !== '');
+
+    check('an account holds 150 GB in all', K.FR.ACCOUNT_TOTAL_BYTES === 150 * GB, K.FR.ACCOUNT_TOTAL_BYTES);
+    check('one request carries at most 64 MB (SINGLE_PUT_MAX), a part of a bigger file is 64 MB (PART_BYTES), and a file has at most 10,000 parts', K.FR.SINGLE_PUT_MAX === 64 * MB && K.FR.PART_BYTES === 64 * MB && K.FR.MAX_PARTS === 10000, [K.FR.SINGLE_PUT_MAX, K.FR.PART_BYTES, K.FR.MAX_PARTS]);
+    check('a 15 GB video is 240 parts, well within the limit', Math.ceil(15 * GB / K.FR.PART_BYTES) === 240 && 240 <= K.FR.MAX_PARTS);
+
+    console.log('  a big upload that was never finished');
+    const T1 = Date.parse('2026-10-24T09:00:00Z'), H = 60 * 60 * 1000, DAY = 24 * H;
+    const big = { ...rec('flbig0000001', { state: 'uploading', area: 'content', name: 'Market day.mp4', type: 'video/mp4', size: 64 * MB + 1 }), startedAt: T1 };
+    const small = { ...rec('flsmall00001', { state: 'uploading', area: 'content', name: 'Thumb.png', type: 'image/png', size: 5000 }), startedAt: T1 };
+    check('a file over 64 MB still uploading is unfinished only after 7 days (not after a day, nor at exactly 7 days)', !K.unfinished(big, T1 + 2 * H, '2026-10-24') && !K.unfinished(big, T1 + DAY, '2026-10-24') && !K.unfinished(big, T1 + 6 * DAY, '2026-10-24') && !K.unfinished(big, T1 + 7 * DAY, '2026-10-24') && K.unfinished(big, T1 + 7 * DAY + 1, '2026-10-24'));
+    check('a small file in the same place is unfinished after an hour, not before', !K.unfinished(small, T1 + 59 * 60 * 1000, '2026-10-24') && K.unfinished(small, T1 + H + 1, '2026-10-24') && K.unfinished(small, T1 + 2 * H, '2026-10-24'));
+    check('a file of exactly 64 MB counts as small (an hour), one byte over as big (7 days)', K.unfinished({ ...big, size: 64 * MB }, T1 + 2 * H, '2026-10-24') && !K.unfinished({ ...big, size: 64 * MB + 1 }, T1 + 2 * H, '2026-10-24'));
+    check('a big file that finished or failed is never unfinished, however old', !K.unfinished({ ...big, state: 'kept' }, T1 + 30 * DAY) && !K.unfinished({ ...big, state: 'failed' }, T1 + 30 * DAY));
+    const noStart = id => ({ ...rec(id, { state: 'uploading', area: 'content', name: 'Market day.mp4', type: 'video/mp4', size: 64 * MB + 1, addedOn: '2026-10-16' }) });
+    check('a big file with no start time is judged by its day: unfinished once added more than 7 days before, not within the week', K.unfinished(noStart('flbig0000002'), T1, '2026-10-24') && !K.unfinished({ ...noStart('flbig0000003'), addedOn: '2026-10-17' }, T1, '2026-10-24') && !K.unfinished({ ...noStart('flbig0000004'), addedOn: '2026-10-23' }, T1, '2026-10-24'));
+    check('sizeLabel reads GB: 1.5 GB for a file one and a half gigabytes, and 15.0 GB at the largest', K.sizeLabel(1.5 * GB) === '1.5 GB' && K.sizeLabel(15 * GB) === '15.0 GB' && K.sizeLabel(1023 * MB) === '1023.0 MB', [K.sizeLabel(1.5 * GB), K.sizeLabel(15 * GB), K.sizeLabel(1023 * MB)]);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

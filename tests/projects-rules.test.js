@@ -31,7 +31,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
     `export { setDeadline, deadlineWords, deadlineLabel, setMilestone } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
-    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`,
+    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`, `export * as CT from ${src('content')};`, `export * as F from ${src('files')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -2662,6 +2662,224 @@ const clone = o => JSON.parse(JSON.stringify(o));
     nd.projects.items[0].waiting = { on: 'Priya', since: '2026-10-20', until: '2026-10-28' };
     K.PW.chaseProject(nd, 'pw1');
     check('…and once chased, it says so', eq(K.needsYou(nd, k).find(x => x.key === 'pwait:pw1')?.chase, { projectId: 'pw1', added: true }));
+  }
+
+  console.log('\n[29] Content projects: ideas and videos planned before they\'re posted (specs/projects-content.md)');
+  {
+    const k = '2026-11-02';
+    const vid = (id, x = {}) => ({ id, projectId: 'pjC', type: 'video', step: 'planning', title: 'Market day', createdAt: OLD, updatedAt: OLD, ...x });
+    const cw = () => world(base('pjC', { template: 'content', title: 'Garden channel' }));
+    const V = (d, id) => d.content.items.find(x => x.id === id);
+    const longText = n => 'abcdefghij'.repeat(Math.ceil(n / 10)).slice(0, n);
+
+    console.log('  reading');
+    const asWritten = { items: [vid('cvA', { step: 'reviewing', futureBit: { a: 1 }, options: [{ id: 'coA', kind: 'music', text: 'Slow guitar', futureBit: 1 }], posts: [{ id: 'cqA', platform: 'vimeo' }] }),
+      { id: 'cvB', projectId: 'pjC', type: 'video', createdAt: OLD, updatedAt: OLD }, vid('cvC', { type: 'storyboard', step: 'idea', clips: [{ id: 'ccA', kind: 'upload', fileId: 'flaaaaaa1' }] })], futureSection: { x: 1 } };
+    let rp = { dropped: 0 };
+    const once = K.CT.normalizeContent(clone(asWritten), rp), twice = K.CT.normalizeContent(clone(once), rp);
+    check('content items are read back exactly as written, twice over, with nothing counted: missing fields, an unknown type, step and kind, and extra keys all kept', eq(once, asWritten) && eq(twice, asWritten) && rp.dropped === 0, once);
+    rp = { dropped: 0 };
+    const rd = K.CT.normalizeContent({ items: [vid('cvA'), { projectId: 'pjC', type: 'video' }, vid('cvX', { projectId: '' }), { id: 'cvY', projectId: 'pjC' }, vid('cvA', { title: 'Second with the same id' }), 'nonsense', null, vid('cvZ')] }, rp);
+    check('items without an id, a project or a type are counted and dropped, and so is a later duplicate id (the first is kept)', eq(rd.items.map(x => x.id), ['cvA', 'cvZ']) && rd.items[0].title === 'Market day' && rp.dropped === 6, [rd.items.map(x => x.id), rp.dropped]);
+    const fill = K.CT.normalizeContent({ items: [{ id: 'cvA', projectId: 'pjC', type: 'video', updatedAt: '2026-10-02T10:30' }, { id: 'cvB', projectId: 'pjC', type: 'video' }] }, { dropped: 0 }).items;
+    check('a missing createdAt is filled from updatedAt, else from now (and updatedAt from createdAt)', fill[0].createdAt === '2026-10-02T10:30' && /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(fill[1].createdAt) && fill[1].updatedAt === fill[1].createdAt, fill);
+    const bare = K.CT.videoOf({ id: 'cvB', projectId: 'pjC', type: 'video', createdAt: OLD, updatedAt: OLD });
+    check('videoOf gives empty lists and empty words for what is missing, and the step Planning when none', eq([bare.step, bare.title, bare.hook, bare.notes, bare.script, bare.transcript, bare.worked, bare.didnt], ['planning', '', '', '', '', '', '', ''])
+      && ['options', 'examples', 'outline', 'shots', 'needs', 'steps', 'clips', 'fileIds', 'posts', 'results'].every(f => eq(bare[f], [])) && bare.postOn === null && bare.postTaskId === null, bare);
+
+    console.log('  ideas and videos');
+    let d = cw();
+    const i1 = K.CT.addIdea(d, 'pjC', '  Planting garlic  ', 'Before the frost');
+    check('an idea is at step Idea, with its title tidied and its note kept', V(d, i1).step === 'idea' && V(d, i1).title === 'Planting garlic' && V(d, i1).notes === 'Before the frost' && V(d, i1).type === 'video' && V(d, i1).projectId === 'pjC', V(d, i1));
+    const i2 = K.CT.addIdea(d, 'pjC', longText(200));
+    check('a title is cut to 120 characters', V(d, i2).title.length === 120, V(d, i2).title.length);
+    check('an idea for a project that isn\'t there, or with an empty title, gives null and adds nothing', K.CT.addIdea(d, 'pjNope', 'Lost') === null && K.CT.addIdea(d, 'pjC', '   ') === null && d.content.items.length === 2);
+    const v1 = K.CT.addVideo(d, 'pjC', 'Pruning roses');
+    check('a video added straight away is at step Planning; with no project or title it gives null', V(d, v1).step === 'planning' && V(d, v1).title === 'Pruning roses' && K.CT.addVideo(d, 'pjNope', 'x') === null && K.CT.addVideo(d, 'pjC', ' ') === null && d.content.items.length === 3);
+    check('"Make this a video" works only on an idea: it moves to Planning, and a video (or something missing) is left alone', K.CT.makeVideo(d, i1) && V(d, i1).step === 'planning' && !K.CT.makeVideo(d, i1) && !K.CT.makeVideo(d, v1) && !K.CT.makeVideo(d, 'cvNope'));
+    V(d, v1).updatedAt = OLD;
+    check('setStep moves a video to a known step and moves its updated time', K.CT.setStep(d, v1, 'filming') && V(d, v1).step === 'filming' && V(d, v1).updatedAt > OLD, V(d, v1));
+    check('setStep refuses a step it doesn\'t know, says false when nothing changes, and false for a video that isn\'t there', !K.CT.setStep(d, v1, 'reviewing') && V(d, v1).step === 'filming' && !K.CT.setStep(d, v1, 'filming') && !K.CT.setStep(d, 'cvNope', 'editing'));
+
+    const o = cw();
+    o.projects.items.push(base('pjD', { template: 'content' }));
+    o.tasks.items.push({ id: 'tkPostDone', title: 'Post: Done one', done: true, doneOn: '2026-10-20', due: '2026-10-20', minutes: 10, projectId: 'pjC' });
+    o.content.items = [vid('i1', { step: 'idea', createdAt: '2026-10-01T09:00' }), vid('i2', { step: 'idea', createdAt: '2026-10-03T09:00' }), vid('i3', { step: 'idea', createdAt: '2026-10-03T09:00' }),
+      vid('p1', { updatedAt: '2026-10-05T09:00', postOn: '2026-11-05' }), vid('p2', { updatedAt: '2026-10-06T09:00', postOn: '2026-11-03' }), vid('f1', { step: 'filming', updatedAt: '2026-10-02T09:00', postOn: '2026-10-30' }),
+      vid('e1', { step: 'editing', updatedAt: '2026-10-04T09:00' }), vid('d1', { step: 'posted', updatedAt: '2026-10-01T09:00', postOn: '2026-11-04' }), vid('d2', { updatedAt: '2026-10-09T09:00', postTaskId: 'tkPostDone', postOn: '2026-11-04' }),
+      vid('x1', { projectId: 'pjD', step: 'idea' }), vid('x2', { projectId: 'pjD', postOn: '2026-11-03' })];
+    const co = K.CT.contentOf(o, 'pjC');
+    check('contentOf lists ideas newest first (by id when made together), and videos by step then most recently changed, a video whose post task is done counting as Posted', eq(co.ideas.map(x => x.id), ['i2', 'i3', 'i1'])
+      && eq(co.videos.map(x => x.id), ['p2', 'p1', 'f1', 'e1', 'd2', 'd1']), [co.ideas.map(x => x.id), co.videos.map(x => x.id)]);
+    check('stepCounts counts ideas and each step, with a video whose post task is done as Posted, and only for that project', eq(K.CT.stepCounts(o, 'pjC'), { idea: 3, planning: 2, filming: 1, editing: 1, posted: 2 }) && K.CT.stepCounts(o, 'pjD').idea === 1, K.CT.stepCounts(o, 'pjC'));
+    check('nextPost is the next post day still to come, today included, ignoring days gone by and videos already posted', eq((({ day, video }) => [day, video.id])(K.CT.nextPost(o, 'pjC', k)), ['2026-11-03', 'p2']) && K.CT.nextPost(o, 'pjC', '2026-11-03').video.id === 'p2'
+      && K.CT.nextPost(o, 'pjC', '2026-11-04').video.id === 'p1', K.CT.nextPost(o, 'pjC', k));
+    check('…and nothing once every post day has gone by, or for a project without any', K.CT.nextPost(o, 'pjC', '2026-11-06') === null && K.CT.nextPost(o, 'pjZ', k) === null);
+
+    console.log('  editing a video');
+    d = cw();
+    const ev = K.CT.addVideo(d, 'pjC', 'Pruning roses');
+    V(d, ev).updatedAt = OLD;
+    const messy = '  First line\n\n second line  ';
+    check('script and transcript are cut to 20,000 and 50,000 characters but not tidied', K.CT.editVideo(d, ev, { script: messy + longText(25000), transcript: messy + longText(60000) })
+      && V(d, ev).script.length === 20000 && V(d, ev).script.startsWith(messy) && V(d, ev).transcript.length === 50000 && V(d, ev).transcript.startsWith(messy), [V(d, ev).script.length, V(d, ev).transcript.length]);
+    check('the other fields are tidied (ends trimmed) and cut to their limits (what didn\'t work to 2000)', K.CT.editVideo(d, ev, { title: '  Pruning roses well ', hook: ' One cut ', notes: '  a b ', worked: '  slow start ', didnt: longText(3000) })
+      && V(d, ev).title === 'Pruning roses well' && V(d, ev).hook === 'One cut' && V(d, ev).notes === 'a b' && V(d, ev).worked === 'slow start' && V(d, ev).didnt.length === 2000);
+    check('a title can\'t be emptied (it stays as it was)', !K.CT.editVideo(d, ev, { title: '   ' }) && V(d, ev).title === 'Pruning roses well');
+    V(d, ev).updatedAt = OLD;
+    check('an empty value removes the key, and the updated time moves', K.CT.editVideo(d, ev, { hook: '  ' }) && !('hook' in V(d, ev)) && V(d, ev).updatedAt > OLD, V(d, ev));
+    V(d, ev).updatedAt = OLD;
+    check('saying what is already there changes nothing (updated time stays); a video that isn\'t there is false', !K.CT.editVideo(d, ev, { notes: 'a b', title: 'Pruning roses well' }) && V(d, ev).updatedAt === OLD && !K.CT.editVideo(d, 'cvNope', { notes: 'x' }));
+
+    console.log('  options still open');
+    const ov = K.CT.addVideo(d, 'pjC', 'Sowing peas');
+    const t1 = K.CT.addOption(d, ov, 'title', 'Peas in a hurry'), t2 = K.CT.addOption(d, ov, 'title', 'Peas, simply', 'The calm one'), t3 = K.CT.addOption(d, ov, 'title', 'Peas for beginners');
+    const h1 = K.CT.addOption(d, ov, 'hook', 'Nobody tells you this'), a1 = K.CT.addOption(d, ov, 'angle', 'Cheap and fast'), a2 = K.CT.addOption(d, ov, 'angle', 'No digging'), th1 = K.CT.addOption(d, ov, 'thumbnail', 'Hands in soil'), th2 = K.CT.addOption(d, ov, 'thumbnail', 'A pea pod');
+    const opt = id => V(d, ov).options.find(x => x.id === id);
+    check('options are of kind title, hook, angle or thumbnail only, with an optional note; an unknown kind or empty words give null', eq([opt(t1).kind, opt(h1).kind, opt(a1).kind, opt(th1).kind], ['title', 'hook', 'angle', 'thumbnail']) && opt(t2).note === 'The calm one' && !('note' in opt(t1))
+      && K.CT.addOption(d, ov, 'music', 'Slow guitar') === null && K.CT.addOption(d, ov, 'title', '  ') === null && K.CT.addOption(d, 'cvNope', 'title', 'x') === null && V(d, ov).options.length === 8);
+    check('words of an option are cut to 200 characters', (() => { const id = K.CT.addOption(d, ov, 'angle', longText(300)); const n = opt(id).text.length; K.CT.removeOption(d, ov, id); return n === 200; })());
+    const many = K.CT.addVideo(d, 'pjC', 'Many options');
+    for (let i = 0; i < 40; i++) K.CT.addOption(d, many, 'angle', 'Angle ' + i);
+    check('a video keeps at most 40 options (the 41st gives null)', V(d, many).options.length === 40 && K.CT.addOption(d, many, 'angle', 'One too many') === null && V(d, many).options.length === 40);
+    check('while several titles, hooks, angles or thumbnail ideas are open, stillOpen says so in words', eq(K.CT.stillOpen(V(d, ov)), ['3 titles, none chosen', '2 angles, none chosen', '2 thumbnail ideas, none chosen']), K.CT.stillOpen(V(d, ov)));
+    V(d, ov).updatedAt = OLD;
+    check('choosing a title marks only that one chosen and sets the video\'s title', K.CT.chooseOption(d, ov, t2) && opt(t2).chosen === true && !opt(t1).chosen && !opt(t3).chosen && V(d, ov).title === 'Peas, simply' && V(d, ov).updatedAt > OLD, V(d, ov));
+    check('choosing another title moves the choice: the first loses chosen (and keeps its words)', K.CT.chooseOption(d, ov, t3) && opt(t3).chosen === true && !('chosen' in opt(t2)) && opt(t2).text === 'Peas, simply' && V(d, ov).title === 'Peas for beginners');
+    check('choosing a hook sets the video\'s hook, leaving the chosen title alone; choosing an angle changes neither', K.CT.chooseOption(d, ov, h1) && V(d, ov).hook === 'Nobody tells you this' && opt(t3).chosen === true && K.CT.chooseOption(d, ov, a2) && V(d, ov).title === 'Peas for beginners' && V(d, ov).hook === 'Nobody tells you this' && opt(a2).chosen === true && !opt(a1).chosen);
+    check('stillOpen leaves a kind out once one is chosen, and a kind with only one option', eq(K.CT.stillOpen(V(d, ov)), ['2 thumbnail ideas, none chosen']) && eq(K.CT.stillOpen(V(d, ov)), K.CT.stillOpen(V(d, ov))));
+    check('choosing the chosen one again un-chooses it, and the title stays as it was', K.CT.chooseOption(d, ov, t3) && !('chosen' in opt(t3)) && V(d, ov).title === 'Peas for beginners' && K.CT.stillOpen(V(d, ov)).includes('3 titles, none chosen'));
+    K.CT.chooseOption(d, ov, t1);
+    check('editing the words of the chosen title updates the video\'s title; editing one that isn\'t chosen doesn\'t', K.CT.editOption(d, ov, t1, { text: ' Peas in a hurry, again ' }) && V(d, ov).title === 'Peas in a hurry, again' && opt(t1).text === 'Peas in a hurry, again'
+      && K.CT.editOption(d, ov, t2, { text: 'Peas, very simply' }) && V(d, ov).title === 'Peas in a hurry, again' && !K.CT.editOption(d, ov, t2, { text: 'Peas, very simply' }) && !K.CT.editOption(d, ov, t2, { text: '  ' }));
+    check('an option\'s note can be changed and cleared', K.CT.editOption(d, ov, t2, { note: 'Louder' }) && opt(t2).note === 'Louder' && K.CT.editOption(d, ov, t2, { note: '' }) && !('note' in opt(t2))
+      && !K.CT.editOption(d, ov, 'coNope', { text: 'x' }));
+    check('removeOption takes an option away (false when it isn\'t there)', K.CT.removeOption(d, ov, th2) && !opt(th2) && V(d, ov).options.length === 7 && !K.CT.removeOption(d, ov, th2) && !K.CT.chooseOption(d, ov, th2));
+
+    console.log('  examples to learn from');
+    const xv = K.CT.addVideo(d, 'pjC', 'Examples');
+    const e1 = K.CT.addExample(d, xv, 'example.com/v'), e2 = K.CT.addExample(d, xv, 'https://example.org/watch?v=1', ' Great opening ', ' 0:45 ', ' Their first minute ');
+    const ex = id => V(d, xv).examples.find(x => x.id === id);
+    check('an example\'s web address is made whole ("example.com/v" gets https://), and note, time and title are optional', ex(e1).url === 'https://example.com/v' && eq(Object.keys(ex(e1)).sort(), ['id', 'url']) && ex(e2).url === 'https://example.org/watch?v=1'
+      && ex(e2).note === 'Great opening' && ex(e2).at === '0:45' && ex(e2).title === 'Their first minute', V(d, xv).examples);
+    check('an example that isn\'t a web address (javascript:, no site name, empty) is refused with null', K.CT.addExample(d, xv, 'javascript:alert(1)') === null && K.CT.addExample(d, xv, 'notaddress') === null && K.CT.addExample(d, xv, '  ') === null && K.CT.addExample(d, 'cvNope', 'example.com') === null && V(d, xv).examples.length === 2);
+    for (let i = 0; i < 18; i++) K.CT.addExample(d, xv, `example.com/${i}`);
+    check('a video keeps at most 20 examples', V(d, xv).examples.length === 20 && K.CT.addExample(d, xv, 'example.com/more') === null);
+    check('removeExample takes one away (false when it isn\'t there)', K.CT.removeExample(d, xv, e1) && !ex(e1) && V(d, xv).examples.length === 19 && !K.CT.removeExample(d, xv, e1));
+
+    console.log('  how to make it: outline, shots, what you need, steps');
+    const lv = K.CT.addVideo(d, 'pjC', 'Planting garlic');
+    const LIM = { outline: 60, shots: 60, needs: 40, steps: 40 };
+    check('each list takes its own number of lines, then gives null: outline 60, shots 60, needs 40, steps 40', Object.entries(LIM).every(([list, n]) => {
+      const w = K.CT.addVideo(d, 'pjC', 'Limits ' + list); for (let i = 0; i < n; i++) K.CT.addLine(d, w, list, `Line ${i}`);
+      return V(d, w)[list].length === n && K.CT.addLine(d, w, list, 'One too many') === null; }));
+    const s1 = K.CT.addLine(d, lv, 'shots', ' Bulbs going in ', { where: ' Back bed ', gear: ' Phone on a stick ' }), s2 = K.CT.addLine(d, lv, 'shots', 'Close-up of cloves'), n1 = K.CT.addLine(d, lv, 'needs', 'Bulbs'), b1 = K.CT.addLine(d, lv, 'outline', 'Why garlic', { where: 'ignored' }), p1 = K.CT.addLine(d, lv, 'steps', 'Book the sound check');
+    const ln = (list, id) => V(d, lv)[list].find(x => x.id === id);
+    check('a shot keeps where and gear (tidied); the other lists keep only their words', eq(ln('shots', s1), { id: s1, text: 'Bulbs going in', where: 'Back bed', gear: 'Phone on a stick' }) && eq(Object.keys(ln('shots', s2)), ['id', 'text']) && eq(ln('outline', b1), { id: b1, text: 'Why garlic' }), [ln('shots', s1), ln('outline', b1)]);
+    check('a line\'s words are cut to 300 characters; empty words, a missing video or a missing list give null', (() => { const id = K.CT.addLine(d, lv, 'needs', longText(500)); const n = ln('needs', id).text.length; K.CT.removeLine(d, lv, 'needs', id); return n === 300; })()
+      && K.CT.addLine(d, lv, 'needs', '  ') === null && K.CT.addLine(d, 'cvNope', 'needs', 'x') === null);
+    check('editLine changes the words (not to empty), and a shot\'s where and gear (cleared when empty); the same again changes nothing', K.CT.editLine(d, lv, 'shots', s1, { text: 'Bulbs going in, wide' }) && ln('shots', s1).text === 'Bulbs going in, wide' && !K.CT.editLine(d, lv, 'shots', s1, { text: 'Bulbs going in, wide' })
+      && !K.CT.editLine(d, lv, 'shots', s1, { text: '  ' }) && K.CT.editLine(d, lv, 'shots', s1, { where: '', gear: 'Tripod' }) && !('where' in ln('shots', s1)) && ln('shots', s1).gear === 'Tripod' && !K.CT.editLine(d, lv, 'shots', 'csNope', { text: 'x' }));
+    check('tickLine toggles done on and off', K.CT.tickLine(d, lv, 'needs', n1) && ln('needs', n1).done === true && K.CT.tickLine(d, lv, 'needs', n1) && !('done' in ln('needs', n1)) && !K.CT.tickLine(d, lv, 'needs', 'cnNope'));
+    check('moveLine moves a line up or down by one, and not past either end', !K.CT.moveLine(d, lv, 'shots', s1, -1) && K.CT.moveLine(d, lv, 'shots', s1, 1) && eq(V(d, lv).shots.map(x => x.id), [s2, s1]) && !K.CT.moveLine(d, lv, 'shots', s1, 1) && K.CT.moveLine(d, lv, 'shots', s1, -1) && eq(V(d, lv).shots.map(x => x.id), [s1, s2]));
+    const tasksBefore = d.tasks.items.length;
+    const tt = K.CT.lineTask(d, lv, 'shots', s1, '2026-11-08'), task = d.tasks.items.find(t => t.id === tt);
+    check('a shot becomes a task "Film: <shot>" in the project, with the due day', typeof tt === 'string' && task.title === 'Film: Bulbs going in, wide' && task.projectId === 'pjC' && task.due === '2026-11-08' && d.tasks.items.length === tasksBefore + 1 && ln('shots', s1).taskId === tt, task);
+    const st = K.CT.lineTask(d, lv, 'steps', p1), stask = d.tasks.items.find(t => t.id === st);
+    check('a step becomes a task with the step\'s own text, in the project, with no day when none is given', typeof st === 'string' && stask.title === 'Book the sound check' && stask.projectId === 'pjC' && stask.due === null, stask);
+    check('…the same line again says \'already\' while that task exists, and adds nothing', K.CT.lineTask(d, lv, 'shots', s1, '2026-11-09') === 'already' && d.tasks.items.length === tasksBefore + 2);
+    K.removeTask(d.tasks, tt);
+    const again2 = K.CT.lineTask(d, lv, 'shots', s1, '2026-11-09');
+    check('…and once that task is removed, the line makes a new one', typeof again2 === 'string' && again2 !== tt && d.tasks.items.find(t => t.id === again2).due === '2026-11-09' && K.CT.lineTask(d, lv, 'shots', 'csNope') === null);
+    check('removeLine takes a line away (false when it isn\'t there)', K.CT.removeLine(d, lv, 'shots', s2) && V(d, lv).shots.length === 1 && !K.CT.removeLine(d, lv, 'shots', s2));
+
+    console.log('  clips');
+    const cv = K.CT.addVideo(d, 'pjC', 'Clips');
+    const c1 = K.CT.addClip(d, cv, 'example.com/clip', ' Wide shot ', ' 0:10 ', ' 0:25 ', 'Use the second half'), c2 = K.CT.addClip(d, cv, 'https://example.com/b');
+    const cl = id => V(d, cv).clips.find(x => x.id === id);
+    check('a clip is a link only, with an optional label, from, to and note', eq(cl(c1), { id: c1, kind: 'link', url: 'https://example.com/clip', label: 'Wide shot', from: '0:10', to: '0:25', note: 'Use the second half' }) && eq(cl(c2), { id: c2, kind: 'link', url: 'https://example.com/b' }), V(d, cv).clips);
+    check('a clip with a bad address (javascript:, no site) gives null and adds nothing', K.CT.addClip(d, cv, 'javascript:alert(1)') === null && K.CT.addClip(d, cv, 'nothing') === null && K.CT.addClip(d, cv, '') === null && V(d, cv).clips.length === 2);
+    check('removeClip takes one away (false when it isn\'t there)', K.CT.removeClip(d, cv, c1) && V(d, cv).clips.length === 1 && !K.CT.removeClip(d, cv, c1));
+
+    console.log('  posting');
+    const pv = K.CT.addVideo(d, 'pjC', 'Post me');
+    const tasksN = () => d.tasks.items.filter(t => t.title.startsWith('Post: ')).length;
+    const before0 = tasksN();
+    check('a post day adds a task "Post: <title>" of 10 minutes in the project, due that day, and keeps its id', K.CT.setPostDay(d, pv, '2026-11-10') && V(d, pv).postOn === '2026-11-10' && (() => { const t = d.tasks.items.find(x => x.id === V(d, pv).postTaskId);
+      return !!t && t.title === 'Post: Post me' && t.minutes === 10 && t.projectId === 'pjC' && t.due === '2026-11-10'; })() && tasksN() === before0 + 1);
+    check('the same day again changes nothing and adds no second task', !K.CT.setPostDay(d, pv, '2026-11-10') && tasksN() === before0 + 1);
+    check('moving the day moves the undone task (no second task)', K.CT.setPostDay(d, pv, '2026-11-12') && V(d, pv).postOn === '2026-11-12' && d.tasks.items.find(x => x.id === V(d, pv).postTaskId).due === '2026-11-12' && tasksN() === before0 + 1);
+    const pt = V(d, pv).postTaskId;
+    check('no day removes an undone post task and the day', K.CT.setPostDay(d, pv, null) && !('postOn' in V(d, pv)) && !('postTaskId' in V(d, pv)) && !d.tasks.items.some(x => x.id === pt) && tasksN() === before0 && !K.CT.setPostDay(d, pv, null));
+    K.CT.setPostDay(d, pv, '2026-11-14');
+    const pt2 = d.tasks.items.find(x => x.id === V(d, pv).postTaskId);
+    check('until it is posted it isn\'t Posted: step Planning, step follows', !K.CT.isPosted(d, V(d, pv)) && K.CT.stepOf(d, V(d, pv)) === 'planning');
+    pt2.done = true; pt2.doneOn = '2026-11-14';
+    check('ticking the post task makes the video Posted (isPosted and stepOf follow it)', K.CT.isPosted(d, V(d, pv)) && K.CT.stepOf(d, V(d, pv)) === 'posted' && V(d, pv).step === 'planning');
+    check('no day keeps a post task that is done (the day goes, the task stays)', K.CT.setPostDay(d, pv, null) && !('postOn' in V(d, pv)) && d.tasks.items.some(x => x.id === pt2.id) && K.CT.isPosted(d, V(d, pv)));
+    const sv = K.CT.addVideo(d, 'pjC', 'Step says posted');
+    check('a video whose step is posted is Posted without a post task', K.CT.setStep(d, sv, 'posted') && K.CT.isPosted(d, V(d, sv)) && K.CT.stepOf(d, V(d, sv)) === 'posted');
+    const q1 = K.CT.addPost(d, pv, 'youtube', ' example.com/watch?v=1 ', '2026-11-14'), q2 = K.CT.addPost(d, pv, 'tiktok', '', null);
+    const po = id => V(d, pv).posts.find(x => x.id === id);
+    check('a post is on one of the known platforms, with its link made whole and its day optional', eq(po(q1), { id: q1, platform: 'youtube', url: 'https://example.com/watch?v=1', on: '2026-11-14' }) && eq(po(q2), { id: q2, platform: 'tiktok' }), V(d, pv).posts);
+    check('a post on another platform name, with a bad link, or for a missing video gives null', K.CT.addPost(d, pv, 'vimeo', '', null) === null && K.CT.addPost(d, pv, 'youtube', 'javascript:alert(1)', null) === null && K.CT.addPost(d, 'cvNope', 'youtube', '', null) === null && V(d, pv).posts.length === 2);
+    for (let i = 0; i < 8; i++) K.CT.addPost(d, pv, 'other', '', null);
+    check('a video keeps at most 10 posts', V(d, pv).posts.length === 10 && K.CT.addPost(d, pv, 'other', '', null) === null);
+    check('removePost takes one away (false when it isn\'t there)', K.CT.removePost(d, pv, q1) && !po(q1) && V(d, pv).posts.length === 9 && !K.CT.removePost(d, pv, q1));
+
+    console.log('  results');
+    const rv = K.CT.addVideo(d, 'pjC', 'Results');
+    const r1 = K.CT.addResult(d, rv, 'youtube', '2026-11-20', { followers: 120, likes: 830, views: 12400.4, comments: -5, shares: null });
+    const rr = id => V(d, rv).results.find(x => x.id === id);
+    check('a result keeps the whole numbers it was given (rounded), ignores negatives and empties, and has a platform and a day', eq(rr(r1), { id: r1, platform: 'youtube', on: '2026-11-20', views: 12400, likes: 830, followers: 120 }), rr(r1));
+    check('a result needs at least one number: none, only negatives, or numbers that aren\'t numbers give null; an unknown platform or missing video too', K.CT.addResult(d, rv, 'youtube', null, {}) === null && K.CT.addResult(d, rv, 'youtube', null, { views: -1 }) === null
+      && K.CT.addResult(d, rv, 'youtube', null, { views: NaN, likes: null }) === null && K.CT.addResult(d, rv, 'vimeo', null, { views: 5 }) === null && K.CT.addResult(d, 'cvNope', 'youtube', null, { views: 5 }) === null && V(d, rv).results.length === 1);
+    check('zero is a number (a result of 0 views is kept), and rounding goes to the nearest whole number', (() => { const id = K.CT.addResult(d, rv, 'tiktok', null, { views: 0, likes: 2.5 }); return rr(id).views === 0 && rr(id).likes === 3 && !('on' in rr(id)); })());
+    for (let i = 0; i < 28; i++) K.CT.addResult(d, rv, 'other', null, { views: i });
+    check('a video keeps at most 30 results', V(d, rv).results.length === 30 && K.CT.addResult(d, rv, 'other', null, { views: 1 }) === null);
+    check('resultWords reads "12,400 views · 830 likes · 120 followers gained", in the order views, likes, comments, shares, followers, whatever order they were typed', K.CT.resultWords(rr(r1)) === '12,400 views · 830 likes · 120 followers gained'
+      && K.CT.resultWords({ id: 'x', platform: 'youtube', followers: 4, shares: 3, comments: 2, likes: 1, views: 1240 }) === '1,240 views · 1 likes · 2 comments · 3 shares · 4 followers gained' && K.CT.resultWords({ id: 'y', platform: 'tiktok' }) === '', K.CT.resultWords(rr(r1)));
+    check('removeResult takes one away (false when it isn\'t there)', K.CT.removeResult(d, rv, r1) && !rr(r1) && !K.CT.removeResult(d, rv, r1));
+
+    console.log('  size');
+    const emoji = n => '\u{1F600}'.repeat(n);
+    const small = vid('cvS', { transcript: 'a short transcript', script: 'a short script' });
+    const capped = vid('cvT', { transcript: emoji(50000), script: emoji(20000) });
+    const huge = vid('cvU', { transcript: emoji(50000), script: emoji(80000) });
+    check('a record over 480 KB is too big (a 50,000-character transcript of 4-byte characters plus a big script), and a small one is not', K.CT.CONTENT_RECORD_BYTES === 480 * 1024 && K.CT.tooBig(huge) && !K.CT.tooBig(small), [K.recordBytes(huge), K.CT.CONTENT_RECORD_BYTES]);
+    check('…a transcript and script at their own limits, of 4-byte characters, still fit', !K.CT.tooBig(capped) && K.recordBytes(capped) > 280000 && K.recordBytes(huge) > K.CT.CONTENT_RECORD_BYTES, [K.recordBytes(capped), K.recordBytes(huge)]);
+
+    console.log('  deleting');
+    const dl = world(base('pjC', { template: 'content' }), base('pjD', { template: 'content' }));
+    dl.content.items = [vid('cvA'), vid('cvB'), vid('cvD', { projectId: 'pjD' })];
+    const nf = (id, name = 'clip.mp4') => ({ id, name, type: 'video/mp4', size: 5000, sha256: '', area: 'content' });
+    K.F.addFileRecord(dl, { kind: 'video', id: 'cvA' }, nf('flalone001'), '2026-10-20'); K.F.addFileRecord(dl, { kind: 'video', id: 'cvA' }, nf('flshared01'), '2026-10-20'); K.F.addFileRecord(dl, { kind: 'video', id: 'cvB' }, nf('flalone002'), '2026-10-20');
+    K.F.addFileRecord(dl, { kind: 'video', id: 'cvD' }, nf('flother001'), '2026-10-20');
+    V(dl, 'cvD').fileIds.push('flshared01'); // the same file is also listed by a video in another project
+    for (const f of dl.files.items) K.F.setFileState(dl, f.id, 'kept');
+    dl.tasks.items.push({ id: 'tkKeep', title: 'Post: Market day', done: false, projectId: 'pjC' });
+    check('a video lists a file by id (addFileRecord with the video place), and usedBy finds the video, and every video that lists it', eq(V(dl, 'cvA').fileIds, ['flalone001', 'flshared01']) && eq(K.F.usedBy(dl, 'flalone001'), [{ kind: 'video', id: 'cvA' }])
+      && eq(K.F.usedBy(dl, 'flshared01'), [{ kind: 'video', id: 'cvA' }, { kind: 'video', id: 'cvD' }]) && !K.F.addFileRecord(dl, { kind: 'video', id: 'cvNope' }, nf('flzzzzzz01')), K.F.usedBy(dl, 'flshared01'));
+    const rm = world(base('pjC')); rm.content.items = [vid('cvA')];
+    K.F.addFileRecord(rm, { kind: 'video', id: 'cvA' }, nf('flalone009'), '2026-10-20');
+    check('taking a file off a video that nothing else lists sends it to Recently deleted from that video; one another video lists only loses this link', K.F.removeFile(rm, 'flalone009', { kind: 'video', id: 'cvA' }, k) === 'deleted'
+      && eq(rm.files.items[0].removedFrom, { kind: 'video', id: 'cvA' }) && rm.files.items[0].deletedOn === k && K.F.removeFile(dl, 'flshared01', { kind: 'video', id: 'cvA' }, k) === 'removed' && !dl.files.items.find(f => f.id === 'flshared01').deletedOn);
+    K.F.addFileRecord(dl, { kind: 'video', id: 'cvA' }, nf('flshared01'), '2026-10-20'); // (already a record: refused)
+    dl.content.items.find(x => x.id === 'cvA').fileIds = ['flalone001', 'flshared01'];
+    check('deleting the project removes its ideas and videos and leaves another project\'s', K.deleteProject(dl, 'pjC') && eq(dl.content.items.map(x => x.id), ['cvD']) && dl.projects.items.map(p => p.id).join() === 'pjD');
+    const gone = id => dl.files.items.find(f => f.id === id);
+    check('its videos\' uploaded files that nothing else lists go to Recently deleted (deletedOn set, removedFrom {kind:\'video\'}), and one another project\'s video lists stays', /^\d{4}-\d\d-\d\d$/.test(gone('flalone001').deletedOn) && eq(gone('flalone001').removedFrom, { kind: 'video', id: 'cvA' })
+      && /^\d{4}-\d\d-\d\d$/.test(gone('flalone002').deletedOn) && eq(gone('flalone002').removedFrom, { kind: 'video', id: 'cvB' }) && !gone('flshared01').deletedOn && !gone('flother001').deletedOn
+      && eq(K.F.recentlyDeleted(dl).map(f => f.id).sort(), ['flalone001', 'flalone002']), dl.files.items);
+    const dc = world(base('pjC')); dc.content.items = [vid('cvA'), vid('cvB', { projectId: 'pjD' })];
+    check('deleteProjectContent says whether anything went: true the first time, false when the project has none', K.CT.deleteProjectContent(dc, 'pjC') && eq(dc.content.items.map(x => x.id), ['cvB']) && !K.CT.deleteProjectContent(dc, 'pjC') && !K.CT.deleteProjectContent(dc, 'pjNope'));
+    const dv = world(base('pjC')); dv.content.items = [vid('cvA'), vid('cvB')];
+    check('deleteVideo removes just that video (false when it isn\'t there)', K.CT.deleteVideo(dv, 'cvA') && eq(dv.content.items.map(x => x.id), ['cvB']) && !K.CT.deleteVideo(dv, 'cvA'));
+
+    console.log('  the Content kind');
+    const tp = world(base('pjC'));
+    check('a project is Content once its template is content (isContent), and not before', !K.isContent(tp.projects.items[0]) && K.setTemplate(tp, 'pjC', 'content') && tp.projects.items[0].template === 'content' && K.isContent(tp.projects.items[0]));
+    check('setTemplate to content again changes nothing; back to General takes the template away, and the videos stay', (() => { tp.content.items = [vid('cvA')]; return !K.setTemplate(tp, 'pjC', 'content') && K.setTemplate(tp, 'pjC', 'general') && !('template' in tp.projects.items[0]) && !K.isContent(tp.projects.items[0]) && tp.content.items.length === 1; })());
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
