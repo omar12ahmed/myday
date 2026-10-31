@@ -26360,7 +26360,7 @@
      {
       "form_en": "today a newspaper",
       "ar": "جَرِيدَة",
-      "en": "a newspaper; once, a stripped palm stalk"
+      "en": "a newspaper; once, a palm branch stripped of its leaves"
      },
      {
       "form_en": "today a telephone",
@@ -26380,7 +26380,7 @@
     ],
     "steps": [
      "Classical texts share most of their grammar with modern Fuṣḥā, but their words, genres and habits differ from period to period.",
-     "A word can carry an older sense: قِطَار, a train today, was once a line of camels; جَرِيدَة, a newspaper, was a stripped palm stalk.",
+     "A word can carry an older sense: قِطَار, a train today, was once a line of camels; جَرِيدَة, a newspaper, was a palm branch stripped of its leaves.",
      "So note when and what kind of text it is, and look the word up in a dictionary that covers that period.",
      "Classical prose and poetry each have their own conventions: don't read one as if it were the other."
     ],
@@ -26546,7 +26546,7 @@
     "steps": [
      "الْإِعْرَاب is both the endings and the analysis of them: what each word's job is, and what governs its ending.",
      "Start with the structure: the verb, who does it, to what, and what's attached. Then read the endings.",
-     "The endings, not the order, show the roles: in أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ, the host honoured the guest, the doer comes last.",
+     "The endings, not the order, show the roles: in أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ, the host honoured the guest: the doer comes last.",
      "Parse to settle a real question of meaning. If two analyses both fit, note both, and check a commentary or a teacher."
     ],
     "examples": [
@@ -26630,7 +26630,7 @@
        "-i (genitive)"
       ],
       "answer": "-a (accusative)",
-      "why_en": "The doer takes -u."
+      "why_en": "That's the accusative, مَنْصُوب."
      },
      {
       "q_en": "What is الْإِعْرَاب?",
@@ -26776,7 +26776,7 @@
     ],
     "why": {
      "q_en": "How can مَا mean both \"not\" and \"what\"?",
-     "a_en": "They're different uses of one small word, and grammar names each: مَا النَّافِيَةُ, which denies the verb after it; مَا الِاسْتِفْهَامِيَّةُ, which asks; and مَا الْمَوْصُولَةُ, \"that which\". Its place and the rest of the sentence show which it is."
+     "a_en": "They're different uses of one small word, and grammar names each: مَا النَّافِيَةُ, which negates what follows it; مَا الِاسْتِفْهَامِيَّةُ, which asks; and مَا الْمَوْصُولَةُ, \"that which\". Its place and the rest of the sentence show which it is."
     },
     "selftest": [
      {
@@ -27012,9 +27012,9 @@
       "en": "refers (back) to"
      },
      {
-      "form_en": "the likelier reading",
+      "form_en": "a likelier reading",
       "ar": "قِرَاءَةٌ مُرَجَّحَةٌ",
-      "en": "the likelier reading"
+      "en": "a preferred, likelier reading"
      },
      {
       "form_en": "a certain reading",
@@ -27370,7 +27370,7 @@
     ],
     "steps": [
      "Translate the meaning, not each word: اِتَّخَذَ قَرَارًا is \"made a decision\", not \"took to himself a decision\".",
-     "An تَعْبِيرٌ اصْطِلَاحِيٌّ, an idiom, needs an equivalent: عَلَى قَدَمٍ وَسَاقٍ, literally \"on foot and leg\", is \"in full swing\".",
+     "A تَعْبِيرٌ اصْطِلَاحِيٌّ, an idiom, needs an equivalent: عَلَى قَدَمٍ وَسَاقٍ, literally \"on foot and leg\", is \"in full swing\".",
      "Keep the facts, who acts, and when, even when you change the structure.",
      "If you add an explanation, mark it as مُلَاحَظَةُ الْمُتَرْجِمِ, a translator's note, not as the source's words."
     ],
@@ -27866,12 +27866,16 @@
     ],
     "examples": [
      {
-      "ar": "هَذِهِ الْمُسَوَّدَةُ الْأُولَى، وَتِلْكَ النُّسْخَةُ النِّهَائِيَّةُ.",
+      "ar": "هَذِهِ هِيَ الْمُسَوَّدَةُ الْأُولَى، وَتِلْكَ هِيَ النُّسْخَةُ النِّهَائِيَّةُ.",
       "en": "This is the first draft, and that is the final version.",
       "words": [
        {
         "ar": "هَذِهِ",
         "en": "this"
+       },
+       {
+        "ar": "هِيَ",
+        "en": "is (literally \"she\": it makes a sentence)"
        },
        {
         "ar": "الْمُسَوَّدَةُ",
@@ -27884,6 +27888,10 @@
        {
         "ar": "وَتِلْكَ",
         "en": "and that"
+       },
+       {
+        "ar": "هِيَ",
+        "en": "is"
        },
        {
         "ar": "النُّسْخَةُ",
