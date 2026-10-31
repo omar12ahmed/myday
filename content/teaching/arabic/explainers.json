@@ -20653,7 +20653,7 @@
     ],
     "why": {
      "q_en": "Why ثَلَاثِمِئَةِ كَلِمَةٍ, with كَلِمَة singular?",
-     "a_en": "After مِئَة, and after three hundred, four hundred and the rest, the noun is singular and ends in -i, as after أَلْف: ثَلَاثُمِئَةِ كَلِمَةٍ, three hundred words."
+     "a_en": "After مِئَة, and after three hundred, four hundred and the rest, the noun is singular and ends in -in, as after أَلْف: ثَلَاثُمِئَةِ كَلِمَةٍ, three hundred words. Only the first part changes its ending with its job in the sentence: عَلَى ثَلَاثِمِئَةِ كَلِمَةٍ."
     },
     "selftest": [
      {
@@ -20684,12 +20684,13 @@
        "خَمْسُمِئَةِ كَلِمَةً"
       ],
       "answer": "خَمْسُمِئَةِ كَلِمَةٍ",
-      "why_en": "After the hundreds, the noun is singular and ends in -i."
+      "why_en": "After the hundreds, the noun is singular and ends in -in."
      }
     ],
     "phrases_ar": [
      "ثَلَاثِمِئَةِ كَلِمَةٍ",
-     "ثَلَاثُمِئَةِ كَلِمَةٍ"
+     "ثَلَاثُمِئَةِ كَلِمَةٍ",
+     "عَلَى ثَلَاثِمِئَةِ كَلِمَةٍ"
     ]
    }
   ],
@@ -20747,7 +20748,7 @@
     "steps": [
      "Say exactly what you can do: أَسْتَطِيعُ فَهْمَ نَشَرَاتِ الْأَخْبَارِ الْقَصِيرَةِ بِدُونِ تَرْجَمَةٍ, I can understand short news bulletins without translation.",
      "Back each claim with an عَيِّنَة, a sample: the task, its date, and the help you had.",
-     "Check that the samples are recent and مُتَنَوِّعَة, varied, and that some were done on your own.",
+     "Check that the samples are recent and مُتَنَوِّع, varied, and that some were done on your own.",
      "A revised translation, a practised talk and an unseen listening task show different abilities: say which is which."
     ],
     "examples": [
@@ -20841,14 +20842,14 @@
        },
        {
         "ar": "الذَّاتِيَّةِ",
-        "en": "(own: \"CV\")"
+        "en": "own, personal: with سِيرَة, \"CV\""
        }
       ]
      }
     ],
     "why": {
      "q_en": "Why قُدْرَتِي عَلَى الْمُنَاقَشَةِ, with عَلَى?",
-     "a_en": "قُدْرَة, ability, takes عَلَى, like قَادِر, able: قُدْرَتِي عَلَى الْمُنَاقَشَةِ, my ability to discuss. The action after it is a verbal noun."
+     "a_en": "قُدْرَة, ability, takes عَلَى, like قَادِر, able: قُدْرَتِي عَلَى الْمُنَاقَشَةِ, my ability to discuss. What follows is usually a verbal noun, or أَنْ with a verb: قُدْرَتِي عَلَى أَنْ أُنَاقِشَ."
     },
     "selftest": [
      {
@@ -20859,7 +20860,7 @@
        "a certificate"
       ],
       "answer": "a sample",
-      "why_en": "An assessor is مُقَيِّم, and a certificate شَهَادَة."
+      "why_en": "Note the shadda: عَيِّنَة, a sample; the plural is عَيِّنَات."
      },
      {
       "q_en": "What is a سِيرَةٌ ذَاتِيَّةٌ?",
@@ -20879,12 +20880,13 @@
        "قُدْرَتِي إِلَى الْكِتَابَةِ"
       ],
       "answer": "قُدْرَتِي عَلَى الْكِتَابَةِ",
-      "why_en": "قُدْرَة takes عَلَى and a verbal noun."
+      "why_en": "قُدْرَة takes عَلَى; after it comes a verbal noun, or أَنْ with a verb."
      }
     ],
     "phrases_ar": [
      "أَسْتَطِيعُ فَهْمَ نَشَرَاتِ الْأَخْبَارِ الْقَصِيرَةِ بِدُونِ تَرْجَمَةٍ",
-     "قُدْرَتِي عَلَى الْمُنَاقَشَةِ"
+     "قُدْرَتِي عَلَى الْمُنَاقَشَةِ",
+     "قُدْرَتِي عَلَى أَنْ أُنَاقِشَ"
     ]
    }
   ],
@@ -21129,7 +21131,7 @@
      "Pick a مَجَال, a field, because it serves a real purpose, and keep up general reading, listening, speaking and writing alongside it.",
      "حَافَظَ عَلَى, to keep up, takes عَلَى: أُحَافِظُ عَلَى الْقِرَاءَةِ الْيَوْمِيَّةِ, I keep up daily reading.",
      "Test yourself دَوْرِيًّا, regularly, on something unfamiliar, and keep getting feedback.",
-     "Fit the عِبْءُ الْعَمَلِ, the workload, to your time and energy. After a اِنْقِطَاع, a break, check where you are and refresh what you need."
+     "Fit the عِبْءُ الْعَمَلِ, the workload, to your time and energy. After an اِنْقِطَاع, a break, check where you are and refresh what you need."
     ],
     "examples": [
      {
