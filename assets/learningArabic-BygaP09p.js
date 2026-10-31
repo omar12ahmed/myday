@@ -1,0 +1,1 @@
+import{y as e}from"./lessons-CGJb2GmY.js";import{n as t,s as n}from"./catalogue-CS6YhMCS.js";import{Tt as r,jt as i}from"./index-BxmTeRDJ.js";var a=(n,i)=>t[i]?{title:t[i].title,status:e[r(n,i)]}:null,o=e=>i(e.arabic.pathId).map(e=>({id:e,title:t[e].title,group:n.get(t[e].module_id)?.name??``}));export{o as choices,a as lesson};
