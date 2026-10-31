@@ -22,7 +22,9 @@ export function ProjectWaitingCard({ data, p }: { data: MyDayData; p: Project })
   if (!isProjectWaiting(p)) return null;
   const w = p.waiting;
   function done() {
-    if (update(d => (stopProjectWaiting(d, p.id) ? undefined : false))) { toast('No longer waiting.'); focusSoon('projectTitle'); }
+    // (If every task is still waiting, the nudge would ask straight away: you've just answered it.)
+    const offer = waitOffer(data, { ...p, waiting: undefined });
+    if (update(d => (stopProjectWaiting(d, p.id) ? undefined : false))) { if (offer) putAway(p.id, offer.sig); toast('No longer waiting.'); focusSoon('projectTitle'); }
   }
   return (
     <Card aria-labelledby="projectWaitingH" id="projectWaiting">
@@ -44,8 +46,11 @@ export function ProjectWaitingCard({ data, p }: { data: MyDayData; p: Project })
 
 // Who or what, and the day to check back (optional); filled in from the nudge when it can be. A failed save keeps
 // what you typed.
-export function ProjectWaitForm({ p, start, onDone }: { p: Project; start?: { on: string; until: DateKey | null }; onDone: (saved: boolean) => void }) {
+// `ids` keeps the nudge's form apart from Manage's (both can be open).
+export function ProjectWaitForm({ p, start, ids = 'pWait', onDone }: { p: Project; start?: { on: string; until: DateKey | null }; ids?: string; onDone: (saved: boolean) => void }) {
   const [on, setOn] = useState(p.waiting?.on ?? start?.on ?? ''), [until, setUntil] = useState<string>(p.waiting?.until ?? start?.until ?? '');
+  // (A check-back day that has come and gone can stay as it is: the earliest day offered is the sooner of it and today.)
+  const k = todayKey(), floor = p.waiting?.until && p.waiting.until < k ? p.waiting.until : k;
   function save() {
     const first = !p.waiting;
     if (on.trim() === p.waiting?.on && (until || null) === (p.waiting?.until ?? null)) { onDone(true); return; }
@@ -56,11 +61,11 @@ export function ProjectWaitForm({ p, start, onDone }: { p: Project; start?: { on
   }
   return (
     <form className="grid gap-3 mt-3 text-left" onSubmit={e => { e.preventDefault(); save(); }} data-s="project-wait-form">
-      <Field label="Who or what is it waiting on?" htmlFor="pWaitOn">
-        <TextInput id="pWaitOn" autoFocus value={on} maxLength={PROJECT_LIMITS.waitingOn} placeholder="e.g. the landlord, or the visa office" onChange={e => setOn(e.target.value)} />
+      <Field label="Who or what is it waiting on?" htmlFor={`${ids}On`}>
+        <TextInput id={`${ids}On`} autoFocus value={on} maxLength={PROJECT_LIMITS.waitingOn} placeholder="e.g. the landlord, or the visa office" onChange={e => setOn(e.target.value)} />
       </Field>
-      <Field label="Check back on (optional)" htmlFor="pWaitUntil">
-        <TextInput id="pWaitUntil" type="date" className="!w-auto" min={todayKey()} value={until} onChange={e => setUntil(e.target.value)} />
+      <Field label="Check back on (optional)" htmlFor={`${ids}Until`}>
+        <TextInput id={`${ids}Until`} type="date" className="!w-auto" min={floor} value={until} onChange={e => setUntil(e.target.value)} />
       </Field>
       <div className="flex flex-wrap gap-2.5">
         <Button inline type="submit" variant="primary" data-action="pwait-save" disabled={!on.trim()}>{p.waiting ? 'Save' : 'Mark as waiting'}</Button>
@@ -82,7 +87,7 @@ export function WaitOfferLine({ data, p }: { data: MyDayData; p: Project }) {
   const close = (saved: boolean) => { setAsking(false); if (saved) { putAway(p.id, offer.sig); focusSoon('projectWaitingH'); } else focusSoon('pwaitOfferYes'); };
   return (
     <div className="mt-3 pt-3 border-t border-outline" data-s="pwait-offer">
-      {asking ? <ProjectWaitForm p={p} start={offer} onDone={close} /> : (
+      {asking ? <ProjectWaitForm p={p} start={offer} ids="pOffer" onDone={close} /> : (
         <>
           <p className="m-0 text-[15px]">Everything here is waiting — mark the project as waiting?</p>
           <div className="flex flex-wrap gap-2.5 mt-2">

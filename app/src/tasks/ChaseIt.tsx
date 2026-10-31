@@ -14,16 +14,18 @@ import type { DateKey, MyDayData, Project, TaskItem } from '../data/types';
 // a whole project's wait (`p`, specs/projects-project-waiting.md) in data/projectWaiting.ts.
 type When = 'today' | 'tomorrow' | 'day' | 'none';
 const WHEN: [When, string][] = [['today', 'Today'], ['tomorrow', 'Tomorrow'], ['day', 'Pick a day'], ['none', 'No date']];
-export function ChaseIt({ data, t, p, primary = false, inProject = true }: { data: MyDayData; t?: TaskItem; p?: Project; primary?: boolean; inProject?: boolean }) {
+// (Exactly one of them: a task's wait, or a project's.)
+type Waits = { t: TaskItem; p?: never } | { p: Project; t?: never };
+export function ChaseIt({ data, t, p, primary = false, inProject = true }: { data: MyDayData; primary?: boolean; inProject?: boolean } & Waits) {
   const [open, setOpen] = useState(false), [when, setWhen] = useState<When>('today'), [day, setDay] = useState('');
-  const id = p?.id ?? t!.id, title = p?.title ?? t!.title;
-  const where = p || (inProject && t!.projectId) ? 'this project’s tasks' : 'your tasks';
-  if (p ? projectChaseTask(data, p) : chaseTask(data, t!)) return <span className="inline-flex items-center min-h-11 text-[15px] text-fg-2" data-s="chase-added">A task to chase it is in {where}.</span>;
+  const id = p ? p.id : t.id, title = p ? p.title : t.title;
+  const where = p || (inProject && t.projectId) ? 'this project’s tasks' : 'your tasks';
+  if (p ? projectChaseTask(data, p) : chaseTask(data, t)) return <span className="inline-flex items-center min-h-11 text-[15px] text-fg-2" data-s="chase-added">A task to chase it is in {where}.</span>;
   if (!open) return <Button inline variant={primary ? 'primary' : 'ghost'} data-action="chase" aria-expanded={false} onClick={() => setOpen(true)}>Chase it</Button>;
   const k = todayKey(), due: DateKey | null = when === 'today' ? k : when === 'tomorrow' ? shift(k, 1) : when === 'day' && isDateKey(day) ? day : null;
   function add() {
     let r = null as ReturnType<typeof chaseWaiting>;
-    if (update(d => { r = p ? chaseProject(d, p.id, due) : chaseWaiting(d, t!.id, due); if (!r || r === 'already') return false; })) {
+    if (update(d => { r = p ? chaseProject(d, p.id, due) : chaseWaiting(d, t.id, due); if (!r || r === 'already') return false; })) {
       toast(`Added “Chase: ${title}” (5 min) ${due ? `for ${due === k ? 'today' : shortDate(due)}` : 'with no date'} — it’s in ${where}.`);
       setOpen(false);
     }

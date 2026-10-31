@@ -55,10 +55,12 @@ export function chaseProject(data: MyDayData, id: string, due: DateKey | null = 
 // When every open task in an active project is waiting and the project isn't: what to fill in (whom, when it's the
 // same for every task, and the earliest expected day), and which set of waiting tasks it's about — offered once per set.
 export interface WaitOffer { on: string; until: DateKey | null; sig: string }
-export function waitOffer(data: MyDayData, p: Project): WaitOffer | null {
+export function waitOffer(data: MyDayData, p: Project, k: DateKey = todayKey()): WaitOffer | null {
   if (p.status !== 'active' || p.waiting) return null;
   const open = projectTasks(data, p).open;
   if (!open.length || !open.every(t => t.waiting)) return null;
-  const whom = new Set(open.map(t => t.waiting!.on)), days = open.map(t => t.waiting!.until).filter((x): x is DateKey => isDateKey(x)).sort();
-  return { on: whom.size === 1 ? [...whom][0] : '', until: days[0] ?? null, sig: open.map(t => t.id).sort().join(' ') };
+  // (Whom matches whatever the capitals and spacing; a day already gone isn't one to check back on.)
+  const said = (s: string) => s.replace(/\s+/g, ' ').trim(), whom = new Set(open.map(t => said(t.waiting!.on).toLowerCase()));
+  const day = open.map(t => t.waiting!.until).filter((x): x is DateKey => isDateKey(x) && x >= k).sort()[0];
+  return { on: whom.size === 1 ? said(open[0].waiting!.on) : '', until: day ?? null, sig: open.map(t => t.id).sort().join(' ') };
 }

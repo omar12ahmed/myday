@@ -148,8 +148,10 @@ export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Projec
   if (patch.summary !== undefined) { const s = patch.summary.slice(0, PROJECT_LIMITS.summary); if (s !== p.summary) { p.summary = s; changed = true; } }
   if (patch.stage && STAGE_IDS.includes(patch.stage) && patch.stage !== p.stage) { p.stage = patch.stage; changed = true; }
   if (patch.status && STATUSES.includes(patch.status) && patch.status !== p.status) {
+    const was = p.status;
     p.status = patch.status; changed = true;
     if (p.status !== 'done') delete p.finished; // brought back: no longer finished (specs/projects-areas-archive.md)
+    if (was === 'done') delete p.waiting; // …nor waiting (one an older release's "Mark as done" left: specs/projects-project-waiting.md)
   }
   for (const key of ['outcome', 'finishedWhen'] as const) {
     const v = patch[key];

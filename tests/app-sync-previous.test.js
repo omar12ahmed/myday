@@ -585,11 +585,15 @@ async function signIn(d, url) {
     await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
     await before.type('#projectTitleInput', 'Kitchen shelves (renamed)');
     check('a rename on the previous release\'s project page reaches the account with the area and colour as they were', await eventually(async () => (await pjOf(PAR))?.title === 'Kitchen shelves (renamed)' && same(areaBits(await pjOf(PAR)), areaKept)) && await synced(before), await pjOf(PAR));
-    // The previous release's "Open it again" knows nothing of the ending, so leaves it behind on an active project:
-    // this release reads that as it is (nothing rewritten on load) and shows no ending for a project that isn't finished.
+    // A previous release from before the archive (1.105.0 and earlier) knows nothing of the ending, so its "Open it again"
+    // leaves it behind on an active project; one with the archive (1.106.0 on) takes it off. Either way this release reads
+    // that as it is (nothing rewritten on load) and shows no ending for a project that isn't finished.
+    const knowsArchive = builtText.includes('archive-back');
+    console.log(`The previous release ${knowsArchive ? 'knows' : 'doesn’t know'} areas and the archive.`);
     await before.open(BEFORE + `#projects/p/${PAD}`); await before.until(`!!document.querySelector('[data-action=project-resume]')`, 15000);
     await before.click('[data-action=project-resume]');
-    check('"Open it again" on the previous release reaches the account: active, with the area, colour and ending as they were', await eventually(async () => (await pjOf(PAD))?.status === 'active' && same(areaBits(await pjOf(PAD)), areaDone)) && await synced(before), await pjOf(PAD));
+    check(`"Open it again" on the previous release reaches the account: active, with the area and colour as they were, and the ending ${knowsArchive ? 'taken off' : 'left as it was'}`,
+      await eventually(async () => (await pjOf(PAD))?.status === 'active' && same(areaBits(await pjOf(PAD)), knowsArchive ? areaKept : areaDone)) && await synced(before), await pjOf(PAD));
     const reopened = (await before.data()).projects.items.find(p => p.id === PAD);
     await now.returnToApp();
     await now.open(NOW + `#projects/p/${PAD}`);
@@ -603,6 +607,37 @@ async function signIn(d, url) {
     check('…and the Projects home shows the area with its two projects, both on the board, and nothing in the archive from these', homeChip === 'Home 2'
       && await now.exists(`.project-card[data-id=${PAR}]`) && await now.exists(`.project-card[data-id=${PAD}]`) && !(await now.ev(`[...document.querySelectorAll('#projects-archive [data-s=archive-row]')].some(r => /Weekend stall|Kitchen shelves/.test(r.textContent))`)), homeChip);
     await now.click('[data-action=area-pick][data-id=all]');
+
+    console.log('\n[22] A whole project\'s wait passes through the previous release unchanged (specs/projects-project-waiting.md)');
+    const PWB = 'pjWaitBack', PWN = 'pjWaitBack2';
+    const waitBack = { on: 'The landlord (made up)', since: today, until: today, chaseTaskId: 'tkNoSuch', futureBit: 1 }, waitPlain = { on: 'Priya (made up)', since: today };
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PWB}', title: 'Repaint the hall (made up)', summary: '', stage: 'organise', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', waiting: ${JSON.stringify(waitBack)} },
+      { id: '${PWN}', title: 'New passport (made up)', summary: '', stage: 'organise', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', waiting: ${JSON.stringify(waitPlain)} }); }`);
+    check('this release sends a project\'s wait (with a newer MyDay\'s extra key; one without a check-back day as it is) in the project\'s record', await eventually(async () => same((await pjOf(PWB))?.waiting, waitBack) && same((await pjOf(PWN))?.waiting, waitPlain)) && await synced(now), [(await pjOf(PWB))?.waiting, (await pjOf(PWN))?.waiting]);
+    await before.returnToApp();
+    check('the previous release syncs normally and holds both waits exactly in its saved data', await synced(before) && await before.until(`!!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PWN}')?.waiting`, 20000)
+      && same((await before.data()).projects.items.find(p => p.id === PWB).waiting, waitBack) && same((await before.data()).projects.items.find(p => p.id === PWN).waiting, waitPlain), (await before.data()).projects.items.find(p => p.id === PWB));
+    await before.open(BEFORE + `#projects/p/${PWB}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Repaint the hall (renamed)');
+    check('a rename on the previous release\'s project page reaches the account with the wait as it was', await eventually(async () => (await pjOf(PWB))?.title === 'Repaint the hall (renamed)' && same((await pjOf(PWB))?.waiting, waitBack)) && await synced(before), await pjOf(PWB));
+    // The previous release's "Mark as done" knows nothing of the wait, so leaves it on a finished project: this release
+    // reads that as it is (nothing rewritten on load), and a finished project isn't waiting.
+    await before.open(BEFORE + `#projects/p/${PWN}`); await before.until(`!!document.querySelector('[data-action=project-finish]')`, 15000);
+    await before.click('[data-action=project-finish]'); await before.until(`!!document.querySelector('[data-action=finish-save]')`, 5000);
+    await before.click('[data-action=finish-save]');
+    check('"Mark as done" on the previous release reaches the account: done, with the wait as it was', await eventually(async () => (await pjOf(PWN))?.status === 'done' && same((await pjOf(PWN))?.waiting, waitPlain)) && await synced(before), await pjOf(PWN));
+    const finishedThere = (await before.data()).projects.items.find(p => p.id === PWN), renamedThere = (await before.data()).projects.items.find(p => p.id === PWB);
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PWB}`);
+    check('back on this release: the rename arrives and the Overview says it\'s waiting on the landlord', await now.until(`(document.querySelector('#projectTitle')?.textContent || '') === 'Repaint the hall (renamed)' && (document.querySelector('[data-s=project-waiting-line]')?.textContent || '').includes('Waiting on The landlord (made up)')`, 30000),
+      await now.text('#projectWaiting'));
+    await now.open(NOW + `#projects/p/${PWN}`);
+    check('…the project finished there shows no wait (a finished project isn\'t waiting), and is in the archive', await now.until(`(document.querySelector('#projectTitle')?.textContent || '') === 'New passport (made up)'`, 15000) && !(await now.exists('#projectWaiting'))
+      && !(await now.exists('[data-action=project-wait]')) && (await now.text('#projectTop')).includes('In the archive'), await now.text('#projectTop'));
+    check('…both read exactly as the previous release saved them (loading rewrote nothing), and this release is in step', same((await now.data()).projects.items.find(p => p.id === PWN), finishedThere) && same((await now.data()).projects.items.find(p => p.id === PWB), renamedThere)
+      && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

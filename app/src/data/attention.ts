@@ -5,7 +5,8 @@
 // The owner's decisions (25 Oct 2026): a date today or in the next 7 days; a task still open after its date (not one
 // that's waiting or starts after another); a wait whose expected day has come; a task that keeps moving; a decision
 // open 14 days or more; a business idea's Find out results; a case's evidence still to get. Not "quiet" projects
-// (Your week keeps those). And a whole project's wait from its check-back day (specs/projects-project-waiting.md). Paused and finished projects aren't included; a private one's items show, on this device.
+// (Your week keeps those). And a whole project's wait, from its check-back day (specs/projects-project-waiting.md;
+// Needs you only). Paused and finished projects aren't included; a private one's items show, on this device.
 //
 // The selection rules below are shared: each project's Worth a look and Your week's What needs you read the same
 // ones, so a reason is decided once (each keeps its own wording for where it's shown).

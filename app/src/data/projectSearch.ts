@@ -9,6 +9,7 @@ import { projectNotes, projectTasks } from './projects';
 import { hasResearch, researchOf } from './research';
 import { resourceName } from './projectResources';
 import { isDone } from './tasks';
+import { isProjectWaiting } from './projectWaiting';
 import type { MyDayData, Project } from './types';
 
 export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'money' | 'experiment' | 'timeline' | 'evidence' | 'issue' | 'resource' | 'question' | 'finding' | 'source';
@@ -65,7 +66,7 @@ export function searchProject(data: MyDayData, p: Project, query: string): Searc
     hits.push({ kind, id, title: show, excerpt: own && words.every(w => fold(own).includes(w)) ? '' : excerptOf(others, words), href, ...more });
   };
 
-  add('about', p.id, p.title, p.title, [p.summary, p.outcome, p.finishedWhen, p.leftOff?.text, p.waiting?.on], tab()); // (and whom it's waiting on: specs/projects-project-waiting.md)
+  add('about', p.id, p.title, p.title, [p.summary, p.outcome, p.finishedWhen, p.leftOff?.text, isProjectWaiting(p) ? p.waiting.on : undefined], tab()); // (and whom it's waiting on: specs/projects-project-waiting.md)
   const { open, done } = projectTasks(data, p);
   for (const t of [...open, ...done]) {
     const state = t.letGoOn ? 'let go' : isDone(data, t) ? 'done' : undefined;

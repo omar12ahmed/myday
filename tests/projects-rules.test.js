@@ -2583,9 +2583,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const tk = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pw1', ...x });
     console.log('  reading');
     let r = { dropped: 0 };
-    const asWritten = [base('a', { waiting: { on: 'The landlord  ', since: '2026-10-20', until: '2026-11-04', chaseTaskId: 'tkC', futureBit: 1 } }), base('b', { waiting: { on: 'Priya', since: '2026-10-20' } })];
+    const asWritten = [base('a', { waiting: { on: 'The landlord  ', since: '2026-10-20', until: '2026-11-04', chaseTaskId: 'tkC', futureBit: 1 } }), base('b', { waiting: { on: 'Priya', since: '2026-10-20' } }),
+      base('b2', { waiting: { on: 'Sam', since: '2026-10-20', until: null, chaseTaskId: 7 } })];
     const again = K.normalizeProjects(K.normalizeProjects({ items: structuredClone(asWritten) }, r), r).items;
-    check('a wait is read exactly as written (a missing check-back day stays missing, a newer MyDay\'s key kept), twice over, nothing counted', eq(again, asWritten) && r.dropped === 0, again);
+    check('a wait is read exactly as written (a missing check-back day stays missing, a null one null, a newer MyDay\'s keys kept), twice over, nothing counted', eq(again, asWritten) && r.dropped === 0, again);
     r = { dropped: 0 };
     const odd = K.normalizeProjects({ items: [base('c', { waiting: { on: 'x'.repeat(130), since: '2026-10-20', until: 'soon' } }), base('d', { waiting: { on: '  ', since: '2026-10-20' } }), base('e', { waiting: null }),
       base('f', { waiting: { on: 'Priya', since: 'yesterday' } }), base('g', { waiting: 'Priya' })] }, r).items;
@@ -2613,22 +2614,39 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…once per wait, while that task is still to do; once it\'s done, another can be added', K.PW.chaseProject(w, 'pw1') === 'already' && w.tasks.items.length === 1
       && (chase.done = true, chase.doneOn = k, K.PW.projectChaseTask(w, P1()) === null) && typeof K.PW.chaseProject(w, 'pw1', null) === 'string' && w.tasks.items.length === 2);
     check('…and none for a project that isn\'t waiting', K.PW.chaseProject(w, 'pw2') === null && K.PW.chaseProject(w, 'nope') === null);
+    w.tasks.items = w.tasks.items.filter(t => t.id !== P1().waiting.chaseTaskId);
+    check('…if its chase task is gone, Chase it offers again and points at the new one', K.PW.projectChaseTask(w, P1()) === null && (() => { const id = K.PW.chaseProject(w, 'pw1'); return typeof id === 'string' && P1().waiting.chaseTaskId === id; })());
+    const paused = { ...P1(), status: 'paused' };
+    check('a paused project keeps its wait (and its check-back day), it just isn\'t in Needs you', K.PW.isProjectWaiting(paused) && K.PW.checkBackDue(paused, '2026-11-10'));
     check('finishing ends the wait; a finished project with a wait (an older release\'s "Mark as done") isn\'t waiting', K.AR.finishProject(w, 'pw1', 'achieved', '', k) && !('waiting' in P1())
       && !K.PW.isProjectWaiting({ ...P1(), waiting: { on: 'Priya', since: k, until: k } }) && !K.PW.checkBackDue({ ...P1(), waiting: { on: 'Priya', since: k, until: k } }, k));
 
+    const left = world(base('pw5', { status: 'done', finished: { how: 'achieved', note: '', on: k }, waiting: { on: 'Priya', since: '2026-10-20', until: '2026-10-25' } }));
+    check('bringing back a project finished with a wait left on it (an older release\'s Mark as done) ends the wait too; pausing an active one keeps it',
+      K.editProject(left, 'pw5', { status: 'active' }) && !('waiting' in left.projects.items[0]) && !K.PW.checkBackDue(left.projects.items[0], k)
+      && (() => { const a = world(base('pw6', { waiting: { on: 'Priya', since: k } })); return K.editProject(a, 'pw6', { status: 'paused' }) && !!a.projects.items[0].waiting; })());
     console.log('  the nudge');
     const n = world(base('pw1', { title: 'Garden shed' }));
     n.tasks.items = [tk('t1', 'Get the quote', { waiting: { on: 'The builder', since: '2026-10-25', until: '2026-11-08' } }), tk('t2', 'Book the slab', { waiting: { on: 'The builder', since: '2026-10-26', until: '2026-11-06' } }),
       tk('t3', 'Done already', { done: true, doneOn: '2026-10-20' })];
     const NP = () => n.projects.items[0];
-    check('every open task waiting: offered, filled in with whom (the same for all) and the earliest expected day, for that set of tasks', eq(K.PW.waitOffer(n, NP()), { on: 'The builder', until: '2026-11-06', sig: 't1 t2' }), K.PW.waitOffer(n, NP()));
+    check('every open task waiting: offered, filled in with whom (the same for all) and the earliest expected day, for that set of tasks', eq(K.PW.waitOffer(n, NP(), k), { on: 'The builder', until: '2026-11-06', sig: 't1 t2' }), K.PW.waitOffer(n, NP(), k));
+    check('…whom matches whatever the capitals and spacing; a task let go of isn\'t in the set', (() => { n.tasks.items[1].waiting.on = ' the  BUILDER'; n.tasks.items.push(tk('t5', 'Let go of', { letGoOn: '2026-10-21' }));
+      const o = K.PW.waitOffer(n, NP(), k); n.tasks.items.pop(); return o?.on === 'The builder' && o.sig === 't1 t2'; })(), K.PW.waitOffer(n, NP(), k));
+    check('…the earliest expected day still to come (one already gone isn\'t offered), and the set is the same whatever the order', (() => { n.tasks.items[1].waiting.until = '2026-10-30';
+      const o = K.PW.waitOffer(n, NP(), k), r2 = K.PW.waitOffer({ ...n, tasks: { ...n.tasks, items: [...n.tasks.items].reverse() } }, NP(), k);
+      n.tasks.items[0].waiting.until = '2026-10-31'; const none = K.PW.waitOffer(n, NP(), k); n.tasks.items[0].waiting.until = '2026-11-08'; n.tasks.items[1].waiting.until = '2026-11-06';
+      return o?.until === '2026-11-08' && r2?.sig === o.sig && none?.until === null; })());
     n.tasks.items[1].waiting.on = 'The council';
-    check('…waiting on different people: whom is left for you to say', K.PW.waitOffer(n, NP())?.on === '' && K.PW.waitOffer(n, NP())?.until === '2026-11-06');
+    check('…waiting on different people: whom is left for you to say', K.PW.waitOffer(n, NP(), k)?.on === '' && K.PW.waitOffer(n, NP(), k)?.until === '2026-11-06');
     n.tasks.items.push(tk('t4', 'Measure the base'));
-    check('…not while any open task isn\'t waiting; not with no open tasks', K.PW.waitOffer(n, NP()) === null && K.PW.waitOffer(world(base('pw9')), base('pw9')) === null);
+    check('…not while any open task isn\'t waiting; not with no open tasks', K.PW.waitOffer(n, NP(), k) === null && K.PW.waitOffer(world(base('pw9')), base('pw9'), k) === null);
     n.tasks.items.pop();
-    check('…nor for a project already waiting, paused or finished', K.PW.waitOffer(n, { ...NP(), waiting: { on: 'x', since: k } }) === null && K.PW.waitOffer(n, { ...NP(), status: 'paused' }) === null && K.PW.waitOffer(n, { ...NP(), status: 'done' }) === null);
+    check('…nor for a project already waiting, paused or finished', K.PW.waitOffer(n, { ...NP(), waiting: { on: 'x', since: k } }, k) === null && K.PW.waitOffer(n, { ...NP(), status: 'paused' }, k) === null && K.PW.waitOffer(n, { ...NP(), status: 'done' }, k) === null);
 
+    console.log('  search');
+    const sw = world(base('ps1', { title: 'Garden shed', waiting: { on: 'Priya Shah', since: k } }), base('ps2', { title: 'Old car', status: 'done', waiting: { on: 'Priya Shah', since: k } }));
+    check('search finds a project by whom it\'s waiting on — not a finished one by a wait left on it', K.searchProject(sw, sw.projects.items[0], 'shah').some(h => h.kind === 'about') && !K.searchProject(sw, sw.projects.items[1], 'shah').length);
     console.log('  Needs you and Your week');
     const nd = world(base('pw1', { title: 'Garden shed', updatedAt: '2026-10-01T09:00' }), base('pw2', { title: 'Visa', updatedAt: '2026-10-01T09:00' }), base('pw3', { title: 'Paused wait', status: 'paused' }));
     nd.projects.items[0].waiting = { on: 'Priya', since: '2026-10-20', until: '2026-10-28' };
