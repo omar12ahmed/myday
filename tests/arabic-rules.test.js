@@ -422,7 +422,7 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const expPath = path.join(ROOT, 'content/teaching/arabic/explainers.json');
   const runExp = (file, extra = []) => { try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'app/scripts/validate-explainers.mjs'), ...(file ? [file] : []), ...extra], { stdio: 'pipe' }).toString() }; } catch (e) { return { code: e.status || 1, out: `${e.stdout || ''}${e.stderr || ''}` }; } };
   const realExp = runExp(expPath, ['--readings']);
-  check('the real explainers file passes with its readings: 94 explainers in 78 lessons (modules 4 to 19)', realExp.code === 0 && realExp.out.includes('94 explainers in 78 lessons'));
+  check('the real explainers file passes with its readings: 104 explainers in 88 lessons (modules 4 to 21)', realExp.code === 0 && realExp.out.includes('104 explainers in 88 lessons'));
   check('the build checks the explainers: curriculum:prepare runs validate-explainers.mjs', (JSON.parse(read(path.join(ROOT, 'app/package.json'))).scripts['curriculum:prepare'] || '').includes('node scripts/validate-explainers.mjs'));
   const expSource = JSON.parse(read(expPath));
   const expTemp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-explainers-'));
