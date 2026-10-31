@@ -622,12 +622,16 @@ async function signIn(d, url) {
     await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
     await before.type('#projectTitleInput', 'Repaint the hall (renamed)');
     check('a rename on the previous release\'s project page reaches the account with the wait as it was', await eventually(async () => (await pjOf(PWB))?.title === 'Repaint the hall (renamed)' && same((await pjOf(PWB))?.waiting, waitBack)) && await synced(before), await pjOf(PWB));
-    // The previous release's "Mark as done" knows nothing of the wait, so leaves it on a finished project: this release
-    // reads that as it is (nothing rewritten on load), and a finished project isn't waiting.
+    // A previous release from before project waits (1.108.0 and earlier) knows nothing of the wait, so its "Mark as done"
+    // leaves it on a finished project; one with them (1.109.0 on) ends it. Either way this release reads that as it is
+    // (nothing rewritten on load), and a finished project isn't waiting.
+    const knowsWaits = builtText.includes('pwait-done');
+    console.log(`The previous release ${knowsWaits ? 'knows' : 'doesn’t know'} a whole project's wait.`);
     await before.open(BEFORE + `#projects/p/${PWN}`); await before.until(`!!document.querySelector('[data-action=project-finish]')`, 15000);
     await before.click('[data-action=project-finish]'); await before.until(`!!document.querySelector('[data-action=finish-save]')`, 5000);
     await before.click('[data-action=finish-save]');
-    check('"Mark as done" on the previous release reaches the account: done, with the wait as it was', await eventually(async () => (await pjOf(PWN))?.status === 'done' && same((await pjOf(PWN))?.waiting, waitPlain)) && await synced(before), await pjOf(PWN));
+    check(`"Mark as done" on the previous release reaches the account: done, with the wait ${knowsWaits ? 'ended' : 'as it was'}`,
+      await eventually(async () => (await pjOf(PWN))?.status === 'done' && (knowsWaits ? !('waiting' in (await pjOf(PWN))) : same((await pjOf(PWN))?.waiting, waitPlain))) && await synced(before), await pjOf(PWN));
     const finishedThere = (await before.data()).projects.items.find(p => p.id === PWN), renamedThere = (await before.data()).projects.items.find(p => p.id === PWB);
     await now.returnToApp();
     await now.open(NOW + `#projects/p/${PWB}`);
