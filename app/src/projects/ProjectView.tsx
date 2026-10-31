@@ -12,7 +12,7 @@ import { BackLink, Choice, Choices, Eyebrow, LinkButton, Note, NotFound } from '
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { isBusiness, isCase, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { isBusiness, isCase, isContent, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
 import { arrived, arriving, hiddenWords, isHidden, overviewSections, SECTIONS, setHidden, type HiddenWith, type Section } from '../data/projectSections';
@@ -42,14 +42,15 @@ import { FilesCard } from '../files/FilesCard';
 import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 import { ProjectWaitForm, ProjectWaitingCard, WaitOfferLine } from './ProjectWaiting';
+import { ContentCard, VideosView } from './ContentView';
 
 // One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
 // progression, and everything that belongs to it — tasks and notes on the left on wide screens; what's coming up
 // (including tasks still open after their date), what happened recently and its status on the right.
-export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research';
+export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos';
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
-export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
+export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: MyDayData; id: string; tab?: ProjectTab; sub?: string }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
   // "Search this project" (specs/projects-search.md): only on this page, never saved. ProjectsScreen keys this view by
   // the project, so another project starts empty; it belongs to the tab too, so choosing another tab ends it.
@@ -78,11 +79,12 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
-      {tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      {tab === 'videos' && isContent(p) ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
       <ProjectWaitingCard data={data} p={p} />
       <OverviewTop data={data} p={p} />
+      {isContent(p) && <ContentCard data={data} p={p} />}
       <AtAGlance data={data} p={p} />
       <ProjectHead data={data} p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
@@ -195,6 +197,8 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
           <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
           <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
         </>}
+        {/* A Content project's videos (specs/projects-content.md). */}
+        {isContent(p) && <a className={tabClass(tab === 'videos')} href={tabHref(p, 'videos')} role="tab" aria-selected={tab === 'videos'} data-tab="videos">Videos</a>}
         {hasResearch(p) && <a className={tabClass(tab === 'research')} href={tabHref(p, 'research')} role="tab" aria-selected={tab === 'research'} data-tab="research">Research</a>}
       </nav>
       {/* Enter just puts the keyboard away on a phone; results show as you type. */}

@@ -34,6 +34,8 @@ export const AREA_RULES: Record<string, AreaRule> = {
   project: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents (Word, Excel, PowerPoint, text, CSV), up to 25 MB each.' },
   note: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents (Word, Excel, PowerPoint, text, CSV), up to 25 MB each.' },
   portfolio: { types: ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'], maxBytes: 2 * MB, totalBytes: 200 * MB, summary: 'Only PNG, JPEG, WebP and PDF, up to 2 MB each.' },
+  // A Content project's videos (specs/projects-content.md): their clips and thumbnails.
+  content: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents, up to 25 MB each.' },
 };
 export const isArea = (a: unknown): a is string => typeof a === 'string' && Object.prototype.hasOwnProperty.call(AREA_RULES, a);
 

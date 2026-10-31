@@ -122,7 +122,7 @@ function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
   );
 }
 
-export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner; area: 'project' | 'note' }) {
+export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner; area: 'project' | 'note' | 'content' }) {
   const files = filesOf(data, owner), deleted = recentlyDeleted(data, owner);
   const [refused, setRefused] = useState<string[]>([]), [busy, setBusy] = useState(false), [over, setOver] = useState(false);
   const input = useRef<HTMLInputElement>(null), hid = `filesH-${owner.kind}-${owner.id}`;
