@@ -8893,7 +8893,7 @@
      "For the future, put سَـ on the front of a present verb: أَذْهَبُ, I go; سَأَذْهَبُ, I'll go.",
      "سَوْفَ does the same as a separate word before the verb: سَوْفَ أَذْهَبُ. Both mean \"will\".",
      "The verb doesn't change: سَـ goes in front of whichever present form you need: سَنَذْهَبُ, we'll go; سَتَذْهَبِينَ, you'll go (to a woman).",
-     "Add a time to make the plan clear: سَأُسَافِرُ الْأُسْبُوعَ الْقَادِمَ, I'll travel next week. Like صَبَاحًا, a time like this ends in -a.",
+     "Add a time to make the plan clear: سَأُسَافِرُ الْأُسْبُوعَ الْقَادِمَ, I'll travel next week. Like صَبَاحًا, a time like this takes the -a ending: -a here because of الْـ, -an without it.",
      "A plan isn't a promise, and it isn't a wish either: أُرِيدُ أَنْ أُسَافِرَ, I want to travel, says only what you'd like."
     ],
     "examples": [
@@ -8933,7 +8933,7 @@
        },
        {
         "ar": "يَوْمَ",
-        "en": "on"
+        "en": "on (the day of)"
        },
        {
         "ar": "السَّبْتِ",
@@ -9068,7 +9068,7 @@
     "steps": [
      "Arabic has several words for \"not\", and each goes with its own time: لَا for now, لَمْ for the past, لَنْ for the future.",
      "After لَمْ and لَنْ, use the present form of the verb, even for the past: لَمْ أُسَافِرْ, I didn't travel.",
-     "The verb's last vowel changes: after لَمْ it becomes a sukūn, أُسَافِرْ; after لَنْ it becomes -a, أُسَافِرَ.",
+     "The verb's last vowel changes: after لَمْ it becomes a sukūn, أُسَافِرْ; after لَنْ it becomes -a, أُسَافِرَ. Endings in ـِينَ and ـُونَ drop their نَ instead: لَمْ تُسَافِرِي, لَنْ تُسَافِرُوا.",
      "لَيْسَ is for sentences with no verb: الْمَطْعَمُ مَفْتُوحٌ, the restaurant is open; لَيْسَ الْمَطْعَمُ مَفْتُوحًا, it isn't open. Like كَانَ, it gives the describing word -an.",
      "لَيْسَ changes for who: لَسْتُ, I'm not; لَسْتَ, you're not (to a man); لَيْسَتْ, she isn't."
     ],
@@ -9146,7 +9146,7 @@
     ],
     "why": {
      "q_en": "Why أُسَافِرْ, a present form, after لَمْ, when the meaning is past?",
-     "a_en": "That's how Arabic says \"didn't\": لَمْ takes the present form, drops its last vowel, and turns the meaning into the past. لَمْ never goes with a past verb."
+     "a_en": "That's how Arabic says \"didn't\": لَمْ takes the present form, shortens its ending, and turns the meaning into the past. لَمْ never goes with a past verb."
     },
     "selftest": [
      {
@@ -9181,6 +9181,8 @@
      }
     ],
     "phrases_ar": [
+     "لَمْ تُسَافِرِي",
+     "لَنْ تُسَافِرُوا",
      "الْمَطْعَمُ مَفْتُوحٌ",
      "الْبَيْتُ كَبِيرٌ",
      "لَيْسَ مُتْعَبًا"
@@ -9244,8 +9246,8 @@
      }
     ],
     "steps": [
-     "A command starts from the \"you\" present verb: drop the تَـ in front and the last vowel. تَفْتَحُ, you open, becomes اِفْتَحْ, open!",
-     "If the word would then start with two consonants, add a helping اُ or اِ: اُ when the present has u in the middle (تَدْخُلُ, اُدْخُلْ), otherwise اِ (اِفْتَحْ, اِجْلِسْ). A few verbs take أَ instead: أَغْلِقْ, close!",
+     "A command starts from the \"you\" present verb: drop the تَـ or تُـ in front, and the last vowel. تَفْتَحُ, you open, becomes اِفْتَحْ, open!",
+     "If the word would then start with two consonants, add a helping vowel. When the \"you\" form starts with تَـ, it's اُ if the present has u in the middle (تَدْخُلُ, اُدْخُلْ), otherwise اِ (اِفْتَحْ, اِجْلِسْ). When it starts with تُـ, like تُغْلِقُ, the helper is a real hamza, أَ, always said: أَغْلِقْ, close!",
      "The ending changes with who you're telling: ـِي to a woman (اِفْتَحِي), ـُوا to a group (اِفْتَحُوا).",
      "\"Don't\" is لَا with the \"you\" present form, its last vowel dropped: لَا تَتَأَخَّرْ, don't be late. It is never لَا with the command.",
      "A bare command can sound abrupt. Add مِنْ فَضْلِكَ, please, or ask instead: هَلْ يُمْكِنُ أَنْ تَفْتَحَ الْبَابَ؟, could you open the door?"
@@ -9406,7 +9408,7 @@
      "Words like \"want\", \"can\" and \"must\" take أَنْ, then a present verb: أُرِيدُ أَنْ أَنَامَ, I want to sleep.",
      "After أَنْ, the verb's last vowel becomes -a: أَنَامُ, but أَنْ أَنَامَ.",
      "Both verbs change for who: تُرِيدُ أَنْ تَنَامَ, you want to sleep. يَجِبُ and يُمْكِنُ stay the same: يَجِبُ أَنْ تَذْهَبَ, you must go.",
-     "Endings in ـِينَ and ـُونَ lose their نَ after أَنْ: تَنَامِينَ, but يَجِبُ أَنْ تَنَامِي.",
+     "Endings in ـِينَ and ـُونَ lose their نَ after أَنْ: تَنَامِينَ, but يَجِبُ أَنْ تَنَامِي; تَنَامُونَ, but أَنْ تَنَامُوا, with a silent alif.",
      "English \"can\" isn't always أَسْتَطِيعُ. To ask if something is possible or allowed, use يُمْكِنُ: هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟, can I sit here?"
     ],
     "examples": [
@@ -9530,6 +9532,7 @@
      "تُرِيدُ أَنْ تَنَامَ",
      "يَجِبُ أَنْ تَذْهَبَ",
      "يَجِبُ أَنْ تَنَامِي",
+     "أَنْ تَنَامُوا",
      "هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟"
     ]
    }
@@ -9608,7 +9611,7 @@
        },
        {
         "ar": "يَوْمَ",
-        "en": "on"
+        "en": "on (the day of)"
        },
        {
         "ar": "الْخَمِيسِ",
@@ -9642,7 +9645,7 @@
        },
        {
         "ar": "يَوْمَ",
-        "en": "on"
+        "en": "on (the day of)"
        },
        {
         "ar": "الْخَمِيسِ",
@@ -9664,7 +9667,7 @@
        },
        {
         "ar": "يَوْمَ",
-        "en": "on"
+        "en": "on (the day of)"
        },
        {
         "ar": "الْجُمُعَةِ",
@@ -9785,7 +9788,7 @@
      "The endings ـهُ, ـهَا, ـنَا, ـهُمْ and the rest do three jobs, depending on the word they're on.",
      "On a noun they mean \"his\", \"her\", \"our\": بَيْتُهُ, his house. On a verb they mean \"him\", \"her\", \"us\": أَعْرِفُهُ, I know him. After a small word like مَعَ, مِنْ or لِـ, they're who it's with, from or for: مَعَهُ, with him.",
      "ـَة becomes ت before an ending: سَيَّارَة, but سَيَّارَتُهُ, his car.",
-     "Two small changes: لِـ, for, becomes لَـ before an ending (لَهُ, لَهَا, لَنَا), and \"me\" on a verb is ـنِي, while \"my\" on a noun is ـِي.",
+     "Two small changes: لِـ, for, becomes لَـ before an ending (لَهُ, لَهَا, لَنَا), except لِي, for me; and \"me\" on a verb is ـنِي, while \"my\" on a noun is ـِي.",
      "To look a word up, take the ending off first: نَعْرِفُهُمْ is نَعْرِفُ, we know, with ـهُمْ, them."
     ],
     "examples": [
@@ -9821,7 +9824,7 @@
        },
        {
         "ar": "الْهَدِيَّةُ",
-        "en": "present, gift"
+        "en": "the present, the gift"
        },
        {
         "ar": "لَكَ",
@@ -9854,7 +9857,7 @@
     ],
     "why": {
      "q_en": "Why مَعَهُ, with an ending, and not مَعَ with هُوَ?",
-     "a_en": "After a small word like مَعَ, فِي or مِنْ, \"him\" and \"her\" are always endings: مَعَهُ, فِيهِ, مِنْهُ. هُوَ is only for the one the sentence is about: هُوَ مَعِي, he's with me."
+     "a_en": "After a small word like مَعَ, لِـ or مِنْ, \"him\" and \"her\" are always endings: مَعَهُ, لَهُ, مِنْهُ. هُوَ is only for the one the sentence is about: هُوَ مَعِي, he's with me."
     },
     "selftest": [
      {
@@ -10111,9 +10114,9 @@
     "steps": [
      "Two nouns side by side mean \"the … of …\": بَابُ الْبَيْتِ, the door of the house.",
      "You can chain more: مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ, the office of the head of the school. Read it from the front: office, head, school.",
-     "Only the last noun can have الْـ. The others never take الْـ or -un, but the whole chain still means \"the\".",
+     "Only the last noun can have الْـ; the others never take الْـ or -un. If the last noun is definite, with الْـ, a name or an ending like \"my\", the whole chain is definite: بَابُ الْبَيْتِ, the door of the house; سَيَّارَةُ أَبِي, my father's car.",
      "Every noun after the first ends in -i. The first one's ending depends on its job in the sentence.",
-     "A describing word goes after the whole chain, and its ending shows which noun it describes: الْجَدِيدُ, with -u like بَيْتُ, is the house; الْجَدِيدِ, with -i, is the teacher."
+     "A describing word goes after the whole chain, and its ending usually shows which noun it describes: الْجَدِيدُ, with -u like بَيْتُ, is the house; الْجَدِيدِ, with -i, is the teacher."
     ],
     "examples": [
      {
@@ -10276,7 +10279,7 @@
     ],
     "steps": [
      "Arabic has a form for exactly two: add ـَانِ. طَالِب, a student; طَالِبَانِ, two students.",
-     "When the two aren't the subject (after a verb or a small word), the ending is ـَيْنِ: اِشْتَرَيْتُ قَلَمَيْنِ, I bought two pens.",
+     "When the two are what the action is done to, or come after a small word like فِي or بَعْدَ, the ending is ـَيْنِ: اِشْتَرَيْتُ قَلَمَيْنِ, I bought two pens.",
      "A word in ـَة keeps a ت: سَاعَة, سَاعَتَانِ.",
      "Some words for people add ـُونَ for men or a mixed group, or ـِينَ when they're not the subject: مُهَنْدِسُونَ, مُهَنْدِسِينَ.",
      "For women, the ending is ـَات: طَالِبَات. Where other nouns end in -a, ـَات ends in -i: رَأَيْتُ الطَّالِبَاتِ.",
@@ -10443,7 +10446,7 @@
      }
     ],
     "steps": [
-     "To compare, Arabic uses one pattern: أَ in front and the word's three letters after it. كَبِير, big; أَكْبَر, bigger.",
+     "To compare, Arabic uses one pattern: أَ in front and the word's three root letters after it. كَبِير, big; أَكْبَر, bigger.",
      "\"Than\" is مِنْ, and the noun after it ends in -i: أَكْبَرُ مِنَ الْبَيْتِ, bigger than the house.",
      "In a comparison with مِنْ, the form doesn't change for a feminine word or a plural: الْقَرْيَةُ أَصْغَرُ مِنَ الْمَدِينَةِ, with no ـَة.",
      "English -er doesn't always match: \"better\" is أَحْسَن or أَفْضَل, and for some describing words Arabic uses أَكْثَر, more, instead."
@@ -10601,7 +10604,7 @@
      }
     ],
     "steps": [
-     "From three to ten, the number comes first, and the noun after it is plural and ends in -in: أَرْبَعَةُ أَيَّامٍ, four days.",
+     "From three to ten, the number comes first, and the noun after it is plural and ends in -in: أَرْبَعَةُ أَيَّامٍ, four days. The number's own ending follows its job in the sentence: بَقِيتُ أَرْبَعَةَ أَيَّامٍ, I stayed four days.",
      "Then a surprise: the number takes the opposite gender. With a masculine noun like يَوْم, it has ـَة: أَرْبَعَةُ. With a feminine noun like سَاعَة, it has none: أَرْبَعُ.",
      "Go by the singular: يَوْم is masculine, even though its plural أَيَّام looks different.",
      "One, two and eleven upward follow other rules, so for now learn the phrases you need and check new ones."
@@ -10718,7 +10721,9 @@
       "why_en": "خَمْسُ is five, and لُغَات is the plural of لُغَة."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [
+     "بَقِيتُ أَرْبَعَةَ أَيَّامٍ"
+    ]
    }
   ]
  }
