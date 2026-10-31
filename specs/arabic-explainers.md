@@ -1,8 +1,9 @@
 # Proposal: Arabic explainers ("How this works")
 
-**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. The first ten explainers (module 14) were
-cross-checked independently and approved by the owner's fluent checker on 30 October 2026. Voicing (§3) follows the
-release, with myday-5a.
+**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Module 14 (ten) shipped in 1.98.0 and was
+voiced in 1.102.0; module 15 (eight) ships with its voice in 1.105.0; modules 4–5 (thirteen) are with the owner's
+fluent checker. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
+checker, voiced and listened to, then released.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 

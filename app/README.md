@@ -906,8 +906,10 @@ revision such a card says "no longer in the course" with "Take it out of revisio
 every device; "Skip for now" keeps it.
 
 Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Understand step can have **How it
-works**, under its teaching: one closed card per family of forms (module 14 so far: ten, for weak, irregular and
-derived verbs). Each has the family as a table (form, Arabic, meaning; on a phone the form sits under the meaning),
+works**, under its teaching: one closed card per family of forms or grammar topic (so far ten for module 14's weak,
+irregular and derived verbs, 1.98.0, and eight for module 15's relative words, إِنَّ and كَانَ and their sisters,
+reporting, conditions, reasons and contrast, 1.105.0). Each has a table (form, Arabic, meaning; on a phone the form
+sits under the meaning; a form label or a word's gloss may name Arabic, shown as Arabic and never voiced),
 short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
 when you choose (focus moves to the explanation). Nothing is saved, and it folds away with the explanation while you
 check yourself. A course word with an explainer has "How this verb works, step by step" (or "How it works"): on its
@@ -916,9 +918,9 @@ Understand with the card open (an in-memory request, like a step a link asks for
 forms, sentences and steps. MyDay's own file, `../content/teaching/arabic/explainers.json`, loaded on demand like the
 teaching; only the Arabic is stored, and the app adds the transliteration. `scripts/validate-explainers.mjs` checks it
 at every build: shape, full vowelling with endings in phrases, the house spelling, no two Arabic pieces run together,
-each sentence the sum of its words, and nothing that gives away the lesson check's answer. `--readings` also checks
-that the app can read every piece completely (the rules test runs it). Each batch is cross-checked independently and
-then checked by the owner's fluent checker.
+each sentence the sum of its words, and nothing that gives away the lesson check's answer (including any lesson whose words link to it). `--readings` also
+checks that the app can read every piece completely (the rules test runs it). Each batch is cross-checked independently,
+checked by the owner's fluent checker, then voiced (myday-5a's pipeline) and listened to before it ships.
 
 Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
 its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words
