@@ -174,6 +174,21 @@
    "voice": "ar-XA-Wavenet-B",
    "listening": "All 258 clips (the Arabic shown without marks inside lesson-check questions and answers, read from MyDay’s vowelled scripts in voice-scripts.json “pieces”, which an independent reviewer cross-checked and the owner’s fluent checker approved, with 12 pieces left without a voice on purpose) listened to by ear by the owner on 2026-10-30, in three batches — “all good”, including eight short forms pointed out for a close listen (يدعو، إذا، يدرسوا، أقرؤه، ماء، ليلى، أدرس، شعري). They play only once the check’s answer is shown. Not yet by an Arabic teacher. No recordings held. Because the listening page then showed only the unmarked text, the owner re-listened to the eight with the vowelled scripts shown (the page now shows them): seven were confirmed; شعري was still read as شَعْرِي after three more takes and a marked variant, so it was left out (removed below).",
    "cross_check": "Every new recording transcribed blind with Gemini 3.8 Flash (temperature 0; 268 requests, cross-check-voice-pieces.json), and the doubtful ones three more times at temperature 1 (69 requests); every transcript read by the main session. Twelve clips were made again (seven once, five twice; WaveNet gives new audio for the same text, except twice). Five isolated words were still transcribed differently on every take (يَدْعُو، يَدْرُسُوا، مَاء، أَدْرُسْ، شِعْرِيّ) and the owner approved them by ear; the rest were mis-hearings that repeated hearings settled."
+  },
+  {
+   "round": "short unmarked pieces, batch two: key concepts and objectives, teaching pieces, practical tasks and the timetable (round twelve)",
+   "sources": [
+    "key-ideas",
+    "tasks",
+    "timetable",
+    "teaching"
+   ],
+   "made": "2026-10-30",
+   "generated": 126,
+   "retakes": 30,
+   "voice": "ar-XA-Wavenet-B",
+   "listening": "All 126 clips (the Arabic shown without marks in key concepts and objectives, teaching examples, practical tasks and the timetable, read from MyDay’s vowelled scripts in voice-scripts.json “pieces”, which an independent reviewer cross-checked with no errors and the owner’s fluent checker approved, with 9 more pieces left without a voice on purpose; and a few runs the course already vowels) listened to by ear by the owner on 2026-10-31: “all good”, including the ones pointed out for a close listen (الْمُصَادَقَة، أَنْ، مَنْ، مَا، أَيْنَ، هَلْ، لَا النَّاهِيَةُ). The listening page showed the vowelled script the voice read. Not yet by an Arabic teacher. No recordings held. While you check yourself, the objectives’ and tasks’ voice waits, as the explanation folds away.",
+   "cross_check": "Every new recording transcribed blind with Gemini 3.8 Flash (temperature 0; 156 more requests, 424 in all, cross-check-voice-pieces.json); every transcript read by the main session. 30 takes were replaced: 24 lists of words made again with list pauses (an Arabic comma between the words in the script, so the voice doesn’t run them together), the script for صَلَاحِيَّة given its missing shadda and the clip made again, and five retakes (الْمُصَادَقَة twice, أَنْ, قَالَ إِنَّ, كِتَابُهَا، قَرَأْتُهَا، لَهَا). Short isolated words were still sometimes transcribed as a near neighbour (الْمُصَادَقَة as muṣādafa, أَنْ as عَنْ, مَا as مَعَ); the owner’s ear decided."
   }
  ],
  "clips": {
@@ -19175,882 +19190,1008 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "نَائِبُ الْفَاعِلِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هذه كتب جديدة": {
    "file": "c1b7a4644d5133a3.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هَذِهِ كُتُبٌ جَدِيدَةٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هذه كتب": {
    "file": "f3fb916af190d2e7.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هَذِهِ كُتُبٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كتب سامر رسالة": {
    "file": "29c46e172e381fab.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَتَبَ سَامِرٌ رِسَالَةً.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "في عين ماء": {
    "file": "83a0327c28441f88.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "فِي عَيْنِ مَاءٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "افتتاح مكتبة جديدة": {
    "file": "177a6a858e385573.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "اِفْتِتَاحُ مَكْتَبَةٍ جَدِيدَةٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هذا الأسلوب مفيد لأنني نجحت به": {
    "file": "74bfd80cd712e7b3.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هَذَا الْأُسْلُوبُ مُفِيدٌ لِأَنَّنِي نَجَحْتُ بِهِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "وصل متأخرًا مرة أخرى": {
    "file": "b7258d868b6a352d.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "وَصَلَ مُتَأَخِّرًا مَرَّةً أُخْرَى.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مرة أخرى": {
    "file": "1f850e2087659be4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَرَّةً أُخْرَى.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قد تكون الدراسة الفردية مرنة، لكنها لا توفر دائمًا تفاعلًا مباشرًا": {
    "file": "4f33eddd20e58dd1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَدْ تَكُونُ الدِّرَاسَةُ الْفَرْدِيَّةُ مَرِنَةً، لَكِنَّهَا لَا تُوَفِّرُ دَائِمًا تَفَاعُلًا مُبَاشِرًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "المصادقة تتحقق من الهوية": {
    "file": "286e46dc99521576.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الْمُصَادَقَةُ تَتَحَقَّقُ مِنَ الْهُوِيَّةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أي إنها تساعد النظام على معرفة من يحاول الدخول": {
    "file": "c3403ea4ebbcdaef.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَيْ إِنَّهَا تُسَاعِدُ النِّظَامَ عَلَى مَعْرِفَةِ مَنْ يُحَاوِلُ الدُّخُولَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "تشير النتائج إلى احتمال وجود علاقة": {
    "file": "2fd7d78628398d7d.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "تُشِيرُ النَّتَائِجُ إِلَى احْتِمَالِ وُجُودِ عَلَاقَةٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قال سامر": {
    "file": "62009b89f6758a5c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَالَ سَامِرٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "سأعود غدًا": {
    "file": "5eef8062c13299de.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "سَأَعُودُ غَدًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لكن الراوي يذكر أنه لم يعد": {
    "file": "19a964a7c2861b1a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَكِنَّ الرَّاوِيَ يَذْكُرُ أَنَّهُ لَمْ يَعُدْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ابتلعت المدينةُ صوته": {
    "file": "ea13662a309a3e1a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "اِبْتَلَعَتِ الْمَدِينَةُ صَوْتَهُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "المصادقة": {
    "file": "7e43f432044a6aa9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الْمُصَادَقَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "التخويل": {
    "file": "6d05d692c8374b8e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "التَّخْوِيل.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "التفويض": {
    "file": "32bd2ec7cc1d41d1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "التَّفْوِيض.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "إذا انتهت صلاحية الرمز، تُرفَضُ الطَّلَباتُ": {
    "file": "048331f728e16a0e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "إِذَا انْتَهَتْ صَلَاحِيَّةُ الرَّمْزِ، تُرْفَضُ الطَّلَبَاتُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كلمة المرور تساعد على التحقق من هويتك، لكن صلاحيات الحساب تحدد ما يمكنك فعله": {
    "file": "30c004ac9d04600d.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَلِمَةُ الْمُرُورِ تُسَاعِدُ عَلَى التَّحَقُّقِ مِنْ هُوِيَّتِكَ، لَكِنَّ صَلَاحِيَّاتِ الْحِسَابِ تُحَدِّدُ مَا يُمْكِنُكَ فِعْلُهُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لا": {
    "file": "9fa7712beb49a6a9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أقرؤه": {
    "file": "80e8c75015657406.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَقْرَؤُهُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أن": {
    "file": "19b2be6ac092ec87.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "من فضلك": {
    "file": "5851cbaccfe0b458.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مِنْ فَضْلِكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كان": {
    "file": "7f97892458baa221.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَانَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لأن": {
    "file": "e928e738a38f0926.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لِأَنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "سوف": {
    "file": "236234fd30a50c80.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "سَوْفَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ليس": {
    "file": "59393bcb530622aa.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَيْسَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أريد أن": {
    "file": "aa26cc6dc8eef8b2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أُرِيدُ أَنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لو": {
    "file": "84735df90a6fcc2e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَوْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لذلك": {
    "file": "9dc47fcfb14b5a2e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لِذَلِكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قد": {
    "file": "3e6bda92991608e8.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَدْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ربما": {
    "file": "e1c3b62b373555ab.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "رُبَّمَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "إلا": {
    "file": "ffdcfb68a568987e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "إِلَّا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أنتَ أنتِ": {
    "file": "240665a2d75e3a1e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَنْتَ، أَنْتِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مَن ما أين هل": {
    "file": "afbd09e1d2387084.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَنْ، مَا، أَيْنَ، هَلْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مِن في إلى": {
    "file": "48a7d5fe8c573b52.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مِنْ، فِي، إِلَى.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هذا هذه هؤلاء": {
    "file": "30517065855dd1cf.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هَذَا، هَذِهِ، هَؤُلَاءِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كتابي كتابك": {
    "file": "09b0cb3ee4b9d07f.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كِتَابِي، كِتَابُكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نحن أنتم هم": {
    "file": "ae54a59cdf14a25c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "نَحْنُ، أَنْتُمْ، هُمْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أحب أريد": {
    "file": "ebd6116fbc5b4406.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أُحِبُّ، أُرِيدُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عندي لدي": {
    "file": "780f4a8caa1a96cc.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "عِنْدِي، لَدَيَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "و ثم": {
    "file": "e9713776f77a8a01.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "وَ، ثُمَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أمام خلف بجانب": {
    "file": "99436b16f97ceb44.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَمَامَ، خَلْفَ، بِجَانِبِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يمين يسار": {
    "file": "3324d614c3b43506.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "يَمِين، يَسَار.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كان يدرس": {
    "file": "80f557e889a446b9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَانَ يَدْرُسُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أولا ثم بعد ذلك": {
    "file": "e66ed78c611be18e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَوَّلًا، ثُمَّ، بَعْدَ ذَلِكَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لا ما لم لن": {
    "file": "24c2baa3d7a776ad.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَا، مَا، لَمْ، لَنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لا الناهية": {
    "file": "98b4c995fff37ab8.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَا النَّاهِيَةُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أستطيع أن": {
    "file": "0c5594b50f12108a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَسْتَطِيعُ أَنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يجب أن": {
    "file": "80261f5aaa0b19d0.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "يَجِبُ أَنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أكبر من": {
    "file": "1783505a427e3b6b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَكْبَرُ مِنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أكثر": {
    "file": "7f3ed03b29789344.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَكْثَر.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "جذر": {
    "file": "3a4e7b1e5ff9f260.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "جَذْر.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "وزن": {
    "file": "873ac8566049fee2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "وَزْن.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "اسم فاعل": {
    "file": "749900340a534fcf.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "اِسْمُ فَاعِلٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "اسم مفعول": {
    "file": "b3036e463934518e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "اِسْمُ مَفْعُولٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مصدر": {
    "file": "1609584e3ecb1688.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَصْدَر.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قال يقول": {
    "file": "7bf431f0c891a366.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَالَ، يَقُولُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كان يكون": {
    "file": "8149b2a6f69f02f4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَانَ، يَكُونُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "دعا يدعو": {
    "file": "602a399562bed3cc.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "دَعَا، يَدْعُو.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "رمى يرمي": {
    "file": "52f2653ac59b4619.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "رَمَى، يَرْمِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "وعد يعد": {
    "file": "8c8b257b793309c2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "وَعَدَ، يَعِدُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مدّ": {
    "file": "5c884ff222f7f3ed.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَدَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أخذ": {
    "file": "1b73a74ec3914d1f.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَخَذَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مرفوع منصوب مجزوم": {
    "file": "2c56b79443fc8f2d.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَرْفُوع، مَنْصُوب، مَجْزُوم.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أن لن لم": {
    "file": "05690810db391df5.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَنْ، لَنْ، لَمْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نون": {
    "file": "089b4d7274cb6aba.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "نُون.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نائب فاعل": {
    "file": "31b011024ac0427f.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "نَائِبُ فَاعِلٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الذي التي": {
    "file": "fab620c5b344f308.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الَّذِي، الَّتِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "إنّ أنّ": {
    "file": "f47ae51b206180fe.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "إِنَّ، أَنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "اسم وخبر": {
    "file": "478eacdff2023d46.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "اِسْمٌ وَخَبَرٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قال إنّ": {
    "file": "02b9f4527ebea970.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَالَ إِنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ذكر أنّ": {
    "file": "2297a80ae58ee2d7.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "ذَكَرَ أَنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "إذا إن": {
    "file": "b5b2327fabf47db7.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "إِذَا، إِنْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لأنّ": {
    "file": "504eb6f89df96f26.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لِأَنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لكي": {
    "file": "1c2e374b94b19b1a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لِكَيْ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لكنّ": {
    "file": "745dea124e2e7640.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَكِنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مع أنّ": {
    "file": "2c708405bcff128c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَعَ أَنَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أعلن أفاد بحسب": {
    "file": "2e46d1483b8f9586.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَعْلَنَ، أَفَادَ، بِحَسَبِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "من المحتمل": {
    "file": "270753cd890f15cc.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مِنَ الْمُحْتَمَلِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يبدو": {
    "file": "e830645fc9b2fd7e.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "يَبْدُو.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "حال": {
    "file": "f1338bc2f8ba5f4a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "حَال.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "تمييز": {
    "file": "bb9e8ddf03d92915.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "تَمْيِيز.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "ممنوع من الصرف": {
    "file": "086fe4778483e492.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَمْنُوعٌ مِنَ الصَّرْفِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "إنما": {
    "file": "0a8664aebb679f43.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "إِنَّمَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لا النافية للجنس": {
    "file": "cfcd8932705c7af5.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَا النَّافِيَةُ لِلْجِنْسِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "باب، بيت، ولد، درس، كتاب": {
    "file": "f7f94447fba36f22.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "بَاب، بَيْت، وَلَد، دَرْس، كِتَاب.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أُمّ، إِبْرَة، مَاء، مَدْرَسَة، هُوَ، عَلَى، فِي": {
    "file": "81acb89c237a8701.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أُمّ، إِبْرَة، مَاء، مَدْرَسَة، هُوَ، عَلَى، فِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قلب": {
    "file": "d9e2274155a5df1c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَلْب.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كلب": {
    "file": "7bf20cb9f237d98b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَلْب.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أنا، هو، هي": {
    "file": "b7276a2bf8e237f5.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَنَا، هُوَ، هِيَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "طالب": {
    "file": "acf649d3e40f7861.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "طَالِب.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "طلاب": {
    "file": "ba50669b7d342b8a.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "طُلَّاب.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هذه الكتب": {
    "file": "ae26748ba32cd2fe.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هَذِهِ الْكُتُبُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هؤلاء الطلاب": {
    "file": "e9066abe8c240af0.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هَؤُلَاءِ الطُّلَّابُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كتابي": {
    "file": "48eaca46e6a59e47.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كِتَابِي.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أدرس، تدرس، يدرس، تدرسين": {
    "file": "912082597f857a32.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَدْرُسُ، تَدْرُسُ، يَدْرُسُ، تَدْرُسِينَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "نحن ندرس": {
    "file": "a72d1997125d7079.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "نَحْنُ نَدْرُسُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أقرأ الكتاب": {
    "file": "41202c11ef817307.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَقْرَأُ الْكِتَابَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "أذهب إلى المدرسة": {
    "file": "c7424b78b5e86599.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "أَذْهَبُ إِلَى الْمَدْرَسَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "هو متعب": {
    "file": "9a9f2759eed6d861.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "هُوَ مُتْعَبٌ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كان متعبا": {
    "file": "75254db18bcb82fe.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَانَ مُتْعَبًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لا أدرس، لم أدرس، لن أدرس": {
    "file": "8594f3413d334447.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَا أَدْرُسُ، لَمْ أَدْرُسْ، لَنْ أَدْرُسَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لست طالبا": {
    "file": "05204ca0b2582802.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَسْتُ طَالِبًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كتابها، قرأتها، لها": {
    "file": "8eaefc1b6479c775.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كِتَابُهَا، قَرَأْتُهَا، لَهَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كاتب، مكتوب، كتابة": {
    "file": "1af71484242c78b4.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كَاتِب، مَكْتُوب، كِتَابَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قال، زار": {
    "file": "2a26e5c60b989a13.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قَالَ، زَارَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "دعا": {
    "file": "25fb438b0a29bf5b.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "دَعَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "لم يدع": {
    "file": "faa0c88f35539bf1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "لَمْ يَدْعُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "وعد، مدّ": {
    "file": "3738f9ed5560676d.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "وَعَدَ، مَدَّ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "يدرسون، لن يدرسوا، لم يدرسوا": {
    "file": "8fcd58ddf19220e9.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "يَدْرُسُونَ، لَنْ يَدْرُسُوا، لَمْ يَدْرُسُوا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "كُتِبَ": {
    "file": "569d436e54186afb.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "كُتِبَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "عشرون كتابا": {
    "file": "03c9c1b58749ece8.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "عِشْرُونَ كِتَابًا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مررت بأحمدَ": {
    "file": "665190db881edd63.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مَرَرْتُ بِأَحْمَدَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الاثنين": {
    "file": "519ef852f6622611.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الِاثْنَيْن.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "قراءة": {
    "file": "2747b415577521b2.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "قِرَاءَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الثلاثاء": {
    "file": "a24da86b8613324f.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الثُّلَاثَاء.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "محادثة": {
    "file": "4afcafaaf963f5d8.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مُحَادَثَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الأربعاء": {
    "file": "77bccc36be0a35d3.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الْأَرْبِعَاء.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "دراسة": {
    "file": "518c4eecb881a1c0.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "دِرَاسَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الخميس": {
    "file": "2ec189eba8144ac1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الْخَمِيس.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "الجمعة": {
    "file": "b767fd2a3cd32d2c.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "الْجُمُعَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   },
   "مراجعة": {
    "file": "16f278b9ef1005e1.mp3",
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-30",
    "spoken": "مُرَاجَعَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-31"
   }
  },
  "removed": [
