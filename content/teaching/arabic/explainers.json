@@ -11880,7 +11880,7 @@
     "leads_to": [
      {
       "id": "explainer.arabic-word-partners",
-      "en": "Recording a word with the words it usually goes with."
+      "en": "Learning a word with the words it usually goes with."
      }
     ]
    }
@@ -13141,7 +13141,7 @@
     ],
     "why": {
      "q_en": "If ذَهَب and ذَهَبَ look the same, why don't readers get lost?",
-     "a_en": "Because a sentence rarely leaves room for both. After مِنْ, only the noun fits: مِنْ ذَهَبٍ, of gold. Before a person and a place, only the verb fits: ذَهَبَ جَدِّي إِلَى السُّوقِ."
+     "a_en": "Because a sentence rarely leaves room for both. After مِنْ, only the noun fits: مِنْ ذَهَبٍ, of gold. In ذَهَبَ جَدِّي إِلَى السُّوقِ, \"my grandfather's gold\" would leave إِلَى السُّوقِ with no verb, so only ذَهَبَ, he went, fits."
     },
     "selftest": [
      {
@@ -13178,6 +13178,7 @@
     "phrases_ar": [
      "خَاتَمٌ مِنْ ذَهَبٍ",
      "مِنْ ذَهَبٍ",
+     "إِلَى السُّوقِ",
      "شَعْرُهَا طَوِيلٌ"
     ]
    }
@@ -13231,7 +13232,7 @@
     "steps": [
      "A paragraph has a main point, and the rest supports it, gives examples, or sets something against it. The main point isn't always the first sentence.",
      "Linking words show the relation: بِالْإِضَافَةِ إِلَى ذَلِكَ and كَذَلِكَ add; ثَانِيًا lists; مِنْ نَاحِيَةٍ أُخْرَى sets against; بِاخْتِصَارٍ sums up.",
-     "Track each pronoun back to what it means: هِيَ or ـهَا points to a feminine noun, هُوَ or ـهُ to a masculine one, usually the nearest that fits.",
+     "Track each pronoun back to what it means: هِيَ or ـهَا points to a feminine noun or a plural of things, هُوَ or ـهُ to a masculine one, usually the nearest that fits.",
      "Check the match before you move on: a sentence can be understood word by word and still be misread if \"it\" is pinned to the wrong noun."
     ],
     "examples": [
@@ -13576,17 +13577,17 @@
     ],
     "table": [
      {
-      "form_en": "literally \"put forward a question\"",
+      "form_en": "literally \"threw down a question\"",
       "ar": "طَرَحَ سُؤَالًا",
       "en": "he asked a question"
      },
      {
-      "form_en": "literally \"delivered a lecture\"",
+      "form_en": "literally \"threw a lecture\"",
       "ar": "أَلْقَى مُحَاضَرَةً",
       "en": "he gave a lecture"
      },
      {
-      "form_en": "literally \"undertook a visit\"",
+      "form_en": "with بِـ (on its own, قَامَ is \"he stood up\")",
       "ar": "قَامَ بِزِيَارَةٍ",
       "en": "he paid a visit"
      },
@@ -13612,7 +13613,7 @@
      }
     ],
     "steps": [
-     "Words have usual partners. \"Take a photo\" is اِلْتَقَطَ صُورَةً, literally \"pick up a picture\": translating \"take\" on its own would sound odd.",
+     "Words have usual partners. \"Take a photo\" is اِلْتَقَطَ صُورَةً, literally \"pick up a picture\". أَخَذَ, take, is the everyday word; formal Arabic prefers اِلْتَقَطَ.",
      "So learn a noun with its verb, and a verb with its small word: حَصَلَ عَلَى, to get; شَارَكَ فِي, to take part in.",
      "Look for the pair in a dictionary example or a text, rather than putting it together from English.",
      "Note where a pair belongs: أَلْقَى مُحَاضَرَةً is formal, and fits a talk or a report better than a quick message."
@@ -13982,7 +13983,7 @@
     ],
     "steps": [
      "In speech, the words of a phrase run together: a space on the page isn't a pause.",
-     "The alif at the start of الْـ, of اِسْم and of many commands is هَمْزَةُ الْوَصْلِ, a joining alif. It's said only when you start speaking with it; after another word it's silent, and the words join: فِي الْبَيْتِ.",
+     "The alif at the start of الْـ, of اِسْم and of many commands is هَمْزَةُ الْوَصْلِ, a joining hamza, written with a plain alif. It's said only when you start speaking with it; after another word it's silent, and the words join: فِي الْبَيْتِ.",
      "Before a sun letter, the ل of الْـ is said as that letter: فِي الشَّارِعِ.",
      "Listen to a short phrase at natural speed, look at its words, then say it along with the speaker.",
      "Slowed-down audio helps at first, but aim for natural سُرْعَة, speed."
@@ -14046,7 +14047,7 @@
        },
        {
         "ar": "اقْرَأِ",
-        "en": "read (its alif silent after ثُمَّ)"
+        "en": "read (its alif silent after ثُمَّ; its last letter takes -i before الْـ)"
        },
        {
         "ar": "النَّصَّ",
@@ -14057,7 +14058,7 @@
     ],
     "why": {
      "q_en": "Why isn't the alif of اِسْمُكَ said in مَا اسْمُكَ؟?",
-     "a_en": "It's a joining alif: it only helps you start a word from silence. After مَا there's already a vowel to carry you in, so the alif drops out of speech and the two words join."
+     "a_en": "It's a joining hamza: it only helps you start a word from silence. After مَا there's already a vowel to carry you in, so the alif drops out of speech and the two words join."
     },
     "selftest": [
      {
@@ -14068,16 +14069,16 @@
        "only in poetry"
       ],
       "answer": "no: after a word it's silent",
-      "why_en": "It's a joining alif, said only at the start of speech."
+      "why_en": "It's a joining hamza, said only at the start of speech."
      },
      {
       "q_en": "What is هَمْزَةُ الْوَصْلِ?",
       "choices": [
-       "an alif said only at the start of speech",
+       "a hamza said only at the start of speech",
        "a hamza that is always said",
        "a mark for a doubled letter"
       ],
-      "answer": "an alif said only at the start of speech",
+      "answer": "a hamza said only at the start of speech",
       "why_en": "The doubling mark is the شَدَّة."
      },
      {
@@ -14337,7 +14338,7 @@
     "steps": [
      "An opinion has three parts: your view, a reason, and how far it goes. Start the view with فِي رَأْيِي, in my opinion, and the reason with لِأَنَّ.",
      "Limit it when you need to: تَقْرِيبًا, roughly; عَلَى الْأَقَلِّ, at least.",
-     "To disagree politely, say what you agree with first: هَذَا صَحِيحٌ, that's right, then لَكِنْ and your point.",
+     "To disagree politely, say what you agree with first, هَذَا صَحِيحٌ, that's right, then your point after لَكِنَّ, but.",
      "When a word won't come, describe it with words you know, then add أَقْصِدُ, I mean, or بِعِبَارَةٍ أُخْرَى, in other words.",
      "A pause to find words isn't a failure. Describing is better than guessing a word you're unsure of."
     ],
@@ -14381,24 +14382,24 @@
       ]
      },
      {
-      "ar": "لَا أُوَافِقُ تَمَامًا، فَالْمَسَافَاتُ طَوِيلَةٌ أَحْيَانًا.",
-      "en": "I don't quite agree: the distances are sometimes long.",
+      "ar": "هَذَا صَحِيحٌ، لَكِنَّ الْمَسَافَاتِ طَوِيلَةٌ أَحْيَانًا.",
+      "en": "That's right, but the distances are sometimes long.",
       "words": [
        {
-        "ar": "لَا",
-        "en": "not"
+        "ar": "هَذَا",
+        "en": "this, that"
        },
        {
-        "ar": "أُوَافِقُ",
-        "en": "I agree"
+        "ar": "صَحِيحٌ",
+        "en": "right"
        },
        {
-        "ar": "تَمَامًا",
-        "en": "completely"
+        "ar": "لَكِنَّ",
+        "en": "but"
        },
        {
-        "ar": "فَالْمَسَافَاتُ",
-        "en": "for the distances"
+        "ar": "الْمَسَافَاتِ",
+        "en": "the distances (-i after لَكِنَّ: ـَات takes -i where others take -a)"
        },
        {
         "ar": "طَوِيلَةٌ",
@@ -14537,8 +14538,8 @@
     ],
     "examples": [
      {
-      "ar": "يَتَكَلَّمُ الْمُذِيعُ الْفُصْحَى بِلُكْنَةٍ مِصْرِيَّةٍ.",
-      "en": "The newsreader speaks Standard Arabic with an Egyptian accent.",
+      "ar": "يَتَكَلَّمُ الْمُذِيعُ الْفُصْحَى بِلُكْنَةٍ خَفِيفَةٍ.",
+      "en": "The newsreader speaks Standard Arabic with a slight accent.",
       "words": [
        {
         "ar": "يَتَكَلَّمُ",
@@ -14557,8 +14558,8 @@
         "en": "with an accent"
        },
        {
-        "ar": "مِصْرِيَّةٍ",
-        "en": "Egyptian"
+        "ar": "خَفِيفَةٍ",
+        "en": "slight"
        }
       ]
      },
