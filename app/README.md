@@ -1,5 +1,18 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.110.0 — Words for Arabic modules 20–24, core B2:** news and public information: headlines, reporting verbs,
+figures and comparisons, interviews and a balanced digest (module 20); argument: claims and evidence, hedging,
+implication, counterarguments and debate (module 21); grammar for precise reading: word order and agreement, ḥāl and
+tamyīz, numbers and diptotes, negation and exception, and editing (module 22); essays, presentations, answering
+questions, register and reviewing your own work (module 23); and B2 consolidation: extended listening and reading, an
+unseen task, a portfolio, outside assessment and a long-term plan (module 24) — 175 words, fully vowelled, each with its
+meaning, root, an example and a note, all voiced (WaveNet B). The Vocabulary page's "Words from the lessons" now has 105
+lessons and 752 words. Each batch was cross-checked by an independent reviewer (no errors; words that repeated earlier
+ones were replaced), then checked by the owner; its 525 new clips were listened to, and five the owner heard wrong are now
+said in a phrase or reworded (ضِعْفُ الْعَدَدِ، مَغْزَى الْكَلَامِ، رَأْيٌ مُضَادٌّ, and two examples). No saved-data, sync or database
+change, and no new kind of information goes to AI. Going back to 1.109.0 is safe, with the usual note: a lesson word's
+card that comes up in its revision shows as "no longer in the course"; choose "Skip for now".
+
 **1.109.0 — A whole project can wait:** when a project can't move until someone gets back to you, mark it **waiting**
 (its page: Manage → "Waiting on someone?"): whom or what, and a day to check back if you like. It stays on the board,
 its card saying "Waiting on Priya · check back Wed 4 Nov" instead of "Away 3 weeks", and Your week no longer calls it
