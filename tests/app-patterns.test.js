@@ -40,7 +40,7 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   await go('today', 2026, 10, 15); await reset(); await go('today', 2026, 10, 15);
   check('nothing on Today about it', !(await exists('#noticedLink')));
   await click('[data-action=noticed]'); await sleep(300);
-  check('"What MyDay has noticed" in the footer opens it (Today stays current in the bar)', (await hash()) === '#noticed' && (await text('#noticed-h')).includes('What MyDay has noticed') && (await ev(`document.querySelector('#nav [aria-current=page]').textContent.trim()`)) === 'Today');
+  check('"What MyDay has noticed" in the footer opens it (the side menu marks its own link, not Today: 1.99.0)', (await hash()) === '#noticed' && (await text('#noticed-h')).includes('What MyDay has noticed') && (await ev(`[...document.querySelectorAll('#nav [aria-current=page]')].map(a => a.textContent.trim()).join()`)) === 'What MyDay has noticed');
   check('…it says what it looks at, that nothing is sent, and that nothing changes unless you say so', /nothing is sent anywhere/.test(await text('#app')) && /changes nothing unless you say so/.test(await text('#app')) && /Patterns, not judgements/.test(await text('#app')));
   check('…nothing to show yet, said kindly', (await text('#noticedEmpty')).includes('Nothing to show yet'));
   check('…your preferences: no limits to start with', (await ev(`['learning','admin','health'].map(c => document.getElementById('prefMin-' + c).value).join() + '|' + document.getElementById('prefTasks').value`)) === ',,|');
