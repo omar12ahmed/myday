@@ -211,6 +211,11 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
         if (c === q.answer && !cited(runs(c)[0])) voiced.add(runs(c)[0]);
       }
     });
+    // A question's explanation shows once it's answered, so it mustn't hold a later question's Arabic answer.
+    (e.selftest ?? []).forEach((q, i) => (e.selftest ?? []).slice(i + 1).forEach((later, j) => {
+      if (!text(later.answer) || !onePiece(later.answer) || cited(runs(later.answer)[0]) || !text(q.why_en)) return;
+      if (runs(q.why_en).some(run => contains(run, unmarked(later.answer)))) fail(`${at}, self-test ${i + 1} explanation`, `gives away question ${i + j + 2}'s answer (${later.answer})`);
+    }));
     // Arabic inside English. A run of two or more words must be a piece the explainer knows (a table form, a sentence,
     // or one of its phrases_ar), so two pieces can't run together and be voiced as one.
     const phrases = new Set(e.phrases_ar ?? []), used = new Set();

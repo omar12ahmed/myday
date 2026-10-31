@@ -1801,7 +1801,7 @@
        "الَّذِينَ"
       ],
       "answer": "الَّتِي",
-      "why_en": "الْبِنْتُ is one girl, so الَّتِي. الَّذِي is for a man, and الَّذِينَ for men."
+      "why_en": "الْبِنْتُ is one girl, so الَّتِي. الَّذِي is for one man."
      },
      {
       "q_en": "\"The friends who visited us\": which relative word goes with الْأَصْدِقَاءُ?",
@@ -2122,6 +2122,16 @@
     },
     "selftest": [
      {
+      "q_en": "Which of these changes the description, not the subject?",
+      "choices": [
+       "كَانَ",
+       "إِنَّ",
+       "لَعَلَّ"
+      ],
+      "answer": "كَانَ",
+      "why_en": "كَانَ and its sisters change the description to -a. إِنَّ and لَعَلَّ change the subject."
+     },
+     {
       "q_en": "Which says \"the room was clean\"?",
       "choices": [
        "كَانَتِ الْغُرْفَةُ نَظِيفَةً",
@@ -2140,16 +2150,6 @@
       ],
       "answer": "The rain is still heavy",
       "why_en": "مَا زَالَ means \"still\", though it looks negative."
-     },
-     {
-      "q_en": "Which of these changes the description, not the subject?",
-      "choices": [
-       "كَانَ",
-       "إِنَّ",
-       "لَعَلَّ"
-      ],
-      "answer": "كَانَ",
-      "why_en": "كَانَ and its sisters change the description to -a. إِنَّ and لَعَلَّ change the subject."
      }
     ],
     "phrases_ar": [
@@ -3008,16 +3008,6 @@
     },
     "selftest": [
      {
-      "q_en": "Which says \"although the weather was cold\"?",
-      "choices": [
-       "مَعَ أَنَّ الْجَوَّ كَانَ بَارِدًا",
-       "رَغْمَ الْجَوَّ كَانَ بَارِدًا",
-       "لِأَنَّ الْجَوَّ كَانَ بَارِدًا"
-      ],
-      "answer": "مَعَ أَنَّ الْجَوَّ كَانَ بَارِدًا",
-      "why_en": "مَعَ أَنَّ goes before a sentence. رَغْمَ needs a noun (رَغْمَ الْبَرْدِ, despite the cold), and لِأَنَّ gives a reason, not a contrast."
-     },
-     {
       "q_en": "Which is followed by a noun ending in -i?",
       "choices": [
        "رَغْمَ",
@@ -3026,6 +3016,16 @@
       ],
       "answer": "رَغْمَ",
       "why_en": "رَغْمَ is followed by a noun in -i (رَغْمَ الْمَطَرِ). After مَعَ أَنَّ and لَكِنَّ the noun ends in -a."
+     },
+     {
+      "q_en": "Which says \"although the weather was cold\"?",
+      "choices": [
+       "مَعَ أَنَّ الْجَوَّ كَانَ بَارِدًا",
+       "رَغْمَ الْجَوَّ كَانَ بَارِدًا",
+       "لِأَنَّ الْجَوَّ كَانَ بَارِدًا"
+      ],
+      "answer": "مَعَ أَنَّ الْجَوَّ كَانَ بَارِدًا",
+      "why_en": "مَعَ أَنَّ goes before a sentence. رَغْمَ needs a noun (رَغْمَ الْبَرْدِ, despite the cold), and لِأَنَّ gives a reason, not a contrast."
      },
      {
       "q_en": "In أَمَّا أَنَا فَأُفَضِّلُ الشَّايَ, why is there a فَـ?",
@@ -3869,7 +3869,7 @@
        "-a"
       ],
       "answer": "-i",
-      "why_en": "After فِي, مِنْ, إِلَى, عَلَى and the rest, the noun ends in -i: عَلَى الْمَكْتَبِ."
+      "why_en": "After فِي, مِنْ, عَلَى and the other small place words, the noun ends in -i: عَلَى الْمَكْتَبِ."
      },
      {
       "q_en": "\"I'm going to the market\": which word means \"to\"?",
@@ -4054,7 +4054,7 @@
        "أَنَا لُبْنَانُ"
       ],
       "answer": "أَنَا لُبْنَانِيَّةٌ",
-      "why_en": "For a woman, the ending is ـِيَّة. لُبْنَانِيٌّ is for a man, and لُبْنَان is the country."
+      "why_en": "For a woman, the ending is ـِيَّة. The other two are the word for a man and the name of the country."
      },
      {
       "q_en": "Which means \"Iraqi\" for a man?",
@@ -5839,7 +5839,7 @@
        "يَعْرِفُنِي"
       ],
       "answer": "أَعْرِفُهَا",
-      "why_en": "-hā is \"her\". -hu is \"him\", and يَعْرِفُنِي is \"he knows me\"."
+      "why_en": "-hā is \"her\", and -hu is \"him\"."
      },
      {
       "q_en": "What does ـنِي mean on the end of a verb?",
@@ -7080,7 +7080,7 @@
        "تَفَضَّلْ"
       ],
       "answer": "مِنْ فَضْلِكِ",
-      "why_en": "To a woman, the last vowel is -i: فَضْلِكِ. تَفَضَّلْ is \"here you are\"."
+      "why_en": "To a woman, the last vowel is -i: فَضْلِكِ. مِنْ فَضْلِكَ is to a man, and تَفَضَّلْ is something else: see the next question."
      },
      {
       "q_en": "The seller hands you the bread and says تَفَضَّلْ. What does it mean here?",
@@ -7592,7 +7592,7 @@
        "exit"
       ],
       "answer": "closed",
-      "why_en": "مُغْلَق is \"closed\". \"Open\" is مَفْتُوح, and \"exit\" مَخْرَج."
+      "why_en": "مُغْلَق is \"closed\". \"Open\" is مَفْتُوح."
      },
      {
       "q_en": "Which sign shows the way out?",
@@ -12210,7 +12210,7 @@
        "registration closes on Thursday"
       ],
       "answer": "the course starts on Thursday",
-      "why_en": "تَبْدَأُ is \"starts\". It says nothing about the end or registration."
+      "why_en": "تَبْدَأُ is \"starts\": the notice says nothing about when the course ends."
      },
      {
       "q_en": "What is تَسْجِيل?",
@@ -14820,7 +14820,7 @@
        "أَيْ"
       ],
       "answer": "عَلَى سَبِيلِ الْمِثَالِ",
-      "why_en": "خَاتِمَة is a conclusion, and أَيْ explains: \"that is\"."
+      "why_en": "خَاتِمَة names a part of a paragraph, and أَيْ explains: \"that is\"."
      },
      {
       "q_en": "What is a خَاتِمَة?",
