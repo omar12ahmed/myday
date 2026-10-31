@@ -8665,6 +8665,174 @@
      "ذَهَبَتْ لَيْلَى إِلَى السُّوقِ وَاشْتَرَتْ خُبْزًا"
     ]
    }
+  ],
+  "lesson.arabic-a1-portfolio": [
+   {
+    "id": "explainer.arabic-learning-goals",
+    "title_en": "Talking about your learning: أَتَعَلَّمُ, قَوِيّ, ضَعِيف, هَدَفِي",
+    "family_en": "Words for what you're learning, how it's going, and what comes next",
+    "course_words": [
+     "lexeme.arabic-a1-portfolio-1",
+     "lexeme.arabic-a1-portfolio-2",
+     "lexeme.arabic-a1-portfolio-3",
+     "lexeme.arabic-a1-portfolio-4",
+     "lexeme.arabic-a1-portfolio-5",
+     "lexeme.arabic-a1-portfolio-6"
+    ],
+    "table": [
+     {
+      "form_en": "I'm learning",
+      "ar": "أَتَعَلَّمُ الْعَرَبِيَّةَ",
+      "en": "I'm learning Arabic"
+     },
+     {
+      "form_en": "strong",
+      "ar": "قِرَاءَتِي قَوِيَّةٌ",
+      "en": "My reading is strong"
+     },
+     {
+      "form_en": "weak",
+      "ar": "كِتَابَتِي ضَعِيفَةٌ",
+      "en": "My writing is weak"
+     },
+     {
+      "form_en": "review",
+      "ar": "أَحْتَاجُ إِلَى مُرَاجَعَةٍ",
+      "en": "I need some review"
+     },
+     {
+      "form_en": "progress",
+      "ar": "هَذَا تَقَدُّمٌ جَيِّدٌ",
+      "en": "This is good progress"
+     },
+     {
+      "form_en": "my goal",
+      "ar": "هَدَفِي الِاسْتِمَاعُ",
+      "en": "My goal is listening"
+     }
+    ],
+    "steps": [
+     "أَتَعَلَّمُ is \"I learn\" or \"I'm learning\": أَتَعَلَّمُ الْعَرَبِيَّةَ. The أَـ in front means \"I\", as in every present verb.",
+     "To say how a skill is going, add ـِي, \"my\", to the skill, then say قَوِيّ, strong, or ضَعِيف, weak: قِرَاءَتِي قَوِيَّةٌ, my reading is strong.",
+     "قِرَاءَة and كِتَابَة end in ـَة, so the describing word takes ـَة too. Before ـِي, the ـَة is written ت: قِرَاءَتِي.",
+     "Pick your next goal from your weakest skill: هَدَفِي الِاسْتِمَاعُ, my goal is listening."
+    ],
+    "examples": [
+     {
+      "ar": "أَتَعَلَّمُ الْعَرَبِيَّةَ مُنْذُ ثَلَاثَةِ أَشْهُرٍ.",
+      "en": "I've been learning Arabic for three months.",
+      "words": [
+       {
+        "ar": "أَتَعَلَّمُ",
+        "en": "I'm learning"
+       },
+       {
+        "ar": "الْعَرَبِيَّةَ",
+        "en": "Arabic"
+       },
+       {
+        "ar": "مُنْذُ",
+        "en": "for, since"
+       },
+       {
+        "ar": "ثَلَاثَةِ",
+        "en": "three"
+       },
+       {
+        "ar": "أَشْهُرٍ",
+        "en": "months"
+       }
+      ]
+     },
+     {
+      "ar": "اِسْتِمَاعِي ضَعِيفٌ، وَأَحْتَاجُ إِلَى مُرَاجَعَةٍ.",
+      "en": "My listening is weak, and I need some review.",
+      "words": [
+       {
+        "ar": "اِسْتِمَاعِي",
+        "en": "my listening"
+       },
+       {
+        "ar": "ضَعِيفٌ",
+        "en": "weak"
+       },
+       {
+        "ar": "وَأَحْتَاجُ",
+        "en": "and I need"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "(needed after this verb)"
+       },
+       {
+        "ar": "مُرَاجَعَةٍ",
+        "en": "review"
+       }
+      ]
+     },
+     {
+      "ar": "تَقَدُّمِي فِي الْقِرَاءَةِ جَيِّدٌ.",
+      "en": "My progress in reading is good.",
+      "words": [
+       {
+        "ar": "تَقَدُّمِي",
+        "en": "my progress"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْقِرَاءَةِ",
+        "en": "reading"
+       },
+       {
+        "ar": "جَيِّدٌ",
+        "en": "good"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why قَوِيَّةٌ for my reading, but ضَعِيفٌ for my listening?",
+     "a_en": "The describing word matches the skill's word. قِرَاءَة ends in ـَة, so it's feminine: قِرَاءَتِي قَوِيَّةٌ. اِسْتِمَاع has no ـَة, so it's masculine: اِسْتِمَاعِي ضَعِيفٌ."
+    },
+    "selftest": [
+     {
+      "q_en": "Which says \"My writing is strong\"?",
+      "choices": [
+       "كِتَابَتِي قَوِيَّةٌ",
+       "كِتَابَتِي قَوِيٌّ",
+       "كِتَابِي قَوِيٌّ"
+      ],
+      "answer": "كِتَابَتِي قَوِيَّةٌ",
+      "why_en": "كِتَابَة ends in ـَة, so قَوِيّ takes ـَة too. كِتَابِي is \"my book\"."
+     },
+     {
+      "q_en": "What does أَتَعَلَّمُ mean?",
+      "choices": [
+       "I'm learning",
+       "I'm teaching",
+       "I know"
+      ],
+      "answer": "I'm learning",
+      "why_en": "أَتَعَلَّمُ is \"I learn, I'm learning\". \"I teach\" is أُعَلِّمُ, and \"I know\" أَعْرِفُ."
+     },
+     {
+      "q_en": "Listening is your weakest skill. Which goal fits?",
+      "choices": [
+       "هَدَفِي الِاسْتِمَاعُ",
+       "هَدَفِي الْقِرَاءَةُ",
+       "هَدَفِي الْكِتَابَةُ"
+      ],
+      "answer": "هَدَفِي الِاسْتِمَاعُ",
+      "why_en": "Pick the next goal from your weakest skill: here, listening."
+     }
+    ],
+    "phrases_ar": [
+     "اِسْتِمَاعِي ضَعِيفٌ"
+    ]
+   }
   ]
  }
 }
