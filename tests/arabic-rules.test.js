@@ -425,6 +425,32 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('the real explainers file passes with its readings: 119 explainers in 103 lessons (modules 4 to 24)', realExp.code === 0 && realExp.out.includes('119 explainers in 103 lessons'));
   check('the build checks the explainers: curriculum:prepare runs validate-explainers.mjs', (JSON.parse(read(path.join(ROOT, 'app/package.json'))).scripts['curriculum:prepare'] || '').includes('node scripts/validate-explainers.mjs'));
   const expSource = JSON.parse(read(expPath));
+  // The build's split for loading (prepare-explainers.mjs): one file per module, loaded when a lesson in it opens, and
+  // a small index; written to its own folder, so prepare-arabic.mjs (which empties data/) leaves it be.
+  const expOut = path.join(ROOT, 'app/src/study/arabic/explainer-data'), prepExp = () => execFileSync('node', [path.join(ROOT, 'app/scripts/prepare-explainers.mjs')], { stdio: 'pipe' });
+  const prepSteps = (JSON.parse(read(path.join(ROOT, 'app/package.json'))).scripts['curriculum:prepare'] || '').split(' && ');
+  check('the build splits the explainers: curriculum:prepare runs prepare-explainers.mjs, after prepare-arabic.mjs', prepSteps.indexOf('node scripts/prepare-explainers.mjs') > prepSteps.indexOf('node scripts/prepare-arabic.mjs') && prepSteps.includes('node scripts/prepare-arabic.mjs'));
+  fs.mkdirSync(expOut, { recursive: true }); fs.writeFileSync(path.join(expOut, 'explainers-arabic-stray.json'), '{}');
+  prepExp();
+  const expRead = f => JSON.parse(read(path.join(expOut, f))), expIndex = expRead('explainers-index.json');
+  const moduleOfLesson = Object.fromEntries(source.lessons.map(l => [l.id, l.module_id.split('.').pop()]));
+  const expModules = Object.fromEntries(fs.readdirSync(expOut).filter(f => f !== 'explainers-index.json').map(f => [f.replace(/^explainers-|\.json$/g, ''), expRead(f).lessons]));
+  const expWantModules = [...new Set(Object.keys(expSource.lessons).map(id => moduleOfLesson[id]))].sort();
+  check('one file per module with explainers (21: modules 4 to 24), and a stray file from before is gone', JSON.stringify(Object.keys(expModules).sort()) === JSON.stringify(expWantModules) && expWantModules.length === 21);
+  check('each module\'s file holds exactly its own lessons\' explainers, as authored', Object.entries(expSource.lessons).every(([id, list]) => JSON.stringify(expModules[moduleOfLesson[id]]?.[id]) === JSON.stringify(list))
+    && Object.values(expModules).reduce((n, m) => n + Object.keys(m).length, 0) === Object.keys(expSource.lessons).length);
+  const expCards = Object.entries(expSource.lessons).flatMap(([id, list]) => list.map(e => [id, e]));
+  check('the index has each lesson\'s module (103), each card\'s lesson and title (119) and each course word\'s card (640), and nothing more',
+    JSON.stringify(expIndex.chunks) === JSON.stringify(Object.fromEntries(Object.keys(expSource.lessons).map(id => [id, moduleOfLesson[id]])))
+    && JSON.stringify(expIndex.cards) === JSON.stringify(Object.fromEntries(expCards.map(([id, e]) => [e.id, [id, e.title_en]])))
+    && JSON.stringify(expIndex.words) === JSON.stringify(Object.fromEntries(expCards.flatMap(([, e]) => (e.course_words ?? []).map(w => [w, e.id]))))
+    && Object.keys(expIndex.chunks).length === 103 && Object.keys(expIndex.cards).length === 119 && Object.keys(expIndex.words).length === 640);
+  const gz = f => require('zlib').gzipSync(fs.readFileSync(path.join(expOut, f))).length;
+  check('sizes stay bounded: the index (loaded for links) under 16 KB compressed, each module\'s explainers under 16 KB', gz('explainers-index.json') < 16000 && Object.keys(expModules).every(m => gz(`explainers-${m}.json`) < 16000));
+  const expHash = () => fs.readdirSync(expOut).sort().map(f => f + ':' + require('crypto').createHash('sha256').update(fs.readFileSync(path.join(expOut, f))).digest('hex')).join();
+  const expBefore = expHash();
+  execFileSync('node', [path.join(ROOT, 'app/scripts/prepare-arabic.mjs')], { stdio: 'pipe' });
+  check('preparing the course again leaves the explainers\' split exactly as it was', expHash() === expBefore);
   const expTemp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-explainers-'));
   const badExp = (name, mutate, message, expected) => {
     const copy = JSON.parse(JSON.stringify(expSource)); mutate(copy);

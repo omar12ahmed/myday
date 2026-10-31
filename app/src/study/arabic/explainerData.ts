@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 
-// Explainers (specs/arabic-explainers.md): MyDay's own content (content/teaching/arabic/explainers.json), checked at
-// every build by app/scripts/validate-explainers.mjs and loaded on demand, like the teaching. Shown by Explainers.tsx.
+// Explainers (specs/arabic-explainers.md): MyDay's own content, authored in content/teaching/arabic/explainers.json and
+// checked at every build by app/scripts/validate-explainers.mjs. The build splits it for loading
+// (scripts/prepare-explainers.mjs): one file per module, loaded when a lesson in it opens, and a small index of where
+// each card lives, its title and the course words that link to it. Shown by Explainers.tsx.
 export interface Explainer {
   id: string; title_en: string; family_en: string; root_ar?: string; root_reading?: string; course_words?: string[];
   table: { form_en: string; ar: string; en: string }[];
@@ -13,30 +15,57 @@ export interface Explainer {
   // Where this leads: a later explainer that builds on this one, and how (the owner's choice, 31 October 2026).
   leads_to?: { id: string; en: string }[];
 }
-export type Explainers = Record<string, Explainer[]>; // by lesson id
-let book: Promise<Explainers> | null = null;
-const load = () => (book ??= import('../../../../content/teaching/arabic/explainers.json')
-  .then(m => m.default.lessons as unknown as Explainers, e => { book = null; throw e; }));
+// What a link needs to know about a card without loading it: its id and title.
+export interface ExplainerRef { id: string; title_en: string }
+// The index: each lesson's module file; each card's lesson and title; each course word's card.
+export interface ExplainerIndex { chunks: Record<string, string>; cards: Record<string, [string, string]>; words: Record<string, string> }
 
-// Every lesson's explainers, once loaded (null until then, and if they can't be: they're extra, so nothing shows).
-export function useExplainers(): Explainers | null {
-  const [b, setB] = useState<Explainers | null>(null);
+let index: Promise<ExplainerIndex> | null = null;
+const loadIndex = () => (index ??= import('./explainer-data/explainers-index.json')
+  .then(m => m.default as unknown as ExplainerIndex, e => { index = null; throw e; }));
+const files = import.meta.glob<{ lessons: Record<string, Explainer[]> }>('./explainer-data/explainers-arabic-*.json', { import: 'default' });
+const modules = new Map<string, Promise<Record<string, Explainer[]>>>();
+const loadModule = (m: string) => {
+  let p = modules.get(m);
+  if (!p) {
+    const load = files[`./explainer-data/explainers-${m}.json`];
+    p = load ? load().then(x => x.lessons, e => { modules.delete(m); throw e; }) : Promise.resolve({});
+    modules.set(m, p);
+  }
+  return p;
+};
+
+// The index, once loaded (null until then, and if it can't be: explainers are extra, so nothing shows).
+export function useExplainers(): ExplainerIndex | null {
+  const [b, setB] = useState<ExplainerIndex | null>(null);
   useEffect(() => {
     let live = true;
-    load().then(x => { if (live) setB(x); }, () => {});
+    loadIndex().then(x => { if (live) setB(x); }, () => {});
     return () => { live = false; };
   }, []);
   return b;
 }
+// A lesson's explainers, once its module's file has loaded (an empty list if it has none, or can't load); kept with
+// the lesson they're for, so another lesson never shows them while its own load.
+export function useLessonExplainers(lessonId: string): Explainer[] | null {
+  const [got, setGot] = useState<{ lessonId: string; list: Explainer[] } | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadIndex().then(i => i.chunks[lessonId] ? loadModule(i.chunks[lessonId]).then(m => m[lessonId] ?? []) : [])
+      .then(list => { if (live) setGot({ lessonId, list }); }, () => { if (live) setGot({ lessonId, list: [] }); });
+    return () => { live = false; };
+  }, [lessonId]);
+  return got?.lessonId === lessonId ? got.list : null;
+}
 // An explainer by its id, with the lesson it's in.
-export const findExplainer = (b: Explainers | null, id: string) => {
-  for (const [lessonId, list] of Object.entries(b ?? {})) for (const e of list) if (e.id === id) return { lessonId, e };
-  return null;
+export const findExplainer = (b: ExplainerIndex | null, id: string): { lessonId: string; e: ExplainerRef } | null => {
+  const c = b?.cards[id];
+  return c ? { lessonId: c[0], e: { id, title_en: c[1] } } : null;
 };
 // The explainer for a course word, with the lesson it's in.
-export const explainerFor = (b: Explainers | null, wordId: string) => {
-  for (const [lessonId, list] of Object.entries(b ?? {})) for (const e of list) if (e.course_words?.includes(wordId)) return { lessonId, e };
-  return null;
+export const explainerFor = (b: ExplainerIndex | null, wordId: string) => {
+  const id = b?.words[wordId];
+  return id ? findExplainer(b, id) : null;
 };
 
 // An explainer a link asked to open (from another page): kept in memory only, used once by the next page for that lesson,

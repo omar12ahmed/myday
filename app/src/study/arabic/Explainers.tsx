@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { askExplainer, findExplainer, takeExplainer, useExplainers, type Explainer, type Explainers } from './explainerData';
+import { askExplainer, findExplainer, takeExplainer, useExplainers, useLessonExplainers, type Explainer, type ExplainerIndex, type ExplainerRef } from './explainerData';
 import { Ar } from './Ar';
 import { MixedVoiceLabel, PlayButton } from './Listen';
 import { WordNote } from './WordNote';
@@ -36,7 +36,7 @@ const follow = (lessonId: string, id: string) => (ev: React.MouseEvent) => {
 
 // Under a course word: a link to the explainer for it.
 // Its accessible name adds the word, so a list of these links can be told apart.
-export function ExplainerLink({ found, verb, word }: { found: { lessonId: string; e: Explainer } | null; verb: boolean; word: string }) {
+export function ExplainerLink({ found, verb, word }: { found: { lessonId: string; e: ExplainerRef } | null; verb: boolean; word: string }) {
   if (!found) return null;
   const { lessonId, e } = found, label = `${verb ? 'How this verb works' : 'How it works'}, step by step`;
   return <p className="m-0"><InlineLink href={'#study/arabic/' + lessonId} data-ar-explainer-link={e.id} aria-label={`${label}: ${word}`}
@@ -48,14 +48,14 @@ export function ExplainerLink({ found, verb, word }: { found: { lessonId: string
 // step it asked for); it opens once the page has settled (`ready`: its teaching is here) and the explainers have
 // loaded, after the page's own jump to the step (useJourney: a timer, then a frame).
 export function LessonExplainers({ lessonId, ready }: { lessonId: string; ready: boolean }) {
-  const b = useExplainers(), list = b?.[lessonId] ?? [];
+  const b = useExplainers(), loaded = useLessonExplainers(lessonId), list = loaded ?? [];
   const [want] = useState(() => takeExplainer(lessonId)), opened = useRef(false);
   useEffect(() => {
-    if (!want || opened.current || !ready || !b?.[lessonId]?.some(e => e.id === want)) return;
+    if (!want || opened.current || !ready || !loaded?.some(e => e.id === want)) return;
     let frame = 0;
     const timer = setTimeout(() => { frame = requestAnimationFrame(() => { opened.current = true; openHere(want); }); }, 400);
     return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
-  }, [want, ready, b, lessonId]);
+  }, [want, ready, loaded, lessonId]);
   if (!list.length) return null;
   return <section className="mt-5" data-ar-explainers={list.length} aria-labelledby={`ar-explainers-${lessonId}`}>
     <h4 id={`ar-explainers-${lessonId}`} className="mb-1">How it works</h4>
@@ -68,7 +68,7 @@ const H = ({ children }: { children: string }) => <h6 className="text-[15px] fon
 // The voice, where a clip has been listened to (only then does a play button show), for the forms, the sentences and
 // the Arabic in the steps (the owner's choice, 30 October 2026). The word-by-word pieces, the "why" and the questions
 // stay silent.
-function ExplainerCard({ e, book }: { e: Explainer; book: Explainers | null }) {
+function ExplainerCard({ e, book }: { e: Explainer; book: ExplainerIndex | null }) {
   const voice = e.id;
   const leads = (e.leads_to ?? []).map(l => ({ ...l, to: findExplainer(book, l.id) })).filter(l => l.to);
   return <details id={anchor(e.id)} data-ar-explainer={e.id} className="mt-3 rounded-tile border border-outline bg-surface px-4 py-2 scroll-mt-20 lg:scroll-mt-[160px]">

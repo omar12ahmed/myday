@@ -572,6 +572,9 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await fresh(wvHash); await wait(exSel, 5000);
   const exInfo = await ev(`(() => { const s = document.querySelector('#ar-step-understand [data-ar-explainers="5"]'); return !s ? null : { head: s.querySelector('h4')?.textContent, ids: [...s.querySelectorAll('details[data-ar-explainer]')].map(d => d.dataset.arExplainer), open: [...s.querySelectorAll('details[data-ar-explainer]')].filter(d => d.open).length }; })()`);
   check('the weak verbs lesson has "How it works" in its Understand step, with five explainers in order (say, be, live, invite, walk), all closed', !!exInfo && exInfo.head === 'How it works' && exInfo.ids.join() === exWantIds.join() && exInfo.open === 0, exInfo);
+  // Which explainer files the page has loaded (each its own chunk, explainers-<module>-<hash>.js): the index, and a module's own.
+  const exChunks = () => ev(`performance.getEntriesByType('resource').map(r => r.name.match(/\\/explainers-([a-z0-9-]+?)-[\\w-]{8}\\.js$/)?.[1]).filter(Boolean).sort().join()`);
+  check('…loading only the index and module 14\'s own explainers, not the other modules\'', await exChunks() === 'arabic-verb-expansion,index', await exChunks());
   const savedBefore = await ev(`JSON.stringify(Object.keys(localStorage).filter(k => k.startsWith('myday.')).sort().map(k => [k, localStorage.getItem(k)]))`);
   const sayEx = 'details[data-ar-explainer="explainer.arabic-say"]';
   await ev(`document.querySelector('${sayEx}').open = true`); await sleep(300);
@@ -648,6 +651,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   const linkText = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-explainer-link]')?.textContent`);
   const linkCount = await count('[data-ar-explainer-link]');
   check('Vocabulary has 640 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 57 in modules 8–9, 71 in modules 10–11, 58 in modules 12–13, 13 in module 14, 27 in module 15, 68 in modules 16–17, 65 in modules 18–19, 70 in modules 20–21, 69 in modules 22–23, 35 in module 24)', linkCount === 640, linkCount);
+  check('…for which it loads only the explainers\' index, no module\'s explainers', await exChunks() === 'index', await exChunks());
   check('a verb\'s link reads "How this verb works, step by step"', await linkText('lexeme.arabic-weak-verbs-1') === 'How this verb works, step by step', await linkText('lexeme.arabic-weak-verbs-1'));
   check('a phrase\'s link reads "How it works, step by step"', await linkText('lexeme.arabic-verb-moods-4') === 'How it works, step by step', await linkText('lexeme.arabic-verb-moods-4'));
   check('…and each link\'s accessible name adds its word, so the list of links can be told apart', await ev(`document.querySelector('[data-ar-word="lexeme.arabic-weak-verbs-1"] [data-ar-explainer-link]')?.getAttribute('aria-label')`) === 'How this verb works, step by step: قَالَ');
@@ -665,6 +669,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   }
   check('following a link from Vocabulary goes to that lesson with the Take explainer open and in view', follow.hash === '#study/arabic/lesson.arabic-irregular-families' && follow.open && follow.top >= 0 && follow.top < follow.h, follow);
   check('…at 1280 px its title, which has focus, sits below the sticky step bar, not under it', follow.focused && follow.bar !== null && follow.title >= follow.bar, follow);
+  check('…its module\'s explainers loading only then, when the lesson opens', await exChunks() === 'arabic-verb-expansion,index', await exChunks());
   await send('Emulation.clearDeviceMetricsOverride');
 
   // A word from another lesson links to the explainer where it lives: لَمْ يَكُنْ (verb moods) to Be (weak verbs).

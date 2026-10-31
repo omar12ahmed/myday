@@ -116,9 +116,12 @@ Only Arabic is stored, never a transliteration. The file is MyDay's own; the cur
 
 **For topics beyond verbs:** the root becomes optional, and the table can hold any set of forms.
 
-**As the course fills:** one file loaded on demand is fine for the first batches (about 4 KB per explainer). Before it
-grows to the whole course, split it by module, with a small map from course word to explainer built once, so a lesson
-loads only its module's explainers.
+**Split for loading (at 119 explainers):** the authored file stays one file, but the app no longer loads it whole (it
+had reached 124 KB compressed). At every build, `app/scripts/prepare-explainers.mjs` writes
+`app/src/study/arabic/explainer-data/`: one file per module (5–10 KB compressed), loaded when a lesson in that module
+opens, and an index (about 10 KB) of each lesson's module, each card's lesson and title, and each course word's card.
+Vocabulary's links and a card's "where this leads" need only the index. The rules test checks that the split matches
+the authored file exactly and stays small.
 
 ## 6. Decisions (owner, 30 October 2026)
 

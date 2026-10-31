@@ -42,7 +42,7 @@ import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX
 import { KeepAWord } from './KeepAWord';
 import { WordNote } from './WordNote';
 import { ExplainerLink, LessonExplainers } from './Explainers';
-import { explainerFor, useExplainers, type Explainer } from './explainerData';
+import { explainerFor, useExplainers, type ExplainerRef } from './explainerData';
 import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
 import { starterFor } from './starter';
 import { ARABIC_TINY, toStep } from '../journey/dom';
@@ -893,7 +893,7 @@ function useTakeOut() {
 // taking it out. A word you know well (wordKnown) asks you to read it aloud first: its voice and reading wait for
 // "Read it aloud, then check" (only when it has one of them to hold back), unless "Always show the help" is on; its
 // example keeps its voice. Each row listens only to that switch, not to the playing state.
-function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: Explainer } | null }) {
+function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: ExplainerRef } | null }) {
   const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
   const course = isCourseWord(w) ? w : null;
   const alwaysHelp = useSyncExternalStore(subscribe, () => voiceState().alwaysHelp);
