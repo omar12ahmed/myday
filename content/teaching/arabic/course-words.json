@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–22 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied and re-checked), checked by the owner on 2026-10-31 and voiced (round sixteen); modules 23–24 (B2): draft, waiting for the independent cross-check and the owner",
+ "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–22 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied and re-checked), checked by the owner on 2026-10-31 and voiced (round sixteen); modules 23–24 (B2): cross-checked by an independent reviewer (no errors; three repeats replaced, its suggestions applied and re-checked), waiting for the owner",
  "version": "1.7",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -8441,14 +8441,14 @@
     },
     {
      "id": "lexeme.arabic-register-adaptation-7",
-     "form_ar": "مُسْتَوَى اللُّغَةِ",
-     "meaning_en": "register, level of language",
-     "part_of_speech": "chunk",
-     "root_ar": "س-و-ي",
-     "root_reading": "s-w-y",
-     "example_ar": "اِخْتَرْ مُسْتَوَى اللُّغَةِ الْمُنَاسِبَ لِلْقَارِئِ.",
-     "example_meaning_en": "Choose the right register for the reader.",
-     "note": "A formal report and a chat with a friend use different registers."
+     "form_ar": "أُسْلُوب",
+     "meaning_en": "style (of writing or speech)",
+     "part_of_speech": "noun",
+     "root_ar": "س-ل-ب",
+     "root_reading": "s-l-b",
+     "example_ar": "اِخْتَرْ أُسْلُوبًا مُنَاسِبًا لِلْقَارِئِ.",
+     "example_meaning_en": "Choose a style that suits the reader.",
+     "note": "Plural أَسَالِيب. A formal report and a chat with a friend use different styles."
     }
    ]
   },
@@ -8513,7 +8513,7 @@
     {
      "id": "lexeme.arabic-b2-output-review-6",
      "form_ar": "مَفْهُوم",
-     "meaning_en": "understandable; concept",
+     "meaning_en": "understandable, intelligible",
      "part_of_speech": "adjective",
      "root_ar": "ف-ه-م",
      "root_reading": "f-h-m",
@@ -8632,14 +8632,14 @@
     },
     {
      "id": "lexeme.arabic-b2-unseen-output-2",
-     "form_ar": "حِفْظ",
-     "meaning_en": "memorising; keeping",
-     "part_of_speech": "noun",
-     "root_ar": "ح-ف-ظ",
-     "root_reading": "ḥ-f-ẓ",
-     "example_ar": "يُسَاعِدُ الْحِفْظُ عَلَى تَذَكُّرِ الْكَلِمَاتِ.",
-     "example_meaning_en": "Memorising helps you remember words.",
-     "note": "From حَفِظَ, “to memorise, keep”."
+     "form_ar": "مَأْلُوف",
+     "meaning_en": "familiar",
+     "part_of_speech": "adjective",
+     "root_ar": "أ-ل-ف",
+     "root_reading": "ʾ-l-f",
+     "example_ar": "الْمَوْضُوعُ مَأْلُوفٌ، لَكِنَّ السُّؤَالَ جَدِيدٌ.",
+     "example_meaning_en": "The topic is familiar, but the question is new.",
+     "note": "From أَلِفَ, “to get used to”. غَيْرُ مَأْلُوفٍ means “unfamiliar”."
     },
     {
      "id": "lexeme.arabic-b2-unseen-output-3",
@@ -8681,8 +8681,8 @@
      "part_of_speech": "noun",
      "root_ar": "ن-س-خ",
      "root_reading": "n-s-kh",
-     "example_ar": "طَبَعْتُ نُسْخَتَيْنِ مِنَ الْمَقَالِ.",
-     "example_meaning_en": "I printed two copies of the essay.",
+     "example_ar": "كَتَبْتُ نُسْخَةً ثَانِيَةً مِنَ الْمَقَالِ.",
+     "example_meaning_en": "I wrote a second version of the essay.",
      "note": "Plural نُسَخ."
     },
     {
@@ -8851,14 +8851,14 @@
     },
     {
      "id": "lexeme.arabic-external-assessment-7",
-     "form_ar": "اِخْتِبَار",
-     "meaning_en": "test",
-     "part_of_speech": "noun",
-     "root_ar": "خ-ب-ر",
-     "root_reading": "kh-b-r",
-     "example_ar": "اِجْتَزْتُ الِاخْتِبَارَ بِنَجَاحٍ.",
-     "example_meaning_en": "I passed the test successfully.",
-     "note": "Plural اِخْتِبَارَات. Close to اِمْتِحَان, “exam”."
+     "form_ar": "شَفَوِيّ",
+     "meaning_en": "oral, spoken (of a test)",
+     "part_of_speech": "adjective",
+     "root_ar": "ش-ف-ه",
+     "root_reading": "sh-f-h",
+     "example_ar": "هَلْ يَشْمَلُ التَّقْيِيمُ جُزْءًا شَفَوِيًّا؟",
+     "example_meaning_en": "Does the assessment include an oral part?",
+     "note": "Also spelled شَفَهِيّ. The opposite is كِتَابِيّ, “written”."
     }
    ]
   },
