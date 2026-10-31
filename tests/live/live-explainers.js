@@ -1,7 +1,7 @@
 // Live check of the Arabic explainers on the site (tests/live/run.py), on a disposable account and one throwaway device
 // (a Mac, then a 320 px phone width): the weak-verbs lesson's Understand step has How it works with its five cards; a
 // card opens with its table, and its questions answer when you choose (one wrong, one right); module 15's إِنَّ and
-// كَانَ lesson has its two (1.105.0), and module 7's time and days lesson its two; Vocabulary has the 536
+// كَانَ lesson has its two (1.105.0), and module 7's time and days lesson its two; Vocabulary has the 605
 // links, and one opens the irregular-families lesson with the Take card open and its title clear of the step bar; at
 // 320 px a card doesn't scroll sideways. Nothing is saved: the device's learning data and the account's Arabic and
 // Study records are as before. Never prints account details. Reads the live database (no writes of its own beyond
@@ -75,7 +75,7 @@ const WV = 'study/arabic/lesson.arabic-weak-verbs', SAY = 'details[data-ar-expla
 
   // Vocabulary's links, and following one.
   await mac.open(BASE + '#study/arabic/vocabulary');
-  check('Vocabulary has 536 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 57 in modules 8–9, 71 in modules 10–11, 58 in modules 12–13, 13 in module 14, 27 in module 15, 68 in modules 16–17, 65 in modules 18–19, 70 in modules 20–21)', await mac.until(`document.querySelectorAll('[data-ar-explainer-link]').length === 536`, 60000), await mac.ev(`document.querySelectorAll('[data-ar-explainer-link]').length`));
+  check('Vocabulary has 605 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 57 in modules 8–9, 71 in modules 10–11, 58 in modules 12–13, 13 in module 14, 27 in module 15, 68 in modules 16–17, 65 in modules 18–19, 70 in modules 20–21, 69 in modules 22–23)', await mac.until(`document.querySelectorAll('[data-ar-explainer-link]').length === 605`, 60000), await mac.ev(`document.querySelectorAll('[data-ar-explainer-link]').length`));
   await mac.click('[data-ar-word="lexeme.arabic-irregular-families-5"] [data-ar-explainer-link]');
   const opened = await mac.until(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-take"]'), s = d?.querySelector('summary'), bar = document.querySelector('nav.journey-steps'); return location.hash === '#study/arabic/lesson.arabic-irregular-families' && !!d?.open && !!s && !!bar && s.getBoundingClientRect().top >= bar.getBoundingClientRect().bottom && s.getBoundingClientRect().top < innerHeight; })()`, 60000);
   check('following the link under أَخَذَ opens its lesson with the Take card open, its title below the step bar', opened,
