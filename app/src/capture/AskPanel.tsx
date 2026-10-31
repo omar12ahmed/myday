@@ -166,6 +166,13 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     const started = clock();
     const sent = build(prior?.lookup, again);
     let reply = await askModel(sent.c, ctrl.signal);
+    // Sent within the server's pause between requests (a choice tapped as soon as the answer shows): wait the pause
+    // out and send it once more, as a lookup's second request does.
+    if (!reply.ok && reply.reason === 'too-fast') {
+      await pause(PACE_MS, ctrl.signal);
+      if (ctrl.signal.aborted || !previewIsCurrent()) return;
+      reply = await askModel(sent.c, ctrl.signal);
+    }
     if (ctrl.signal.aborted) return;
     if (!previewIsCurrent()) return;
     if (!reply.ok) { fail(reply.message, prior, again, reply.reason === 'daily' || reply.reason === 'budget'); return; }

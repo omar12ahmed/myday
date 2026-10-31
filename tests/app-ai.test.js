@@ -737,6 +737,16 @@ const SEED = `s => {
         && sentC2.conversation.earlier[0].answered.endsWith('\n(choices: Extra income · Something that grows · A full-time business)'), sentC2);
       await D.click('[data-action=ask-dismiss]'); await sleep(150);
       await closeSheet(D); await sleep(150);
+      // A choice tapped as soon as the answer shows, within the server's pause between requests: it waits and sends again.
+      setAi({ AI_MIN_SECONDS_BETWEEN: '5' });
+      await openAsk(D, 'today', 'I want to start an online business');
+      check('with the server\'s 5-second pause on, a question asked straight after another is answered, not refused', (await askGo(D)) === 'shown', await D.text('[data-s=ask-panel]'));
+      await D.ev(`document.querySelector('[data-s=ask-choice]').click()`);
+      await D.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase) && document.querySelector('[data-s=ask-now]')?.textContent === 'You: Extra income'`, 20000);
+      check('…and a choice tapped as soon as the answer shows waits the pause out and is answered (no "Just a moment")', (await D.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown' && !(await D.text('[data-s=ask-panel]')).includes('Just a moment'), await D.text('[data-s=ask-panel]'));
+      setAi({ AI_MIN_SECONDS_BETWEEN: '0' });
+      await D.click('[data-action=ask-dismiss]'); await sleep(150);
+      await closeSheet(D); await sleep(150);
       // After the day's last request there's no replying, so no choices to tap either.
       setAi({ AI_DAILY_LIMIT: String(await usedD() + 1) });
       await openAsk(D, 'today', 'I want to start an online business'); await askGo(D);
