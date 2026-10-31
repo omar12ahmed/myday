@@ -143,6 +143,7 @@ export interface MyDayData {
   files: FilesData;
   research: ResearchData;
   content: ContentData;  // a Content project's ideas and videos (specs/projects-content.md); one synced record each
+  ambitions: AmbitionsData; // your long-term ambitions and what they link (specs/projects-ambitions.md); one synced record each
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -267,6 +268,15 @@ export interface ResearchData { items: ResearchItem[]; [other: string]: unknown 
 // A channel's or series' ideas and videos: one item each (an idea is a video at step 'idea'). Read as written: a field
 // can be missing (it reads as empty), and a type, step or kind from a newer MyDay is kept.
 export interface ContentData { items: ContentItem[]; [other: string]: unknown }
+
+// ---------- Ambitions (specs/projects-ambitions.md) ----------
+// Long-term ambitions that link, by reference only, the projects and learning that are steps towards them. A link's
+// kind: 'project' | 'topic' | 'course' (ref: its id) | 'cyber' | 'arabic' (whichever path or goal is chosen there; no
+// ref). A kind, field or step from a newer MyDay is kept.
+export interface AmbitionsData { items: Ambition[]; [other: string]: unknown }
+export interface AmbitionLink { id: string; kind: string; ref?: string; [other: string]: unknown }
+export interface AmbitionStep { id: string; text: string; done?: boolean; linkId?: string; [other: string]: unknown }
+export interface Ambition { id: string; title: string; why?: string; links?: AmbitionLink[]; steps?: AmbitionStep[]; createdAt: string; updatedAt: string; [other: string]: unknown }
 export type ContentStep = 'idea' | 'planning' | 'filming' | 'editing' | 'posted';
 // A candidate still open (or chosen): kind 'title' | 'hook' | 'angle' | 'thumbnail'.
 export interface ContentOption { id: string; kind: string; text: string; note?: string; chosen?: boolean; [other: string]: unknown }

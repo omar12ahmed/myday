@@ -27,7 +27,7 @@ import { SECTIONS } from '../data/projectSections';
 import { amountText, breakEvenText, monthText, normalizeMoney } from '../data/businessMoney';
 import { STATUS_LABEL as EXPERIMENT_STATUS, statusOf } from '../data/experiments';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
+import type { Ambition, Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, cleanCyberLesson, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard, CyberLesson, PortfolioEntry } from '../data/cybersecurity/types';
@@ -38,11 +38,12 @@ import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord 
 import { resourceName } from '../data/projectResources';
 import { sizeLabel } from '../data/files';
 import { platformLabel, resultWords, stepLabel, videoOf } from '../data/content';
+import { linksOf, linksWords, stepsOf, stepsWords } from '../data/ambitions';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | 'ambition' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -324,6 +325,14 @@ const MANY: Many[] = [
         v.postOn && `Post on ${shortDate(v.postOn)}`, ...v.posts.map(p => `Posted on ${platformLabel(p.platform)}${isDateKey(p.on) ? ` ${shortDate(p.on)}` : ''}`),
         ...v.results.map(r => `${platformLabel(r.platform)}${isDateKey(r.on) ? ` ${shortDate(r.on)}` : ''}: ${resultWords(r)}`),
         v.worked && `What worked: ${v.worked}`, v.didnt && `What didn’t: ${v.didnt}`].filter((x): x is string => !!x); } },
+  // Your ambitions (specs/projects-ambitions.md; from migration 20261101120000_sync_ambitions.sql): one record each.
+  { kind: 'ambition', label: 'Ambition',
+    items: d => d.ambitions.items, put: (dr, id, c) => putItem(dr.ambitions.items, id, c, (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)),
+    clean: (id, raw) => same(id, via({ ambitions: { items: [raw] } }).ambitions.items[0]),
+    summary: c => { const a = c as unknown as Ambition; return `Ambition: ${a.title}${linksWords(a) ? ` · ${linksWords(a)}` : ''}`; },
+    // Its why, its steps and what it links, in words, so two versions that differ only there can be told apart.
+    lines: c => { const a = c as unknown as Ambition;
+      return [a.why ? `Why: ${a.why}` : '', stepsWords(a), ...stepsOf(a).map(s => `${s.done ? '✓ ' : ''}${s.text}`), linksOf(a).length ? `Links: ${linksOf(a).map(l => l.ref ? `${l.kind} ${l.ref}` : l.kind).join('; ')}` : ''].filter(Boolean); } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),
