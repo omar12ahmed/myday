@@ -1,8 +1,8 @@
 # Graduated help for Arabic words
 
-**Status:** built on branch graduated-help, on the owner's "go ahead" (31 October 2026). The owner ticked no box in the
+**Status:** shipped in 1.112.0, on the owner's "go ahead" (31 October 2026). The owner ticked no box in the
 proposal, so the recommended options were taken (below); any of them can still change.
-**Why:** "How MyDay should think" (specs/myday-vision.md §1, arriving with myday-94's 1.111.0), level 6: build the
+**Why:** "How MyDay should think" (specs/myday-vision.md, "How MyDay should think"), level 6: build the
 person's own ability rather than dependence. As a word becomes solid, MyDay gives less help with it.
 
 ## What it does

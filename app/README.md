@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.112.0 — Arabic words you know well ask you to read them first:** the first Arabic step in "How MyDay should
+think" (level 6: building your own ability rather than relying on help). A word you recalled on your own in revision,
+which now comes back a week or more apart and isn't due yet, keeps its play button and Latin reading until you tap
+"Read it aloud, then check", in Vocabulary and in a lesson's word list; if it slips or comes due, the help is back at
+once. Its example sentence and note keep their voice. "Always show the help", under Slower in Vocabulary, keeps every
+word's help in view, remembered on this device only. No saved-data, sync or database change, and nothing new goes to
+AI. Going back to 1.111.0 is safe: the help simply always shows there (`specs/arabic-graduated-help.md`).
+
 **1.111.0 — Ask MyDay learns how you work, and you can see and delete what it believes:** What MyDay has noticed can
 now let Ask MyDay use what you've confirmed there. The first time you say a pattern is right, it asks once: "Shall
 Ask MyDay use this too?" (or use the switch). Then:
