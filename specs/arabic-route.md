@@ -1,7 +1,8 @@
 # A path to your Arabic goal
 
-**Status:** built on branch arabic-route, on the owner's "go ahead" (31 October 2026). The owner ticked no box in the
-proposal, so the recommended options were taken (below); any of them can still change.
+**Status:** built on branch arabic-route, on the owner's "go ahead" (31 October 2026). The owner chose option 2
+themselves (Study home too, with a way to remove it); for options 1 and 3 nothing was ticked, so the recommended ones
+were taken (below), and either can still change.
 **Why:** "How MyDay should think" (specs/myday-vision.md), level 5: long-term goals. Today's lesson should be seen
 as a step towards something larger.
 
@@ -24,6 +25,11 @@ translation, technology and cybersecurity, academic and professional). This adds
 2. **"A step towards …"** under a lesson's title (`stepTowards`): "A step towards “Literary Arabic, stories and style”:
    stage 3 of 6, A2 · Connected everyday Fuṣḥā". A lesson that isn't on the route to your goal shows no line.
 3. **The same line on the map's next-step card**, under the lesson's title (not when the step is a revision round).
+4. **On Study home's Arabic card:** "Your next lesson is a step towards “…”: stage 3 of 6, …" (the next lesson from the
+   same plan as the map; `learningGlance`), with **Hide**. Hiding says how to bring it back; **"Show it on Study home"**
+   under "Your route" on the map brings it back (or hides it). The choice is remembered on this device only
+   (`myday.arabic.towardshome`, `towards.ts`), like Slower; it's not part of your data. Today's Study card, which shares
+   the same options, doesn't show it (option 3).
 
 ## What it doesn't touch
 
@@ -35,11 +41,12 @@ safe (the route and the line simply aren't there).
 would point at this path by its id and call `arabicRoute` for its stages; nothing moves (agreed with myday-af and
 myday-94, 31 October 2026).
 
-## The options taken (recommended, on the owner's "go ahead", 31 October 2026)
+## The options (31 October 2026)
 
-1. The goal's wording: the course's own names (nothing new to write or check).
-2. Where the line shows: the lesson and the map's next-step card (not Study home).
-3. Today's plan: not yet; wait for general Goals so every section says it the same way.
+1. The goal's wording: the course's own names (nothing new to write or check). Recommended; none ticked.
+2. Where the line shows (the owner's choice): the lesson, the map's next-step card, **and Study home's Arabic card,
+   with the option to remove it** there.
+3. Today's plan: not yet; wait for general Goals so every section says it the same way. Recommended; none ticked.
 
 ## Levels 5 and 6 together
 

@@ -262,7 +262,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
           <ArrowUpRight size={19} aria-hidden="true" className="flex-none text-primary" />
         </a>}
         <div className="grid gap-x-3 sm:grid-cols-2 lg:grid-cols-3 items-start">
-          <ArabicCard counts={glance?.arabic} />
+          <ArabicCard counts={glance?.arabic} towards={glance?.arabic.towards} />
           <CyberCard roadmaps={cyberTopics} counts={glance?.cyber} />
           {glances.filter(g => !cyberTopics.includes(g)).map(g => <TopicCard key={g.topic.id || 'main'} g={g} k={k} />)}
           <ReadingTile data={data} />

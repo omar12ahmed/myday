@@ -2,6 +2,7 @@ import { Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore
 import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
+import { Switch } from '../../components/Switch';
 import { Card } from '../../components/Card';
 import { useConfirm } from '../../components/confirm';
 import { CommitTextarea, Field, Select, TextInput } from '../../components/Field';
@@ -31,6 +32,7 @@ import { clipFor, hasReadingVoice, hasVoice, subscribe, voiceState } from './voi
 import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { PronunciationContext } from './pronunciationContext';
+import { setTowardsOnHome, towardsOnHome } from './towards';
 import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
 import { loadTeaching, useTeaching } from '../teaching/useTeaching';
 import { CheckMyAnswer } from '../CheckMyAnswer';
@@ -146,7 +148,17 @@ function RouteView({ route }: { route: ArabicRoute }) {
           <ul className="list-disc pl-5 text-sm m-0">{st.can.map((c, i) => <li key={i}>{c}</li>)}</ul></details>}
     </li>)}</ol>
     <p className="text-xs text-fg-2 mt-2 mb-0">From the course’s own milestones. Levels are design targets, not certificates.</p>
+    <ShowOnHome />
   </section>;
+}
+// Study home's Arabic card says what your next lesson is a step towards, unless you hid it there: this brings it back
+// (or hides it). On this device only (towards.ts).
+function ShowOnHome() {
+  const [on, setOn] = useState(towardsOnHome);
+  return <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+    <Switch on={on} onChange={v => { setTowardsOnHome(v); setOn(v); }} data-action="ar-towards-home">Show it on Study home</Switch>
+    <span className="text-sm text-fg-2">Your next lesson’s step, on Study’s Arabic card. Remembered on this device.</span>
+  </div>;
 }
 // "A step towards …": where a lesson sits on the route to your goal (nothing when it isn't on it).
 function Towards({ t }: { t: ReturnType<typeof stepTowards> }) {

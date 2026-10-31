@@ -4,7 +4,7 @@ import type { MyDayData } from '../data/types';
 import { isDone, MODE_LABEL, modeOf } from '../data/study/mastery';
 import { stIndex } from '../data/study/roadmap';
 import { lessonIndex } from './arabic/catalogue';
-import { arabicPlan, arabicState, journeyFor, pathLessons } from './arabic/plan';
+import { arabicPlan, arabicState, journeyFor, pathLessons, stepTowards } from './arabic/plan';
 import { roadmapOption, type LearningOption } from './courseOption';
 import { lessons as cyberLessons } from './cybersecurity/catalogue';
 import { cyberGlance, cyberPlan } from './cybersecurity/plan';
@@ -78,7 +78,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
 // that need revision and any session left open (for "Worth a look").
 export interface LearningGlance {
   options: LearningOption[];
-  arabic: { ready: number; needs: { id: string; title: string }[]; open: { id: string; title: string } | null };
+  arabic: { ready: number; needs: { id: string; title: string }[]; open: { id: string; title: string } | null; towards: ReturnType<typeof stepTowards> };
   cyber: { done: number; total: number; needs: { id: string; title: string }[] };
 }
 export function learningGlance(data: MyDayData): LearningGlance {
@@ -90,6 +90,8 @@ export function learningGlance(data: MyDayData): LearningGlance {
       ready: states.filter(([, s]) => isDone(s)).length,
       needs: states.filter(([, s]) => s === 'needs-revision').map(([id]) => ({ id, title: lessonIndex[id].title })),
       open: open ? { id: open.lessonId, title: lessonIndex[open.lessonId].title } : null,
+      // What Arabic's next lesson is a step towards, for Study home's Arabic card (specs/arabic-route.md).
+      towards: (() => { const id = options.find(o => o.subject === 'arabic')?.lessonId; return id ? stepTowards(data, id) : null; })(),
     },
     cyber: (() => { const g = cyberGlance(data); return { done: g.done, total: g.path, needs: g.needs.map(n => ({ id: n.id, title: n.title })) }; })(),
   };
