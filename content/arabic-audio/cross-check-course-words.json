@@ -3,12 +3,12 @@
  "date": "2026-10-25",
  "method": "Blind audio-only transcription of the clips made for the course words (module 4). Main session read every transcript against the authored text; punctuation and pausal endings can differ. This does not approve a clip.",
  "prompt": "Transcribe only the speech you hear, in Arabic with full vowel marks. Do not translate, explain, add speaker labels, or guess any extra words. Return just the Arabic transcription.",
- "request_cap": 1990,
- "requests": 1886,
+ "request_cap": 2250,
+ "requests": 2100,
  "usage_tokens": {
-  "text": 69782,
-  "audio": 82508,
-  "output": 363012
+  "text": 77700,
+  "audio": 91725,
+  "output": 409779
  },
  "results": {
   "مَرْحَبًا، أَنَا سَارَةُ.": {
@@ -39570,6 +39570,4621 @@
     "thoughtsTokenCount": 70,
     "serviceTier": "standard"
    }
+  },
+  "مُخَطَّط": {
+   "file": "c78bb274d3bbbed0.mp3",
+   "heard": "مُخَطَّطٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 140,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 65,
+    "serviceTier": "standard"
+   }
+  },
+  "رَسَمْتُ مُخَطَّطًا لِلْمَقَالِ قَبْلَ الْكِتَابَةِ.": {
+   "file": "5084ce8ad01ae384.mp3",
+   "heard": "رَسَمْتُ مُخَطَّطًا لِلْمَقَالِ قَبْلَ الْكِتَابَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 124,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 317,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 87
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 164,
+    "serviceTier": "standard"
+   }
+  },
+  "عُنْصُر": {
+   "file": "5106fb16dcbf94f5.mp3",
+   "heard": "عُنْصُرْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 242,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 177,
+    "serviceTier": "standard"
+   }
+  },
+  "لِلْمَقَالِ ثَلَاثَةُ عَنَاصِرَ.": {
+   "file": "e51093c8f14c8e0c.mp3",
+   "heard": "لِلْمَقَالِ ثَلَاثَةُ عَنَاصِرَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 95,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 242,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 58
+     }
+    ],
+    "thoughtsTokenCount": 129,
+    "serviceTier": "standard"
+   }
+  },
+  "أُطْرُوحَة": {
+   "file": "bc8032aff73bc9fe.mp3",
+   "heard": "أُطْرُوحَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 232,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 161,
+    "serviceTier": "standard"
+   }
+  },
+  "دَافَعَ الْكَاتِبُ عَنْ أُطْرُوحَتِهِ بِأَدِلَّةٍ.": {
+   "file": "e7e6b1a907c9f04b.mp3",
+   "heard": "دَافَعَ الْكَاتِبُ عَنْ أُطْرُوحَتِهِ بِأَدِلَّةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 122,
+    "candidatesTokenCount": 27,
+    "totalTokenCount": 445,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 85
+     }
+    ],
+    "thoughtsTokenCount": 296,
+    "serviceTier": "standard"
+   }
+  },
+  "مِحْوَر": {
+   "file": "1af41333489a8ad7.mp3",
+   "heard": "مِحْوَرٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 302,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 238,
+    "serviceTier": "standard"
+   }
+  },
+  "يَدُورُ الْمَقَالُ حَوْلَ ثَلَاثَةِ مَحَاوِرَ.": {
+   "file": "b83ad47c5d1d4548.mp3",
+   "heard": "يَدُورُ الْمَقَالُ حَوْلَ ثَلَاثَةِ مَحَاوِرَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 117,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 430,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 80
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 288,
+    "serviceTier": "standard"
+   }
+  },
+  "تَسَلْسُل": {
+   "file": "e982aedab0f25362.mp3",
+   "heard": "تَسَلْسُلُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 160,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 90,
+    "serviceTier": "standard"
+   }
+  },
+  "تَسَلْسُلُ الْأَفْكَارِ وَاضِحٌ.": {
+   "file": "7be0cdc321b37920.mp3",
+   "heard": "تَسَلْسُلُ الْأَفْكَارِ وَاضِحٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 93,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 327,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 56
+     }
+    ],
+    "thoughtsTokenCount": 217,
+    "serviceTier": "standard"
+   }
+  },
+  "اِسْتِنْتَاج": {
+   "file": "d78b19ff534d16e2.mp3",
+   "heard": "اِسْتِنْتَاجٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 222,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 145,
+    "serviceTier": "standard"
+   }
+  },
+  "وَصَلْتُ إِلَى اسْتِنْتَاجٍ وَاضِحٍ.": {
+   "file": "d3cc704f354863b2.mp3",
+   "heard": "وَصَلْتُ إِلَى اسْتِنْتَاجٍ وَاضِحٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 310,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     }
+    ],
+    "thoughtsTokenCount": 193,
+    "serviceTier": "standard"
+   }
+  },
+  "حُجَّةٌ مُضَادَّةٌ": {
+   "file": "f6049c40556a43dd.mp3",
+   "heard": "حُجَّةٌ مُضَادَّةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 327,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     }
+    ],
+    "thoughtsTokenCount": 234,
+    "serviceTier": "standard"
+   }
+  },
+  "رَدَّ الْكَاتِبُ عَلَى الْحُجَّةِ الْمُضَادَّةِ.": {
+   "file": "da6d9fca5e2e8c65.mp3",
+   "heard": "رَدَّ الْكَاتِبُ عَلَى الْحُجَّةِ الْمُضَادَّةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 112,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 345,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 75
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 210,
+    "serviceTier": "standard"
+   }
+  },
+  "عَرْض": {
+   "file": "4651956537dadaad.mp3",
+   "heard": "عَرْضْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 498,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 437,
+    "serviceTier": "standard"
+   }
+  },
+  "أُحِبُّ الْعُرُوضَ الْقَصِيرَةَ الْوَاضِحَةَ.": {
+   "file": "ea023485f17e6e20.mp3",
+   "heard": "أُحِبُّ الْعُرُوضَ الْقَصِيرَةَ الْوَاضِحَةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 106,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 301,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 69
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 172,
+    "serviceTier": "standard"
+   }
+  },
+  "جُمْهُور": {
+   "file": "16a7b5c4994858bd.mp3",
+   "heard": "جُمْهُورٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 147,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 77,
+    "serviceTier": "standard"
+   }
+  },
+  "تَحَدَّثَتْ أَمَامَ جُمْهُورٍ كَبِيرٍ.": {
+   "file": "078d56c765bca473.mp3",
+   "heard": "تَحَدَّثَتْ أَمَامَ جُمْهُورٍ كَبِيرٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 103,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 488,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 66
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 363,
+    "serviceTier": "standard"
+   }
+  },
+  "تَنَاوَلَ": {
+   "file": "0faa55d5d052f41a.mp3",
+   "heard": "تَنَاوَلَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 130,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 62,
+    "serviceTier": "standard"
+   }
+  },
+  "تَنَاوَلَ الْمُحَاضِرُ مَوْضُوعَ الطَّاقَةِ.": {
+   "file": "52845faaac9b652a.mp3",
+   "heard": "تَنَاوَلَ الْمُحَاضِرُ مَوْضُوعَ الطَّاقَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 105,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 338,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 68
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 209,
+    "serviceTier": "standard"
+   }
+  },
+  "شَرِيحَة": {
+   "file": "e241434455812c37.mp3",
+   "heard": "شَرِيحَةْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 289,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 220,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا تَقْرَأْ كُلَّ شَرِيحَةٍ بِصَوْتٍ عَالٍ.": {
+   "file": "985dd16203c1ce0e.mp3",
+   "heard": "لَا تَقْرَأْ كُلَّ شَرِيحَةٍ بِصَوْتٍ عَالٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 117,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 289,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 80
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 147,
+    "serviceTier": "standard"
+   }
+  },
+  "مُدَّة": {
+   "file": "c37b261aa9b2e04e.mp3",
+   "heard": "مُدَّةً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 191,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 129,
+    "serviceTier": "standard"
+   }
+  },
+  "مُدَّةُ الْعَرْضِ خَمْسُ دَقَائِقَ.": {
+   "file": "2fdb24b13dd19f86.mp3",
+   "heard": "مُدَّةُ الْعَرْضِ خَمْسُ دَقَائِقَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 735,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     }
+    ],
+    "thoughtsTokenCount": 618,
+    "serviceTier": "standard"
+   }
+  },
+  "وَتِيرَة": {
+   "file": "a3d45fbfc00ad8c5.mp3",
+   "heard": "وَتِيرَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 200,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 134,
+    "serviceTier": "standard"
+   }
+  },
+  "تَكَلَّمْ بِوَتِيرَةٍ هَادِئَةٍ.": {
+   "file": "349c2bf69eb86ae4.mp3",
+   "heard": "تَكَلَّمْ بِوَتِيرَةٍ هَادِئَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 166,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     }
+    ],
+    "thoughtsTokenCount": 48,
+    "serviceTier": "standard"
+   }
+  },
+  "اِنْتَقَلَ إِلَى": {
+   "file": "780dae57e77df9ac.mp3",
+   "heard": "اِنْتَقَلَ إِلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 123,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 43,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنْتَقِلُ الْآنَ إِلَى النُّقْطَةِ الثَّانِيَةِ.": {
+   "file": "f049426142657365.mp3",
+   "heard": "أَنْتَقِلُ الْآنَ إِلَى النُّقْطَةِ الثَّانِيَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 114,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 345,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 77
+     }
+    ],
+    "thoughtsTokenCount": 206,
+    "serviceTier": "standard"
+   }
+  },
+  "أَفْهَمُ مِنْ كَلَامِكَ أَنَّ": {
+   "file": "1fa47ba3c9b7dc31.mp3",
+   "heard": "أَفْهَمُ مِنْ كَلَامِكَ أَنَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 265,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 162,
+    "serviceTier": "standard"
+   }
+  },
+  "أَفْهَمُ مِنْ كَلَامِكَ أَنَّكَ تُفَضِّلُ الْقِرَاءَةَ الْوَرَقِيَّةَ.": {
+   "file": "64c50276c3e2db3d.mp3",
+   "heard": "أَفْهَمُ مِنْ كَلَامِكَ أَنَّكَ تُفَضِّلُ الْقِرَاءَةَ الْوَرَقِيَّةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 145,
+    "candidatesTokenCount": 38,
+    "totalTokenCount": 436,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 108
+     }
+    ],
+    "thoughtsTokenCount": 253,
+    "serviceTier": "standard"
+   }
+  },
+  "بِالضَّبْطِ": {
+   "file": "a6e1303f8cb33ac5.mp3",
+   "heard": "بِالضَّبْطِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 302,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 229,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا أَعْرِفُ بِالضَّبْطِ مَتَى يَبْدَأُ الْعَرْضُ.": {
+   "file": "9383b9898fb9f237.mp3",
+   "heard": "لَا أَعْرِفُ بِالضَّبْطِ مَتَى يَبْدَأُ الْعَرْضُ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 112,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 488,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 75
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 345,
+    "serviceTier": "standard"
+   }
+  },
+  "اِفْتِرَاضِيّ": {
+   "file": "2575c55e1e6e07a4.mp3",
+   "heard": "اِفْتِرَاضِيّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 256,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 182,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذَا سُؤَالٌ افْتِرَاضِيٌّ.": {
+   "file": "c4b66c3eb1f7b339.mp3",
+   "heard": "هَذَا سُؤَالٌ افْتِرَاضِيٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 93,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 334,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 56
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 224,
+    "serviceTier": "standard"
+   }
+  },
+  "نِطَاق": {
+   "file": "ed34df2f955533aa.mp3",
+   "heard": "نِطَاقٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 165,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 96,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذَا السُّؤَالُ خَارِجَ نِطَاقِ الْبَحْثِ.": {
+   "file": "2229558af3802981.mp3",
+   "heard": "هَذَا السُّؤَالُ خَارِجَ نِطَاقِ البَحْثِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 112,
+    "candidatesTokenCount": 27,
+    "totalTokenCount": 139,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 75
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "تَخْمِين": {
+   "file": "7711342324f88896.mp3",
+   "heard": "تَخْمِينٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 428,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 359,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا أُرِيدُ أَنْ أُجِيبَ بِالتَّخْمِينِ.": {
+   "file": "4df302784b2beef6.mp3",
+   "heard": "لَا أُرِيدُ أَنْ أُجِيبَ بِالتَّخْمِينِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 105,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 295,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 68
+     }
+    ],
+    "thoughtsTokenCount": 168,
+    "serviceTier": "standard"
+   }
+  },
+  "مُحَدَّد": {
+   "file": "d72061bd5ff7dd70.mp3",
+   "heard": "مُحَدَّدْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 165,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 96,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْطِنِي مِثَالًا مُحَدَّدًا.": {
+   "file": "e09645edda320636.mp3",
+   "heard": "أَعْطِنِي مِثَالًا مُحَدَّدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 196,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     }
+    ],
+    "thoughtsTokenCount": 87,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْتَرِفُ بِأَنَّ": {
+   "file": "84dd6f2a6066ec19.mp3",
+   "heard": "أَعْتَرِفُ بِأَنَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 148,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 62,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْتَرِفُ بِأَنَّنِي لَا أَعْرِفُ الْجَوَابَ.": {
+   "file": "eeac339e8286f741.mp3",
+   "heard": "أَعْتَرِفُ بِأَنَّنِي لَا أَعْرِفُ الْجَوَابَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 112,
+    "candidatesTokenCount": 27,
+    "totalTokenCount": 139,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 75
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "مُصْطَلَح": {
+   "file": "c252d2a63cd94e1b.mp3",
+   "heard": "مُصْطَلَحْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 312,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 241,
+    "serviceTier": "standard"
+   }
+  },
+  "شَرَحَ الْمُعَلِّمُ الْمُصْطَلَحَ بِمِثَالٍ.": {
+   "file": "36891a5e232b4a99.mp3",
+   "heard": "شَرَحَ الْمُعَلِّمُ الْمُصْطَلَحَ بِمِثَالٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 584,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 451,
+    "serviceTier": "standard"
+   }
+  },
+  "بِعِبَارَةٍ أَبْسَطَ، يَحْمِي الْبَرْنَامَجُ حِسَابَكَ.": {
+   "file": "c59d671455a06383.mp3",
+   "heard": "بِعِبَارَةٍ أَبْسَطَ، يَحْمِي الْبَرْنَامَجُ حِسَابَكَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 132,
+    "candidatesTokenCount": 33,
+    "totalTokenCount": 391,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 95
+     }
+    ],
+    "thoughtsTokenCount": 226,
+    "serviceTier": "standard"
+   }
+  },
+  "مُتَخَصِّص": {
+   "file": "d12bb8cddcf75803.mp3",
+   "heard": "مُتَخَصِّصٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 174,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 95,
+    "serviceTier": "standard"
+   }
+  },
+  "كُتِبَ الْمَقَالُ لِقُرَّاءٍ مُتَخَصِّصِينَ.": {
+   "file": "dc7925e9c7a5cb20.mp3",
+   "heard": "كُتِبَ الْمَقَالُ لِقُرَّاءٍ مُتَخَصِّصِينَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 113,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 306,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 76
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 168,
+    "serviceTier": "standard"
+   }
+  },
+  "مُبْتَدِئ": {
+   "file": "74324b79f5fa1227.mp3",
+   "heard": "مُبْتَدِئٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 242,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 168,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذَا الشَّرْحُ مُنَاسِبٌ لِلْمُبْتَدِئِينَ.": {
+   "file": "a4b3526811606a81.mp3",
+   "heard": "هَذَا الشَّرْحُ مُنَاسِبٌ لِلْمُبْتَدِئِينَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 107,
+    "candidatesTokenCount": 27,
+    "totalTokenCount": 432,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 70
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 298,
+    "serviceTier": "standard"
+   }
+  },
+  "بَسَّطَ": {
+   "file": "f443444a0bc71586.mp3",
+   "heard": "بَسَّطَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 324,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 256,
+    "serviceTier": "standard"
+   }
+  },
+  "بَسَّطَتِ الْمُعَلِّمَةُ الشَّرْحَ.": {
+   "file": "0d6a0ee7b229e824.mp3",
+   "heard": "بَسَّطَتِ الْمُعَلِّمَةُ الشَّرْحَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 92,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 314,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 55
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 202,
+    "serviceTier": "standard"
+   }
+  },
+  "كَثَافَة": {
+   "file": "5745fb96382a44ba.mp3",
+   "heard": "كَثَافَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 236,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 168,
+    "serviceTier": "standard"
+   }
+  },
+  "كَثَافَةُ الْمَعْلُومَاتِ فِي هَذِهِ الْفِقْرَةِ عَالِيَةٌ.": {
+   "file": "fb5af5a68042dce1.mp3",
+   "heard": "كَثَافَةُ الْمَعْلُومَاتِ فِي هَذِهِ الْفِقْرَةِ عَالِيَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 131,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 401,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 94
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 239,
+    "serviceTier": "standard"
+   }
+  },
+  "أُسْلُوب": {
+   "file": "c2e68b5b95d9e834.mp3",
+   "heard": "أُسْلُوبٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 136,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 65,
+    "serviceTier": "standard"
+   }
+  },
+  "اِخْتَرْ أُسْلُوبًا مُنَاسِبًا لِلْقَارِئِ.": {
+   "file": "507bc065f8220971.mp3",
+   "heard": "اخْتَرْ أُسْلُوبًا مُنَاسِبًا لِلْقَارِئِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 106,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 328,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 69
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 197,
+    "serviceTier": "standard"
+   }
+  },
+  "وُضُوح": {
+   "file": "cf8cbcc00ece624a.mp3",
+   "heard": "وُضُوحٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 151,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 82,
+    "serviceTier": "standard"
+   }
+  },
+  "تَكَلَّمَ بِوُضُوحٍ.": {
+   "file": "77a345cdcb433d57.mp3",
+   "heard": "تَكَلَّمْ بِوُضُوحٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 79,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 415,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 42
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 322,
+    "serviceTier": "standard"
+   }
+  },
+  "تَمَاسُك": {
+   "file": "4b515141f319a301.mp3",
+   "heard": "تَمَاسُكٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 154,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 81,
+    "serviceTier": "standard"
+   }
+  },
+  "تَمَاسُكُ النَّصِّ جَيِّدٌ.": {
+   "file": "5233ecb250414ed6.mp3",
+   "heard": "تَمَاسُكُ النَّصِّ جَيِّدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 290,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 186,
+    "serviceTier": "standard"
+   }
+  },
+  "طَلَاقَة": {
+   "file": "d5b4b929768d476e.mp3",
+   "heard": "طَلَاقُهُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 2675,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 2608,
+    "serviceTier": "standard"
+   }
+  },
+  "تَتَحَسَّنُ الطَّلَاقَةُ بِالتَّدْرِيبِ.": {
+   "file": "b0662d78e99892eb.mp3",
+   "heard": "تَتَحَسَّنُ الطَّلَاقَةُ بِالتَّدْرِيبِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 325,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     }
+    ],
+    "thoughtsTokenCount": 204,
+    "serviceTier": "standard"
+   }
+  },
+  "دِقَّة": {
+   "file": "02da9a6fbd526a11.mp3",
+   "heard": "دِقَّة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 310,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 247,
+    "serviceTier": "standard"
+   }
+  },
+  "أَهْتَمُّ بِالدِّقَّةِ وَالطَّلَاقَةِ مَعًا.": {
+   "file": "213e4f25ed29fc1d.mp3",
+   "heard": "أَهْتَمُّ بِالدِّقَّةِ وَالطَّلَاقَةِ مَعًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 106,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 283,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 69
+     }
+    ],
+    "thoughtsTokenCount": 155,
+    "serviceTier": "standard"
+   }
+  },
+  "مِعْيَار": {
+   "file": "55eaccbc82b21539.mp3",
+   "heard": "مِعْيَارٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 211,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 139,
+    "serviceTier": "standard"
+   }
+  },
+  "مَا مَعَايِيرُ التَّقْيِيمِ؟": {
+   "file": "a0d34f9e6ce9fac8.mp3",
+   "heard": "مَا مَعَايِيرُ التَّقْيِيمِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 339,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 234,
+    "serviceTier": "standard"
+   }
+  },
+  "مَفْهُوم": {
+   "file": "9fe9172c0d94b936.mp3",
+   "heard": "مَفْهُومْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 241,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 174,
+    "serviceTier": "standard"
+   }
+  },
+  "كَانَ كَلَامُهُ مَفْهُومًا رَغْمَ الْأَخْطَاءِ.": {
+   "file": "53e473ab62534254.mp3",
+   "heard": "كَانَ كَلَامُهُ مَفْهُومًا رَغْمَ الْأَخْطَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 422,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 279,
+    "serviceTier": "standard"
+   }
+  },
+  "ثَرْوَةٌ لُغَوِيَّةٌ": {
+   "file": "e754f235a1bd08bf.mp3",
+   "heard": "ثَرْوَةٌ لُغَوِيَّةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 164,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     }
+    ],
+    "thoughtsTokenCount": 69,
+    "serviceTier": "standard"
+   }
+  },
+  "يَحْتَاجُ الْكَاتِبُ إِلَى ثَرْوَةٍ لُغَوِيَّةٍ وَاسِعَةٍ.": {
+   "file": "1f7aa97d6caca3d4.mp3",
+   "heard": "يَحْتَاجُ الْكَاتِبُ إِلَى ثَرْوَةٍ لُغَوِيَّةٍ وَاسِعَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 136,
+    "candidatesTokenCount": 32,
+    "totalTokenCount": 349,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 99
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 181,
+    "serviceTier": "standard"
+   }
+  },
+  "مَغْزَى": {
+   "file": "6a9848d37d19b419.mp3",
+   "heard": "مَزَّة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 384,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 322,
+    "serviceTier": "standard"
+   }
+  },
+  "فَهِمْتُ مَغْزَى الْقِصَّةِ.": {
+   "file": "4554deb12f22125c.mp3",
+   "heard": "فَهِمْتُ مَغْزَى الْقِصَّةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 85,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 308,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 48
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 206,
+    "serviceTier": "standard"
+   }
+  },
+  "اِسْتِطْرَاد": {
+   "file": "0500edc3e61a1c8b.mp3",
+   "heard": "اِسْتِطْرَادٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 192,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 114,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي الْمُحَاضَرَةِ اسْتِطْرَادٌ طَوِيلٌ.": {
+   "file": "cafe2d7523982683.mp3",
+   "heard": "فِي الْمُحَاضَرَةِ اسْتِطْرَادٌ طَوِيلٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 375,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 252,
+    "serviceTier": "standard"
+   }
+  },
+  "تَفْرِيغ": {
+   "file": "ce58c2b4677c33d6.mp3",
+   "heard": "تَفْرِيعٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 565,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 496,
+    "serviceTier": "standard"
+   }
+  },
+  "قَرَأْتُ التَّفْرِيغَ بَعْدَ الِاسْتِمَاعِ.": {
+   "file": "b127c3b431ecc90a.mp3",
+   "heard": "قَرَأْتُ التَّفْرِيغَ بَعْدَ الِاسْتِمَاعِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 376,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 252,
+    "serviceTier": "standard"
+   }
+  },
+  "تَحَفُّظ": {
+   "file": "c08fd552052beeaf.mp3",
+   "heard": "تَحَفُّظًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 436,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 366,
+    "serviceTier": "standard"
+   }
+  },
+  "قَبِلَ الْفِكْرَةَ مَعَ بَعْضِ التَّحَفُّظِ.": {
+   "file": "6a43f2729bb6f5ba.mp3",
+   "heard": "قَبِلَ الفِكْرَةَ مَعَ بَعْضِ التَّحَفُّظِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 110,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 135,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 73
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "سَرْد": {
+   "file": "79803509b219a52d.mp3",
+   "heard": "سَرْدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 152,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 88,
+    "serviceTier": "standard"
+   }
+  },
+  "يَجْمَعُ النَّصُّ بَيْنَ السَّرْدِ وَالْوَصْفِ.": {
+   "file": "3919ccf631cd4e35.mp3",
+   "heard": "يَجْمَعُ النَّصُّ بَيْنَ السَّرْدِ وَالْوَصْفِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 573,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 439,
+    "serviceTier": "standard"
+   }
+  },
+  "حُكْم": {
+   "file": "79af052bc2d100bf.mp3",
+   "heard": "حُكْمٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 225,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 163,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذَا حُكْمُ الْكَاتِبِ، لَا حَقِيقَةٌ.": {
+   "file": "f45ffd61709d99de.mp3",
+   "heard": "هَذَا حُكْمُ الْكَاتِبِ، لَا حَقِيقَةٌ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 579,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 440,
+    "serviceTier": "standard"
+   }
+  },
+  "الْجُزْءُ الثَّانِي مِنَ النَّصِّ مُعَقَّدٌ.": {
+   "file": "85db364899254f2c.mp3",
+   "heard": "اَلْجُزْءُ الثَّانِي مِنَ النَّصِّ مُعَقَّدٌ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 109,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 329,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 72
+     }
+    ],
+    "thoughtsTokenCount": 194,
+    "serviceTier": "standard"
+   }
+  },
+  "اِرْتِجَالًا": {
+   "file": "26d803333b4a5f11.mp3",
+   "heard": "اِرْتِجَالًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 68,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 294,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 31
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 219,
+    "serviceTier": "standard"
+   }
+  },
+  "تَكَلَّمَتِ ارْتِجَالًا عَنِ الْمَوْضُوعِ.": {
+   "file": "4db730f57b68684c.mp3",
+   "heard": "تَكَلَّمَ ارْتِجَالًا عَنِ الْمَوْضُوعِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 396,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     }
+    ],
+    "thoughtsTokenCount": 273,
+    "serviceTier": "standard"
+   }
+  },
+  "مَأْلُوف": {
+   "file": "eb66ce0440d9562a.mp3",
+   "heard": "مَأْلُوفُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 269,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 199,
+    "serviceTier": "standard"
+   }
+  },
+  "الْمَوْضُوعُ مَأْلُوفٌ، لَكِنَّ السُّؤَالَ جَدِيدٌ.": {
+   "file": "072a858c33f3e4a8.mp3",
+   "heard": "اَلْمَوْضُوعُ مَأْلُوفٌ، لَكِنَّ السُّؤَالَ جَدِيدٌ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 129,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 350,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 92
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 190,
+    "serviceTier": "standard"
+   }
+  },
+  "حَدٌّ أَقْصَى": {
+   "file": "f02eeb9c2caeba8d.mp3",
+   "heard": "حَدٌّ أَقْصَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 265,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 186,
+    "serviceTier": "standard"
+   }
+  },
+  "الْحَدُّ الْأَقْصَى أَرْبَعُمِئَةِ كَلِمَةٍ.": {
+   "file": "06caeefa8c831f9f.mp3",
+   "heard": "الْحَدُّ الْأَقْصَى أَرْبَعُمِائَةِ كَلِمَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 408,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 275,
+    "serviceTier": "standard"
+   }
+  },
+  "مُتَوَقَّع": {
+   "file": "efc47e6c79cf3fce.mp3",
+   "heard": "مُتَوَقَّعًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 274,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     }
+    ],
+    "thoughtsTokenCount": 198,
+    "serviceTier": "standard"
+   }
+  },
+  "جَاءَ سُؤَالٌ غَيْرُ مُتَوَقَّعٍ.": {
+   "file": "a37dd001631f349b.mp3",
+   "heard": "جَاءَ سُؤَالٌ غَيْرُ مُتَوَقَّعٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 101,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 303,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 64
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 181,
+    "serviceTier": "standard"
+   }
+  },
+  "عَدَدُ الْكَلِمَاتِ": {
+   "file": "f53f26aaddb730c7.mp3",
+   "heard": "عَدَدُ الْكَلِمَاتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 193,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 105,
+    "serviceTier": "standard"
+   }
+  },
+  "تَحَقَّقْ مِنْ عَدَدِ الْكَلِمَاتِ.": {
+   "file": "36ed5833be88e571.mp3",
+   "heard": "تَحَقَّقْ مِنْ عَدَدِ الْكَلِمَاتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 156,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     }
+    ],
+    "thoughtsTokenCount": 45,
+    "serviceTier": "standard"
+   }
+  },
+  "نُسْخَة": {
+   "file": "f278ff4036c3fe66.mp3",
+   "heard": "نُسْخَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 373,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 309,
+    "serviceTier": "standard"
+   }
+  },
+  "كَتَبْتُ نُسْخَةً ثَانِيَةً مِنَ الْمَقَالِ.": {
+   "file": "c13cedc5dd4a0552.mp3",
+   "heard": "كَتَبْتُ نُسْخَةً ثَانِيَةً مِنَ الْمَقَالِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 114,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 345,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 77
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 208,
+    "serviceTier": "standard"
+   }
+  },
+  "تَعْدِيل": {
+   "file": "b611efb23768fa84.mp3",
+   "heard": "تَعْدِيلٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 547,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 480,
+    "serviceTier": "standard"
+   }
+  },
+  "أَجْرَيْتُ تَعْدِيلًا صَغِيرًا عَلَى الْعُنْوَانِ.": {
+   "file": "2fc30cebf20e864d.mp3",
+   "heard": "أَجْرَيْتُ تَعْدِيلًا صَغِيرًا عَلَى الْعُنْوَانِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 372,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 229,
+    "serviceTier": "standard"
+   }
+  },
+  "إِنْجَاز": {
+   "file": "f7a137b9a975d52d.mp3",
+   "heard": "إِنْجَازٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 207,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 134,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذَا إِنْجَازٌ مُهِمٌّ.": {
+   "file": "1692fc5d37b23ff6.mp3",
+   "heard": "هَذَا إِنْجَازٌ مُهِمٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 278,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 175,
+    "serviceTier": "standard"
+   }
+  },
+  "عَيِّنَة": {
+   "file": "1d134a5106d6f675.mp3",
+   "heard": "عَيِّنَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 207,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 141,
+    "serviceTier": "standard"
+   }
+  },
+  "اِخْتَرْتُ سِتَّ عَيِّنَاتٍ مِنْ عَمَلِي.": {
+   "file": "a0e79e0a7bc3635a.mp3",
+   "heard": "اِخْتَرْتُ سِتَّ عَيِّنَاتٍ مِنْ عَمَلِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 107,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 269,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 70
+     }
+    ],
+    "thoughtsTokenCount": 140,
+    "serviceTier": "standard"
+   }
+  },
+  "قُدْرَة": {
+   "file": "84d81080c3f6b88a.mp3",
+   "heard": "خُضْرَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 327,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 265,
+    "serviceTier": "standard"
+   }
+  },
+  "عِنْدَهُ قُدْرَةٌ كَبِيرَةٌ عَلَى الْحِفْظِ.": {
+   "file": "f53e2f680aca8005.mp3",
+   "heard": "عِنْدَهُ قُدْرَةٌ كَبِيرَةٌ عَلَى الْحِفْظِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 114,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 390,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 77
+     }
+    ],
+    "thoughtsTokenCount": 251,
+    "serviceTier": "standard"
+   }
+  },
+  "مُقَيِّم": {
+   "file": "6b8e9b75e7e2babb.mp3",
+   "heard": "مُقِيمٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 194,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 124,
+    "serviceTier": "standard"
+   }
+  },
+  "قَرَأَ الْمُقَيِّمُ النَّصَّ مَرَّتَيْنِ.": {
+   "file": "a4cd9045f58619f0.mp3",
+   "heard": "قَرَأَ الْمُقَيِّمُ النَّصَّ مَرَّتَيْنِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 317,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 195,
+    "serviceTier": "standard"
+   }
+  },
+  "شَهَادَة": {
+   "file": "71c81acc7e13b054.mp3",
+   "heard": "شَهَادَةْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 261,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 192,
+    "serviceTier": "standard"
+   }
+  },
+  "حَصَلَتْ عَلَى شَهَادَةٍ فِي اللُّغَةِ.": {
+   "file": "7e6c29470ba785cf.mp3",
+   "heard": "حَصَلَتْ عَلَى شَهَادَةٍ فِي اللُّغَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 103,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 274,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 66
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 151,
+    "serviceTier": "standard"
+   }
+  },
+  "سِيرَةٌ ذَاتِيَّةٌ": {
+   "file": "bfe2ed91d9127c24.mp3",
+   "heard": "سِيرَةٌ ذَاتِيَّةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 83,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 185,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 46
+     }
+    ],
+    "thoughtsTokenCount": 92,
+    "serviceTier": "standard"
+   }
+  },
+  "أَضَفْتُ اللُّغَةَ الْعَرَبِيَّةَ إِلَى سِيرَتِي الذَّاتِيَّةِ.": {
+   "file": "aa4b338b81c49aa6.mp3",
+   "heard": "أَضَفْتُ اللُّغَةَ الْعَرَبِيَّةَ إِلَى سِيرَتِي الذَّاتِيَّةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 130,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 422,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 93
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 261,
+    "serviceTier": "standard"
+   }
+  },
+  "مُتَنَوِّع": {
+   "file": "c99922d3a86da5c2.mp3",
+   "heard": "مُتَنَوِّعٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 181,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 103,
+    "serviceTier": "standard"
+   }
+  },
+  "جَمَعْتُ نَمَاذِجَ مُتَنَوِّعَةً.": {
+   "file": "e5b2c9c396b70170.mp3",
+   "heard": "جَمَعْتُ نَمَاذِجَ مُتَنَوِّعَةً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 569,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 448,
+    "serviceTier": "standard"
+   }
+  },
+  "تَقْيِيم": {
+   "file": "f1636f087950f82f.mp3",
+   "heard": "تَقِيمُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 178,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 111,
+    "serviceTier": "standard"
+   }
+  },
+  "طَلَبْتُ تَقْيِيمًا مِنْ مُعَلِّمٍ مُسْتَقِلٍّ.": {
+   "file": "bfa7c8dda2acfeac.mp3",
+   "heard": "طَلَبْتُ تَقْيِيمًا مِنْ مُعَلِّمٍ مُسْتَقِلٍّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 116,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 336,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 79
+     }
+    ],
+    "thoughtsTokenCount": 195,
+    "serviceTier": "standard"
+   }
+  },
+  "اِمْتِحَانٌ رَسْمِيٌّ": {
+   "file": "d0bdbe1be9c7b73b.mp3",
+   "heard": "اِمْتِحَانٌ رَسْمِيٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 266,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 172,
+    "serviceTier": "standard"
+   }
+  },
+  "سَجَّلْتُ فِي امْتِحَانٍ رَسْمِيٍّ.": {
+   "file": "4357dc27b8495e41.mp3",
+   "heard": "سَجَّلْتُ فِي امْتِحَانٍ رَسْمِيٍّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 333,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 220,
+    "serviceTier": "standard"
+   }
+  },
+  "رُسُوم": {
+   "file": "32d91a71dadd5f7a.mp3",
+   "heard": "رُسُومُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 150,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 83,
+    "serviceTier": "standard"
+   }
+  },
+  "تَحَقَّقْ مِنَ الرُّسُومِ قَبْلَ التَّسْجِيلِ.": {
+   "file": "4f8aa1acfb6cd405.mp3",
+   "heard": "تَحَقَّقْ مِنَ الرُّسُومِ قَبْلَ التَّسْجِيلِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 342,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 208,
+    "serviceTier": "standard"
+   }
+  },
+  "مُعْتَمَد": {
+   "file": "43b3c701f10154d5.mp3",
+   "heard": "مُعْتَمَدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 349,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 276,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ هَذِهِ الشَّهَادَةُ مُعْتَمَدَةٌ؟": {
+   "file": "fd8ecb9bb1d0d392.mp3",
+   "heard": "هَلْ هَذِهِ الشَّهَادَةُ مُعْتَمَدَةٌ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 103,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 357,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 66
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 231,
+    "serviceTier": "standard"
+   }
+  },
+  "تَغْذِيَةٌ رَاجِعَةٌ": {
+   "file": "fb2510223923b0bf.mp3",
+   "heard": "تَغْذِيَةٌ رَاجِعَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 83,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 274,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 46
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 176,
+    "serviceTier": "standard"
+   }
+  },
+  "أَحْتَاجُ إِلَى تَغْذِيَةٍ رَاجِعَةٍ عَلَى نُطْقِي.": {
+   "file": "4b3b35987fb2a726.mp3",
+   "heard": "أَحْتَاجُ إِلَى تَغْذِيَةٍ رَاجِعَةٍ عَلَى نُطْقِي.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 121,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 152,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 84
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "مُدَرِّسٌ خُصُوصِيٌّ": {
+   "file": "438267d0d80744f7.mp3",
+   "heard": "مُدَرِّسٌ خُصُوصِيٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 83,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 300,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 46
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 202,
+    "serviceTier": "standard"
+   }
+  },
+  "أَدْرُسُ مَعَ مُدَرِّسٍ خُصُوصِيٍّ مَرَّةً فِي الْأُسْبُوعِ.": {
+   "file": "992b96b4c2f55c2b.mp3",
+   "heard": "أَدْرُسُ مَعَ مُدَرِّسٍ خُصُوصِيٍّ مَرَّةً فِي الْأُسْبُوعِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 135,
+    "candidatesTokenCount": 36,
+    "totalTokenCount": 495,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 98
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 324,
+    "serviceTier": "standard"
+   }
+  },
+  "شَفَوِيّ": {
+   "file": "60f4ec0a3d7174aa.mp3",
+   "heard": "شَفَوِيٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 422,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 354,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ يَشْمَلُ التَّقْيِيمُ جُزْءًا شَفَوِيًّا؟": {
+   "file": "1cb000d15917299f.mp3",
+   "heard": "هَلْ يَشْمَلُ التَّقْيِيمُ جُزْءًا شَفَوِيًّا؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 341,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 197,
+    "serviceTier": "standard"
+   }
+  },
+  "مُسْتَمِرّ": {
+   "file": "b8f31c2b0a7e0e34.mp3",
+   "heard": "مُسْتَمِرّْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 213,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 143,
+    "serviceTier": "standard"
+   }
+  },
+  "التَّعَلُّمُ الْمُسْتَمِرُّ يَحْتَاجُ إِلَى صَبْرٍ.": {
+   "file": "3b8b723644cade56.mp3",
+   "heard": "التَّعَلُّمُ الْمُسْتَمِرُّ يَحْتَاجُ إِلَى صَبْرٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 117,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 474,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 80
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 332,
+    "serviceTier": "standard"
+   }
+  },
+  "مَجَال": {
+   "file": "0baea1c34cba4af1.mp3",
+   "heard": "مَجَالْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 269,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 204,
+    "serviceTier": "standard"
+   }
+  },
+  "اِخْتَرْتُ مَجَالَ التِّكْنُولُوجِيَا.": {
+   "file": "5c11c8628f4e49d7.mp3",
+   "heard": "اخْتَرْتُ مَجَالَ التِّكْنُولُوجِيَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 436,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     }
+    ],
+    "thoughtsTokenCount": 324,
+    "serviceTier": "standard"
+   }
+  },
+  "حَافَظَ عَلَى": {
+   "file": "2cfb616d39e8d564.mp3",
+   "heard": "حَافَظَ عَلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 155,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 77,
+    "serviceTier": "standard"
+   }
+  },
+  "أُحَافِظُ عَلَى الْقِرَاءَةِ كُلَّ يَوْمٍ.": {
+   "file": "0538362fe5e7822e.mp3",
+   "heard": "أُحَافِظُ عَلَى الْقِرَاءَةِ كُلَّ يَوْمٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 109,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 330,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 72
+     }
+    ],
+    "thoughtsTokenCount": 197,
+    "serviceTier": "standard"
+   }
+  },
+  "دَوْرِيًّا": {
+   "file": "2d54499d0eff418d.mp3",
+   "heard": "دَوْرِيًّا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 168,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 98,
+    "serviceTier": "standard"
+   }
+  },
+  "أُرَاجِعُ خُطَّتِي دَوْرِيًّا.": {
+   "file": "4bdc9e75fa2caaab.mp3",
+   "heard": "أُرَاجِعُ خُطَّتِي دَوْرِيًّا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 92,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 254,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 55
+     }
+    ],
+    "thoughtsTokenCount": 143,
+    "serviceTier": "standard"
+   }
+  },
+  "عِبْءُ الْعَمَلِ": {
+   "file": "7f4f0d71e3424262.mp3",
+   "heard": "عِبْءُ العَمَلِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 78,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "خَفَّفْتُ عِبْءَ الْعَمَلِ هَذَا الْأُسْبُوعَ.": {
+   "file": "500e6a5bff199b47.mp3",
+   "heard": "خَفَّفْتُ عِبْءَ الْعَمَلِ هَذَا الْأُسْبُوعَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 109,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 360,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 72
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 223,
+    "serviceTier": "standard"
+   }
+  },
+  "اِنْقِطَاع": {
+   "file": "75afe5f853372f8b.mp3",
+   "heard": "اِنْقِطَاعٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 221,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 145,
+    "serviceTier": "standard"
+   }
+  },
+  "عُدْتُ إِلَى الدِّرَاسَةِ بَعْدَ انْقِطَاعٍ طَوِيلٍ.": {
+   "file": "5184289feb649942.mp3",
+   "heard": "عُدْتُ إِلَى الدِّرَاسَةِ بَعْدَ انْقِطَاعٍ طَوِيلٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 120,
+    "candidatesTokenCount": 32,
+    "totalTokenCount": 330,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 83
+     }
+    ],
+    "thoughtsTokenCount": 178,
+    "serviceTier": "standard"
+   }
+  },
+  "عَلَى الْمَدَى الْبَعِيدِ": {
+   "file": "08bd1bd8b737a502.mp3",
+   "heard": "عَلَى الْمَدَى الْبَعِيدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 210,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 122,
+    "serviceTier": "standard"
+   }
+  },
+  "أُرِيدُ أَنْ أَقْرَأَ الْأَدَبَ عَلَى الْمَدَى الْبَعِيدِ.": {
+   "file": "a99a500c54f33bd7.mp3",
+   "heard": "أُرِيدُ أَنْ أَقْرَأَ الْأَدَبَ عَلَى الْمَدَى الْبَعِيدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 117,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 327,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 80
+     }
+    ],
+    "thoughtsTokenCount": 182,
+    "serviceTier": "standard"
+   }
+  },
+  "مُخَطَّطَات": {
+   "file": "f7ca18b4d85a7caf.mp3",
+   "heard": "مُخَطَّطَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 217,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 136,
+    "serviceTier": "standard"
+   }
+  },
+  "خَطَّطَ": {
+   "file": "5a4b2087c582a58f.mp3",
+   "heard": "خَطَّطَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 490,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 422,
+    "serviceTier": "standard"
+   }
+  },
+  "عَنَاصِر": {
+   "file": "be76e8164b387476.mp3",
+   "heard": "عَنَاصِرُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 165,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 93,
+    "serviceTier": "standard"
+   }
+  },
+  "أُطْرُوحَات": {
+   "file": "ff59e0e0cc7b768d.mp3",
+   "heard": "أُطْرُوحَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 68,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 206,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 31
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 130,
+    "serviceTier": "standard"
+   }
+  },
+  "مَحَاوِر": {
+   "file": "b14ba5c7d0c5477b.mp3",
+   "heard": "مَحَاوِرُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 213,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 144,
+    "serviceTier": "standard"
+   }
+  },
+  "سِلْسِلَة": {
+   "file": "296151bae5feee78.mp3",
+   "heard": "سِلْسِلَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 390,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 323,
+    "serviceTier": "standard"
+   }
+  },
+  "اِسْتَنْتَجَ": {
+   "file": "1d3be1af1b653d63.mp3",
+   "heard": "اِسْتَنْتَجَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 213,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 139,
+    "serviceTier": "standard"
+   }
+  },
+  "مُضَادّ": {
+   "file": "06bc74ea1b6948ae.mp3",
+   "heard": "نُبْعِدْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 416,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 352,
+    "serviceTier": "standard"
+   }
+  },
+  "عُرُوض": {
+   "file": "fdcbbff4b8e12c29.mp3",
+   "heard": "عُرُوضْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 320,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 255,
+    "serviceTier": "standard"
+   }
+  },
+  "عَرْضٌ خَاصٌّ": {
+   "file": "534f31b8bd207ba8.mp3",
+   "heard": "عَرْضٌ خَاصٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 137,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     }
+    ],
+    "thoughtsTokenCount": 53,
+    "serviceTier": "standard"
+   }
+  },
+  "جَمَاهِير": {
+   "file": "37f523a5df54c731.mp3",
+   "heard": "جَمَاهِيرُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 182,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 109,
+    "serviceTier": "standard"
+   }
+  },
+  "يَتَنَاوَلُ": {
+   "file": "1f33c60b2948ee04.mp3",
+   "heard": "يَتَنَاوَلُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 68,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 173,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 31
+     }
+    ],
+    "thoughtsTokenCount": 98,
+    "serviceTier": "standard"
+   }
+  },
+  "تَنَاوَلْنَا الْغَدَاءَ": {
+   "file": "a39fb6781bfa4170.mp3",
+   "heard": "تَنَاوَلْنَا الْغَدَاءَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 144,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 53,
+    "serviceTier": "standard"
+   }
+  },
+  "شَرَائِح": {
+   "file": "a3572b93ca805b43.mp3",
+   "heard": "شَرَائِحُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 160,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 89,
+    "serviceTier": "standard"
+   }
+  },
+  "لِمُدَّةِ": {
+   "file": "701e1476f552bbde.mp3",
+   "heard": "لِمُدَّةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 152,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 82,
+    "serviceTier": "standard"
+   }
+  },
+  "لِمُدَّةِ سَاعَةٍ": {
+   "file": "9f04b429252cb8e0.mp3",
+   "heard": "لِمُدَّةِ سَاعَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 304,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 215,
+    "serviceTier": "standard"
+   }
+  },
+  "بِنَفْسِ الْوَتِيرَةِ": {
+   "file": "60206380638e29cb.mp3",
+   "heard": "بِنَفْسِ الْوَتِيرَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 227,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 137,
+    "serviceTier": "standard"
+   }
+  },
+  "صَفٌّ افْتِرَاضِيٌّ": {
+   "file": "dac0ee6ba38f8328.mp3",
+   "heard": "صَفٌّ افْتِرَاضِيٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 324,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     }
+    ],
+    "thoughtsTokenCount": 230,
+    "serviceTier": "standard"
+   }
+  },
+  "نِطَاقَات": {
+   "file": "1963fbf095a2700f.mp3",
+   "heard": "نِطَاقَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 68,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 328,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 31
+     }
+    ],
+    "thoughtsTokenCount": 253,
+    "serviceTier": "standard"
+   }
+  },
+  "خَمَّنَ": {
+   "file": "fb918ea9c73a8aa0.mp3",
+   "heard": "خَمَّنَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 134,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 66,
+    "serviceTier": "standard"
+   }
+  },
+  "مَوْعِدٌ مُحَدَّدٌ": {
+   "file": "cbeaa7905c24a2db.mp3",
+   "heard": "مَوْعِدٌ مُحَدَّدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 174,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 85,
+    "serviceTier": "standard"
+   }
+  },
+  "اِعْتَرَفَ": {
+   "file": "64ec74329c3e6491.mp3",
+   "heard": "اعْتَرَفَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 142,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 71,
+    "serviceTier": "standard"
+   }
+  },
+  "مُصْطَلَحَات": {
+   "file": "0ce3089f2acbd837.mp3",
+   "heard": "مُصْطَلَحَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 280,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 199,
+    "serviceTier": "standard"
+   }
+  },
+  "أَبْسَط": {
+   "file": "a8d642db9335f3a0.mp3",
+   "heard": "أَبْسَطُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 188,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 124,
+    "serviceTier": "standard"
+   }
+  },
+  "مَجَلَّةٌ مُتَخَصِّصَةٌ": {
+   "file": "2f8d29c496063905.mp3",
+   "heard": "مَجَلَّةٌ مُتَخَصِّصَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 89,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 237,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 52
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 133,
+    "serviceTier": "standard"
+   }
+  },
+  "مُبْتَدِئَة": {
+   "file": "eee14544ab5c2c71.mp3",
+   "heard": "مُبْتَدِئَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 471,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 399,
+    "serviceTier": "standard"
+   }
+  },
+  "يُبَسِّطُ": {
+   "file": "2e07bcdd3aaa642a.mp3",
+   "heard": "يُبَسِّطُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 217,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 144,
+    "serviceTier": "standard"
+   }
+  },
+  "تَبْسِيط": {
+   "file": "6335da7bb298eaf5.mp3",
+   "heard": "تَبْسِيطُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 209,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 139,
+    "serviceTier": "standard"
+   }
+  },
+  "كَثِيف": {
+   "file": "85a3fb2342459bca.mp3",
+   "heard": "كَثِيفٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 169,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 100,
+    "serviceTier": "standard"
+   }
+  },
+  "أَسَالِيب": {
+   "file": "506d6e319964abac.mp3",
+   "heard": "أَسَالِيبُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 170,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 99,
+    "serviceTier": "standard"
+   }
+  },
+  "تَمَاسَكَ": {
+   "file": "554fbc572b4aba1e.mp3",
+   "heard": "تَمَاسَكَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 191,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 120,
+    "serviceTier": "standard"
+   }
+  },
+  "بِطَلَاقَةٍ": {
+   "file": "0fce933d9f8af92c.mp3",
+   "heard": "بِطَلَاقَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 71,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 161,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 34
+     }
+    ],
+    "thoughtsTokenCount": 82,
+    "serviceTier": "standard"
+   }
+  },
+  "بِدِقَّةٍ": {
+   "file": "d51ee6ade34e25b9.mp3",
+   "heard": "بِدِقَّةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 174,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     }
+    ],
+    "thoughtsTokenCount": 102,
+    "serviceTier": "standard"
+   }
+  },
+  "مَعَايِير": {
+   "file": "8479151ac2a581a3.mp3",
+   "heard": "مَعَايِيرُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 197,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 125,
+    "serviceTier": "standard"
+   }
+  },
+  "ثَرْوَة": {
+   "file": "2046383d6532931d.mp3",
+   "heard": "ثَرْوَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 362,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 299,
+    "serviceTier": "standard"
+   }
+  },
+  "اِسْتَطْرَدَ": {
+   "file": "a66c56eb1ffbb045.mp3",
+   "heard": "اِسْتَطْرَدَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 1863,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 1790,
+    "serviceTier": "standard"
+   }
+  },
+  "تَفْرِيغُ الصُّنْدُوقِ": {
+   "file": "97e8410d219458ac.mp3",
+   "heard": "تَفْرِيغُ الصُّنْدُوقِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 79,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 331,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 42
+     }
+    ],
+    "thoughtsTokenCount": 239,
+    "serviceTier": "standard"
+   }
+  },
+  "تَحَفُّظَات": {
+   "file": "66d95a3ee07ea6fe.mp3",
+   "heard": "تَحَفُّظَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 182,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     }
+    ],
+    "thoughtsTokenCount": 103,
+    "serviceTier": "standard"
+   }
+  },
+  "سَرَدَ": {
+   "file": "c11dffca8d244249.mp3",
+   "heard": "سَرَدَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 111,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 48,
+    "serviceTier": "standard"
+   }
+  },
+  "أَحْكَام": {
+   "file": "5574a527246aa161.mp3",
+   "heard": "أَحْكَامٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 131,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 62,
+    "serviceTier": "standard"
+   }
+  },
+  "اِرْتَجَلَ": {
+   "file": "ccfd092bef1d3a66.mp3",
+   "heard": "اِرْتَجَلَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 269,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 198,
+    "serviceTier": "standard"
+   }
+  },
+  "أَلِفَ": {
+   "file": "d23a6072b911e947.mp3",
+   "heard": "أَلِفًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 228,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 165,
+    "serviceTier": "standard"
+   }
+  },
+  "غَيْرُ مَأْلُوفٍ": {
+   "file": "d3ace55a131de25f.mp3",
+   "heard": "غَيْرُ مَأْلُوفٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 350,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 264,
+    "serviceTier": "standard"
+   }
+  },
+  "حَدٌّ أَدْنَى": {
+   "file": "c818d8fb0ec3d7cc.mp3",
+   "heard": "حَدٌّ أَدْنَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 460,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 383,
+    "serviceTier": "standard"
+   }
+  },
+  "تَوَقَّعَ": {
+   "file": "69ac00c560357c99.mp3",
+   "heard": "تَوَقَّعَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 156,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 85,
+    "serviceTier": "standard"
+   }
+  },
+  "عَدَد": {
+   "file": "a4f1f5c6a45b7d2b.mp3",
+   "heard": "عَدَدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 146,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 79,
+    "serviceTier": "standard"
+   }
+  },
+  "نُسَخ": {
+   "file": "d589f1b7d5d60501.mp3",
+   "heard": "نُسَخٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 261,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 193,
+    "serviceTier": "standard"
+   }
+  },
+  "تَعْدِيلَات": {
+   "file": "a97462277fae6c3d.mp3",
+   "heard": "تَعْدِيلَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 289,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 213,
+    "serviceTier": "standard"
+   }
+  },
+  "عَدَّلَ": {
+   "file": "42a30d19927fcf9f.mp3",
+   "heard": "عَدَّلَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 156,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 90,
+    "serviceTier": "standard"
+   }
+  },
+  "إِنْجَازَات": {
+   "file": "327c686f64ffccb6.mp3",
+   "heard": "إِنْجَازَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 147,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 69,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنْجَزَ": {
+   "file": "a9eeeff6aa7699ee.mp3",
+   "heard": "أَنْجَزَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 197,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 130,
+    "serviceTier": "standard"
+   }
+  },
+  "عَيِّنَات": {
+   "file": "00a9649576a058d8.mp3",
+   "heard": "عَيِّنَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 140,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 65,
+    "serviceTier": "standard"
+   }
+  },
+  "قُدُرَات": {
+   "file": "8da3d68b8e51fca5.mp3",
+   "heard": "قُدُرَاتْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 519,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 452,
+    "serviceTier": "standard"
+   }
+  },
+  "مُقَيِّمَة": {
+   "file": "bebe26f1b592cf6a.mp3",
+   "heard": "مُقَيَّمَةْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 606,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 535,
+    "serviceTier": "standard"
+   }
+  },
+  "قَيَّمَ": {
+   "file": "9386b059ebcd8d36.mp3",
+   "heard": "قَيَّمَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 148,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 82,
+    "serviceTier": "standard"
+   }
+  },
+  "شَهَادَات": {
+   "file": "37570206a6892ef5.mp3",
+   "heard": "شَهَادَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 159,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 83,
+    "serviceTier": "standard"
+   }
+  },
+  "سِيرَة": {
+   "file": "f93716d88f2628db.mp3",
+   "heard": "سِيرَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 234,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 172,
+    "serviceTier": "standard"
+   }
+  },
+  "نَوْع": {
+   "file": "b8b294b049c28b14.mp3",
+   "heard": "نَوْعٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 237,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 174,
+    "serviceTier": "standard"
+   }
+  },
+  "تَقْيِيمَات": {
+   "file": "72ec4efa8977ca72.mp3",
+   "heard": "تَقْيِيمَاتُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 248,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 175,
+    "serviceTier": "standard"
+   }
+  },
+  "اِمْتِحَان": {
+   "file": "5682b74eb21dad1f.mp3",
+   "heard": "اِمْتِحَانٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 68,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 191,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 31
+     }
+    ],
+    "thoughtsTokenCount": 117,
+    "serviceTier": "standard"
+   }
+  },
+  "اِمْتِحَانَات": {
+   "file": "ac963a64af6a4118.mp3",
+   "heard": "اِمْتِحَانَاتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 226,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     }
+    ],
+    "thoughtsTokenCount": 146,
+    "serviceTier": "standard"
+   }
+  },
+  "رَسْم": {
+   "file": "c72d501d349cbd8b.mp3",
+   "heard": "رَسْمٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 172,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 107,
+    "serviceTier": "standard"
+   }
+  },
+  "اِعْتَمَدَ": {
+   "file": "bcea8e6cb1d6ccf4.mp3",
+   "heard": "اِعْتَمَدَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 190,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 119,
+    "serviceTier": "standard"
+   }
+  },
+  "مُدَرِّسَةٌ خُصُوصِيَّةٌ": {
+   "file": "c19c9fabbc1c4671.mp3",
+   "heard": "مُدَرِّسَةٌ خُصُوصِيَّةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 90,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 337,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 53
+     }
+    ],
+    "thoughtsTokenCount": 231,
+    "serviceTier": "standard"
+   }
+  },
+  "شَفَهِيّ": {
+   "file": "5fc2832877786898.mp3",
+   "heard": "شَفَهِيّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 359,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 292,
+    "serviceTier": "standard"
+   }
+  },
+  "كِتَابِيّ": {
+   "file": "160e8211ffeb77ce.mp3",
+   "heard": "كِتَابِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 128,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 61,
+    "serviceTier": "standard"
+   }
+  },
+  "اِسْتَمَرَّ": {
+   "file": "72a18af4f9154227.mp3",
+   "heard": "اِسْتَمَرَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 167,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 98,
+    "serviceTier": "standard"
+   }
+  },
+  "مَجَالَات": {
+   "file": "577a0c5179972ef9.mp3",
+   "heard": "مَجَالَاتْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 201,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 133,
+    "serviceTier": "standard"
+   }
+  },
+  "مُحَافَظَة": {
+   "file": "4ec2c6c63f2f0d4e.mp3",
+   "heard": "مُحَافَظَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 246,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 173,
+    "serviceTier": "standard"
+   }
+  },
+  "عِبْء": {
+   "file": "c9faa996d89847da.mp3",
+   "heard": "عَيْبْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 199,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 138,
+    "serviceTier": "standard"
+   }
+  },
+  "اِنْقَطَعَ": {
+   "file": "53cec7f12b546cf7.mp3",
+   "heard": "اِنْقَطَعَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 255,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 181,
+    "serviceTier": "standard"
+   }
+  },
+  "عَلَى الْمَدَى الْقَرِيبِ": {
+   "file": "f4cf4f7e7617bf4b.mp3",
+   "heard": "عَلَى الْمَدَى الْقَرِيبِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 269,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 179,
+    "serviceTier": "standard"
+   }
   }
  },
  "earlier": {
@@ -41632,6 +46247,102 @@
       }
      ],
      "thoughtsTokenCount": 162,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "مَغْزَى": [
+   {
+    "file": "b8bb14a64865bb34.mp3",
+    "heard": "مَزَّةُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 58,
+     "candidatesTokenCount": 5,
+     "totalTokenCount": 387,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 21
+      }
+     ],
+     "thoughtsTokenCount": 324,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "تَكَلَّمَتِ ارْتِجَالًا عَنِ الْمَوْضُوعِ.": [
+   {
+    "file": "7520154b1231e229.mp3",
+    "heard": "تَكَلَّمَ ارْتِجَالًا عَنِ الْمَوْضُوعِ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 100,
+     "candidatesTokenCount": 22,
+     "totalTokenCount": 271,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 63
+      }
+     ],
+     "thoughtsTokenCount": 149,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "تَقْيِيم": [
+   {
+    "file": "bb9e8eb40d82d785.mp3",
+    "heard": "تُقِيمُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 63,
+     "candidatesTokenCount": 5,
+     "totalTokenCount": 371,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 26
+      }
+     ],
+     "thoughtsTokenCount": 303,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "عِبْء": [
+   {
+    "file": "2a9ca299e9f8d9f8.mp3",
+    "heard": "عَيْبْ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 57,
+     "candidatesTokenCount": 3,
+     "totalTokenCount": 207,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 20
+      }
+     ],
+     "thoughtsTokenCount": 147,
      "serviceTier": "standard"
     }
    }
