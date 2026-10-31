@@ -27,7 +27,7 @@ import { SECTIONS } from '../data/projectSections';
 import { amountText, breakEvenText, monthText, normalizeMoney } from '../data/businessMoney';
 import { STATUS_LABEL as EXPERIMENT_STATUS, statusOf } from '../data/experiments';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
+import type { Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, cleanCyberLesson, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard, CyberLesson, PortfolioEntry } from '../data/cybersecurity/types';
@@ -37,11 +37,12 @@ import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } fr
 import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord } from './projectParts';
 import { resourceName } from '../data/projectResources';
 import { sizeLabel } from '../data/files';
+import { platformLabel, resultWords, stepLabel, videoOf } from '../data/content';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -308,6 +309,21 @@ const MANY: Many[] = [
     lines: c => { const r = c as unknown as ResearchItem; if (r.type !== 'experiment') return []; const e = r as ResearchExperiment;
       return [e.how && `How: ${e.how}`, e.expect && `What would change my mind: ${e.expect}`, e.result && `What happened: ${e.result}`, e.conclusion && `What I conclude: ${e.conclusion}`,
         e.tests.length ? `Tests ${e.tests.length === 1 ? '1 thing' : `${e.tests.length} things`}` : ''].filter((x): x is string => !!x); } },
+  // A Content project's ideas and videos (specs/projects-content.md; from migration 20261031200000_sync_content.sql):
+  // one record each, saying which project it belongs to.
+  { kind: 'content', label: 'Video',
+    items: d => d.content.items, put: (dr, id, c) => putItem(dr.content.items, id, c, (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)),
+    clean: (id, raw) => same(id, via({ content: { items: [raw] } }).content.items[0]),
+    summary: c => { const v = videoOf(c as unknown as ContentItem); return `${v.step === 'idea' ? 'Idea' : 'Video'}: ${v.title.length > 80 ? v.title.slice(0, 80) + '…' : v.title || '(untitled)'}${v.step === 'idea' ? '' : ` · ${stepLabel(v.step)}`}`; },
+    // Its planning and what happened, in words, so two versions that differ only there can be told apart.
+    lines: c => { const v = videoOf(c as unknown as ContentItem), n = (xs: unknown[], one: string) => (xs.length ? `${xs.length} ${one}${xs.length === 1 ? '' : 's'}` : '');
+      return [v.hook && `Hook: ${v.hook}`, v.notes && `Notes: ${v.notes}`,
+        v.options.length ? `Options: ${v.options.map(o => `${o.text}${o.chosen ? ' (chosen)' : ''}`).join('; ')}` : '',
+        [n(v.examples, 'example'), n(v.outline, 'beat'), n(v.shots, 'shot'), n(v.needs, 'thing needed'), n(v.steps, 'step'), n(v.clips, 'clip link'), n(v.fileIds, 'upload')].filter(Boolean).join(' · '),
+        v.script && `Script: ${v.script.length.toLocaleString('en-GB')} characters`, v.transcript && `Transcript: ${v.transcript.length.toLocaleString('en-GB')} characters`,
+        v.postOn && `Post on ${shortDate(v.postOn)}`, ...v.posts.map(p => `Posted on ${platformLabel(p.platform)}${isDateKey(p.on) ? ` ${shortDate(p.on)}` : ''}`),
+        ...v.results.map(r => `${platformLabel(r.platform)}${isDateKey(r.on) ? ` ${shortDate(r.on)}` : ''}: ${resultWords(r)}`),
+        v.worked && `What worked: ${v.worked}`, v.didnt && `What didn’t: ${v.didnt}`].filter((x): x is string => !!x); } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),

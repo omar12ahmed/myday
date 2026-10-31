@@ -453,7 +453,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const caseOf = (d, id = 'pjA') => d.projects.items.find(p => p.id === id).case;
 
     // Kinds
-    check('the kinds of project are General, Business idea, Case and Research, in that order', eq(K.TEMPLATES.map(t => t.id), ['general', 'business', 'case', 'research']) && eq(K.TEMPLATES.map(t => t.label), ['General', 'Business idea', 'Case', 'Research']), K.TEMPLATES);
+    check('the kinds of project are General, Business idea, Case, Research and Content, in that order', eq(K.TEMPLATES.map(t => t.id), ['general', 'business', 'case', 'research', 'content']) && eq(K.TEMPLATES.map(t => t.label), ['General', 'Business idea', 'Case', 'Research', 'Content']), K.TEMPLATES);
     let d = world(base(), base('pjO'));
     const otherBefore10 = clone(d.projects.items[1]);
     check('isCase is true for a case and false for a general or business project', K.isCase(base('p', { template: 'case' })) && !K.isCase(base()) && !K.isCase(base('p', { template: 'business' })));

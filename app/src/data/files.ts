@@ -12,7 +12,7 @@ import { isObj, listOf, uid } from './util';
 export const FILE_ID = /^fl[a-z0-9]{6,40}$/;
 export const FILES_PER_PLACE = 50;
 export const newFileId = () => 'fl' + uid();
-export type Owner = { kind: 'project' | 'note' | 'portfolio'; id: string }; // a portfolio entry: cybersecurity.portfolio
+export type Owner = { kind: 'project' | 'note' | 'portfolio' | 'video'; id: string }; // a portfolio entry: cybersecurity.portfolio; a video: content (specs/projects-content.md)
 type Place = { kind: string; id: string }; // an Owner, or a place a newer MyDay knows (kept, never found here)
 export const emptyFiles = (): FilesData => ({ items: [] });
 // The areas whose files this version can list, and so judge. A file of another area (a newer MyDay's gallery, say)
@@ -21,8 +21,8 @@ export const emptyFiles = (): FilesData => ({ items: [] });
 // (`listedIn`, e.g. a task listing a project's file): only removing it from a project or note here takes that link out.
 // (A record from a newer MyDay in a shape this version doesn't read is still tidied by normalizeFiles: a bad hash,
 // day, area or state is replaced.)
-export const LISTED_AREAS: readonly string[] = ['project', 'note', 'portfolio'];
-const PLACE_KINDS: readonly string[] = ['project', 'note', 'portfolio'];
+export const LISTED_AREAS: readonly string[] = ['project', 'note', 'portfolio', 'content'];
+const PLACE_KINDS: readonly string[] = ['project', 'note', 'portfolio', 'video'];
 const listedHere = (f: FileRecord) => LISTED_AREAS.includes(f.area) && !(Array.isArray(f.listedIn) && f.listedIn.some(k => !PLACE_KINDS.includes(String(k))));
 
 // Reading saved file records: one without an id, a name, a type or a size is counted, never kept half-read. Fields from
@@ -56,7 +56,7 @@ export function normalizeFileIds(raw: unknown): string[] | null {
 
 // ---------- Places ----------
 const place = (d: MyDayData, o: Place) => (o.kind === 'project' ? d.projects.items.find(p => p.id === o.id) : o.kind === 'note' ? d.notes.items.find(n => n.id === o.id)
-  : o.kind === 'portfolio' ? d.cybersecurity.portfolio?.find(e => e.id === o.id) : undefined);
+  : o.kind === 'portfolio' ? d.cybersecurity.portfolio?.find(e => e.id === o.id) : o.kind === 'video' ? d.content.items.find(v => v.id === o.id) : undefined);
 // How many files a place keeps: a portfolio entry 5, a project or a note 50.
 export const filesPerPlace = (o: Place) => (o.kind === 'portfolio' ? PORTFOLIO_FILES : FILES_PER_PLACE);
 export const placeExists = (d: MyDayData, o: Place) => !!place(d, o);
@@ -67,7 +67,8 @@ export const filesOf = (d: MyDayData, o: Owner): FileRecord[] => fileIdsOf(d, o)
 export function usedBy(d: MyDayData, fileId: string): Owner[] {
   return [...d.projects.items.filter(p => p.fileIds?.includes(fileId)).map(p => ({ kind: 'project' as const, id: p.id })),
     ...d.notes.items.filter(n => n.fileIds?.includes(fileId)).map(n => ({ kind: 'note' as const, id: n.id })),
-    ...(d.cybersecurity.portfolio ?? []).filter(e => e.fileIds?.includes(fileId)).map(e => ({ kind: 'portfolio' as const, id: e.id }))];
+    ...(d.cybersecurity.portfolio ?? []).filter(e => e.fileIds?.includes(fileId)).map(e => ({ kind: 'portfolio' as const, id: e.id })),
+    ...d.content.items.filter(v => Array.isArray(v.fileIds) && v.fileIds.includes(fileId)).map(v => ({ kind: 'video' as const, id: v.id }))];
 }
 function setIds(d: MyDayData, o: Place, ids: string[]) {
   const p = place(d, o);

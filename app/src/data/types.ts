@@ -142,6 +142,7 @@ export interface MyDayData {
   // (`fileIds`). Older MyDays keep this section unread. Never sent to AI.
   files: FilesData;
   research: ResearchData;
+  content: ContentData;  // a Content project's ideas and videos (specs/projects-content.md); one synced record each
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -257,6 +258,29 @@ export interface ResearchExperiment extends ResearchBase {
 export interface ResearchOther extends ResearchBase { type: string } // a type from a newer MyDay: kept as it is
 export type ResearchItem = ResearchQuestion | ResearchSource | ResearchFinding | ResearchExperiment | ResearchOther;
 export interface ResearchData { items: ResearchItem[]; [other: string]: unknown }
+
+// ---------- Content projects (specs/projects-content.md) ----------
+// A channel's or series' ideas and videos: one item each (an idea is a video at step 'idea'). Read as written: a field
+// can be missing (it reads as empty), and a type, step or kind from a newer MyDay is kept.
+export interface ContentData { items: ContentItem[]; [other: string]: unknown }
+export type ContentStep = 'idea' | 'planning' | 'filming' | 'editing' | 'posted';
+// A candidate still open (or chosen): kind 'title' | 'hook' | 'angle' | 'thumbnail'.
+export interface ContentOption { id: string; kind: string; text: string; note?: string; chosen?: boolean; [other: string]: unknown }
+export interface ContentExample { id: string; url: string; title?: string; note?: string; at?: string; [other: string]: unknown }
+// An outline beat, a shot (where and with what), something you need (have it or not), or a step — a shot or step can
+// become a task.
+export interface ContentLine { id: string; text: string; where?: string; gear?: string; done?: boolean; taskId?: string; [other: string]: unknown }
+// A clip: a link (with a moment or span) or an uploaded file.
+export interface ContentClip { id: string; kind: string; url?: string; fileId?: string; label?: string; from?: string; to?: string; note?: string; [other: string]: unknown }
+export interface ContentPost { id: string; platform: string; url?: string; on?: DateKey | null; [other: string]: unknown }
+export interface ContentResult { id: string; platform: string; on?: DateKey | null; views?: number | null; likes?: number | null; comments?: number | null; shares?: number | null; followers?: number | null; [other: string]: unknown }
+export interface ContentItem {
+  id: string; type: string; projectId: string; step?: string; title?: string; hook?: string; notes?: string;
+  options?: ContentOption[]; examples?: ContentExample[]; outline?: ContentLine[]; shots?: ContentLine[]; needs?: ContentLine[]; steps?: ContentLine[];
+  script?: string; transcript?: string; clips?: ContentClip[]; fileIds?: string[]; // uploads (clips, thumbnails): its own files
+  postOn?: DateKey | null; postTaskId?: string | null; posts?: ContentPost[]; results?: ContentResult[]; worked?: string; didnt?: string;
+  createdAt: string; updatedAt: string; [other: string]: unknown;
+}
 export interface ProjectResource { id: string; title: string; url: string; note?: string; addedOn: DateKey; [other: string]: unknown }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 

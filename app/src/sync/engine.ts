@@ -24,6 +24,7 @@
 // cloud checks that too.
 import { clearFileCache } from '../data/fileCache';
 import { KEPT_CONVERSATION_KEY, LAST_ASK_KEY } from '../ai/lastAskKey';
+import { CONTENT_RECORD_BYTES, deleteProjectContent } from '../data/content';
 import { deleteProjectResearch } from '../data/research';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
@@ -330,6 +331,11 @@ function noteOutgoing(link: Link, local: Map<string, Content>, keys: string[]) {
       link.rejected[key] = { f: fingerprint(content), reason: 'This project item is too large for cloud sync. Its saved content is still on this device.' };
       continue;
     }
+    // (A video likewise, a little before the database's limit, with what to shorten: specs/projects-content.md.)
+    if (content && splitKey(key).kind === 'content' && recordBytes(content) > CONTENT_RECORD_BYTES) {
+      link.rejected[key] = { f: fingerprint(content), reason: 'This video is too large for cloud sync — shorten its transcript or script. It’s still saved on this device.' };
+      continue;
+    }
     link.out[key] = { id: newId(), base: link.base[key] ? link.base[key].v : 0, del: !content, content, f: fingerprint(content), tries: 0 };
   }
 }
@@ -400,8 +406,8 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
           noteCloudVersion(next, key, local.get(key) ?? null, { v: row.version, del: true, content: null, by: row.updated_by, at: row.updated_at });
         }
       }
-      // (Research after projects, so a project's deletion is decided before its research's: see below.)
-      const ordered = [...latest.values()].sort((a, b) => Number(a.kind === 'research') - Number(b.kind === 'research')
+      // (Research and content after projects, so a project's deletion is decided before theirs: see below.)
+      const ordered = [...latest.values()].sort((a, b) => Number(ofProject(a.kind)) - Number(ofProject(b.kind))
         || projectApplyOrder([keyOf(a.kind, a.record_id), a.deleted ? null : a.data as Content], [keyOf(b.kind, b.record_id), b.deleted ? null : b.data as Content]));
       for (const row of ordered) {
         const key = keyOf(row.kind, row.record_id);
@@ -409,7 +415,7 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
         if (known && row.version <= known.v) continue; // already have this version (e.g. it was sent from here)
         if (next.out[key]) continue;                    // a change from here is still on its way: sorted out next time
         if (projectAncestors(key).some(parent => next.conflicts[parent] && (next.conflicts[parent].del || !local.has(parent)))) continue;
-        if (row.kind === 'research' && row.deleted && heldByProject(next, local.get(key))) continue; // its project's deletion is undecided
+        if (ofProject(row.kind) && row.deleted && heldByProject(next, local.get(key))) continue; // its project's deletion is undecided
         const clean = row.deleted ? null : cleanRecord(key, row.data);
         if (!row.deleted && !clean) continue;           // nothing usable in it
         const cloud: Conflict = { v: row.version, del: row.deleted, content: clean, by: row.updated_by, at: row.updated_at };
@@ -426,9 +432,12 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
           changed = noteCloudVersion(next, key, here, cloud, draft) || changed; // changed in both places: you decide
         }
       }
-      // A project deleted elsewhere takes its research with it here (that device may not know Research), and the
-      // deletions go to your account from here (specs/projects-research.md).
-      for (const row of latest.values()) if (row.kind === 'project' && row.deleted && !draft.projects.items.some(p => p.id === row.record_id) && deleteProjectResearch(draft, row.record_id)) changed = true;
+      // A project deleted elsewhere takes its research and content with it here (that device may not know them), and
+      // the deletions go to your account from here (specs/projects-research.md, specs/projects-content.md).
+      for (const row of latest.values()) if (row.kind === 'project' && row.deleted && !draft.projects.items.some(p => p.id === row.record_id)) {
+        if (deleteProjectResearch(draft, row.record_id)) changed = true;
+        if (deleteProjectContent(draft, row.record_id)) changed = true;
+      }
       if (!changed) return false;
       orderProjectParts(draft, positions);
     }, () => touchesToday); // today's plan changed: anything you were in the middle of on Today was based on the older one
@@ -549,7 +558,9 @@ export async function clearThisDevice() {
   void run();
 }
 
-// A research record (specs/projects-research.md) waits while its project is still here with its deletion undecided.
+// A research or content record (specs/projects-research.md, specs/projects-content.md) belongs to a project: it's
+// applied after projects, and its deletion waits while its project is still here with its deletion undecided.
+const ofProject = (kind: string) => kind === 'research' || kind === 'content';
 function heldByProject(link: Link, here: Content | undefined): boolean {
   const pid = here && typeof (here as { projectId?: unknown }).projectId === 'string' ? (here as { projectId: string }).projectId : null;
   return !!pid && !!link.conflicts[keyOf('project', pid)];
@@ -728,7 +739,7 @@ export async function resolveConflicts(keys: string[], choice: 'here' | 'cloud')
         const entries = [...todo.map(k => [k, link.conflicts[k].content] as [string, Content | null]),
           ...subtree.map(row => [keyOf(row.kind, row.record_id), row.deleted ? null : cleanRecord(keyOf(row.kind, row.record_id), row.data)] as [string, Content | null])];
         putRecords(draft, entries);
-        for (const [k, c] of entries) if (c === null && k.startsWith('project:')) deleteProjectResearch(draft, k.slice('project:'.length)); // its research goes with it
+        for (const [k, c] of entries) if (c === null && k.startsWith('project:')) { deleteProjectResearch(draft, k.slice('project:'.length)); deleteProjectContent(draft, k.slice('project:'.length)); } // its research and content go with it
       }, touchesToday); }
       finally { applying = false; }
       if (r === 'not-saved') { st.kept.splice(st.kept.length - keep.length, keep.length); writeState(st); ok = false; return; }

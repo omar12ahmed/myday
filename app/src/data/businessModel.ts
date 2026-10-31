@@ -19,13 +19,14 @@ import { isObj, listOf, uid } from './util';
 // An assumption fits in a task's title after "Find out: " (tasks allow 120 characters).
 export const MODEL_LIMITS = { answer: 1000, assumptions: 12, assumption: 110, found: 400 };
 
-export type TemplateChoice = 'general' | 'business' | 'case' | 'research';
-export const TEMPLATES: { id: TemplateChoice; label: string }[] = [{ id: 'general', label: 'General' }, { id: 'business', label: 'Business idea' }, { id: 'case', label: 'Case' }, { id: 'research', label: 'Research' }];
+export type TemplateChoice = 'general' | 'business' | 'case' | 'research' | 'content';
+export const TEMPLATES: { id: TemplateChoice; label: string }[] = [{ id: 'general', label: 'General' }, { id: 'business', label: 'Business idea' }, { id: 'case', label: 'Case' }, { id: 'research', label: 'Research' }, { id: 'content', label: 'Content' }];
 export const isBusiness = (p: Project) => p.template === 'business';
 export const isCase = (p: Project) => p.template === 'case';
 export const isResearchKind = (p: Project) => p.template === 'research'; // Research always on (specs/projects-research.md)
+export const isContent = (p: Project) => p.template === 'content';       // a channel or series: its videos (specs/projects-content.md)
 // A kind of project this version knows (none = general). One from a newer MyDay is kept, and not offered to change.
-export const knownTemplate = (p: Project) => p.template === undefined || p.template === 'business' || p.template === 'case' || p.template === 'research';
+export const knownTemplate = (p: Project) => p.template === undefined || p.template === 'business' || p.template === 'case' || p.template === 'research' || p.template === 'content';
 
 export type AnswerKey = 'problem' | 'who' | 'how';
 export const QUESTIONS: { key: AnswerKey; label: string; hint: string }[] = [
