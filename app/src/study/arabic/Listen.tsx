@@ -1,7 +1,7 @@
 import { LoaderCircle, Square, Volume2 } from 'lucide-react';
 import { useEffect, useSyncExternalStore } from 'react';
 import { Switch } from '../../components/Switch';
-import { clipFor, isScriptedPiece, playOrStop, setSlower, stopVoiceFor, subscribe, voiceLabel, voiceState } from './voice';
+import { clipFor, isScriptedPiece, playOrStop, setAlwaysHelp, setSlower, stopVoiceFor, subscribe, voiceLabel, voiceState } from './voice';
 import { arabicRuns } from './arabic-runs.mjs';
 
 // A play button for a piece of Arabic: `text` exactly as shown (its clip is found by it). Nothing at all when that text
@@ -40,7 +40,7 @@ export function VoiceLabel({ text }: { text: string }) {
 
 // What the voice is, honestly, and the Slower switch: on the Vocabulary card.
 export function VoiceNote() {
-  const { slower } = useSyncExternalStore(subscribe, voiceState);
+  const { slower, alwaysHelp } = useSyncExternalStore(subscribe, voiceState);
   return <div className="mt-3" data-ar-voice="">
     <p className="text-sm text-fg-2 flex gap-2 items-start m-0"><Volume2 size={18} className="flex-none mt-0.5" aria-hidden="true" />
       <span><span className="font-semibold text-fg">{voiceLabel}</span> Tap play beside a word or its example. At the end of a sentence the voice may stop without the last vowel, as speakers do.</span></p>
@@ -48,6 +48,11 @@ export function VoiceNote() {
     <div className="mt-2.5 pl-[26px] flex flex-wrap items-center gap-x-3 gap-y-1">
       <Switch on={slower} onChange={setSlower} data-action="ar-slower">Slower</Switch>
       <span className="text-sm text-fg-2">Three-quarter speed, same voice. Remembered on this device.</span>
+    </div>
+    <p className="text-sm text-fg-2 mt-2.5 mb-0 pl-[26px]" data-ar-known-help="">Words you know well ask you to read them aloud first: you recalled them on your own, and they're not due for a week or more. Tap “Read it aloud, then check” to hear them and see the reading.</p>
+    <div className="mt-2 pl-[26px] flex flex-wrap items-center gap-x-3 gap-y-1">
+      <Switch on={alwaysHelp} onChange={setAlwaysHelp} data-action="ar-always-help">Always show the help</Switch>
+      <span className="text-sm text-fg-2">Every word's voice and reading straight away. Remembered on this device.</span>
     </div>
   </div>;
 }

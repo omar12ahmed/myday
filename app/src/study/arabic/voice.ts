@@ -3,7 +3,8 @@
 // clip serves every place that text appears), and one shared player. One clip at a time, and only when you tap play — never by
 // itself. A clip is fetched whole and played from memory, because the service worker keeps whole files for offline
 // (an <audio src> would ask for byte ranges, which it doesn't keep). "Slower" plays the same clip at 0.75×, pitch
-// kept; your choice is remembered on this device (myday.arabic.slower, not part of your MyDay data).
+// kept; your choice is remembered on this device (myday.arabic.slower, not part of your MyDay data). "Always show the
+// help" keeps a known word's play button and reading in view (myday.arabic.alwayshelp, on this device too).
 import audio from './voice-clips.json';
 
 const clips = audio.clips as Record<string, string>;
@@ -27,9 +28,11 @@ export const isScriptedPiece = (text: string) => scriptedPieces.has(text);
 
 export const SLOWER_KEY = 'myday.arabic.slower';
 function initialSlower() { try { return localStorage.getItem(SLOWER_KEY) === 'yes'; } catch { return false; } }
+export const ALWAYS_HELP_KEY = 'myday.arabic.alwayshelp';
+function initialAlwaysHelp() { try { return localStorage.getItem(ALWAYS_HELP_KEY) === 'yes'; } catch { return false; } }
 
-export interface VoiceState { playing: string | null; loading: string | null; failed: string | null; slower: boolean; sequence: string | null }
-let state: VoiceState = { playing: null, loading: null, failed: null, slower: initialSlower(), sequence: null };
+export interface VoiceState { playing: string | null; loading: string | null; failed: string | null; slower: boolean; sequence: string | null; alwaysHelp: boolean }
+let state: VoiceState = { playing: null, loading: null, failed: null, slower: initialSlower(), sequence: null, alwaysHelp: initialAlwaysHelp() };
 const listeners = new Set<() => void>();
 const set = (change: Partial<VoiceState>) => { state = { ...state, ...change }; listeners.forEach(l => l()); };
 export const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
@@ -39,6 +42,10 @@ export function setSlower(on: boolean) {
   try { localStorage.setItem(SLOWER_KEY, on ? 'yes' : 'no'); } catch { /* Works for this visit if storage is unavailable. */ }
   if (player) player.defaultPlaybackRate = player.playbackRate = on ? 0.75 : 1;
   set({ slower: on });
+}
+export function setAlwaysHelp(on: boolean) {
+  try { localStorage.setItem(ALWAYS_HELP_KEY, on ? 'yes' : 'no'); } catch { /* Works for this visit if storage is unavailable. */ }
+  set({ alwaysHelp: on });
 }
 
 // An empty sound, played straight from the tap: some browsers (Safari) only let a page play sound it starts during

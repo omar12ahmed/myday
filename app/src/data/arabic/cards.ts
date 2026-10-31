@@ -2,7 +2,7 @@
 // (see types.ts); what a card shows comes from the course. Nothing is added without a tap, and anything you add
 // first comes back tomorrow, because you've just seen it. Answers are rated with Study's revision rules.
 import { shift } from '../dates';
-import { rateItem, type Answered } from '../study/revision';
+import { rateItem, understanding, type Answered } from '../study/revision';
 import type { DateKey, MyDayData, Rating } from '../types';
 import { practiceCards, practiceRef, ratePractice, takeOutPractice } from './practice';
 import type { ArabicCard, CardSide } from './types';
@@ -58,6 +58,14 @@ export function wordsAddedOn(d: MyDayData, k: DateKey): number {
   return words.size;
 }
 export const wordInRevision = (d: MyDayData, lexemeId: string) => !!cardOf(d, wordCard(lexemeId, 'recognise')) || !!cardOf(d, wordCard(lexemeId, 'write'));
+// A word you know well (graduated help, specs/arabic-graduated-help.md): you last recognised it on your own and its
+// next review is a week or more away. Its play button and reading then wait until you've read it aloud yourself; if it
+// slips, the help is back at once.
+export const KNOWN_AFTER_DAYS = 7;
+export function wordKnown(d: MyDayData, lexemeId: string): boolean {
+  const c = cardOf(d, wordCard(lexemeId, 'recognise'));
+  return !!c && c.review.interval >= KNOWN_AFTER_DAYS && understanding(d.study, c) === 'recalled';
+}
 // The next starter words to add, in the course's order: ones that aren't in revision yet.
 export const nextWords = (d: MyDayData, lexemeIds: string[], n: number) => lexemeIds.filter(id => !wordInRevision(d, id)).slice(0, n);
 

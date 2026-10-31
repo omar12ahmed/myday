@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
@@ -11,7 +11,7 @@ import { toast } from '../../data/toast';
 import { dueIds, nextDueDate } from '../../data/study/queue';
 import { understanding, UNDERSTANDING } from '../../data/study/revision';
 import type { MyDayData } from '../../data/types';
-import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevision, wordsAddedOn } from '../../data/arabic/cards';
+import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevision, wordKnown, wordsAddedOn } from '../../data/arabic/cards';
 import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type PracticeStep, type Variant } from '../../data/arabic/types';
 import { beginSession, changeSession, discardSession, finishSession, markRevealed, openSession, sessionsFor, writeFirstAnswer } from '../../data/arabic/sessions';
 import { bringBackNotYet, bringBackPractice, settleTicks, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
@@ -27,7 +27,7 @@ import { Ar, Mixed } from './Ar';
 import { familyOf } from './families';
 import { Root, WordFamilies } from './WordFamilies';
 import { MixedVoiceLabel, PlayButton, VoiceLabel, VoiceNote } from './Listen';
-import { clipFor, hasReadingVoice, hasVoice } from './voice';
+import { clipFor, hasReadingVoice, hasVoice, subscribe, voiceState } from './voice';
 import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
@@ -852,15 +852,21 @@ function useTakeOut() {
 }
 // One word: the Arabic, its meaning (a course word's root too), its example, each with its voice; a course word's note
 // and the explainer for it, if there is one; where it stands in revision, and adding it, practising writing it, or
-// taking it out.
+// taking it out. A word you know well (wordKnown) asks you to read it aloud first: its voice and reading wait for
+// "Read it aloud, then check", unless "Always show the help" is on; its example keeps its voice.
 function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: Explainer } | null }) {
   const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
   const course = isCourseWord(w) ? w : null;
+  const { alwaysHelp } = useSyncExternalStore(subscribe, voiceState);
+  const [checked, setChecked] = useState(false);
+  const ask = !alwaysHelp && !checked && wordKnown(data, w.id);
+  const check = () => { setChecked(true); requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-ar-clip="${w.id}:word"]`)?.focus()); };
   return <li data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
-    <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
+    <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block showReading={!ask} className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
+      {ask && <Button inline variant="ghost" data-action="ar-word-check" aria-label={`Read ${w.form_ar} aloud, then check`} onClick={check}>Read it aloud, then check</Button>}
       {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}
       {course?.root_ar && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-root={course.root_ar}>Root: <Root f={{ root_ar: course.root_ar, root_reading: course.root_reading ?? '' }} /></p>}</div>
-      <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} /></div>
+      {!ask && <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} />}</div>
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
       <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
     {course && <p className="text-sm m-0 sm:col-span-2 min-w-0 break-words" data-ar-word-note=""><WordNote text={course.note} voice={`${w.id}:note`} /></p>}
