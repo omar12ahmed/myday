@@ -182,6 +182,10 @@ again from Charon. One came back as a scripted piece's audio and was made again;
 Round eighteen (the B2 course words, modules 23–24): 70 words, their examples and notes, 210 clips. The owner heard
 three wrong (the غ of مَغْزَى said alone, an example too quick, مُضَادّ in a note); each was put in a phrase or reworded,
 tried with the voice first, and approved ("good"). The key was deleted.
+Round nineteen (modules 8–23's 71 approved explainers): 790 clips, 522 new texts and 268 made again from Charon.
+The owner heard four a bit off and each was made again at a slower speaking rate, in the same words (an explainer's
+text can't be reworded). The sentence and سِجِلّ were then approved; ضِعْف said alone is left out (no play button), and
+أَيّ, also a course word, keeps its earlier Charon clip approved on 25 October (the owner's choice). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
@@ -189,7 +193,8 @@ tried with the voice first, and approved ("good"). The key was deleted.
   2. the clips are made in the same voice (Chirp 3 HD Charon);
   3. Gemini transcribes every clip, and any clip it hears differently is made again;
   4. you listen on a checklist page and tick anything that sounds off;
-  5. the clips are made again until they're right;
+  5. the clips are made again until they're right; a clip heard too fast, or with a sound wrong at the usual
+     speed, can be made slower: its "rate" (0.5 to under 1) is set on the clip before the redo and kept with it;
   6. the full test run, a release, and a live check.
 - **The cost is about nothing:**
   - **Text-to-Speech:** within the free allowance (to be confirmed on the day).

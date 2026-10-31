@@ -36,6 +36,7 @@ for (const [text, c] of Object.entries(audit.clips ?? {})) {
   if (c.spoken !== undefined && c.spoken !== say(text)) fail(`${short}: the spoken text changes more than its pause punctuation`);
   if (pieces[text] && c.spoken === undefined) fail(`${short}: a scripted piece's clip must record the script it was made from`);
   if (!VOICES.includes(c.voice)) fail(`${short}: made with a voice the audit doesn't list (${c.voice ?? 'none recorded'})`);
+  if (c.rate !== undefined && !(typeof c.rate === 'number' && c.rate >= 0.5 && c.rate < 1)) fail(`${short}: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${c.rate})`);
   if (!/^[0-9a-f]{16}\.mp3$/.test(c.file ?? '')) fail(`${short}: a clip is named by its contents (16 hex + .mp3)`);
   const at = new URL(c.file, clipsDir);
   if (!existsSync(at)) fail(`${short}: ${c.file} is missing`);
