@@ -16,12 +16,12 @@ import { isBusiness, isCase, isResearchKind, knownTemplate, setTemplate, TEMPLAT
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
 import { arrived, arriving, hiddenWords, isHidden, overviewSections, SECTIONS, setHidden, type HiddenWith, type Section } from '../data/projectSections';
-import { comingUp, deleteProject, editProject, heldBack, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
+import { comingUp, deleteProject, editProject, heldBack, lastActivity, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, deadlineLabel, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
-import { awayWords, welcomeBack, type WelcomeBack } from '../data/welcomeBack';
+import { awayWords, breakOf, greets, welcomeView, type WelcomeBack } from '../data/welcomeBack';
 import { bothMention, mightBelong } from '../data/understand';
 import { ChaseIt } from '../tasks/ChaseIt';
 import { dueText, waitingText } from '../tasks/route';
@@ -277,11 +277,17 @@ function putAway(data: MyDayData, projectId: string, stamp: string) {
   // (Only projects still here are kept, so the list never grows.)
   try { const v = Object.fromEntries(Object.entries(welcomed()).filter(([id]) => data.projects.items.some(p => p.id === id))); v[projectId] = stamp; localStorage.setItem(WELCOMED_KEY, JSON.stringify(v)); } catch { /* without storage it simply greets again next time */ }
 }
+// Once it greets you it stays for the visit (until Got it, or you leave the page), even as you work through it: work
+// ends the break from the next visit. Its contents are worked out afresh each time.
 function WelcomeOrLeftOff({ data, p }: { data: MyDayData; p: Project }) {
-  const wb = welcomeBack(data, p);
-  const [away, setAway] = useState(() => welcomed()[p.id] ?? '');
-  if (!wb || away === wb.stamp) return <LeftOffCard p={p} />;
-  return <WelcomeBackCard data={data} p={p} wb={wb} onGotIt={() => { putAway(data, p.id, wb.stamp); setAway(wb.stamp); focusSoon('projectTitle'); }} />;
+  const [visit, setVisit] = useState(() => { const b = breakOf(data, p); return b && greets(b.stamp, welcomed()[p.id]) ? b : null; });
+  if (!visit) return <LeftOffCard p={p} />;
+  function gotIt() {
+    const now = lastActivity(data, p);
+    putAway(data, p.id, now > visit!.stamp ? now : visit!.stamp);
+    setVisit(null); focusSoon('projectTitle');
+  }
+  return <WelcomeBackCard data={data} p={p} wb={welcomeView(data, p, visit)} onGotIt={gotIt} />;
 }
 function WelcomeBackCard({ data, p, wb, onGotIt }: { data: MyDayData; p: Project; wb: WelcomeBack; onGotIt: () => void }) {
   const [noting, setNoting] = useState(false), k = todayKey(), next = wb.next;
@@ -292,22 +298,25 @@ function WelcomeBackCard({ data, p, wb, onGotIt }: { data: MyDayData; p: Project
       <p className="m-0 mt-1 text-[15px] text-fg-2" data-s="welcome-away">Away {awayWords(wb.days)} — last worked on {shortDate(wb.since)}</p>
       <h4 className={part}>What you did last</h4>
       {wb.did.length ? (
-        <ul className="list-none p-0 m-0" data-s="welcome-did">{wb.did.map((h, i) => <li key={i}><a href={h.href} className={link}><span className="text-fg-2">{HAPPENED[h.what]}:</span> {h.title}</a></li>)}</ul>
+        <ul className="list-none p-0 m-0" data-s="welcome-did">{wb.did.map((h, i) => <li key={i}><a href={h.href} className={link}><span className="text-fg-2 tabular-nums">{shortDate(h.at.slice(0, 10))} · {HAPPENED[h.what]}:</span> {h.title}</a></li>)}</ul>
       ) : <p className="m-0 mt-1 text-[15px]" data-s="welcome-did">You started it on {shortDate(p.createdAt.slice(0, 10))}.</p>}
       <h4 className={part}>While you were away</h4>
       {wb.meanwhile.length ? <>
         <ul className="list-none p-0 m-0" data-s="welcome-meanwhile">{wb.meanwhile.map(m => <li key={m.key} data-key={m.key}><a href={m.href} className={link}>{m.text}</a></li>)}</ul>
-        {wb.more > 0 && <p className="m-0 text-sm text-fg-2" data-s="welcome-more">and {wb.more} more — Coming up and Needs you have them all</p>}
+        {wb.more > 0 && <p className="m-0 text-sm text-fg-2" data-s="welcome-more">and {wb.more} more{p.status === 'active' ? ' — Needs you, on the Projects home, has them all' : ''}</p>}
       </> : <p className="m-0 mt-1 text-[15px]" data-s="welcome-meanwhile">Nothing came due while you were away.</p>}
-      <h4 className={part}>Where you left off</h4>
-      {p.leftOff ? <p className="m-0 mt-1 text-[16px] whitespace-pre-line break-words" data-s="welcome-leftoff">{p.leftOff.text} <span className="text-sm text-fg-2 tabular-nums">· {shortDate(p.leftOff.at.slice(0, 10))}</span></p>
-        : noting ? <LeftOffEditor p={p} onDone={() => { setNoting(false); focusSoon('pjWelcomeH'); }} />
+      <h4 className={part}>Where I left off</h4>
+      {p.leftOff ? <p id="welcomeLeftOff" tabIndex={-1} className="m-0 mt-1 text-[16px] whitespace-pre-line break-words" data-s="welcome-leftoff">{p.leftOff.text} <span className="text-sm text-fg-2 tabular-nums">· {shortDate(p.leftOff.at.slice(0, 10))}</span></p>
+        : noting ? <LeftOffEditor p={p} textId="welcomeLeftOffText" onDone={r => { setNoting(false); focusSoon(r === 'saved' ? 'welcomeLeftOff' : 'welcomeNote'); }} />
         : <button type="button" id="welcomeNote" className="block min-h-11 mt-1 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4 text-left" data-action="welcome-note" onClick={() => setNoting(true)}>No note from last time. Leave yourself one for next time?</button>}
       {next && <>
         <h4 className={part}>Next step</h4>
         <p className="m-0 mt-1 text-[17px] font-semibold break-words" data-s="welcome-next">{next.title}</p>
+        {/* (As the Next step card has it: a waiting step can't be done today; one that starts after another task can.) */}
+        {next.waiting ? <p className="m-0 mt-1 text-[15px] text-fg-2 break-words">{waitingText(next)}</p>
+          : startsAfterText(data, next) && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words">{startsAfterText(data, next)}. You can still do it any time.</p>}
         <div className="flex flex-wrap items-center gap-2.5 mt-2">
-          {heldBack(data, next) ? <span className="text-[15px] text-fg-2">{next.waiting ? waitingText(next) : startsAfterText(data, next)}</span>
+          {next.waiting ? (next.waiting.until && next.waiting.until <= k && <ChaseIt data={data} t={next} primary />)
             : onTodaysPlan(data, next, k) ? <span className="inline-flex items-center gap-1.5 min-h-11 text-[15px] font-semibold"><Check size={16} aria-hidden="true" /> On today’s plan</span>
             : <Button inline variant="primary" data-action="welcome-today" onClick={() => toToday(data, next)}>Add to today</Button>}
         </div>
@@ -332,7 +341,7 @@ function LeftOffCard({ p }: { p: Project }) {
   );
 }
 // Writing it: the draft stays while you type and if saving fails (nothing is announced, and the previous note stays).
-function LeftOffEditor({ p, onDone }: { p: Project; onDone: (r: 'saved' | 'cleared' | 'cancelled') => void }) {
+function LeftOffEditor({ p, onDone, textId = 'projectLeftOffText' }: { p: Project; onDone: (r: 'saved' | 'cleared' | 'cancelled') => void; textId?: string }) {
   const confirm = useConfirm();
   const [text, setText] = useState(p.leftOff?.text ?? '');
   function save() {
@@ -346,8 +355,8 @@ function LeftOffEditor({ p, onDone }: { p: Project; onDone: (r: 'saved' | 'clear
   }
   return (
     <form className="mt-3" onSubmit={e => { e.preventDefault(); save(); }} onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); onDone('cancelled'); } }} data-s="leftoff-form">
-      <Field label="Where I left off" htmlFor="projectLeftOffText">
-        <TextArea id="projectLeftOffText" rows={4} autoFocus value={text} maxLength={PROJECT_LIMITS.leftOff} onChange={e => setText(e.target.value)}
+      <Field label="Where I left off" htmlFor={textId}>
+        <TextArea id={textId} rows={4} autoFocus value={text} maxLength={PROJECT_LIMITS.leftOff} onChange={e => setText(e.target.value)}
           placeholder="What was happening, what’s unresolved, the next useful thing, and anything you’ll need to pick it up again" />
       </Field>
       <div className="flex flex-wrap gap-2.5 mt-3">

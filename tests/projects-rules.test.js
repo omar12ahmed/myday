@@ -2387,40 +2387,62 @@ const clone = o => JSON.parse(JSON.stringify(o));
   {
     const k = '2026-10-31', day = n => K.shift(k, n), D = d => K.shortDate(d);
     const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: `${day(-25)}T09:00`, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjW', ...x });
-    const w = world(base('pjW', { title: 'Garden shed', createdAt: `${day(-40)}T09:00`, updatedAt: `${day(-20)}T17:00`, decisions: [{ id: 'dW', question: 'Larch or pine?', options: [], chosen: null, why: '', decidedOn: null, createdAt: `${day(-30)}T09:00`, updatedAt: `${day(-30)}T09:00` }] }),
+    const w = world(base('pjW', { title: 'Garden shed', nextTaskId: 'tN', createdAt: `${day(-40)}T09:00`, updatedAt: `${day(-20)}T17:00`, commitmentIds: ['cW'],
+      decisions: [{ id: 'dW', question: 'Larch or pine?', options: [], chosen: null, why: '', decidedOn: null, createdAt: `${day(-30)}T09:00`, updatedAt: `${day(-30)}T09:00` }] }),
       base('pjDone', { status: 'done', updatedAt: `${day(-30)}T09:00` }), base('pjPaused', { status: 'paused', updatedAt: `${day(-9)}T09:00` }), base('pjNear', { updatedAt: `${day(-6)}T09:00` }));
-    w.tasks.items = [TK('t1', 'Order the boards', { done: true, doneOn: day(-18) }), TK('t2', 'Book the skip', { due: day(-5) }), TK('t0', 'Old date', { due: day(-22) }),
-      TK('t3', 'Order the felt', { waiting: { on: 'the merchant', since: day(-18), until: day(-2) } }), TK('t4', 'Collect the window', { due: day(3) }), TK('t5', 'Paint it', { due: day(-4), waiting: { on: 'dry weather', since: day(-10), until: null } })];
+    w.tasks.items = [TK('t1', 'Order the boards', { done: true, doneOn: day(-18) }), TK('tN', 'Measure the door', { due: day(-1) }), TK('t2', 'Book the skip', { due: day(-5), deadline: { kind: 'aim', from: '', checkedBy: '', checkedOn: null } }),
+      TK('tEdge', 'Due the day work stopped', { due: day(-18) }), TK('t0', 'Old date', { due: day(-19) }),
+      TK('t3', 'Order the felt', { waiting: { on: 'the merchant', since: day(-18), until: day(-2) } }), TK('t4', 'Collect the window', { due: day(3) }), TK('t5', 'Paint it', { due: day(-4), waiting: { on: 'dry weather', since: day(-10), until: null } }),
+      TK('t6', 'Fit the door', { due: day(2), waiting: { on: 'the joiner', since: day(-10), until: day(-1) } }), TK('t7', 'Hand in the form', { due: day(1), time: '09:00' })];
+    w.commitments = [{ id: 'cW', kind: 'appointment', title: 'Site visit', start: `${k}T15:00`, end: `${k}T16:00` }];
     w.research = { items: [] };
     const P = id => w.projects.items.find(p => p.id === id);
 
     console.log('  how long away');
-    check('"18 days" → "2 weeks"; under 14 days in days; from 60 in months', ['7 days', '13 days', '2 weeks', '8 weeks', '2 months', '3 months'].join() === [7, 13, 14, 59, 60, 95].map(K.W.awayWords).join());
-    check('last activity now counts a task done (from the start of its day): 18 days ago, not the project\'s own 20', K.lastActivityOf(w, P('pjW')) === `${day(-18)}T00:00` && K.W.awayFor(w, P('pjW'), k) === 18);
+    check('"13 days", then weeks from 14, months from 60, years from 365', ['7 days', '13 days', '2 weeks', '8 weeks', '2 months', '12 months', '1 year', '2 years'].join() === [7, 13, 14, 59, 60, 364, 365, 800].map(K.W.awayWords).join());
+    check('last activity counts a task done at the end of its day (as Recently has it): 18 days ago, not the project\'s own 20', K.lastActivityOf(w, P('pjW')) === `${day(-18)}T23:59` && K.W.awayFor(w, P('pjW'), k) === 18);
+    const lo = world(base('pjL', { updatedAt: `${day(-30)}T09:00` })), LT = id => lo.tasks.items.find(t => t.id === id);
+    lo.tasks.items = [TK('tL', 'Let it go', { projectId: 'pjL', letGoOn: day(-2) })];
+    check('…and a task let go, on its day', K.W.awayFor(lo, lo.projects.items[0], k) === 2);
+    LT('tL').letGoOn = null; LT('tL').plannedOn = day(-3); LT('tL').planUid = 'puL';
+    lo.days[day(-3)] = { energy: 3, rest: false, builtAt: day(-3) + 'T08:00', checkedIn: true, tasks: [{ uid: 'puL', taskId: null, category: 'admin', title: 'Let it go', minutes: 15, baseMinutes: 15, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+    check('…and a task ticked only on a day\'s plan, on that day', K.W.awayFor(lo, lo.projects.items[0], k) === 3);
     w.research.items.push({ id: 'rqW1', type: 'question', projectId: 'pjNear', text: 'q', conclusion: '', answeredOn: null, createdAt: `${day(-2)}T09:00`, updatedAt: `${day(-2)}T09:00` });
-    check('…and research changed: a question two days ago ends a break', K.W.awayFor(w, P('pjNear'), k) === 2);
-    check('away from 7 days: 6 isn\'t, a paused project 9 days is, a finished one never', !K.W.isAway(w, base('x', { updatedAt: `${day(-6)}T09:00` }), k) && K.W.isAway(w, P('pjPaused'), k) && !K.W.isAway(w, P('pjDone'), k) && K.W.welcomeBack(w, P('pjDone'), k) === null);
+    check('…and its research changed (a question two days ago)', K.W.awayFor(w, P('pjNear'), k) === 2);
+    const quiet = world(base('pjQ', { updatedAt: `${day(-30)}T09:00` })); quiet.tasks.items = [TK('tQ', 'x', { projectId: 'pjQ', done: true, doneOn: day(-1) })];
+    check('Your week no longer calls a project quiet the day after one of its tasks is done', !K.whatsWaiting(quiet, k).some(x => x.key === 'quiet:pjQ'));
+    const at7 = world(base('p7', { updatedAt: `${day(-30)}T09:00` })), at6 = world(base('p6', { updatedAt: `${day(-30)}T09:00` }));
+    at7.tasks.items = [TK('a', 'x', { projectId: 'p7', done: true, doneOn: day(-7) })]; at6.tasks.items = [TK('b', 'x', { projectId: 'p6', done: true, doneOn: day(-6) })];
+    check('away from exactly 7 days (a task done 7 days ago); 6 isn\'t; a paused project 9 days is; a finished one never', K.W.isAway(at7, at7.projects.items[0], k) && !K.W.isAway(at6, at6.projects.items[0], k)
+      && K.W.isAway(w, P('pjPaused'), k) && !K.W.isAway(w, P('pjDone'), k) && K.W.welcomeBack(w, P('pjDone'), k) === null);
 
     console.log('  what it gathers');
     const wb = K.W.welcomeBack(w, P('pjW'), k);
-    check('away 18 days, since the day of the last work, with its stamp', wb.days === 18 && wb.since === day(-18) && wb.stamp === `${day(-18)}T00:00`);
-    check('what you did last: Recently\'s latest three, newest first', eq(wb.did.map(h => [h.what, h.title]), [['done', 'Order the boards'], ...K.recently(w, P('pjW'), 3).slice(1).map(h => [h.what, h.title])]) && wb.did.length === 3, wb.did);
-    const texts = wb.meanwhile.map(m => m.text);
-    check('while you were away: the date that came and went (still open) — not one already past when you left, nor one waiting', texts.includes(`“Book the skip” — was due ${D(day(-5))}, still open`) && !texts.some(t => t.includes('Old date') || t.includes('Paint it')), texts);
-    check('…a date in the next week, a wait now due and a decision open a while, each with its link', texts.includes(`“Collect the window” — on ${D(day(3))}`) && texts.includes(`Still waiting on the merchant (“Order the felt”) — expected ${D(day(-2))}`)
-      && texts.includes('“Larch or pine?” — open 4 weeks') && wb.meanwhile.find(m => m.key === 'past:t2').href === '#today/tasks/t2' && wb.meanwhile.find(m => m.key === 'decision:dW').href === '#projects/p/pjW/decisions', texts);
-    check('…and the next step', wb.next?.id === K.nextStepOf(w, P('pjW')).id);
-    for (let i = 0; i < 6; i++) w.tasks.items.push(TK('tm' + i, 'Missed ' + i, { due: day(-3) }));
-    const many = K.W.welcomeBack(w, P('pjW'), k);
-    check('at most six things, then how many more', many.meanwhile.length === 6 && many.more === K.W.meanwhile(w, P('pjW'), many.since, k).length - 6 && many.more > 0, [many.meanwhile.length, many.more]);
+    check('away 18 days, since the day of the last work, with its stamp', wb.days === 18 && wb.since === day(-18) && wb.stamp === `${day(-18)}T23:59`);
+    check('what you did last: the latest three things, newest first (the task done first)', wb.did.length === 3 && wb.did[0].what === 'done' && wb.did[0].title === 'Order the boards', wb.did);
+    const keys = wb.meanwhile.map(m => m.key), texts = wb.meanwhile.map(m => m.text);
+    check('today and tomorrow first (the site visit this afternoon, the form tomorrow at 09:00)', keys[0] === 'date:cW' && texts[0] === 'Site visit — today at 15:00' && wb.meanwhile[0].href === '#calendar'
+      && keys[1] === 'date:t7' && texts[1] === '“Hand in the form” — tomorrow at 09:00', keys);
+    check('then dates passed since the break, still open: from the day work stopped, not the day before; "was aimed for" for one to aim for', texts.includes(`“Book the skip” — was aimed for ${D(day(-5))}, still open`)
+      && keys.includes('past:tEdge') && !keys.includes('past:t0') && !texts.some(t => t.includes('Paint it')), keys);
+    const allKeys = K.W.meanwhile(w, P('pjW'), wb.since, k, 'tN').map(m => m.key);
+    check('each task once: the one waiting (and due in two days) is listed as waiting, not again as a date', allKeys.filter(x => x.endsWith(':t6')).length === 1 && allKeys.includes('waiting:t6') && !allKeys.includes('date:t6'), allKeys);
+    check('the next step (its date passed yesterday) isn\'t repeated there — it has its own place — and it is the card\'s next step', wb.next?.id === 'tN' && !allKeys.some(x => x.endsWith(':tN')), allKeys);
+    check('at most six, the most pressing first; then how many more (the later date and the decision)', wb.meanwhile.length === 6 && wb.more === 2
+      && eq(K.W.meanwhile(w, P('pjW'), wb.since, k, 'tN').slice(6).map(m => m.key), ['date:t4', 'decision:dW']), [keys, wb.more]);
     w.tasks.items.push(TK('tNew', 'Fresh today', { createdAt: `${k}T08:00` }));
-    check('any work ends the break: a task added today', K.W.welcomeBack(w, P('pjW'), k) === null && !K.W.isAway(w, P('pjW'), k));
+    check('any work ends the break: a task added today', K.W.welcomeBack(w, P('pjW'), k) === null && K.W.breakOf(w, P('pjW'), k) === null);
+
+    console.log('  "Got it"');
+    check('it greets until "Got it" for this break: the same stamp, or a later one pressed, doesn\'t greet; a new break (a later stamp) does', K.W.greets('2026-10-13T23:59') && !K.W.greets('2026-10-13T23:59', '2026-10-13T23:59')
+      && K.W.greets('2026-10-20T09:00', '2026-10-13T23:59') && !K.W.greets('2026-10-11T17:00', '2026-10-13T23:59'));
     // A business idea: Find out and Test tasks done with nothing recorded are asked about.
     const wbz = world(base('pjZ', { template: 'business', updatedAt: `${day(-10)}T09:00`, model: { problem: '', who: '', how: '', assumptions: [{ id: 'asZ', text: 'x', state: 'open', found: '', checkedOn: null, taskId: 'tZ', createdAt: OLD }] } }));
     wbz.tasks.items = [TK('tZ', 'Find out: x', { projectId: 'pjZ', done: true, doneOn: day(-12), createdAt: `${day(-14)}T09:00` }), TK('tE', 'Test: y', { projectId: 'pjZ', done: true, doneOn: day(-12), createdAt: `${day(-14)}T09:00` })];
     wbz.research = { items: [{ id: 'reZ', type: 'experiment', projectId: 'pjZ', title: 'y', tests: [], how: '', expect: '', status: 'running', startedOn: day(-13), doneOn: null, result: '', conclusion: '', taskId: 'tE', createdAt: `${day(-14)}T09:00`, updatedAt: `${day(-13)}T09:00` }] };
-    const bz = K.W.welcomeBack(wbz, wbz.projects.items[0], k)?.meanwhile.map(m => m.text) ?? [];
-    check('on a business idea: "“Test: y” is done — what happened?" and "A Find out task is done — what did you find?"', bz.includes('“Test: y” is done — what happened?') && bz.includes('A Find out task is done — what did you find?'), bz);
+    const bz = K.W.welcomeBack(wbz, wbz.projects.items[0], k)?.meanwhile ?? [];
+    check('on a business idea: "“Test: y” is done — what happened?" (to its Model tab) and "A Find out task is done — what did you find?"', bz.some(m => m.text === '“Test: y” is done — what happened?' && m.href === '#projects/p/pjZ/model')
+      && bz.some(m => m.text === 'A Find out task is done — what did you find?' && m.href === '#projects/p/pjZ/model'), bz);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
