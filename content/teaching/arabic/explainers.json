@@ -16541,7 +16541,7 @@
       "en": "an accident, an incident"
      },
      {
-      "form_en": "an unnamed source",
+      "form_en": "an official body",
       "ar": "جِهَةٌ رَسْمِيَّةٌ",
       "en": "an official body"
      },
@@ -17042,7 +17042,7 @@
     ],
     "why": {
      "q_en": "Why اِنْخَفَضَتْ, with ـَتْ, in اِنْخَفَضَتْ نِسْبَةُ الْبِطَالَةِ?",
-     "a_en": "The verb comes first and matches the gender of what follows: نِسْبَة is feminine, so اِنْخَفَضَتْ. With عَدَد, masculine, it's اِنْخَفَضَ الْعَدَدُ."
+     "a_en": "When the verb comes first, it matches the gender of its subject, the noun right after it: نِسْبَة is feminine, so اِنْخَفَضَتْ. With عَدَد, masculine, it's اِنْخَفَضَ الْعَدَدُ."
     },
     "selftest": [
      {
@@ -17105,14 +17105,14 @@
       "en": "an interview"
      },
      {
-      "form_en": "the guest",
+      "form_en": "a guest",
       "ar": "ضَيْف",
-      "en": "the guest"
+      "en": "a guest"
      },
      {
-      "form_en": "the interviewer",
+      "form_en": "an interviewer",
       "ar": "مُحَاوِر",
-      "en": "the interviewer"
+      "en": "an interviewer"
      },
      {
       "form_en": "a quotation",
@@ -17699,9 +17699,9 @@
       "en": "most likely"
      },
      {
-      "form_en": "possible",
+      "form_en": "likely",
       "ar": "مِنَ الْمُحْتَمَلِ أَنْ",
-      "en": "it's possible that"
+      "en": "it's likely that"
      },
      {
       "form_en": "it seems",
@@ -17726,7 +17726,7 @@
     ],
     "steps": [
      "These words set how sure a claim is. They aren't decoration: change one and you change the claim.",
-     "From surest to least sure: بِالتَّأْكِيدِ, certainly; عَلَى الْأَرْجَحِ, most likely; مِنَ الْمُحْتَمَلِ أَنْ, it's possible that; لَا أَسْتَبْعِدُ, I don't rule it out.",
+     "From surest to least sure: بِالتَّأْكِيدِ, certainly; عَلَى الْأَرْجَحِ, most likely; مِنَ الْمُحْتَمَلِ أَنْ, it's likely that; رُبَّمَا, perhaps; لَا أَسْتَبْعِدُ, I don't rule it out.",
      "Watch what follows: مِنَ الْمُحْتَمَلِ أَنْ takes a present verb ending in -a; يَبْدُو أَنَّ takes a noun ending in -a.",
      "قَدْ with a present verb is \"may\": قَدْ يَتَأَخَّرُ الْقِطَارُ, the train may be late.",
      "Keep the strength when you translate or summarise: don't make \"most likely\" into \"certainly\"."
@@ -17734,7 +17734,7 @@
     "examples": [
      {
       "ar": "مِنَ الْمُحْتَمَلِ أَنْ تَنْخَفِضَ الْأَسْعَارُ قَلِيلًا.",
-      "en": "Prices may fall slightly.",
+      "en": "Prices are likely to fall slightly.",
       "words": [
        {
         "ar": "مِنَ",
@@ -17742,7 +17742,7 @@
        },
        {
         "ar": "الْمُحْتَمَلِ",
-        "en": "the possible: \"it's possible\""
+        "en": "the likely: \"it's likely\""
        },
        {
         "ar": "أَنْ",
@@ -17964,7 +17964,7 @@
       ]
      },
      {
-      "ar": "يُوحِي الْعُنْوَانُ بِأَنَّ الْمَقَالَةَ نَاقِدَةٌ.",
+      "ar": "يُوحِي الْعُنْوَانُ بِأَنَّ الْمَقَالَةَ نَقْدِيَّةٌ.",
       "en": "The title suggests the article is critical.",
       "words": [
        {
@@ -17984,7 +17984,7 @@
         "en": "the article"
        },
        {
-        "ar": "نَاقِدَةٌ",
+        "ar": "نَقْدِيَّةٌ",
         "en": "critical"
        }
       ]
@@ -18224,7 +18224,7 @@
        "common ground"
       ],
       "answer": "an exaggeration",
-      "why_en": "An objection is اِعْتِرَاض."
+      "why_en": "مُبَالَغَة is from بَالَغَ, to exaggerate."
      },
      {
       "q_en": "What is اِعْتِرَاضٌ وَجِيهٌ?",
