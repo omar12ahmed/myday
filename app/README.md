@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.113.0 — A path to your Arabic goal:** the second Arabic step in "How MyDay should think" (level 5: long-term
+goals). "Your goal" on the Arabic map is now shown as **Your route**: its stages in course order (Start, A1 to B2, and a
+specialist branch if you chose one), each marked done, "You are here" (the stage of your next step), earlier but not
+finished, or ahead, with how many lessons are ready or need revision, and what you'll be able to do by its end, taken
+from the course's own milestones (or, where a goal takes only part of a level or a branch, its modules' purposes). A
+lesson's header, the map's next step and Study home's Arabic card say what it's a step towards ("A step towards
+“Literary Arabic, stories and style”: stage 3 of 6, A2 · Connected everyday Fuṣḥā"). On Study home you can **Hide** it;
+"Show the next step's goal on Study home" under Your route brings it back, remembered on this device only. No line for
+a revision round or an all-ready path, and Today's card is unchanged. No saved-data, sync or database change (it reads
+the goal you already have), and nothing new goes to AI. Going back to 1.112.0 is safe (`specs/arabic-route.md`).
+
 **1.112.0 — Arabic words you know well ask you to read them first:** the first Arabic step in "How MyDay should
 think" (level 6: building your own ability rather than relying on help). A word you recalled on your own in revision,
 which now comes back a week or more apart and isn't due yet, keeps its play button and Latin reading until you tap
