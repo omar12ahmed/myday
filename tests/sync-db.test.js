@@ -414,6 +414,35 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('…and a one-record kind still can\'t be deleted', r3[0].status === 'applied' && r3[1].status === 'rejected', r3);
   }
 
+  console.log('\n[23] A Software project’s items (Software projects, 20261101180000_sync_software.sql)');
+  {
+    const WA = await S.addUser(db, 'software-a@example.test', 'x'), WB = await S.addUser(db, 'software-b@example.test', 'x');
+    const wpush = (who, changes) => S.as(db, who, q => q('select public.sync_push_v3($1, $2::jsonb, $3, $4) as r', [who, JSON.stringify(changes), 'dev-sw', 0])).then(x => x.rows[0].r);
+    const wpull = who => S.as(db, who, q => q('select * from public.sync_pull_v2($1, 0, 500)', [who])).then(x => x.rows);
+    const canon = v => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v);
+    const eq = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b)); // (jsonb orders keys its own way)
+    const req = { id: 'srdbtest0001', type: 'requirement', projectId: 'pjdbsoft', title: 'A plan survives a reload', state: 'agreed', checks: [{ id: 'scdbtest01', text: 'Reload keeps it', done: true, proof: 'tests/app-today 282/0', on: '2026-11-01' }],
+      releaseId: 'sldbtest0001', linkIds: ['rsdbtest01'], futureBit: { keep: [1] }, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' };
+    const bug = { id: 'sbdbtest0001', type: 'bug', projectId: 'pjdbsoft', title: 'The timer stops', happens: 'It stops when locked', expected: 'It keeps going', steps: '1. Start\n2. Lock', state: 'open', createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' };
+    const rel = { id: 'sldbtest0001', type: 'release', projectId: 'pjdbsoft', milestoneId: 'msdbtest01', checks: [{ id: 'scdbtest02', text: 'Backups exported' }], createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' };
+    let r4 = await wpush(WA, [change('software', req.id, 0, req), change('software', bug.id, 0, bug), change('software', rel.id, 0, rel)]);
+    check('a requirement, a bug and a release checklist save through sync_push, each its own record (version 1)', r4.length === 3 && r4.every(x => x.status === 'applied' && x.version === 1), r4);
+    const got = (await wpull(WA)).filter(x => x.kind === 'software');
+    check('they come back exactly, including a key a newer MyDay added', got.length === 3 && eq(got.find(x => x.record_id === req.id)?.data, req) && eq(got.find(x => x.record_id === bug.id)?.data, bug) && eq(got.find(x => x.record_id === rel.id)?.data, rel), got.map(x => x.record_id));
+    check('another account cannot read them, through sync_pull or the table', !(await wpull(WB)).some(x => x.kind === 'software') && (await S.as(db, WB, q => q(`select * from public.sync_records where kind = 'software'`))).rows.length === 0);
+    r4 = await wpush(WA, [change('software', bug.id, 0, { ...bug, state: 'fixed' })]);
+    check('a stale device cannot overwrite one (conflict)', r4[0].status === 'conflict', r4);
+    r4 = await wpush(WA, [change('software', bug.id, 1, { ...bug, state: 'fixed', closedOn: '2026-11-01' })]);
+    check('an update with the right version is applied', r4[0].status === 'applied' && r4[0].version === 2, r4);
+    r4 = await wpush(WA, [change('software', req.id, 1, null, { deleted: true })]);
+    check('removing one reaches other devices as a tombstone (the kind is deletable)', r4[0].status === 'applied' && (await wpull(WA)).some(x => x.kind === 'software' && x.record_id === req.id && x.deleted && x.data === null), r4);
+    r4 = await wpush(WA, [change('ambition', 'amdbsoft01', 0, { id: 'amdbsoft01', title: 'x', createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' }), change('content', 'cvdbsoft01', 0, { id: 'cvdbsoft01', projectId: 'pjdbsoft', type: 'video', step: 'idea', title: 'x' }),
+      change('research', 'rqdbsoft01', 0, { id: 'rqdbsoft01', type: 'question', projectId: 'pjdbsoft', text: 'x' }), change('project', 'pjdbsoft', 0, { projectId: 'pjdbsoft', value: { id: 'pjdbsoft', title: 'x', template: 'software' } })]);
+    check('every earlier kind is still accepted after the kind lists change again (ambition, content, research, project)', r4.length === 4 && r4.every(x => x.status === 'applied'), r4);
+    r4 = await wpush(WA, [change('softwares', 'x1', 0, {})]);
+    check('a kind that is still unknown is refused', r4[0].status === 'rejected', r4);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
