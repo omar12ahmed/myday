@@ -39,7 +39,7 @@ export const CATS: Category[] = ['learning', 'admin', 'health'];
 const THEMES: Theme[] = ['dark', 'light', 'auto'];
 export const DEFAULT_SETTINGS: Settings = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'light', motion: 'auto' }; // light by default in the new app (from 1.11.0); the classic MyDay's default stays dark
 
-// The learning items every MyDay started with until 1.130.0. Today's learning task now comes from Study's next step, so
+// The learning items every MyDay started with until 1.131.0. Today's learning task now comes from Study's next step, so
 // they're no longer seeded; Tidy up offers to remove ones still exactly as MyDay added them (data/tidy.ts; never on its
 // own: specs/today-learning-and-tidy.md §4).
 export const OLD_LEARNING_STARTERS: readonly ListItem[] = [
