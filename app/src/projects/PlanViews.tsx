@@ -1,4 +1,6 @@
 import { ArrowDown, ArrowUp, Check, Flag, Minus, Plus, Scale, Sparkles, Trash2, X } from 'lucide-react';
+import { isSoftware } from '../data/businessModel';
+import { ReleaseBlock } from './SoftwareView';
 import { useState } from 'react';
 import { AI_MODE } from '../ai/request';
 import { openCapture } from '../capture/openCapture';
@@ -69,6 +71,7 @@ export function MilestonesView({ data, p }: { data: MyDayData; p: Project }) {
                 </p>
                 {(m.reachedOn || m.aim) && <p className="m-0 mt-0.5 text-sm text-fg-2" data-s="ms-when">{m.reachedOn ? `Reached ${shortDate(m.reachedOn)}` : aimText(m.aim!, k)}</p>}
                 <MilestoneTasks data={data} p={p} m={m} />
+                {isSoftware(p) && <ReleaseBlock data={data} p={p} m={m} />}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {m.reachedOn
                     ? <Button inline variant="ghost" data-action="ms-unreach" onClick={() => { if (update(d => (setReached(d, p.id, m.id, false) ? undefined : false))) toast('Back to not reached yet.'); }}>Not yet</Button>

@@ -12,7 +12,7 @@ import { BackLink, Choice, Choices, Eyebrow, LinkButton, Note, NotFound } from '
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { isBusiness, isCase, isContent, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { isCase, isContent, isResearchKind, isSoftware, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
 import { arrived, arriving, hiddenWords, isHidden, overviewSections, SECTIONS, setHidden, type HiddenWith, type Section } from '../data/projectSections';
@@ -44,14 +44,15 @@ import { tabHref } from './planText';
 import { ProjectWaitForm, ProjectWaitingCard, WaitOfferLine } from './ProjectWaiting';
 import { ContentCard, VideosView } from './ContentView';
 import { CompareView, ExploringCard } from './ExploringView';
+import { BugsView, RequirementsView, SoftwareCard } from './SoftwareView';
+import { kindChangeWords, kindOf, TAB_LABEL, tabFor, tabsOf, type ProjectTab } from '../data/templates';
 import { ProjectTowards } from './AmbitionsView';
 
 // One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
 // progression, and everything that belongs to it — tasks and notes on the left on wide screens; what's coming up
 // (including tasks still open after their date), what happened recently and its status on the right.
-export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos' | 'compare';
-const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
+export type { ProjectTab };
 export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: MyDayData; id: string; tab?: ProjectTab; sub?: string }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
   // "Search this project" (specs/projects-search.md): only on this page, never saved. ProjectsScreen keys this view by
@@ -69,9 +70,8 @@ export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: 
   const pick = (h: SearchHit) => { setQuery(''); if (h.kind === 'resource') open('resources'); if (h.kind !== 'task' && h.kind !== 'note') focusItem(h); };
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
-  // The Model and Money tabs are a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their
-  // address shows the Overview.
-  const tab = ((asked === 'model' || asked === 'money') && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) || (asked === 'research' && !hasResearch(p)) ? 'overview' : asked;
+  // Each kind has its own tabs (data/templates.ts): the address of a tab this project doesn't have shows the Overview.
+  const tab = tabFor(p, asked);
   const hits = shown.trim() ? searchProject(data, p, shown) : [];
   const sec = overviewSections(data, p, opened);
   return (
@@ -81,13 +81,14 @@ export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: 
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
-      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' && isContent(p) ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'requirements' ? <RequirementsView data={data} p={p} /> : tab === 'bugs' ? <BugsView data={data} p={p} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
       <ExploringCard p={p} />
       <ProjectWaitingCard data={data} p={p} />
       <OverviewTop data={data} p={p} />
       {isContent(p) && <ContentCard data={data} p={p} />}
+      {isSoftware(p) && <SoftwareCard data={data} p={p} />}
       <AtAGlance data={data} p={p} />
       <ProjectHead data={data} p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
@@ -188,23 +189,12 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
       {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).</p>}
       {/* Comparing the options (specs/projects-exploring.md) belongs to Decisions (a case has none: Overview). */}
       <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
-        <a className={tabClass(tab === 'overview' || (tab === 'compare' && isCase(p)))} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview' || (tab === 'compare' && isCase(p))} data-tab="overview">Overview</a>
-        {isBusiness(p) && <>
-          <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>
-          <a className={tabClass(tab === 'money')} href={tabHref(p, 'money')} role="tab" aria-selected={tab === 'money'} data-tab="money">Money</a>
-        </>}
-        {isCase(p) ? <>
-          {/* A case's own tabs (only four fit on a phone): its milestones and decisions open from their At a glance rows. */}
-          <a className={tabClass(tab === 'timeline')} href={tabHref(p, 'timeline')} role="tab" aria-selected={tab === 'timeline'} data-tab="timeline">Timeline</a>
-          <a className={tabClass(tab === 'evidence')} href={tabHref(p, 'evidence')} role="tab" aria-selected={tab === 'evidence'} data-tab="evidence">Evidence</a>
-          <a className={tabClass(tab === 'issues')} href={tabHref(p, 'issues')} role="tab" aria-selected={tab === 'issues'} data-tab="issues">Issues</a>
-        </> : <>
-          <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
-          <a className={tabClass(tab === 'decisions' || tab === 'compare')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions' || tab === 'compare'} data-tab="decisions">Decisions</a>
-        </>}
-        {/* A Content project's videos (specs/projects-content.md). */}
-        {isContent(p) && <a className={tabClass(tab === 'videos')} href={tabHref(p, 'videos')} role="tab" aria-selected={tab === 'videos'} data-tab="videos">Videos</a>}
-        {hasResearch(p) && <a className={tabClass(tab === 'research')} href={tabHref(p, 'research')} role="tab" aria-selected={tab === 'research'} data-tab="research">Research</a>}
+        {/* Each kind's tabs (data/templates.ts). A case's own tabs (only four fit on a phone): its milestones and decisions
+            open from their At a glance rows; comparing the options marks Decisions, or a case's Overview. */}
+        {tabsOf(p).map(t => {
+          const on = tab === t || (tab === 'compare' && (isCase(p) ? t === 'overview' : t === 'decisions'));
+          return <a key={t} className={tabClass(on)} href={t === 'overview' ? `#projects/p/${encodeURIComponent(p.id)}` : tabHref(p, t)} role="tab" aria-selected={on} data-tab={t}>{TAB_LABEL[t]}</a>;
+        })}
       </nav>
       {/* Enter just puts the keyboard away on a phone; results show as you type. */}
       <form role="search" className="mt-3" onSubmit={e => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }} data-s="project-search">
@@ -224,13 +214,10 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
 function ProjectHead({ data, p, onHide }: { data: MyDayData; p: Project; onHide: (s: Section) => void }) {
   const [editing, setEditing] = useState(false), [noting, setNoting] = useState(false);
   const save = (patch: Partial<Pick<Project, 'title' | 'summary' | 'stage' | 'outcome' | 'finishedWhen'>>) => update(d => (editProject(d, p.id, patch) ? undefined : false));
-  // A business idea has a one page (the Model tab). Back to general keeps it, out of sight.
+  // Changing kind keeps what the old kind had, out of sight; the toast says so (data/templates.ts).
   function changeKind(to: TemplateChoice) {
-    if (!update(d => (setTemplate(d, p.id, to) ? undefined : false))) return;
-    // What the old kind had stays, out of sight, until you switch back.
-    const kept = [p.template === 'business' && p.model && 'its one page', p.template === 'case' && p.case && 'its timeline, evidence and issues'].filter(Boolean)[0];
-    const now = to === 'business' ? 'Now a business idea — its one page is on the Model tab.' : to === 'case' ? 'Now a case — its timeline, evidence and issues each have a tab.' : to === 'research' ? 'Now a research project — its questions, findings and sources are on the Research tab.' : 'Now a general project.';
-    toast(kept ? `${now} ${kept.charAt(0).toUpperCase() + kept.slice(1)} ${kept.includes('and') ? 'are' : 'is'} kept, out of sight — switch back any time.` : now);
+    const words = kindChangeWords(data, p, to); // (what the old kind had stays, out of sight, until you switch back)
+    if (update(d => (setTemplate(d, p.id, to) ? undefined : false))) toast(words);
   }
   return (
     <Card aria-label="About this project" id="projectHead">
@@ -247,7 +234,7 @@ function ProjectHead({ data, p, onHide }: { data: MyDayData; p: Project; onHide:
           <AreaField data={data} p={p} />
           {knownTemplate(p) && (
             <Field label="Kind of project" htmlFor="projectKind">
-              <Select id="projectKind" className="!w-auto" value={isBusiness(p) ? 'business' : isCase(p) ? 'case' : isResearchKind(p) ? 'research' : 'general'} onChange={e => changeKind(e.target.value as TemplateChoice)}>
+              <Select id="projectKind" className="!w-auto" value={kindOf(p)} onChange={e => changeKind(e.target.value as TemplateChoice)}>
                 {TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
               </Select>
             </Field>

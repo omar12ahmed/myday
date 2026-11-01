@@ -1,5 +1,6 @@
 import { modelProgress } from '../data/businessModel';
 import { shortDate, todayKey } from '../data/dates';
+import type { ProjectTab } from '../data/templates';
 import type { DateKey, Project } from '../data/types';
 
 // Words and addresses shared by a project's Milestones, Decisions and one page (PlanViews.tsx, ModelView.tsx) and its
@@ -10,7 +11,7 @@ export function aimText(aim: DateKey, k: DateKey = todayKey(), lower = false): s
   const s = aim >= k ? `Aiming for ${shortDate(aim)}` : `Aimed for ${shortDate(aim)} — change it whenever it suits`;
   return lower ? s.charAt(0).toLowerCase() + s.slice(1) : s;
 }
-export const tabHref = (p: Project, tab: 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos') => `#projects/p/${encodeURIComponent(p.id)}/${tab}`;
+export const tabHref = (p: Project, tab: Exclude<ProjectTab, 'overview'>) => `#projects/p/${encodeURIComponent(p.id)}/${tab}`;
 
 // A business idea's one page in counts: "3 of 4 questions answered · 2 still to check · 1 looks true".
 export function progressLine(p: Project): string {

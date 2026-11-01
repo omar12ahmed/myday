@@ -17,7 +17,9 @@
 //     counts as finished and where you left off; your ambitions (their titles, why, steps and links,
 //     specs/projects-ambitions.md; Today's "A step towards …" lines are display only); a Content project's ideas and videos (their planning, script,
 //     transcript, links, posts and results, specs/projects-content.md; the tasks you make from them — "Post: …",
-//     "Film: …" — are ordinary tasks and go as tasks always have); who a task is waiting on (Ask MyDay's waiting lookup sends only that
+//     "Film: …" — are ordinary tasks and go as tasks always have); a Software project's requirements, bugs and release
+//     checklists (their checks, what proved them and which links they point at, specs/projects-software.md; "Fix: …"
+//     tasks are ordinary tasks), and whether a link is marked as a repository, issue or pull request; who a task is waiting on (Ask MyDay's waiting lookup sends only that
 //     it waits, since and until); where a deadline's date comes from and who checked it (specs/projects-deadlines.md;
 //     a task's date goes as it always has); your name and email; your preferences and patterns, except what you've let
 //     Ask MyDay use (v26, its "how you work": your preferences as limits and the patterns you confirmed) and, with every

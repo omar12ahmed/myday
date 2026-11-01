@@ -15,6 +15,7 @@ import { NotesScreen } from '../notes/NotesScreen';
 import { ConnectionsView } from './ConnectionsView';
 import { Progression } from './parts';
 import { ProjectView, type ProjectTab } from './ProjectView';
+import { TAB_ROUTES } from '../data/templates';
 import { HomelessDeletedFiles } from '../files/FilesCard';
 import { NeedsYouCard, ProjectList } from './NeedsYou';
 import { AmbitionPage, AmbitionsStrip } from './AmbitionsView';
@@ -32,7 +33,7 @@ import { AreaDot, AreaLabel } from './AreaBits';
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
   if (parts[1] === 'a' && parts[2]) return <AmbitionPage data={data} id={parts[2]} />; // an ambition (specs/projects-ambitions.md)
-  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={['model', 'money', 'milestones', 'decisions', 'timeline', 'evidence', 'issues', 'research', 'videos', 'compare'].includes(parts[3]) ? parts[3] as ProjectTab : 'overview'} sub={parts[3] === 'videos' ? parts[4] : undefined} /></div>;
+  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={TAB_ROUTES.includes(parts[3] as ProjectTab) ? parts[3] as ProjectTab : 'overview'} sub={parts[3] === 'videos' ? parts[4] : undefined} /></div>;
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
@@ -77,7 +78,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
     if (!id) return;
     setText(''); setKind('general');
     // A business idea opens on its one page: the four questions are where it starts.
-    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : kind === 'case' ? 'Case started — its timeline, evidence and issues each have a tab.' : 'Project started — everything about it can live here.');
+    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : kind === 'case' ? 'Case started — its timeline, evidence and issues each have a tab.' : kind === 'software' ? 'Software project started — its requirements and bugs each have a tab, and a milestone can be a release.' : 'Project started — everything about it can live here.');
     location.hash = kind === 'business' ? `projects/p/${id}/model` : `projects/p/${id}`;
   }
   return (

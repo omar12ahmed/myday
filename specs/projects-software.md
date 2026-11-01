@@ -87,7 +87,8 @@ request looks like any other web page.
   project's tasks do.
 - **AI:** nothing of a requirement, bug or release is sent to AI (ai/reach.ts's never list); myday-94 told.
 - **Content fixes riding along:** the 1,000-video cap is for all projects together, and now says so when reached
-  ("That's 1,000 videos across your projects — the most MyDay keeps."); the script and transcript fields no longer
+  ("That’s 1,000 videos and ideas across your projects — the most MyDay keeps. Delete some you won’t make to add
+  more."); the script and transcript fields no longer
   miss a change from another device of the same length (keyed by the text, not its length); the type switcher shows a
   Content project as Content and the toast says its videos are kept.
 

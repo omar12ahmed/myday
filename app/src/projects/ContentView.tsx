@@ -26,6 +26,8 @@ const videoHref = (p: Project, id?: string) => `#projects/p/${enc(p.id)}/videos$
 const focusSoon = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
 const plural = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 const save = (fn: (d: MyDayData) => boolean) => update(d => (fn(d) ? undefined : false));
+// The cap is for all Content projects together (data/content.ts), so it says so.
+const ALL_FULL = 'That’s 1,000 videos and ideas across your projects — the most MyDay keeps. Delete some you won’t make to add more.';
 // A saved link opens only when it's a plain web address (one from elsewhere that isn't shows as text).
 const Link = ({ url, children }: { url: string; children: React.ReactNode }) => (webAddress(url) === url ? <ExternalLink href={url}>{children}</ExternalLink> : <span className="break-all">{children}</span>);
 
@@ -64,7 +66,8 @@ export function VideosView({ data, p, videoId }: { data: MyDayData; p: Project; 
 function IdeasCard({ p, ideas }: { p: Project; ideas: ContentItem[] }) {
   const [title, setTitle] = useState(''), [line, setLine] = useState('');
   function add() {
-    if (!save(d => !!addIdea(d, p.id, title, line))) return;
+    let full = false;
+    if (!save(d => { full = d.content.items.length >= CONTENT_LIMITS.items; return !!addIdea(d, p.id, title, line); })) { if (full) toast(ALL_FULL); return; }
     setTitle(''); setLine(''); toast('Idea kept.'); focusSoon('ideaNew');
   }
   return (
@@ -98,7 +101,8 @@ function VideoList({ data, p, videos }: { data: MyDayData; p: Project; videos: C
   const k = todayKey(), steps = STEPS.filter(s => s.id !== 'idea');
   function add() {
     let id: string | null = null;
-    if (!save(d => !!(id = addVideo(d, p.id, title)))) return;
+    let full = false;
+    if (!save(d => { full = d.content.items.length >= CONTENT_LIMITS.items; return !!(id = addVideo(d, p.id, title)); })) { if (full) toast(ALL_FULL); return; }
     setTitle(''); location.hash = videoHref(p, id!);
   }
   function move(x: ContentItem, by: -1 | 1) {
@@ -173,8 +177,8 @@ function VideoPage({ data, p, v: item }: { data: MyDayData; p: Project; v: Conte
       <Card aria-labelledby="scriptH" id="videoScript">
         <h3 id="scriptH" className="m-0">Script and transcript</h3>
         <div className="grid gap-3 mt-3">
-          <Field label="Script" htmlFor="videoScriptText"><CommitTextarea id="videoScriptText" key={`s${v.script.length}`} rows={8} defaultValue={v.script} maxLength={CONTENT_LIMITS.script} onCommit={el => edit({ script: el.value })} /></Field>
-          <Field label="Transcript (pasted in)" htmlFor="videoTranscript"><CommitTextarea id="videoTranscript" key={`t${v.transcript.length}`} rows={8} defaultValue={v.transcript} maxLength={CONTENT_LIMITS.transcript} onCommit={el => edit({ transcript: el.value })} /></Field>
+          <Field label="Script" htmlFor="videoScriptText"><CommitTextarea id="videoScriptText" key={`s${v.script}`} rows={8} defaultValue={v.script} maxLength={CONTENT_LIMITS.script} onCommit={el => edit({ script: el.value })} /></Field>
+          <Field label="Transcript (pasted in)" htmlFor="videoTranscript"><CommitTextarea id="videoTranscript" key={`t${v.transcript}`} rows={8} defaultValue={v.transcript} maxLength={CONTENT_LIMITS.transcript} onCommit={el => edit({ transcript: el.value })} /></Field>
         </div>
       </Card>
       <ClipsCard data={data} v={v} />

@@ -7,7 +7,8 @@ import { hasResearch } from './research';
 import type { MyDayData, Project } from './types';
 
 export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos' | 'requirements' | 'bugs' | 'compare';
-export const TAB_LABEL: Record<Exclude<ProjectTab, 'compare'>, string> = {
+export type ShownTab = Exclude<ProjectTab, 'compare'>; // a tab on the bar (comparing opens from Decisions)
+export const TAB_LABEL: Record<ShownTab, string> = {
   overview: 'Overview', model: 'Model', money: 'Money', milestones: 'Milestones', decisions: 'Decisions', timeline: 'Timeline', evidence: 'Evidence',
   issues: 'Issues', research: 'Research', videos: 'Videos', requirements: 'Requirements', bugs: 'Bugs',
 };
@@ -15,7 +16,7 @@ export const TAB_LABEL: Record<Exclude<ProjectTab, 'compare'>, string> = {
 export const TAB_ROUTES: ProjectTab[] = ['model', 'money', 'milestones', 'decisions', 'timeline', 'evidence', 'issues', 'research', 'videos', 'requirements', 'bugs', 'compare'];
 
 interface KindDef {
-  tabs: ProjectTab[];   // after the Overview (Research comes last on any kind while it's on)
+  tabs: ShownTab[];     // after the Overview (Research comes last on any kind while it's on)
   now: string;          // said on changing to it
   // What it keeps, out of sight, on changing away (only when there's something to keep).
   keeps?: (data: MyDayData, p: Project) => string | null;
@@ -33,7 +34,7 @@ const KINDS: Record<TemplateChoice, KindDef> = {
 };
 // A project's kind as this version knows it (one from a newer MyDay shows as general, its tabs and all).
 export const kindOf = (p: Project): TemplateChoice => (knownTemplate(p) ? (p.template as TemplateChoice | undefined) ?? 'general' : 'general');
-export const tabsOf = (p: Project): ProjectTab[] => ['overview', ...KINDS[kindOf(p)].tabs, ...(hasResearch(p) ? ['research' as const] : [])];
+export const tabsOf = (p: Project): ShownTab[] => ['overview', ...KINDS[kindOf(p)].tabs, ...(hasResearch(p) ? ['research' as const] : [])];
 // The tab an address asks for, if this project has it; otherwise the Overview. Comparing the options belongs to
 // Decisions, and a case (no Decisions tab) shows it with its Overview marked.
 export function tabFor(p: Project, asked: ProjectTab): ProjectTab {

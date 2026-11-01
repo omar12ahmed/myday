@@ -2,9 +2,9 @@ import { useState, type KeyboardEvent } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
-import { Field, TextArea, TextInput } from '../components/Field';
+import { Field, Select, TextArea, TextInput } from '../components/Field';
 import { LinkButton, Note } from '../components/parts';
-import { addResource, canOpen, editResource, removeResource, RESOURCE_LIMITS, resourceName, siteOf, tidyText, webAddress, type ResourceInput } from '../data/projectResources';
+import { addResource, canOpen, editResource, LINK_KINDS, linkKindLabel, linkWhere, removeResource, RESOURCE_LIMITS, resourceName, siteOf, tidyText, webAddress, type ResourceInput } from '../data/projectResources';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { Project, ProjectResource } from '../data/types';
@@ -43,7 +43,8 @@ function ResourceRow({ p, r }: { p: Project; r: ProjectResource }) {
         {canOpen(r) ? (
           <a href={r.url} target="_blank" rel="noopener noreferrer" className="block min-h-11 py-1 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-s="resource-link">
             <span className="block font-medium text-primary break-words">{name} <span aria-hidden="true">↗</span></span>
-            {r.title && <span className="block text-sm text-fg-3 break-all" data-s="resource-site">{siteOf(r.url)}</span>}
+            {linkKindLabel(r.kind) ? <span className="block text-sm text-fg-2 break-all" data-s="resource-kind">{linkKindLabel(r.kind)} · {linkWhere(r.url)}</span>
+              : r.title && <span className="block text-sm text-fg-3 break-all" data-s="resource-site">{siteOf(r.url)}</span>}
             <span className="sr-only">(opens in a new tab)</span>
           </a>
         ) : (
@@ -62,19 +63,22 @@ function ResourceRow({ p, r }: { p: Project; r: ProjectResource }) {
   );
 }
 
-// Adding a link, or editing one (r): the web address, then an optional title and note. Escape or Cancel closes it.
+// Adding a link, or editing one (r): the web address, then an optional title, note and what it is (a link to code:
+// specs/projects-software.md). Escape or Cancel closes it.
 function ResourceForm({ p, r, onDone }: { p: Project; r?: ProjectResource; onDone: () => void }) {
   const key = r?.id ?? 'new';
   const [url, setUrl] = useState(r?.url ?? ''), [title, setTitle] = useState(r?.title ?? ''), [note, setNote] = useState(r?.note ?? '');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''), [kind, setKind] = useState<string | null>(null); // null: not changed here
+  const kindNow = kind ?? (linkKindLabel(r?.kind) ? r!.kind as string : '');
   function save() {
     const whole = webAddress(url);
     if (!whole) { setError(NOT_AN_ADDRESS); focusSoon(`resourceUrl-${key}`); return; }
     if ((p.resources ?? []).some(x => x.id !== r?.id && x.url === whole)) { setError('That link is already kept in this project.'); focusSoon(`resourceUrl-${key}`); return; }
-    const input: ResourceInput = { url, title, note };
+    // (A kind from a newer MyDay stays unless you choose one here.)
+    const input: ResourceInput = { url, title, note, ...(kind !== null ? { kind: kind || null } : {}) };
     // Editing: nothing changed closes quietly; a save that didn't happen keeps the form (and what you typed) open.
     if (r) {
-      if (whole === r.url && tidyText(title, RESOURCE_LIMITS.title) === r.title && tidyText(note, RESOURCE_LIMITS.note) === (r.note ?? '')) { onDone(); return; }
+      if (whole === r.url && tidyText(title, RESOURCE_LIMITS.title) === r.title && tidyText(note, RESOURCE_LIMITS.note) === (r.note ?? '') && (kind === null || kind === (r.kind ?? ''))) { onDone(); return; }
       if (update(d => (editResource(d, p.id, r.id, input) ? undefined : false))) { toast('Saved.'); onDone(); }
       return;
     }
@@ -96,6 +100,12 @@ function ResourceForm({ p, r, onDone }: { p: Project; r?: ProjectResource; onDon
         </Field>
         <Field label="Note (optional)" htmlFor={`resourceNote-${key}`}>
           <TextArea id={`resourceNote-${key}`} rows={2} value={note} maxLength={RESOURCE_LIMITS.note} placeholder="e.g. Ask about offcuts" onChange={e => setNote(e.target.value)} />
+        </Field>
+        <Field label="What it is" htmlFor={`resourceKind-${key}`}>
+          <Select id={`resourceKind-${key}`} className="!w-auto" value={kindNow} onChange={e => setKind(e.target.value)}>
+            <option value="">A web page</option>
+            {LINK_KINDS.map(k => <option key={k.id} value={k.id}>{k.label}</option>)}
+          </Select>
         </Field>
       </div>
       <div className="flex flex-wrap gap-2.5">
