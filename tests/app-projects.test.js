@@ -853,7 +853,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   console.log('\n[29] Starting a case');
   await go('projects', 2026, 10, 15, 8); await reset(); await go('projects', 2026, 10, 15, 8);
   const kinds = await ev(`[...document.querySelectorAll('[data-s=project-kind] [data-action=project-kind]')].map(i => i.value)`);
-  check('the Start a project kind choice has General, Business idea, Case, Research and Content', eq(kinds, ['general', 'business', 'case', 'research', 'content']), kinds);
+  check('the Start a project kind choice has General, Business idea, Case, Research, Content and Software', eq(kinds, ['general', 'business', 'case', 'research', 'content', 'software']), kinds);
   await click('[data-action=project-kind][value=case]'); await sleep(150);
   check('choosing Case selects it', (await kindNow()) === 'case', await kindNow());
   await type('#projectNew', 'Dispute about my unpaid overtime'); await click('[data-action=project-add]'); await sleep(400);
@@ -3423,7 +3423,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   console.log('  Starting one');
   await pwFresh();
   const ctKinds = await ev(`[...document.querySelectorAll('[data-s=project-kind] [data-action=project-kind]')].map(i => i.value)`);
-  check('the Start a project kind choice offers Content, after Research', eq(ctKinds, ['general', 'business', 'case', 'research', 'content']), ctKinds);
+  check('the Start a project kind choice offers Content, after Research', eq(ctKinds.slice(0, 5), ['general', 'business', 'case', 'research', 'content']), ctKinds);
   await click('[data-action=project-kind][value=content]'); await sleep(150);
   check('choosing Content selects it', (await kindNow()) === 'content', await kindNow());
   await type('#projectNew', 'Street food videos'); await sleep(150); await click('[data-action=project-add]');
