@@ -1,5 +1,21 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.121.0 — Arabic explainers for modules 8 to 24, with their voice, and "Where this leads":** eighty more **How it
+works** cards, so every lesson from module 4 to module 24 has them: modules 8–13 (A1 and A2, with a card on the language
+each skills and portfolio lesson uses), modules 16–19 (B1: reading, listening, writing and the B1 checkpoint), modules
+20–24 (B2: the news, argument, precise grammar, communication and the B2 checkpoint), and module 14's verb moods and
+passive, which its first set had left out. An independent reviewer cross-checked each batch and the owner's fluent
+checker approved it; none shows a lesson check's answer. 504 more course words link to their explainer (651 in all).
+Two new parts: **Where this leads**, a line at the end of 55 cards linking to a card in a later lesson that builds on
+it (it opens that lesson with the card open), and a second go: a first wrong choice in a card's questions says "Not
+quite." and asks again before the answer shows. Explainers now load per module: a lesson fetches its own module's cards
+(5–10 KB compressed) and a small index, instead of all 123 at once. Every table form, whole sentence and the Arabic in
+the steps plays, in WaveNet B: 790 clips for modules 8–23 and 77 for module 24 and module 14's new cards, including 282
+that replace clips in the earlier voice, Chirp 3 HD Charon, so each card keeps one voice. All were transcribed blind and
+listened to by the owner. After a blind comparison of five voices, the owner chose Charon for new clips from now on; among
+the explainers only ضِعْف and أَيّ use it so far. 4,087 clips in all. No saved-data,
+sync or database change; going back to 1.120.0 is safe.
+
 **1.120.0 — Help me start:** MyDay helps you *begin* a task, not only plan it (the first step of the owner's "getting
 started" proposal; `specs/help-me-start.md`). A quiet **Help me start** on any open task's page, and on Today's **Up
 next** task beside "Just start", opens a short card: "Let's get started. You don't need to finish anything right now."
@@ -1123,10 +1139,12 @@ Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Underst
 works**, under its teaching: one closed card per family of forms or grammar topic (so far ten for module 14's weak,
 irregular and derived verbs, 1.98.0; and, in 1.105.0, eight for module 15's relative words, إِنَّ and كَانَ and their
 sisters, reporting, conditions, reasons and contrast, and thirteen for modules 4–5's first patterns, from "you" to a
-man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages). Each has a table (form, Arabic, meaning; on a phone the form
+man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages; in 1.121.0, eighty for modules 8–24 and module 14's moods and passive). Each has a table (form, Arabic, meaning; on a phone the form
 sits under the meaning; a form label or a word's gloss may name Arabic, shown as Arabic and never voiced),
-short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
-when you choose (focus moves to the explanation). Nothing is saved, and it folds away with the explanation while you
+short steps, two or three sentences broken down word by word, a "why" question, and three questions: a first wrong choice
+says "Not quite." and asks again (a question with two choices shows the answer at once), then the answer shows with its
+explanation (focus moves to it). A card can end with **Where this leads**: one or two links to a card in a later lesson
+that builds on it, each with a line saying how. Nothing is saved, and it folds away with the explanation while you
 check yourself. A course word with an explainer has "How this verb works, step by step" (or "How it works"): on its
 lesson's page it opens the card there; from Vocabulary, or from another lesson's word list, it opens the lesson at
 Understand with the card open (an in-memory request, like a step a link asks for), its title clear of the step bar. The voice shows only where a clip has been listened to, for the
