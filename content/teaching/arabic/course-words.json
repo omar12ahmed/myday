@@ -1,7 +1,7 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
  "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–24 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied and re-checked), checked by the owner on 2026-10-31 and voiced (rounds sixteen and eighteen); modules 1–3 and 25–30 (335 words, 1 November 2026): cross-checked by an independent reviewer (no errors; 21 improvements applied), checked by the owner’s fluent checker (corrections applied after each was checked), and voiced (rounds twenty-three and twenty-five, approved by ear); dictionary words for modules 1–7 (78, \"dictionary\": true, course words 1.9, 1 November 2026): drafted from the word inventory, cross-checked by an independent reviewer (no errors; its fixes applied), approved as written by the owner’s fluent checker and voiced (round twenty-six, approved by ear); with them, four older words no longer give away their lesson’s check",
- "version": "1.9",
+ "version": "1.10",
  "lessons": {
   "lesson.arabic-fusha-register": {
    "seed": [],
@@ -4568,6 +4568,54 @@
      "example_ar": "عَلَى اللَّافِتَةِ: مَفْتُوحٌ.",
      "example_meaning_en": "On the sign: Open.",
      "note": "Plural لَافِتَات."
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-7",
+     "form_ar": "تَدْخِين",
+     "meaning_en": "smoking",
+     "part_of_speech": "noun",
+     "root_ar": "د-خ-ن",
+     "root_reading": "d-kh-n",
+     "example_ar": "التَّدْخِينُ مَمْنُوعٌ فِي الْمَتْحَفِ.",
+     "example_meaning_en": "Smoking is not allowed in the museum.",
+     "note": "The verbal noun of دَخَّنَ, “smoked”. On signs: مَمْنُوعٌ التَّدْخِينُ, no smoking. دُخَان is “smoke”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-8",
+     "form_ar": "مَتْحَف",
+     "meaning_en": "museum",
+     "part_of_speech": "noun",
+     "root_ar": "ت-ح-ف",
+     "root_reading": "t-ḥ-f",
+     "example_ar": "الْمَتْحَفُ مَفْتُوحٌ مِنَ السَّاعَةِ التَّاسِعَةِ.",
+     "example_meaning_en": "The museum is open from nine o'clock.",
+     "note": "Plural مَتَاحِف. From تُحْفَة, “a precious object, a masterpiece”: the place where such things are kept.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-9",
+     "form_ar": "تَاسِع",
+     "meaning_en": "ninth",
+     "part_of_speech": "adjective",
+     "root_ar": "ت-س-ع",
+     "root_reading": "t-s-ʿ",
+     "example_ar": "الدَّرْسُ فِي السَّاعَةِ التَّاسِعَةِ صَبَاحًا.",
+     "example_meaning_en": "The lesson is at nine in the morning.",
+     "note": "Feminine تَاسِعَة: السَّاعَةُ التَّاسِعَةُ is “nine o'clock”. From تِسْعَة, “nine”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-10",
+     "form_ar": "صَيْدَلِيَّة",
+     "meaning_en": "pharmacy, chemist's",
+     "part_of_speech": "noun",
+     "root_ar": "ص-ي-د-ل",
+     "root_reading": "ṣ-y-d-l",
+     "example_ar": "الصَّيْدَلِيَّةُ مُغْلَقَةٌ الْيَوْمَ.",
+     "example_meaning_en": "The pharmacy is closed today.",
+     "note": "Plural صَيْدَلِيَّات. A pharmacist is صَيْدَلِيّ, feminine صَيْدَلِيَّة, the same word as the shop.",
+     "dictionary": true
     }
    ]
   },
@@ -4643,6 +4691,30 @@
      "example_ar": "شُكْرًا، إِلَى اللِّقَاءِ.",
      "example_meaning_en": "Thank you, see you.",
      "note": "Literally “until the meeting”."
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-7",
+     "form_ar": "تُونِس",
+     "meaning_en": "Tunisia; Tunis",
+     "part_of_speech": "name",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَنَا مِنْ تُونِسَ، وَأَنْتَ؟",
+     "example_meaning_en": "I'm from Tunisia, and you?",
+     "note": "The country and its capital share one name. A Tunisian is تُونِسِيّ, feminine تُونِسِيَّة. Like many place names, it never takes -un.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-8",
+     "form_ar": "مَصْرِف",
+     "meaning_en": "bank",
+     "part_of_speech": "noun",
+     "root_ar": "ص-ر-ف",
+     "root_reading": "ṣ-r-f",
+     "example_ar": "أَعْمَلُ فِي مَصْرِفٍ، وَأَنْتِ؟",
+     "example_meaning_en": "I work in a bank, and you?",
+     "note": "Plural مَصَارِف. The borrowed word بَنْك is also common. The root is about changing and paying out money: صَرَفَ is “spent, paid out”.",
+     "dictionary": true
     }
    ]
   },
@@ -4716,6 +4788,30 @@
      "example_ar": "الْعَرَبِيَّةُ لُغَةٌ جَمِيلَةٌ.",
      "example_meaning_en": "Arabic is a beautiful language.",
      "note": "Plural لُغَات."
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-7",
+     "form_ar": "إِنْجِلِيزِيّ",
+     "meaning_en": "English",
+     "part_of_speech": "adjective",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَتَكَلَّمُ الْعَرَبِيَّةَ وَالْإِنْجِلِيزِيَّةَ.",
+     "example_meaning_en": "I speak Arabic and English.",
+     "note": "Feminine إِنْجِلِيزِيَّة, which with the article also names the language: الْإِنْجِلِيزِيَّة. Also spelt إِنْكِلِيزِيّ. England is إِنْجِلْتِرَا.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-8",
+     "form_ar": "مُنْذُ",
+     "meaning_en": "since; for (a length of time); ago",
+     "part_of_speech": "preposition",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَعْمَلُ فِي الْمَصْرِفِ مُنْذُ سَنَتَيْنِ.",
+     "example_meaning_en": "I have been working at the bank for two years.",
+     "note": "With a present verb and a length of time it means “for”: أَعْمَلُ هُنَا مُنْذُ سَنَةٍ, I have worked here for a year. With a past verb it means “ago”: سَافَرَ مُنْذُ سَنَةٍ, he travelled a year ago. With a point in time it means “since”: مُنْذُ أَمْسِ, since yesterday. The noun after it ends in -i.",
+     "dictionary": true
     }
    ]
   },
@@ -4787,6 +4883,18 @@
      "example_ar": "قِرَاءَتِي قَوِيَّةٌ.",
      "example_meaning_en": "My reading is strong.",
      "note": "For a feminine noun: قَوِيَّة, as here."
+    },
+    {
+     "id": "lexeme.arabic-a1-portfolio-7",
+     "form_ar": "شَهْر",
+     "meaning_en": "month",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ه-ر",
+     "root_reading": "sh-h-r",
+     "example_ar": "أَتَعَلَّمُ الْعَرَبِيَّةَ مُنْذُ ثَلَاثَةِ أَشْهُرٍ.",
+     "example_meaning_en": "I have been learning Arabic for three months.",
+     "note": "Two plurals, أَشْهُر and شُهُور; after three to ten you usually hear أَشْهُر: ثَلَاثَةُ أَشْهُرٍ, three months. مَشْهُور, “famous”, is from the same root.",
+     "dictionary": true
     }
    ]
   },
@@ -4884,6 +4992,42 @@
      "example_ar": "أَيْنَ دَرَسْتِ أَمْسِ؟",
      "example_meaning_en": "Where did you study yesterday?",
      "note": "ـتِ at the end: “you (a woman)”; ـتَ is “you (a man)”, ـتُ is “I”."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-9",
+     "form_ar": "شَجَرَة",
+     "meaning_en": "tree",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ج-ر",
+     "root_reading": "sh-j-r",
+     "example_ar": "فِي الْحَدِيقَةِ شَجَرَةٌ كَبِيرَةٌ.",
+     "example_meaning_en": "There is a big tree in the garden.",
+     "note": "One tree. شَجَر is trees in general, and the plural is أَشْجَار.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-10",
+     "form_ar": "قَادِم",
+     "meaning_en": "next, coming",
+     "part_of_speech": "adjective",
+     "root_ar": "ق-د-م",
+     "root_reading": "q-d-m",
+     "example_ar": "سَأُسَافِرُ إِلَى مِصْرَ فِي الصَّيْفِ الْقَادِمِ.",
+     "example_meaning_en": "I will travel to Egypt next summer.",
+     "note": "Feminine قَادِمَة: السَّنَةُ الْقَادِمَةُ, next year. The doer form of قَدِمَ, “arrived, came”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-11",
+     "form_ar": "تَأَكَّدَ",
+     "meaning_en": "made sure, checked",
+     "part_of_speech": "verb",
+     "root_ar": "أ-ك-د",
+     "root_reading": "ʾ-k-d",
+     "example_ar": "سَأَتَأَكَّدُ مِنَ الْمَوْعِدِ قَبْلَ الزِّيَارَةِ.",
+     "example_meaning_en": "I will check the appointment time before the visit.",
+     "note": "Present يَتَأَكَّدُ. What you make sure of takes مِنْ: تَأَكَّدْتُ مِنَ الْجَوَابِ, I checked the answer. The adjective is مُتَأَكِّد, “sure”.",
+     "dictionary": true
     }
    ]
   },
@@ -4960,6 +5104,18 @@
      "example_ar": "زُرْتُ صَدِيقِي أَمْسِ.",
      "example_meaning_en": "I visited my friend yesterday.",
      "note": "“He visited” is زَارَ: the long ā becomes a short u when an ending like ـتُ follows."
+    },
+    {
+     "id": "lexeme.arabic-past-questions-7",
+     "form_ar": "مُبَكِّرًا",
+     "meaning_en": "early",
+     "part_of_speech": "adverb",
+     "root_ar": "ب-ك-ر",
+     "root_reading": "b-k-r",
+     "example_ar": "لِمَاذَا رَجَعْتِ مُبَكِّرًا؟",
+     "example_meaning_en": "Why did you come back early?",
+     "note": "The opposite is مُتَأَخِّرًا, “late”. Without -an it is an adjective: فِي وَقْتٍ مُبَكِّرٍ, at an early time.",
+     "dictionary": true
     }
    ]
   },
@@ -5129,6 +5285,18 @@
      "example_ar": "عِنْدَمَا وَصَلْتُ، كَانَ الْبَابُ مُغْلَقًا.",
      "example_meaning_en": "When I arrived, the door was closed.",
      "note": "Joins two events; for a question, “when?” is مَتَى."
+    },
+    {
+     "id": "lexeme.arabic-story-connectors-7",
+     "form_ar": "سَفَر",
+     "meaning_en": "travel, journey",
+     "part_of_speech": "noun",
+     "root_ar": "س-ف-ر",
+     "root_reading": "s-f-r",
+     "example_ar": "قَبْلَ السَّفَرِ زُرْتُ جَدَّتِي.",
+     "example_meaning_en": "Before the journey I visited my grandmother.",
+     "note": "The verb is سَافَرَ, “travelled”. جَوَازُ السَّفَرِ is “passport”, and حَقِيبَةُ السَّفَرِ a suitcase.",
+     "dictionary": true
     }
    ]
   },
@@ -5200,6 +5368,54 @@
      "example_ar": "هَذَا مُلَخَّصُ الْقِصَّةِ.",
      "example_meaning_en": "This is the summary of the story.",
      "note": "A summary keeps what happened and leaves out what didn't."
+    },
+    {
+     "id": "lexeme.arabic-story-retell-7",
+     "form_ar": "بِدَايَة",
+     "meaning_en": "beginning, start",
+     "part_of_speech": "noun",
+     "root_ar": "ب-د-أ",
+     "root_reading": "b-d-ʾ",
+     "example_ar": "فِي بِدَايَةِ الدَّرْسِ نَقْرَأُ قَلِيلًا.",
+     "example_meaning_en": "At the start of the lesson we read a little.",
+     "note": "From بَدَأَ, “began”. فِي الْبِدَايَةِ is “at first, in the beginning”. The opposite is نِهَايَة.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-story-retell-8",
+     "form_ar": "نِهَايَة",
+     "meaning_en": "end",
+     "part_of_speech": "noun",
+     "root_ar": "ن-ه-ي",
+     "root_reading": "n-h-y",
+     "example_ar": "قَرَأْتُ الْقِصَّةَ حَتَّى النِّهَايَةِ.",
+     "example_meaning_en": "I read the story to the end.",
+     "note": "فِي النِّهَايَةِ is “in the end”. نِهَايَةُ الْأُسْبُوعِ is “the weekend”, and نِهَايَةُ الشَّهْرِ the end of the month.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-story-retell-9",
+     "form_ar": "سَبَحَ",
+     "meaning_en": "swam",
+     "part_of_speech": "verb",
+     "root_ar": "س-ب-ح",
+     "root_reading": "s-b-ḥ",
+     "example_ar": "سَبَحَ يُوسُفُ فِي الْبَحْرِ.",
+     "example_meaning_en": "Yusuf swam in the sea.",
+     "note": "Present يَسْبَحُ; “I swim” is أَسْبَحُ. The noun is سِبَاحَة, “swimming”, and مَسْبَح is a swimming pool.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-story-retell-10",
+     "form_ar": "رَمْل",
+     "meaning_en": "sand",
+     "part_of_speech": "noun",
+     "root_ar": "ر-م-ل",
+     "root_reading": "r-m-l",
+     "example_ar": "فِي الْبِدَايَةِ سَبَحَ قَلِيلًا، ثُمَّ نَامَ عَلَى الرَّمْلِ.",
+     "example_meaning_en": "At first he swam a little, then he slept on the sand.",
+     "note": "Plural رِمَال. The adjective is رَمْلِيّ, “sandy”.",
+     "dictionary": true
     }
    ]
   },
@@ -5344,6 +5560,18 @@
      "example_ar": "لَمْ أَفْهَمْ شَيْئًا.",
      "example_meaning_en": "I didn't understand anything.",
      "note": "شَيْء, “thing”, with -an; after a negative it means “anything”."
+    },
+    {
+     "id": "lexeme.arabic-negation-system-7",
+     "form_ar": "تَأَخَّرَ",
+     "meaning_en": "was late; was delayed",
+     "part_of_speech": "verb",
+     "root_ar": "أ-خ-ر",
+     "root_reading": "ʾ-kh-r",
+     "example_ar": "لَنْ أَتَأَخَّرَ عَنِ الدَّرْسِ.",
+     "example_meaning_en": "I won't be late for the lesson.",
+     "note": "Present يَتَأَخَّرُ. “Late for” takes عَنْ. The adjective is مُتَأَخِّر, “late”, and لَا تَتَأَخَّرْ is “don't be late”.",
+     "dictionary": true
     }
    ]
   },
@@ -5429,6 +5657,18 @@
      "example_ar": "لَا تَتَأَخَّرْ غَدًا.",
      "example_meaning_en": "Don't be late tomorrow.",
      "note": "“Don't …” is لَا with a present form ending in sukūn; to a woman: لَا تَتَأَخَّرِي."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-8",
+     "form_ar": "لَا النَّاهِيَةُ",
+     "meaning_en": "the prohibitive lā (“don't”)",
+     "part_of_speech": "chunk",
+     "root_ar": "ن-ه-ي",
+     "root_reading": "n-h-y",
+     "example_ar": "لَا النَّاهِيَةُ مَعْنَاهَا «لَا تَفْعَلْ».",
+     "example_meaning_en": "The prohibitive lā means “don't do it”.",
+     "note": "A grammar term: النَّاهِيَة is from نَهَى, “forbade”. It is told apart from لَا النَّافِيَةُ, the negating lā, which says what is not so: لَا أَفْهَمُ, I don't understand.",
+     "dictionary": true
     }
    ]
   },
@@ -5502,6 +5742,18 @@
      "example_ar": "أُفَضِّلُ الشَّايَ.",
      "example_meaning_en": "I prefer tea.",
      "note": "The same root as مِنْ فَضْلِكَ and تَفَضَّلْ."
+    },
+    {
+     "id": "lexeme.arabic-modal-complements-7",
+     "form_ar": "طَائِرَة",
+     "meaning_en": "aeroplane, plane",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ي-ر",
+     "root_reading": "ṭ-y-r",
+     "example_ar": "لَا أَسْتَطِيعُ أَنْ أَنَامَ فِي الطَّائِرَةِ.",
+     "example_meaning_en": "I can't sleep on the plane.",
+     "note": "Plural طَائِرَات. From طَارَ, “flew”; the same root gives مَطَار, “airport”, and طَائِر, “bird”.",
+     "dictionary": true
     }
    ]
   },
@@ -5595,6 +5847,30 @@
      "example_ar": "إِذَنْ، نَلْتَقِي يَوْمَ الْأَرْبِعَاءِ.",
      "example_meaning_en": "So we meet on Wednesday.",
      "note": "Sums up what's been agreed."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-9",
+     "form_ar": "رَأْي",
+     "meaning_en": "opinion, view",
+     "part_of_speech": "noun",
+     "root_ar": "ر-أ-ي",
+     "root_reading": "r-ʾ-y",
+     "example_ar": "مَا رَأْيُكِ فِي الْمَقْهَى الْجَدِيدِ؟",
+     "example_meaning_en": "What do you think of the new café?",
+     "note": "Plural آرَاء. مَا رَأْيُكَ فِي...؟ asks a man what he thinks, مَا رَأْيُكِ a woman; فِي رَأْيِي is “in my opinion”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-10",
+     "form_ar": "مَقْهَى",
+     "meaning_en": "café, coffee house",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ه-و",
+     "root_reading": "q-h-w",
+     "example_ar": "نَلْتَقِي فِي الْمَقْهَى بَعْدَ الدَّرْسِ.",
+     "example_meaning_en": "We'll meet in the café after the lesson.",
+     "note": "From قَهْوَة, “coffee”: the coffee place. Plural مَقَاهٍ. Its final alif never changes for case, like مُسْتَوَى.",
+     "dictionary": true
     }
    ]
   },
@@ -5690,6 +5966,18 @@
      "example_ar": "كِتَابُنَا جَدِيدٌ.",
      "example_meaning_en": "Our book is new.",
      "note": "ـنَا on a noun is “our”. On a verb it's the subject “we” (ذَهَبْنَا) or the object “us” (يَعْرِفُنَا)."
+    },
+    {
+     "id": "lexeme.arabic-pronoun-attachment-9",
+     "form_ar": "هَدِيَّة",
+     "meaning_en": "present, gift",
+     "part_of_speech": "noun",
+     "root_ar": "ه-د-ي",
+     "root_reading": "h-d-y",
+     "example_ar": "هَذِهِ الْهَدِيَّةُ لَكَ.",
+     "example_meaning_en": "This present is for you.",
+     "note": "Plural هَدَايَا. The verb أَهْدَى is “gave as a present”.",
+     "dictionary": true
     }
    ]
   },
@@ -5776,6 +6064,18 @@
      "example_ar": "«فِي» حَرْفُ جَرٍّ.",
      "example_meaning_en": "فِي is a preposition.",
      "note": "A grammar word: “a letter (word) of pulling”, which puts the next noun in the genitive."
+    },
+    {
+     "id": "lexeme.arabic-case-roles-8",
+     "form_ar": "مَطْبَخ",
+     "meaning_en": "kitchen",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ب-خ",
+     "root_reading": "ṭ-b-kh",
+     "example_ar": "أُمِّي فِي الْمَطْبَخِ.",
+     "example_meaning_en": "My mother is in the kitchen.",
+     "note": "Plural مَطَابِخ. From طَبَخَ, “cooked”: the place of cooking, like مَكْتَب from كَتَبَ.",
+     "dictionary": true
     }
    ]
   },
@@ -5884,6 +6184,42 @@
      "example_ar": "بَيْتُ الْمُعَلِّمِ الْجَدِيدُ كَبِيرٌ.",
      "example_meaning_en": "The teacher's new house is big.",
      "note": "The adjective comes after the whole chain. الْجَدِيدُ, with a ḍamma like بَيْتُ, describes the house; الْجَدِيدِ would describe the teacher."
+    },
+    {
+     "id": "lexeme.arabic-idafa-chains-10",
+     "form_ar": "مُدِير",
+     "meaning_en": "manager, director; head (of a school)",
+     "part_of_speech": "noun",
+     "root_ar": "د-و-ر",
+     "root_reading": "d-w-r",
+     "example_ar": "مُدِيرُ الشَّرِكَةِ رَجُلٌ طَيِّبٌ.",
+     "example_meaning_en": "The company's manager is a kind man.",
+     "note": "Feminine مُدِيرَة; plural مُدِيرُونَ. From أَدَارَ, “ran, managed”; إِدَارَة is “management, administration”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-idafa-chains-11",
+     "form_ar": "نَوْم",
+     "meaning_en": "sleep",
+     "part_of_speech": "noun",
+     "root_ar": "ن-و-م",
+     "root_reading": "n-w-m",
+     "example_ar": "قَبْلَ النَّوْمِ أَقْرَأُ قَلِيلًا.",
+     "example_meaning_en": "Before sleep I read a little.",
+     "note": "The verb is نَامَ, “slept”, present يَنَامُ. غُرْفَةُ النَّوْمِ is “bedroom”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-idafa-chains-12",
+     "form_ar": "أُخْت",
+     "meaning_en": "sister",
+     "part_of_speech": "noun",
+     "root_ar": "أ-خ-و",
+     "root_reading": "ʾ-kh-w",
+     "example_ar": "تَعْمَلُ أُخْتِي فِي جَامِعَةِ الْقَاهِرَةِ.",
+     "example_meaning_en": "My sister works at Cairo University.",
+     "note": "Plural أَخَوَات. أُخْتِي is “my sister”. A brother is أَخ.",
+     "dictionary": true
     }
    ]
   },
@@ -5959,6 +6295,42 @@
      "example_ar": "يَعْمَلُ مَعَ مُهَنْدِسِينَ.",
      "example_meaning_en": "He works with engineers.",
      "note": "ـِينَ after a preposition or as the object; as the subject: مُهَنْدِسُونَ."
+    },
+    {
+     "id": "lexeme.arabic-dual-sound-plurals-7",
+     "form_ar": "قَضَى",
+     "meaning_en": "spent (time); passed",
+     "part_of_speech": "verb",
+     "root_ar": "ق-ض-ي",
+     "root_reading": "q-ḍ-y",
+     "example_ar": "قَضَيْتُ الصَّيْفَ فِي الْقَاهِرَةِ.",
+     "example_meaning_en": "I spent the summer in Cairo.",
+     "note": "Present يَقْضِي. Ends in ى, so “we spent” is قَضَيْنَا and “I spent” قَضَيْتُ. The same verb also means “judged”: a judge is قَاضٍ.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-dual-sound-plurals-8",
+     "form_ar": "الْإِسْكَنْدَرِيَّة",
+     "meaning_en": "Alexandria",
+     "part_of_speech": "name",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "قَضَيْنَا يَوْمَيْنِ فِي الْإِسْكَنْدَرِيَّةِ.",
+     "example_meaning_en": "We spent two days in Alexandria.",
+     "note": "Egypt's second city, on the sea, named after Alexander the Great. Always with the article, like الْقَاهِرَة.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-dual-sound-plurals-9",
+     "form_ar": "شَرِكَة",
+     "meaning_en": "company, firm",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ر-ك",
+     "root_reading": "sh-r-k",
+     "example_ar": "يَعْمَلُ فِي الشَّرِكَةِ مُهَنْدِسُونَ وَمُهَنْدِسَاتٌ.",
+     "example_meaning_en": "Male and female engineers work in the company.",
+     "note": "Plural شَرِكَات. From the root of شَرِيك, “partner”; شَارَكَ is “took part, shared”.",
+     "dictionary": true
     }
    ]
   },
@@ -6055,6 +6427,18 @@
      "example_ar": "فِي الْأُسْبُوعِ سَبْعَةُ أَيَّامٍ.",
      "example_meaning_en": "There are seven days in a week.",
      "note": "The digit is ٧ (7). أَيَّام is the plural of يَوْم."
+    },
+    {
+     "id": "lexeme.arabic-quantity-comparison-9",
+     "form_ar": "يَوْم",
+     "meaning_en": "day",
+     "part_of_speech": "noun",
+     "root_ar": "ي-و-م",
+     "root_reading": "y-w-m",
+     "example_ar": "قَضَيْنَا ثَلَاثَةَ أَيَّامٍ فِي تُونِسَ.",
+     "example_meaning_en": "We spent three days in Tunisia.",
+     "note": "Plural أَيَّام: ثَلَاثَةُ أَيَّامٍ, three days. With the article, الْيَوْمَ is “today”; يَوْمَ السَّبْتِ is “on Saturday”.",
+     "dictionary": true
     }
    ]
   },
@@ -6143,6 +6527,18 @@
      "example_ar": "الْعِلْمُ مُفِيدٌ.",
      "example_meaning_en": "Knowledge is useful.",
      "note": "The same root as مُعَلِّم and أَتَعَلَّمُ: the family shares an idea, not one meaning."
+    },
+    {
+     "id": "lexeme.arabic-root-pattern-8",
+     "form_ar": "مَدْرُوس",
+     "meaning_en": "studied; well thought out",
+     "part_of_speech": "adjective",
+     "root_ar": "د-ر-س",
+     "root_reading": "d-r-s",
+     "example_ar": "الْخُطَّةُ مَدْرُوسَةٌ جَيِّدًا.",
+     "example_meaning_en": "The plan is well thought out.",
+     "note": "The “done to” form of دَرَسَ, pattern مَفْعُول. Feminine مَدْرُوسَة. Of a plan or decision it means “carefully considered”.",
+     "dictionary": true
     }
    ]
   },
@@ -6415,6 +6811,30 @@
      "example_ar": "«دِرَاسَة» مَصْدَرٌ.",
      "example_meaning_en": "دِرَاسَة is a verbal noun.",
      "note": "A grammar word: a noun naming the action, like دِرَاسَة or كِتَابَة. Also “source”; plural مَصَادِر."
+    },
+    {
+     "id": "lexeme.arabic-participles-masdar-10",
+     "form_ar": "اِسْتَغْرَقَ",
+     "meaning_en": "took (a length of time)",
+     "part_of_speech": "verb",
+     "root_ar": "غ-ر-ق",
+     "root_reading": "gh-r-q",
+     "example_ar": "ذَهَابِي إِلَى الْعَمَلِ يَسْتَغْرِقُ سَاعَةً.",
+     "example_meaning_en": "Getting to work takes me an hour.",
+     "note": "Present يَسْتَغْرِقُ. Ask how long with كَمْ يَسْتَغْرِقُ؟ The same root gives غَرِقَ, “sank, drowned”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-participles-masdar-11",
+     "form_ar": "دَارِس",
+     "meaning_en": "someone who studies, a student (of a subject)",
+     "part_of_speech": "noun",
+     "root_ar": "د-ر-س",
+     "root_reading": "d-r-s",
+     "example_ar": "أُخْتِي دَارِسَةٌ لِلتَّارِيخِ.",
+     "example_meaning_en": "My sister is a student of history.",
+     "note": "The “doer” form of دَرَسَ, pattern فَاعِل. Feminine دَارِسَة, plural دَارِسُونَ. The everyday word for a student is طَالِب.",
+     "dictionary": true
     }
    ]
   },
@@ -6563,6 +6983,54 @@
      "example_ar": "أَكْتُبُ مُلَاحَظَةً قَصِيرَةً.",
      "example_meaning_en": "I write a short note.",
      "note": "Plural مُلَاحَظَات."
+    },
+    {
+     "id": "lexeme.arabic-a2-listening-6",
+     "form_ar": "قَلْعَة",
+     "meaning_en": "castle, citadel, fort",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ل-ع",
+     "root_reading": "q-l-ʿ",
+     "example_ar": "لَمْ نَزُرِ الْقَلْعَةَ بِسَبَبِ الْمَطَرِ.",
+     "example_meaning_en": "We didn't visit the castle because of the rain.",
+     "note": "Plural قِلَاع. Many old Arab cities have a قَلْعَة on a hill above them.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a2-listening-7",
+     "form_ar": "سَمَحَ",
+     "meaning_en": "allowed, permitted",
+     "part_of_speech": "verb",
+     "root_ar": "س-م-ح",
+     "root_reading": "s-m-ḥ",
+     "example_ar": "هَلْ تَسْمَحُ لِي بِسُؤَالٍ؟",
+     "example_meaning_en": "May I ask a question?",
+     "note": "Present يَسْمَحُ, with لِ for the person and بِ for the thing. On a notice, لَا يُسْمَحُ بِ... is “... is not allowed”. لَوْ سَمَحْتَ is “please, if you don't mind”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a2-listening-8",
+     "form_ar": "طَلَب",
+     "meaning_en": "request; order; asking for",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ل-ب",
+     "root_reading": "ṭ-l-b",
+     "example_ar": "عِنْدِي طَلَبٌ صَغِيرٌ.",
+     "example_meaning_en": "I have a small request.",
+     "note": "Plural طَلَبَات. The verb is طَلَبَ, present يَطْلُبُ: أَطْلُبُ قَهْوَةً, I order a coffee. طَالِب, “student”, is from the same root.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a2-listening-9",
+     "form_ar": "مُوَظَّف",
+     "meaning_en": "employee, clerk, member of staff",
+     "part_of_speech": "noun",
+     "root_ar": "و-ظ-ف",
+     "root_reading": "w-ẓ-f",
+     "example_ar": "أُخْتِي مُوَظَّفَةٌ فِي مَصْرِفٍ.",
+     "example_meaning_en": "My sister is a clerk in a bank.",
+     "note": "Feminine مُوَظَّفَة; plural مُوَظَّفُونَ. From وَظِيفَة, “job, post”.",
+     "dictionary": true
     }
    ]
   },
@@ -6634,6 +7102,42 @@
      "example_ar": "تَبْدَأُ الدَّوْرَةُ غَدًا.",
      "example_meaning_en": "The course starts tomorrow.",
      "note": "Plural دَوْرَات."
+    },
+    {
+     "id": "lexeme.arabic-a2-reading-7",
+     "form_ar": "مَجَّانِيّ",
+     "meaning_en": "free, free of charge",
+     "part_of_speech": "adjective",
+     "root_ar": "م-ج-ن",
+     "root_reading": "m-j-n",
+     "example_ar": "التَّسْجِيلُ مَجَّانِيٌّ حَتَّى نِهَايَةِ الشَّهْرِ.",
+     "example_meaning_en": "Registration is free until the end of the month.",
+     "note": "Feminine مَجَّانِيَّة. مَجَّانًا is “for free, for nothing”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a2-reading-8",
+     "form_ar": "اِتَّصَلَ",
+     "meaning_en": "phoned, got in touch, contacted",
+     "part_of_speech": "verb",
+     "root_ar": "و-ص-ل",
+     "root_reading": "w-ṣ-l",
+     "example_ar": "اِتَّصَلْتُ بِأُخْتِي أَمْسِ.",
+     "example_meaning_en": "I phoned my sister yesterday.",
+     "note": "Present يَتَّصِلُ. The person you contact takes بِ: اِتَّصِلْ بِي, call me. From the root of وَصَلَ, “arrived”; اِتِّصَال is “a call, contact”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-a2-reading-9",
+     "form_ar": "مَعْلُومَات",
+     "meaning_en": "information",
+     "part_of_speech": "noun (plural)",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "اِتَّصِلْ بِنَا لِلْمَزِيدِ مِنَ الْمَعْلُومَاتِ.",
+     "example_meaning_en": "Contact us for more information.",
+     "note": "The plural of مَعْلُومَة, “a piece of information”. Like أَخْبَار, it is usually used in the plural. From the root of عِلْم, “knowledge”.",
+     "dictionary": true
     }
    ]
   },
@@ -6705,6 +7209,18 @@
      "example_ar": "أُرِيدُ حَجْزَ غُرْفَةٍ.",
      "example_meaning_en": "I'd like to book a room.",
      "note": "Literally “I want the booking of a room”."
+    },
+    {
+     "id": "lexeme.arabic-a2-interaction-7",
+     "form_ar": "تَغْيِير",
+     "meaning_en": "change, changing",
+     "part_of_speech": "noun",
+     "root_ar": "غ-ي-ر",
+     "root_reading": "gh-y-r",
+     "example_ar": "هَلْ مِنَ الْمُمْكِنِ تَغْيِيرُ الْغُرْفَةِ؟",
+     "example_meaning_en": "Is it possible to change the room?",
+     "note": "The verbal noun of غَيَّرَ, “changed (something)”. Plural تَغْيِيرَات. تَغَيَّرَ is “changed, became different”.",
+     "dictionary": true
     }
    ]
   },
@@ -6778,6 +7294,18 @@
      "example_ar": "أُرَاجِعُ مَا كَتَبْتُ.",
      "example_meaning_en": "I check over what I wrote.",
      "note": "The same root as مُرَاجَعَة, “revision”."
+    },
+    {
+     "id": "lexeme.arabic-a2-composition-7",
+     "form_ar": "سَيِّئ",
+     "meaning_en": "bad",
+     "part_of_speech": "adjective",
+     "root_ar": "س-و-أ",
+     "root_reading": "s-w-ʾ",
+     "example_ar": "كَانَ الطَّقْسُ سَيِّئًا، لِذَلِكَ بَقِينَا فِي الْبَيْتِ.",
+     "example_meaning_en": "The weather was bad, so we stayed at home.",
+     "note": "Feminine سَيِّئَة. The opposite is جَيِّد, “good”. أَسْوَأ is “worse, worst”.",
+     "dictionary": true
     }
    ]
   },
@@ -6838,6 +7366,18 @@
      "example_ar": "الْخُطْوَةُ التَّالِيَةُ سَهْلَةٌ.",
      "example_meaning_en": "The next step is easy.",
      "note": "Plural خُطُوَات."
+    },
+    {
+     "id": "lexeme.arabic-a2-portfolio-6",
+     "form_ar": "دَائِمًا",
+     "meaning_en": "always",
+     "part_of_speech": "adverb",
+     "root_ar": "د-و-م",
+     "root_reading": "d-w-m",
+     "example_ar": "أَشْرَبُ الْقَهْوَةَ دَائِمًا فِي الصَّبَاحِ.",
+     "example_meaning_en": "I always drink coffee in the morning.",
+     "note": "From دَائِم, “lasting, permanent”. أَحْيَانًا is “sometimes”; with a negative, أَبَدًا is “never”.",
+     "dictionary": true
     }
    ]
   },
