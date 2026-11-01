@@ -4614,7 +4614,7 @@
      "root_reading": "ṣ-y-d-l",
      "example_ar": "الصَّيْدَلِيَّةُ مُغْلَقَةٌ الْيَوْمَ.",
      "example_meaning_en": "The pharmacy is closed today.",
-     "note": "Plural صَيْدَلِيَّات. A pharmacist is صَيْدَلِيّ, feminine صَيْدَلِيَّة, the same word as the shop.",
+     "note": "Plural صَيْدَلِيَّات. A male pharmacist is صَيْدَلِيّ, and a female pharmacist صَيْدَلِيَّة: the same word as the shop, told apart by context.",
      "dictionary": true
     }
    ]
@@ -4701,7 +4701,7 @@
      "root_reading": null,
      "example_ar": "أَنَا مِنْ تُونِسَ، وَأَنْتَ؟",
      "example_meaning_en": "I'm from Tunisia, and you?",
-     "note": "The country and its capital share one name. A Tunisian is تُونِسِيّ, feminine تُونِسِيَّة. Like many place names, it never takes -un.",
+     "note": "The country and its capital share one name. A Tunisian is تُونِسِيّ, feminine تُونِسِيَّة. Like many place names it is مَمْنُوعٌ مِنَ الصَّرْفِ: it never takes -un, and takes -a where other words take -i, as in مِنْ تُونِسَ.",
      "dictionary": true
     },
     {
@@ -4810,7 +4810,7 @@
      "root_reading": null,
      "example_ar": "أَعْمَلُ فِي الْمَصْرِفِ مُنْذُ سَنَتَيْنِ.",
      "example_meaning_en": "I have been working at the bank for two years.",
-     "note": "With a present verb and a length of time it means “for”: أَعْمَلُ هُنَا مُنْذُ سَنَةٍ, I have worked here for a year. With a past verb it means “ago”: سَافَرَ مُنْذُ سَنَةٍ, he travelled a year ago. With a point in time it means “since”: مُنْذُ أَمْسِ, since yesterday. The noun after it ends in -i.",
+     "note": "With a present verb and a length of time it means “for”: أَعْمَلُ هُنَا مُنْذُ سَنَةٍ, I have worked here for a year. With a past verb it means “ago”: سَافَرَ مُنْذُ سَنَةٍ, he travelled a year ago. With a point in time it means “since”: مُنْذُ أَمْسِ, since yesterday. The noun after it is genitive: usually -i or -in, but -ayni for two, as in مُنْذُ سَنَتَيْنِ, for two years.",
      "dictionary": true
     }
    ]
@@ -5667,7 +5667,7 @@
      "root_reading": "n-h-y",
      "example_ar": "لَا النَّاهِيَةُ مَعْنَاهَا «لَا تَفْعَلْ».",
      "example_meaning_en": "The prohibitive lā means “don't do it”.",
-     "note": "A grammar term: النَّاهِيَة is from نَهَى, “forbade”. It is told apart from لَا النَّافِيَةُ, the negating lā, which says what is not so: لَا أَفْهَمُ, I don't understand.",
+     "note": "A grammar term: النَّاهِيَة is from نَهَى, “forbade”. It is told apart from لَا النَّافِيَةُ, the negating lā, which says what is not so: لَا أَفْهَمُ, I don't understand. After it, the present verb is jussive: لَا تَتَأَخَّرْ عَنِ الدَّرْسِ, don’t be late for the lesson.",
      "dictionary": true
     }
    ]
