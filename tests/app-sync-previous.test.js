@@ -762,6 +762,41 @@ async function signIn(d, url) {
     check('back on this release: the new title arrives and both answers are still exact in its saved data', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TSB}')?.title === 'Pay council tax (renamed)'`, 20000)
       && eq((await now.data()).tasks.items.find(t => t.id === TSB)?.blockers, startAnswers), (await now.data()).tasks.items.find(t => t.id === TSB)?.blockers);
 
+
+    console.log('\n[28] A Software project passes through the previous release unchanged (specs/projects-software.md)');
+    const knowsSoftware = builtText.includes('req-add');
+    console.log(`The previous release ${knowsSoftware ? 'knows' : 'doesn’t know'} Software projects.`);
+    const PSW = 'pjSoftBack';
+    const swLink = { id: 'rsSoftRepo', title: 'MyDay repository (made up)', url: 'https://github.com/example/myday', kind: 'repo', addedOn: today };
+    const swReq = { id: 'srBack1', type: 'requirement', projectId: PSW, title: 'A plan survives a reload', state: 'agreed', checks: [{ id: 'scBack1', text: 'Reload keeps it', done: true, proof: 'app-today 282/0', on: today }],
+      linkIds: [swLink.id], futureBit: { keep: ['software', 1] }, createdAt: stamp, updatedAt: stamp };
+    const swBug = { id: 'sbBack1', type: 'bug', projectId: PSW, title: 'The timer stops (made up)', happens: 'It stops when the phone locks', expected: 'It keeps going', state: 'open', createdAt: stamp, updatedAt: stamp };
+    const swOf = async id => (await record('software', id))?.data, swProject = async () => (await record('project', PSW))?.data?.value;
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PSW}', title: 'MyDay (made up)', summary: '', stage: 'act', status: 'active', template: 'software', resources: [${JSON.stringify(swLink)}], nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' });
+      s.software = s.software || { items: [] }; s.software.items.push(${JSON.stringify(swReq)}, ${JSON.stringify(swBug)}); }`);
+    check('this release sends the project (its type and its marked link) and each item as its own record, exactly', await eventually(async () => { const v = await swProject(); return v?.template === 'software' && same(v?.resources, [swLink]) && same(await swOf('srBack1'), swReq) && same(await swOf('sbBack1'), swBug); })
+      && await synced(now), [await swProject(), await swOf('srBack1')]);
+    const reqV = (await record('software', 'srBack1'))?.version, bugV = (await record('software', 'sbBack1'))?.version;
+    await before.returnToApp();
+    check('the previous release syncs normally and receives the project', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PSW}')`, 20000));
+    await before.open(BEFORE + `#projects/p/${PSW}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    if (!knowsSoftware) check('…showing it as a general project: its tasks, milestones and decisions, no Requirements or Bugs tab', await before.until(`!!document.querySelector('[data-tab=milestones]')`, 5000) && !(await before.ev(`!!document.querySelector('[data-tab=requirements], [data-tab=bugs]')`)));
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'MyDay (renamed)');
+    check('a rename on the previous release reaches the account with the type and the marked link kept exactly, and the items untouched (same versions)', await eventually(async () => (await swProject())?.title === 'MyDay (renamed)') && await synced(before)
+      && (await swProject())?.template === 'software' && same((await swProject())?.resources, [swLink]) && (await record('software', 'srBack1'))?.version === reqV && (await record('software', 'sbBack1'))?.version === bugV && same(await swOf('srBack1'), swReq), await swProject());
+    // The previous release edits the link's note: it keeps the link marked (its own edit doesn't know the mark).
+    await before.open(BEFORE + `#projects/p/${PSW}`); await before.until(`!!document.querySelector('[data-s=resource][data-id=${swLink.id}] [data-action=resource-edit]')`, 15000);
+    await before.click(`[data-s=resource][data-id=${swLink.id}] [data-action=resource-edit]`); await before.until(`!!document.getElementById('resourceNote-${swLink.id}')`, 5000);
+    await before.type(`#resourceNote-${swLink.id}`, 'The main repository'); await before.click('[data-action=resource-save]');
+    check('editing the link\'s note on the previous release keeps it marked as a repository', await eventually(async () => { const r = (await swProject())?.resources?.[0]; return r?.note === 'The main repository' && r?.kind === 'repo'; }) && await synced(before), (await swProject())?.resources);
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PSW}/requirements`);
+    check('back on this release: still a Software project with its requirement and bug exactly, the link still marked with its new note, and in step', await now.until(`!!document.querySelector('[data-s=requirement][data-id=srBack1]')`, 20000)
+      && await now.until(`(() => { const p = JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(x => x.id === '${PSW}'); return p?.template === 'software' && p.resources?.[0]?.kind === 'repo' && p.resources[0].note === 'The main repository'; })()`, 20000)
+      && same((await now.data()).software.items.find(x => x.id === 'srBack1'), swReq) && same((await now.data()).software.items.find(x => x.id === 'sbBack1'), swBug) && await synced(now) && (await now.status()) === 'synced', await now.text('#projectRequirements'));
+
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
