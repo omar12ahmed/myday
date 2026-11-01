@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AI_MODE } from '../ai/request';
 import { aiReach } from '../ai/reach';
 import { openCapture } from '../capture/openCapture';
@@ -26,7 +26,10 @@ const linkIn = (notes: string) => URL_IN.exec(notes)?.[0].replace(/[.,;:!?]+$/, 
 // skippable, no AI, and "not today" or "let it go" never counted against you. Your answer is kept with the task, as the
 // Stuck card's are, once you act on it (so a mis-tap isn't).
 // `onKeep`: told before an answer is kept, so the page can keep the Stuck card where it is (see TaskEditor).
-export function HelpMeStart({ data, t, onClose, onKeep }: { data: MyDayData; t: TaskItem; onClose: () => void; onKeep?: () => void }) {
+// `focusOnOpen`: arrived from Today's Up next task, so focus starts on the card (its heading).
+export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: { data: MyDayData; t: TaskItem; onClose: () => void; onKeep?: () => void; focusOnOpen?: boolean }) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { if (focusOnOpen) { heading.current?.focus(); heading.current?.scrollIntoView({ block: 'start' }); } }, [focusOnOpen]);
   const [answer, setAnswer] = useState<Answer | null>(null);
   const [smaller, setSmaller] = useState(false), [piece, setPiece] = useState('');
   const k = todayKey();
@@ -92,7 +95,7 @@ export function HelpMeStart({ data, t, onClose, onKeep }: { data: MyDayData; t: 
 
   return (
     <Card id="startCard" aria-labelledby="start-h">
-      <h3 id="start-h" className="m-0">Let’s get started</h3>
+      <h3 id="start-h" ref={heading} tabIndex={-1} className="m-0 outline-none">Let’s get started</h3>
       <p className="text-[15px] m-0 mt-1">You don’t need to finish anything right now.</p>
 
       <h4 className="m-0 mt-4 text-[15px]">What’s getting in the way? <span className="font-normal text-fg-2">(if you like)</span></h4>

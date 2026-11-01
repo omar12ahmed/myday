@@ -6,8 +6,8 @@ only plan it. No AI.
 
 ## 1. What you'd notice
 
-A quiet **Help me start** on any open task's page, next to "Something in the way?" (and, after 1.119.0, in each task's
-menu on Today's plan). It opens a short card, two taps to the first action, every part skippable:
+A quiet **Help me start** on any open task's page, next to "Something in the way?", and on the **Up next** task of
+Today's plan, beside its "Just start" (it opens the task's page with the card open, and focus on it). It opens a short card, two taps to the first action, every part skippable:
 
 > **Let's get started.** You don't need to finish anything right now.
 
@@ -35,7 +35,9 @@ menu on Today's plan). It opens a short card, two taps to the first action, ever
 ## 2. The owner's decisions (1 Nov 2026)
 
 1. **Who builds it:** myday-94, telling myday-af file by file (Tasks and Today are theirs).
-2. **Where:** the task's page, and each task's menu on Today's plan, never an extra button on every row.
+2. **Where:** the task's page, and Today's plan, never an extra button on every row. Today's rows turned out to have no
+   menu (only Just start and Focus), so it's on the Up next task alone, where starting matters; to change if the owner
+   prefers another way.
 3. **The answers:** all three new ones, beside the existing ones, which stay as they are.
 4. **Kept with the task, synced, as now:** shown and deletable in What MyDay has noticed, never sent to AI. Older versions
    keep them.

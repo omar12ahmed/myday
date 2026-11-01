@@ -259,6 +259,19 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
     await open('tkNoPlan');
     check('with no plan built, there is no "Start for 5 minutes", and it says to build the day first', !(await exists('[data-action=start-five]')) && (await text('[data-s=start-no-timer]')).includes('build your day'), await text('[data-s=start-no-timer]'));
 
+    // From Today's plan: Help me start on the Up next task only, opening its page with the card open (focus on it).
+    await scene([tk('tkUp', 'Call the plumber', { due: TODAY, plannedOn: TODAY, planUid: 'puUp' }), tk('tkNext2', 'Sort the post', { due: TODAY, plannedOn: TODAY, planUid: 'puNext2' })], { built: true });
+    await editStorage(`s => { s.days['${TODAY}'].tasks.push(${JSON.stringify(planned('puUp', 'tkUp'))}, ${JSON.stringify(planned('puNext2', 'tkNext2'))}); }`);
+    await go('today', 2026, 10, 16, 9, 30); await sleep(300);
+    const helps = await ev(`[...document.querySelectorAll('[data-action=help-start]')].map(b => b.dataset.uid)`);
+    check('Today\'s plan offers "Help me start" on the Up next task only', helps.length === 1 && helps[0] === 'puUp' && (await ev(`document.querySelector('.task.next input')?.dataset.uid`)) === 'puUp', helps);
+    await click('[data-action=help-start]'); await sleep(500);
+    check('…which opens that task\'s page with Help me start open, focus on "Let’s get started"', (await ev('location.hash')) === '#today/tasks/tkUp' && await exists('#startCard')
+      && (await ev(`document.activeElement?.id || ''`)) === 'start-h', [await ev('location.hash'), await ev(`document.activeElement?.id || ''`)]);
+    await go('today', 2026, 10, 16, 9, 30); await sleep(300);
+    await go('today/tasks/tkUp', 2026, 10, 16, 9, 30); await sleep(300);
+    check('…and only that once: opening the task again later, the card waits for your tap', !(await exists('#startCard')) && await exists('[data-action=task-help-start]'));
+
     // Later, make it smaller, let it go.
     await scene([tk('tkLater', 'Book the plumber', { due: TODAY, postponed: 1 })], { built: true });
     await open('tkLater');

@@ -18,6 +18,7 @@ import { DeadlineCard } from './DeadlineCard';
 import { MilestoneCard } from './MilestoneCard';
 import { StepsCard } from './StepsCard';
 import { HelpMeStart } from './HelpMeStart';
+import { takeHelpMeStart } from './helpPending';
 import { StuckCard } from './StuckCard';
 import { WaitingCard } from './WaitingCard';
 import { StartsAfterCard } from './StartsAfterCard';
@@ -30,7 +31,9 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   // Handed over to Ask MyDay from the stuck card: your answer quiets the card for a week, but it stays open for this visit,
   // as you left it, so you can write the first step when you come back from +.
   const [kept, setKept] = useState(false);
-  const [helping, setHelping] = useState(false); // Help me start (specs/help-me-start.md), open on your tap
+  // Help me start (specs/help-me-start.md): open on your tap, or on arrival from Today's Up next task.
+  const [arrived] = useState(() => takeHelpMeStart(id));
+  const [helping, setHelping] = useState(arrived);
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return <><BackLink to="today/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
   // A new, later date takes it off today's plan too (data/tasks.ts), and says so.
@@ -94,7 +97,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
           <Sparkles size={18} aria-hidden="true" /> Break into smaller steps</Button>}
       </Card>
       {!done && !t.waiting && waitAsk && <WaitingCard key="asking" data={data} t={t} asking onClose={() => setWaitAsk(false)} />}
-      {helping && !done && !t.waiting && <HelpMeStart data={data} t={t} onKeep={() => { if (stuck) setKept(true); }}
+      {helping && !done && !t.waiting && <HelpMeStart data={data} t={t} focusOnOpen={arrived} onKeep={() => { if (stuck) setKept(true); }}
         onClose={() => { setHelping(false); setTimeout(() => document.querySelector<HTMLElement>('[data-action="task-help-start"]')?.focus(), 0); }} />}
       {ask && !done && !stuck && !kept && !t.waiting && <StuckCard data={data} t={t} stuck={false} />}
       <DeadlineCard data={data} t={t} />
