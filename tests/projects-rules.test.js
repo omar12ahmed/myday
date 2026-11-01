@@ -22,7 +22,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate, todayKey } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, tidyWhy, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
-    `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, canOpen, tidyText, RESOURCE_LIMITS } from ${src('projectResources')};`,
+    `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, canOpen, tidyText, RESOURCE_LIMITS, LINK_KINDS, linkKindLabel, linkWhere } from ${src('projectResources')};`,
     `export { searchProject, fold, wordsOf, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
     `export { stepsText, allStepsDone, addStep, editStep, tickStep, moveStep, removeStep, startsAfter, startsAfterText, afterChoices, setStartsAfter, removeTask, TASK_LIMITS } from ${src('tasks')};`,
@@ -33,6 +33,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
     `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as EX from ${src('exploring')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`, `export * as CT from ${src('content')};`, `export * as F from ${src('files')};`,
     `export * as AM from ${src('ambitions')};`,
+    `export * as SW from ${src('software')};`, `export * as TPL from ${src('templates')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -3140,6 +3141,308 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const dg = mk(); dg.projects.items = [base('pjA')];
     check('a project link shows its project, and null when the project is gone (or the link isn\'t a project)', K.AM.linkedProject(dg, { id: 'l1', kind: 'project', ref: 'pjA' })?.id === 'pjA' && K.AM.linkedProject(dg, { id: 'l1', kind: 'project', ref: 'pjGone' }) === null
       && K.AM.linkedProject(dg, { id: 'l2', kind: 'topic', ref: 'pjA' }) === null && K.AM.linkedProject(dg, { id: 'l3', kind: 'arabic' }) === null);
+  }
+
+  console.log('\n[32] Software projects (specs/projects-software.md)');
+  {
+    const T0 = '2026-10-01T09:00', T1 = '2026-10-02T09:00', DAY = '2026-10-10';
+    const SW = K.SW, TPL = K.TPL;
+    const ms = (id, x = {}) => ({ id, title: 'Milestone ' + id, aim: null, reachedOn: null, createdAt: T0, ...x });
+    const rs = (id, url, x = {}) => ({ id, title: '', url, addedOn: '2026-10-01', ...x });
+    const req = (id, x = {}) => ({ id, type: 'requirement', projectId: 'pjA', title: 'Sign in', state: 'proposed', checks: [], createdAt: T0, updatedAt: T0, ...x });
+    const bug = (id, x = {}) => ({ id, type: 'bug', projectId: 'pjA', title: 'Crash on save', state: 'open', createdAt: T0, updatedAt: T0, ...x });
+    const rel = (id, milestoneId, x = {}) => ({ id, type: 'release', projectId: 'pjA', milestoneId, checks: [], createdAt: T0, updatedAt: T0, ...x });
+    const pjA = () => base('pjA', { milestones: [ms('msA'), ms('msB'), ms('msC')], resources: [rs('rsA', 'https://github.com/owner/repo', { kind: 'repo' }), rs('rsB', 'https://example.com/a')] });
+    const pjB = () => base('pjB', { milestones: [ms('msX')], resources: [rs('rsX', 'https://example.com/x')] });
+    const mk = (...items) => { const d = world(pjA(), pjB()); d.software.items = items; return d; };
+    const aged = d => { for (const x of d.software.items) x.updatedAt = T0; };
+    const ids = l => l.map(x => x.id);
+    const item = (d, id) => d.software.items.find(x => x.id === id);
+
+    console.log('  reading');
+    const written = [
+      req('srA', { detail: 'Sign in with an email', futureBit: { a: 1 }, checks: [{ id: 'scA', text: 'Works', done: true, on: '2026-10-05', proof: 'ran it', extra: 1 }, 'junk', { id: 'scB' }] }),
+      { id: 'sxA', type: 'newer', projectId: 'pjA', createdAt: T0, updatedAt: T0, whatever: { a: 1 } },
+      bug('sbA', { createdAt: T1, updatedAt: T1, state: 'newstate', futureBit: 2 }),
+      { id: 'srB', type: 'requirement', projectId: 'pjA', title: 'No checks list', createdAt: T0, updatedAt: T0 }];
+    const r1 = { dropped: 0 };
+    const read1 = SW.normalizeSoftware({ items: clone(written), futureSection: { z: 1 } }, r1);
+    check('software items are read back exactly as written, with an unknown type (newer), extra keys, a check of an unknown shape and a missing checks list all kept, and nothing counted', eq(read1.items, written) && r1.dropped === 0 && eq(read1.futureSection, { z: 1 }), [read1, r1]);
+    const r2 = { dropped: 0 };
+    const read2 = SW.normalizeSoftware(clone(read1), r2);
+    check('…and reading what was read gives exactly the same again, with nothing counted', eq(read2, read1) && r2.dropped === 0, [read2, r2]);
+    const r3 = { dropped: 0 };
+    const okItem = (id, x = {}) => ({ id, type: 'bug', projectId: 'pjA', createdAt: T0, updatedAt: T0, ...x });
+    const bad = SW.normalizeSoftware({ items: [okItem('sbA'), okItem('sbA', { title: 'Duplicate' }), { type: 'bug', projectId: 'pjA' }, okItem('has space'), okItem('x'.repeat(65)), okItem('sbB', { projectId: undefined }), okItem('sbC', { type: undefined }), 'junk', okItem('y'.repeat(64))] }, r3);
+    check('an item with no id, a bad id (a space, or over 64 characters), no projectId or no type, one that is not an object, and a later duplicate id are each counted and left off (64 characters is fine)', eq(ids(bad.items), ['sbA', 'y'.repeat(64)]) && r3.dropped === 7, [ids(bad.items), r3.dropped]);
+    const filled = SW.normalizeSoftware({ items: [{ id: 'sbA', type: 'bug', projectId: 'pjA', updatedAt: T1 }, { id: 'sbB', type: 'bug', projectId: 'pjA' }, { id: 'sbC', type: 'bug', projectId: 'pjA', createdAt: T0 }] }, { dropped: 0 }).items;
+    check('a missing createdAt is filled from updatedAt, else from 2000-01-01T00:00, and a missing updatedAt from createdAt', filled[0].createdAt === T1 && filled[1].createdAt === '2000-01-01T00:00' && filled[1].updatedAt === '2000-01-01T00:00' && filled[2].updatedAt === T0, filled);
+    check('a software section that is not an object reads as an empty list', eq(SW.normalizeSoftware(undefined, { dropped: 0 }), { items: [] }) && eq(SW.normalizeSoftware('x', { dropped: 0 }), { items: [] }) && eq(SW.normalizeSoftware(['a'], { dropped: 0 }), { items: [] }));
+    check('checksOf keeps only checks that are objects with a string id and string text', eq(ids(SW.checksOf({ checks: [{ id: 'a', text: 'x' }, { id: 'b' }, { text: 'c' }, 'junk', { id: 1, text: 'd' }, null, { id: 'e', text: 'f', done: true }] })), ['a', 'e']) && eq(SW.checksOf({ id: 'z' }), []));
+
+    console.log('  lists');
+    const dl = mk(req('srZ', { createdAt: '2026-10-03T09:00' }), req('srB', { createdAt: T0 }), req('srA', { createdAt: T0 }), bug('sbA'), req('srO', { projectId: 'pjB' }), rel('slA', 'msA'), req('srM', { createdAt: T1 }));
+    check('requirementsOf gives only that project\'s requirements, by createdAt then id', eq(ids(SW.requirementsOf(dl, 'pjA')), ['srA', 'srB', 'srM', 'srZ']) && eq(ids(SW.requirementsOf(dl, 'pjB')), ['srO']), ids(SW.requirementsOf(dl, 'pjA')));
+    const dlb = mk(bug('sbZ', { createdAt: T1 }), bug('sbB'), bug('sbA'), req('srA'), bug('sbO', { projectId: 'pjB' }));
+    check('bugsOf gives only that project\'s bugs, by createdAt then id; itemById finds an item (null when none)', eq(ids(SW.bugsOf(dlb, 'pjA')), ['sbA', 'sbB', 'sbZ']) && SW.itemById(dlb, 'srA').type === 'requirement' && SW.itemById(dlb, 'sbO').projectId === 'pjB' && SW.itemById(dlb, 'nope') === null, ids(SW.bugsOf(dlb, 'pjA')));
+
+    console.log('  requirements');
+    const da = mk();
+    const ra = SW.addRequirement(da, 'pjA', '  Sign in  ', '  With an email  ');
+    check('adding a requirement trims the title, keeps the detail, starts it Proposed with no checks, with an id starting sr', typeof ra === 'string' && ra.startsWith('sr') && item(da, ra).title === 'Sign in' && item(da, ra).detail === 'With an email' && item(da, ra).state === 'proposed' && eq(item(da, ra).checks, []) && item(da, ra).type === 'requirement' && item(da, ra).projectId === 'pjA', item(da, ra));
+    const rb = SW.addRequirement(da, 'pjA', 'x'.repeat(200), 'y'.repeat(3000)), rc = SW.addRequirement(da, 'pjA', 'No detail', '   '), rd = SW.addRequirement(da, 'pjA', 'Left out');
+    check('a requirement\'s title is cut to 160 and its detail to 2000; a blank or missing detail leaves the detail key out', item(da, rb).title.length === 160 && item(da, rb).detail.length === 2000 && !('detail' in item(da, rc)) && !('detail' in item(da, rd)), [item(da, rb).title.length, item(da, rb).detail.length]);
+    const n0 = da.software.items.length;
+    check('a blank title or a project that is not there adds nothing (null)', SW.addRequirement(da, 'pjA', '   ') === null && SW.addRequirement(da, 'pjNope', 'X') === null && da.software.items.length === n0);
+    const d200 = mk();
+    for (let i = 0; i < 200; i++) SW.addRequirement(d200, 'pjA', 'Requirement ' + i);
+    check('a 201st requirement is not added (null) and the 200 stay; another project can still add its own', d200.software.items.length === 200 && SW.addRequirement(d200, 'pjA', 'One too many') === null && d200.software.items.length === 200 && typeof SW.addRequirement(d200, 'pjB', 'Other project') === 'string', d200.software.items.length);
+
+    const de = mk(req('srA', { title: 'Sign in', detail: 'Old detail' }));
+    aged(de);
+    check('editing the title changes it and moves updatedAt; a blank title is refused and the old one stays', SW.editRequirement(de, 'srA', { title: '  Sign in with email  ' }) && item(de, 'srA').title === 'Sign in with email' && item(de, 'srA').updatedAt !== T0
+      && (aged(de), !SW.editRequirement(de, 'srA', { title: '   ' })) && item(de, 'srA').title === 'Sign in with email' && item(de, 'srA').updatedAt === T0, item(de, 'srA'));
+    check('the detail can be set and then cleared (the key is removed)', SW.editRequirement(de, 'srA', { detail: 'New detail' }) && item(de, 'srA').detail === 'New detail' && SW.editRequirement(de, 'srA', { detail: '  ' }) && !('detail' in item(de, 'srA')), item(de, 'srA'));
+    check('the state can be any of proposed, agreed, built and dropped; an unknown state is ignored', ['agreed', 'built', 'dropped', 'proposed'].every(s => SW.editRequirement(de, 'srA', { state: s }) && item(de, 'srA').state === s) && !SW.editRequirement(de, 'srA', { state: 'nonsense' }) && item(de, 'srA').state === 'proposed', item(de, 'srA'));
+    const dr = mk(req('srA'), bug('sbA'));
+    const relA = SW.markRelease(dr, 'pjA', 'msA'), relX = SW.markRelease(dr, 'pjB', 'msX');
+    check('releaseId is set to a release of the same project; a release of another project is not accepted', SW.editRequirement(dr, 'srA', { releaseId: relA }) && item(dr, 'srA').releaseId === relA && (SW.editRequirement(dr, 'srA', { releaseId: null }), !SW.editRequirement(dr, 'srA', { releaseId: relX })) && !('releaseId' in item(dr, 'srA')), item(dr, 'srA'));
+    SW.editRequirement(dr, 'srA', { releaseId: relA });
+    check('null clears the releaseId, and so does an id that is not a release', SW.editRequirement(dr, 'srA', { releaseId: null }) && !('releaseId' in item(dr, 'srA')) && SW.editRequirement(dr, 'srA', { releaseId: relA }) && SW.editRequirement(dr, 'srA', { releaseId: 'slNope' }) && !('releaseId' in item(dr, 'srA')) && !SW.editRequirement(dr, 'srA', { releaseId: 'slNope' }), item(dr, 'srA'));
+    SW.unmarkRelease(dr, relA);
+    check('a release that is off is not accepted either', !SW.editRequirement(dr, 'srA', { releaseId: relA }) && !('releaseId' in item(dr, 'srA')));
+    aged(de);
+    check('the same values again return false and leave updatedAt alone; an unknown id, or a bug\'s id, gives false', !SW.editRequirement(de, 'srA', { title: 'Sign in with email', state: 'proposed' }) && item(de, 'srA').updatedAt === T0 && !SW.editRequirement(de, 'nope', { title: 'X' }) && !SW.editRequirement(dr, 'sbA', { title: 'X' }), item(de, 'srA'));
+
+    console.log('  bugs');
+    const db = mk();
+    const ba = SW.addBug(db, 'pjA', '  Crash on save  ', { happens: ' It closes ', expected: ' It saves ', steps: ' 1. Open 2. Save ' });
+    check('adding a bug keeps the trimmed title and its happens, expected and steps, starts it Open, with an id starting sb', typeof ba === 'string' && ba.startsWith('sb') && item(db, ba).title === 'Crash on save' && item(db, ba).happens === 'It closes' && item(db, ba).expected === 'It saves' && item(db, ba).steps === '1. Open 2. Save' && item(db, ba).state === 'open' && item(db, ba).type === 'bug', item(db, ba));
+    const bb = SW.addBug(db, 'pjA', 'x'.repeat(200), { happens: 'h'.repeat(3000), expected: 'e'.repeat(3000), steps: 's'.repeat(5000) }), bc = SW.addBug(db, 'pjA', 'Bare'), bd = SW.addBug(db, 'pjA', 'Blank parts', { happens: ' ', expected: '', steps: '  ' });
+    check('a bug\'s title is cut to 160, happens and expected to 2000 and steps to 4000; blank or missing parts leave their keys out', item(db, bb).title.length === 160 && item(db, bb).happens.length === 2000 && item(db, bb).expected.length === 2000 && item(db, bb).steps.length === 4000
+      && ['happens', 'expected', 'steps'].every(k => !(k in item(db, bc)) && !(k in item(db, bd))), item(db, bc));
+    check('a blank title or a project that is not there adds no bug (null)', SW.addBug(db, 'pjA', '  ') === null && SW.addBug(db, 'pjNope', 'X') === null && db.software.items.length === 4);
+    const d500 = mk();
+    for (let i = 0; i < 500; i++) SW.addBug(d500, 'pjA', 'Bug ' + i);
+    check('a 501st bug is not added (null) and the 500 stay', d500.software.items.length === 500 && SW.addBug(d500, 'pjA', 'One too many') === null && d500.software.items.length === 500, d500.software.items.length);
+    const dbe = mk(bug('sbA', { happens: 'It closes', expected: 'It saves', steps: 'Open, save' }), rel('slA', 'msA'), rel('slX', 'msX', { projectId: 'pjB' }));
+    aged(dbe);
+    check('editing a bug changes its title, happens, expected and steps (blank clears the key, blank title refused) and moves updatedAt',
+      SW.editBug(dbe, 'sbA', { title: ' Crash when saving ', happens: 'It freezes', expected: '', steps: 'Open, edit, save' }) && item(dbe, 'sbA').title === 'Crash when saving' && item(dbe, 'sbA').happens === 'It freezes' && !('expected' in item(dbe, 'sbA')) && item(dbe, 'sbA').steps === 'Open, edit, save' && item(dbe, 'sbA').updatedAt !== T0
+      && !SW.editBug(dbe, 'sbA', { title: ' ' }) && item(dbe, 'sbA').title === 'Crash when saving', item(dbe, 'sbA'));
+    check('editing a bug\'s releaseId follows the same rule: a release of its project is set, null clears it, another project\'s release is not accepted', SW.editBug(dbe, 'sbA', { releaseId: 'slA' }) && item(dbe, 'sbA').releaseId === 'slA' && !SW.editBug(dbe, 'sbA', { releaseId: 'slA' }) && SW.editBug(dbe, 'sbA', { releaseId: 'slX' }) && !('releaseId' in item(dbe, 'sbA')) && !SW.editBug(dbe, 'sbA', { releaseId: null }), item(dbe, 'sbA'));
+    aged(dbe);
+    check('the same values again, a requirement\'s id and an unknown id give false', !SW.editBug(dbe, 'sbA', { title: 'Crash when saving', happens: 'It freezes' }) && item(dbe, 'sbA').updatedAt === T0 && !SW.editBug(dbe, 'nope', { title: 'X' }) && !SW.editBug(mk(req('srA')), 'srA', { title: 'X' }));
+
+    console.log('  bug states');
+    const ds = mk(bug('sbA'), req('srA'));
+    aged(ds);
+    check('open to fixed sets closedOn to the given day and moves updatedAt', SW.setBugState(ds, 'sbA', 'fixed', DAY) && item(ds, 'sbA').state === 'fixed' && item(ds, 'sbA').closedOn === DAY && item(ds, 'sbA').updatedAt !== T0, item(ds, 'sbA'));
+    check('fixed to won\'t fix sets closedOn to the given day likewise', SW.setBugState(ds, 'sbA', 'wontfix', '2026-10-11') && item(ds, 'sbA').state === 'wontfix' && item(ds, 'sbA').closedOn === '2026-10-11', item(ds, 'sbA'));
+    check('back to open removes closedOn', SW.setBugState(ds, 'sbA', 'open', DAY) && item(ds, 'sbA').state === 'open' && !('closedOn' in item(ds, 'sbA')), item(ds, 'sbA'));
+    aged(ds);
+    check('the same state again, an unknown state, an unknown id and a requirement\'s id all return false and change nothing', !SW.setBugState(ds, 'sbA', 'open', DAY) && !SW.setBugState(ds, 'sbA', 'closed', DAY) && !SW.setBugState(ds, 'nope', 'fixed', DAY) && !SW.setBugState(ds, 'srA', 'fixed', DAY) && item(ds, 'sbA').state === 'open' && item(ds, 'sbA').updatedAt === T0 && !('closedOn' in item(ds, 'sbA')));
+
+    console.log('  fix it');
+    const df = mk(bug('sbA', { title: 'Crash on save' }), bug('sbL', { title: 'y'.repeat(150) }), req('srA'));
+    const tf = SW.fixIt(df, 'sbA'), tk = df.tasks.items.find(t => t.id === tf);
+    check('fixIt makes one task titled "Fix: <title>" in the bug\'s project and sets bug.taskId', typeof tf === 'string' && df.tasks.items.length === 1 && tk.title === 'Fix: Crash on save' && tk.projectId === 'pjA' && item(df, 'sbA').taskId === tf, [df.tasks.items, item(df, 'sbA')]);
+    check('a second call returns "already" and makes no second task', SW.fixIt(df, 'sbA') === 'already' && df.tasks.items.length === 1);
+    const tl = SW.fixIt(df, 'sbL');
+    check('a long title is cut so the task title is 120 characters', df.tasks.items.find(t => t.id === tl).title === ('Fix: ' + 'y'.repeat(150)).slice(0, 120), df.tasks.items.find(t => t.id === tl).title.length);
+    df.tasks.items = df.tasks.items.filter(t => t.id !== tf);
+    const tf2 = SW.fixIt(df, 'sbA');
+    check('after the task is removed, fixIt makes a new one and points the bug at it', typeof tf2 === 'string' && tf2 !== tf && tf2 !== 'already' && item(df, 'sbA').taskId === tf2 && df.tasks.items.some(t => t.id === tf2), item(df, 'sbA'));
+    check('fixIt gives null for an unknown id or a requirement, and makes no task', SW.fixIt(df, 'nope') === null && SW.fixIt(df, 'srA') === null && df.tasks.items.length === 2);
+    const bt = SW.bugTask(df, item(df, 'sbA'));
+    check('bugTask gives the task and whether it is done (false, then true once it is done)', bt && bt.task.id === tf2 && bt.done === false && (df.tasks.items.find(t => t.id === tf2).done = true, SW.bugTask(df, item(df, 'sbA')).done === true), bt);
+    check('bugTask gives null when the bug has no task, or its task is gone', SW.bugTask(df, bug('sbN')) === null && SW.bugTask(df, bug('sbG', { taskId: 'tkGone' })) === null);
+
+    console.log('  releases');
+    const dm = mk();
+    const m1 = SW.markRelease(dm, 'pjA', 'msA');
+    check('marking a milestone as a release gives an id starting sl, with an empty list of its own checks; marking it again gives the same id and no second release', typeof m1 === 'string' && m1.startsWith('sl') && eq(item(dm, m1).checks, []) && item(dm, m1).milestoneId === 'msA' && SW.markRelease(dm, 'pjA', 'msA') === m1 && dm.software.items.length === 1, dm.software.items);
+    check('a milestone that is not in that project (another project\'s, or unknown), or a project that is not there, gives null', SW.markRelease(dm, 'pjA', 'msX') === null && SW.markRelease(dm, 'pjA', 'msNope') === null && SW.markRelease(dm, 'pjNope', 'msA') === null && dm.software.items.length === 1);
+    const ck = SW.addCheck(dm, m1, 'Installs cleanly');
+    aged(dm);
+    check('unmarking sets off: true and returns true, then false the second time (and for an unknown id or a requirement)', SW.unmarkRelease(dm, m1) && item(dm, m1).off === true && item(dm, m1).updatedAt !== T0 && !SW.unmarkRelease(dm, m1) && !SW.unmarkRelease(dm, 'nope') && !SW.unmarkRelease(mk(req('srA')), 'srA'), item(dm, m1));
+    check('releaseOfMilestone finds a release that is on and ignores one that is off', SW.releaseOfMilestone(dm, 'pjA', 'msA') === null && (SW.markRelease(dm, 'pjA', 'msA'), SW.releaseOfMilestone(dm, 'pjA', 'msA').id === m1));
+    check('marking the same milestone again clears off and gives the same id, and its own checks come back', !('off' in item(dm, m1)) && eq(SW.checksOf(item(dm, m1)).map(c => c.id), [ck]) && dm.software.items.length === 1, item(dm, m1));
+    const d31 = world(base('pjA', { milestones: Array.from({ length: 31 }, (_, i) => ms('ms' + i)) }));
+    const first30 = Array.from({ length: 30 }, (_, i) => SW.markRelease(d31, 'pjA', 'ms' + i));
+    check('a 31st release gives "full" and adds nothing, while an existing one still gives its id', first30.every(x => typeof x === 'string') && SW.markRelease(d31, 'pjA', 'ms30') === 'full' && d31.software.items.length === 30 && SW.markRelease(d31, 'pjA', 'ms0') === first30[0]);
+    // The limit counts releases in use: one switched off, or whose milestone has gone, makes room (specs/projects-software.md).
+    SW.unmarkRelease(d31, first30[0]);
+    check('…a release switched off makes room for another', typeof SW.markRelease(d31, 'pjA', 'ms30') === 'string' && SW.markRelease(d31, 'pjA', 'ms0') === 'full', d31.software.items.length);
+    d31.projects.items[0].milestones = d31.projects.items[0].milestones.filter(m => m.id !== 'ms1').concat(ms('ms31'));
+    check('…and so does one whose milestone has gone', typeof SW.markRelease(d31, 'pjA', 'ms31') === 'string');
+    check('a release\'s id comes from its milestone ("sl" and the milestone\'s id), so two devices marking the same milestone make the same record', first30[5] === 'slms5' && SW.releaseIdFor('msA') === 'slmsA' && SW.releaseIdFor('x'.repeat(63)) === null);
+    // Two release items for one milestone (two devices before fixed ids): whatever is in either counts towards it.
+    const d2r = mk(rel('slmsA', 'msA', { checks: [{ id: 'scO', text: 'Backups exported', done: true }] }), rel('slOther', 'msA', { createdAt: T1, updatedAt: T1 }), req('srIn', { releaseId: 'slOther', checks: [{ id: 'scI', text: 'Signs in' }] }), bug('sbIn', { releaseId: 'slOther' }));
+    const c2r = SW.releaseChecklist(d2r, SW.releaseOfMilestone(d2r, 'pjA', 'msA'));
+    check('two release items for one milestone are one release: the fixed id is shown, and its checklist holds what is in either (so it isn\'t falsely ready)', SW.releaseOfMilestone(d2r, 'pjA', 'msA').id === 'slmsA' && eq(c2r.requirements.map(x => x.requirement.id), ['srIn'])
+      && eq(c2r.openBugs.map(b => b.id), ['sbIn']) && c2r.total === 2 && c2r.ticked === 1 && !c2r.ready && SW.releasesOf(d2r, d2r.projects.items[0]).length === 1, c2r);
+    check('…and an item in the other one reads as in that release', SW.releaseById(d2r, d2r.projects.items[0], 'slOther')?.release.id === 'slmsA' && SW.releaseById(d2r, d2r.projects.items[0], 'slNope') === null);
+    const dro = world(pjA());
+    const lC = SW.markRelease(dro, 'pjA', 'msC'), lA = SW.markRelease(dro, 'pjA', 'msA'), lB = SW.markRelease(dro, 'pjA', 'msB');
+    SW.unmarkRelease(dro, lB);
+    dro.software.items.push(rel('slGone', 'msGone'));
+    const pro = dro.projects.items[0];
+    check('releasesOf lists releases in the project\'s milestones order, skipping off ones and those whose milestone is gone', eq(SW.releasesOf(dro, pro).map(x => [x.release.id, x.milestone.id]), [[lA, 'msA'], [lC, 'msC']]), SW.releasesOf(dro, pro).map(x => x.release.id));
+    check('releaseById finds a release of the project, and gives null for an unknown, off or missing id', SW.releaseById(dro, pro, lC).release.id === lC && SW.releaseById(dro, pro, 'slNope') === null && SW.releaseById(dro, pro, lB) === null && SW.releaseById(dro, pro, undefined) === null);
+
+    console.log('  checks');
+    const dc = mk(req('srA'), bug('sbA'));
+    const c1 = SW.addCheck(dc, 'srA', '  Works with a good password  '), c2 = SW.addCheck(dc, 'srA', 'x'.repeat(400));
+    check('a check on a requirement keeps its trimmed text with an id starting sc, and is cut to 300', typeof c1 === 'string' && c1.startsWith('sc') && eq(item(dc, 'srA').checks[0], { id: c1, text: 'Works with a good password' }) && item(dc, 'srA').checks[1].text.length === 300 && c2.startsWith('sc'), item(dc, 'srA').checks);
+    check('a check on a bug gives null and adds nothing; so does a blank text or an unknown id', SW.addCheck(dc, 'sbA', 'Nope') === null && !('checks' in item(dc, 'sbA')) && SW.addCheck(dc, 'srA', '   ') === null && SW.addCheck(dc, 'nope', 'x') === null && item(dc, 'srA').checks.length === 2);
+    const d20 = mk(req('srA'), rel('slA', 'msA'));
+    for (let i = 0; i < 20; i++) SW.addCheck(d20, 'srA', 'Check ' + i);
+    for (let i = 0; i < 30; i++) SW.addCheck(d20, 'slA', 'Own check ' + i);
+    check('a requirement takes 20 checks (a 21st gives null) and a release 30 (a 31st gives null)', item(d20, 'srA').checks.length === 20 && SW.addCheck(d20, 'srA', 'One too many') === null && item(d20, 'srA').checks.length === 20 && item(d20, 'slA').checks.length === 30 && SW.addCheck(d20, 'slA', 'One too many') === null && item(d20, 'slA').checks.length === 30);
+    aged(dc);
+    check('editCheck changes the text and moves updatedAt; a blank, unchanged or unknown one gives false', SW.editCheck(dc, 'srA', c1, '  Works with a good email  ') && item(dc, 'srA').checks[0].text === 'Works with a good email' && item(dc, 'srA').updatedAt !== T0
+      && (aged(dc), !SW.editCheck(dc, 'srA', c1, '   ') && !SW.editCheck(dc, 'srA', c1, 'Works with a good email') && !SW.editCheck(dc, 'srA', 'scNope', 'X') && !SW.editCheck(dc, 'sbA', c1, 'X')) && item(dc, 'srA').updatedAt === T0 && item(dc, 'srA').checks[0].text === 'Works with a good email', item(dc, 'srA').checks);
+    check('ticking sets done and on to the given day, with the proof when given', SW.tickCheck(dc, 'srA', c1, '  Test run 12  ', DAY) && eq(item(dc, 'srA').checks[0], { id: c1, text: 'Works with a good email', done: true, on: DAY, proof: 'Test run 12' }), item(dc, 'srA').checks[0]);
+    check('ticking without proof, or with a blank one, leaves the proof key out; a long proof is cut to 300', SW.tickCheck(dc, 'srA', c2, '   ', DAY) && !('proof' in item(dc, 'srA').checks[1]) && item(dc, 'srA').checks[1].done === true && item(dc, 'srA').checks[1].on === DAY
+      && SW.tickCheck(dc, 'srA', c2) && SW.tickCheck(dc, 'srA', c2, 'p'.repeat(400), DAY) && item(dc, 'srA').checks[1].proof.length === 300, item(dc, 'srA').checks[1]);
+    check('unticking clears done, on and proof', SW.tickCheck(dc, 'srA', c1) && eq(item(dc, 'srA').checks[0], { id: c1, text: 'Works with a good email' }), item(dc, 'srA').checks[0]);
+    check('ticking or unticking a check that is not there, or on a bug, gives false', !SW.tickCheck(dc, 'srA', 'scNope') && !SW.tickCheck(dc, 'sbA', c1) && !SW.tickCheck(dc, 'nope', c1));
+    check('setProof works only on a ticked check: it is false on an unticked one', !SW.setProof(dc, 'srA', c1, 'Anything') && !('proof' in item(dc, 'srA').checks[0]));
+    SW.tickCheck(dc, 'srA', c1, 'First proof', DAY);
+    check('setProof changes the proof of a ticked check, emptying it removes the key, and the same value again gives false', SW.setProof(dc, 'srA', c1, '  Second proof ') && item(dc, 'srA').checks[0].proof === 'Second proof' && !SW.setProof(dc, 'srA', c1, 'Second proof') && SW.setProof(dc, 'srA', c1, '  ') && !('proof' in item(dc, 'srA').checks[0]) && !SW.setProof(dc, 'srA', c1, '') && item(dc, 'srA').checks[0].done === true, item(dc, 'srA').checks[0]);
+    const odd = { text: 'No id' };
+    const dk = mk(req('srA', { checks: [{ id: 'scA', text: 'A' }, 'junk', { id: 'scB', text: 'B' }, odd] }));
+    check('removeCheck removes only that check and keeps what this version cannot read, in place', SW.removeCheck(dk, 'srA', 'scB') && eq(item(dk, 'srA').checks, [{ id: 'scA', text: 'A' }, 'junk', odd]) && SW.removeCheck(dk, 'srA', 'scA') && eq(item(dk, 'srA').checks, ['junk', odd]) && !SW.removeCheck(dk, 'srA', 'scA') && !SW.removeCheck(dk, 'nope', 'scA'), item(dk, 'srA').checks);
+    const dka = mk(req('srA', { checks: [{ id: 'scA', text: 'A' }, 'junk'] }));
+    const added = SW.addCheck(dka, 'srA', 'B');
+    check('adding a check keeps what this version cannot read, where it was', eq(item(dka, 'srA').checks, [{ id: 'scA', text: 'A' }, 'junk', { id: added, text: 'B' }]), item(dka, 'srA').checks);
+
+    console.log('  the release checklist');
+    const dk2 = mk(req('srA'), req('srB'), req('srC'), req('srD'), req('srE'), bug('sbA'), bug('sbB'), bug('sbC'), bug('sbD'), bug('sbE'));
+    const L1 = SW.markRelease(dk2, 'pjA', 'msA'), L2 = SW.markRelease(dk2, 'pjA', 'msB');
+    for (const id of ['srA', 'srB', 'srC']) SW.editRequirement(dk2, id, { releaseId: L1 });
+    SW.editRequirement(dk2, 'srD', { releaseId: L2 });
+    for (const id of ['sbA', 'sbB', 'sbC']) SW.editBug(dk2, id, { releaseId: L1 });
+    SW.editBug(dk2, 'sbD', { releaseId: L2 });
+    SW.editRequirement(dk2, 'srC', { state: 'dropped' });
+    const ca1 = SW.addCheck(dk2, 'srA', 'One'), ca2 = SW.addCheck(dk2, 'srA', 'Two'), cb = SW.addCheck(dk2, 'srB', 'Three'), cc = SW.addCheck(dk2, 'srC', 'Dropped one'), cd = SW.addCheck(dk2, 'srD', 'Other release'), ce = SW.addCheck(dk2, 'srE', 'No release'), co = SW.addCheck(dk2, L1, 'Own');
+    SW.tickCheck(dk2, 'srA', ca1, 'ok', DAY); SW.tickCheck(dk2, L1, co, '', DAY);
+    SW.setBugState(dk2, 'sbB', 'fixed', DAY); SW.setBugState(dk2, 'sbC', 'wontfix', DAY);
+    const cl = SW.releaseChecklist(dk2, item(dk2, L1));
+    check('the checklist holds the release\'s requirements with their checks (not dropped ones, nor those in other releases or none), its own checks, and only the bugs in it that are still open',
+      eq(cl.requirements.map(r => [r.requirement.id, ids(r.checks)]), [['srA', [ca1, ca2]], ['srB', [cb]]]) && eq(ids(cl.own), [co]) && eq(ids(cl.openBugs), ['sbA']), cl);
+    check('total and ticked are counted across the requirements\' checks and the release\'s own', cl.total === 4 && cl.ticked === 2, [cl.total, cl.ticked]);
+    check('not ready while a check is unticked or a bug is open', cl.ready === false);
+    SW.tickCheck(dk2, 'srA', ca2, '', DAY); SW.tickCheck(dk2, 'srB', cb, '', DAY);
+    const clOpen = SW.releaseChecklist(dk2, item(dk2, L1));
+    check('everything ticked but a bug still open is not ready', clOpen.total === 4 && clOpen.ticked === 4 && clOpen.openBugs.length === 1 && clOpen.ready === false, clOpen);
+    SW.setBugState(dk2, 'sbA', 'fixed', DAY);
+    check('ready is true once every check is ticked and no bug in it is open', SW.releaseChecklist(dk2, item(dk2, L1)).ready === true);
+    const clL2 = SW.releaseChecklist(dk2, item(dk2, L2));
+    check('another release holds only its own requirements and bugs (the other release\'s ticks and bugs do not count)', eq(clL2.requirements.map(r => r.requirement.id), ['srD']) && clL2.total === 1 && clL2.ticked === 0 && eq(ids(clL2.openBugs), ['sbD']) && clL2.ready === false, clL2);
+    const dnone = mk(); const Ln = SW.markRelease(dnone, 'pjA', 'msA');
+    check('a release with no checks at all is not ready, even with no bug', SW.releaseChecklist(dnone, item(dnone, Ln)).total === 0 && SW.releaseChecklist(dnone, item(dnone, Ln)).ready === false);
+    const W = (total, ticked, bugs, ready = false) => ({ requirements: [], own: [], openBugs: Array.from({ length: bugs }, (_, i) => bug('sb' + i)), total, ticked, ready });
+    check('the checklist in words: "Ready: every check ticked and no bug open"', SW.checklistWords(W(3, 3, 0, true)) === 'Ready: every check ticked and no bug open', SW.checklistWords(W(3, 3, 0, true)));
+    check('…"No checks yet" with no checks and no bug open', SW.checklistWords(W(0, 0, 0)) === 'No checks yet', SW.checklistWords(W(0, 0, 0)));
+    check('…"3 checks left · 1 bug open"', SW.checklistWords(W(4, 1, 1)) === '3 checks left · 1 bug open', SW.checklistWords(W(4, 1, 1)));
+    check('…"1 check left" (singular, no bug)', SW.checklistWords(W(2, 1, 0)) === '1 check left', SW.checklistWords(W(2, 1, 0)));
+    check('…"1 bug open · no checks yet", and "2 bugs open" with checks all ticked', SW.checklistWords(W(0, 0, 1)) === '1 bug open · no checks yet' && SW.checklistWords(W(3, 3, 2)) === '2 bugs open', [SW.checklistWords(W(0, 0, 1)), SW.checklistWords(W(3, 3, 2))]);
+
+    console.log('  at a glance');
+    const dg = mk(req('srA'), req('srB'), req('srC', { state: 'dropped' }), req('srO', { projectId: 'pjB' }), bug('sbA'), bug('sbB', { state: 'fixed' }), bug('sbC'), bug('sbO', { projectId: 'pjB' }));
+    const gA = SW.addCheck(dg, 'srA', 'One'), gB = SW.addCheck(dg, 'srA', 'Two'); SW.addCheck(dg, 'srB', 'Three'); SW.addCheck(dg, 'srC', 'Dropped'); SW.addCheck(dg, 'srO', 'Other project');
+    SW.tickCheck(dg, 'srA', gA, '', DAY);
+    const gB1 = SW.markRelease(dg, 'pjA', 'msB'), gC1 = SW.markRelease(dg, 'pjA', 'msC'), gA1 = SW.markRelease(dg, 'pjA', 'msA');
+    const pg = () => dg.projects.items[0];
+    const g0 = SW.softwareGlance(dg, pg());
+    check('the glance counts requirements that are not dropped, the checks across them and how many are ticked, and the open bugs (this project\'s only)', g0.requirements === 2 && g0.checks === 3 && g0.ticked === 1 && g0.openBugs === 2, g0);
+    check('next is the first release in milestone order whose milestone is not reached, with its checklist', g0.next.milestone.id === 'msA' && g0.next.release.id === gA1 && eq(g0.next.checklist, SW.releaseChecklist(dg, item(dg, gA1))), g0.next);
+    pg().milestones[0].reachedOn = DAY;
+    check('once that milestone is reached, next moves on to the following release (in milestone order, not the order they were marked)', SW.softwareGlance(dg, pg()).next.release.id === gB1, SW.softwareGlance(dg, pg()).next);
+    SW.unmarkRelease(dg, gB1);
+    check('a release that is off is skipped', SW.softwareGlance(dg, pg()).next.release.id === gC1);
+    pg().milestones[2].reachedOn = DAY;
+    check('next is null when every release\'s milestone is reached, and when there are no releases', SW.softwareGlance(dg, pg()).next === null && SW.softwareGlance(mk(), pjA()).next === null);
+
+    console.log('  links on items');
+    const dli = mk(req('srA'), bug('sbA'), rel('slA', 'msA'));
+    check('toggleLink points a requirement or a bug at one of its project\'s links, then stops on a second call', SW.toggleLink(dli, 'srA', 'rsA') && eq(item(dli, 'srA').linkIds, ['rsA']) && SW.toggleLink(dli, 'srA', 'rsB') && eq(item(dli, 'srA').linkIds, ['rsA', 'rsB']) && SW.toggleLink(dli, 'srA', 'rsA') && eq(item(dli, 'srA').linkIds, ['rsB']) && SW.toggleLink(dli, 'sbA', 'rsA') && eq(item(dli, 'sbA').linkIds, ['rsA']), [item(dli, 'srA'), item(dli, 'sbA')]);
+    check('removing the last link deletes the linkIds key', SW.toggleLink(dli, 'srA', 'rsB') && !('linkIds' in item(dli, 'srA')), item(dli, 'srA'));
+    const dnl = mk(req('srN', { linkIds: [{ newer: 'link' }, 'rsA'] }));
+    check('pointing and unpointing keep a newer MyDay\'s entries in the list, where they were', SW.toggleLink(dnl, 'srN', 'rsB') && eq(item(dnl, 'srN').linkIds, [{ newer: 'link' }, 'rsA', 'rsB'])
+      && SW.toggleLink(dnl, 'srN', 'rsA') && SW.toggleLink(dnl, 'srN', 'rsB') && eq(item(dnl, 'srN').linkIds, [{ newer: 'link' }]), item(dnl, 'srN').linkIds);
+    check('a link that is not the project\'s, a release, an unknown item and an unknown link all give false', !SW.toggleLink(dli, 'srA', 'rsX') && !SW.toggleLink(dli, 'slA', 'rsA') && !SW.toggleLink(dli, 'nope', 'rsA') && !SW.toggleLink(dli, 'srA', 'rsNope') && !('linkIds' in item(dli, 'slA')) && !('linkIds' in item(dli, 'srA')));
+    const d13 = mk(req('srA'));
+    d13.projects.items[0].resources = Array.from({ length: 13 }, (_, i) => rs('rs' + i, 'https://example.com/' + i));
+    const t12 = Array.from({ length: 12 }, (_, i) => SW.toggleLink(d13, 'srA', 'rs' + i));
+    check('a 13th link gives false and the 12 stay', t12.every(Boolean) && !SW.toggleLink(d13, 'srA', 'rs12') && item(d13, 'srA').linkIds.length === 12, item(d13, 'srA').linkIds);
+    const dlo = mk(req('srA', { linkIds: ['rsB', 'rsGone', 7, 'rsA'] }));
+    check('linksOfItem returns only links that still exist, in the project\'s links order', eq(ids(SW.linksOfItem(dlo.projects.items[0], item(dlo, 'srA'))), ['rsA', 'rsB']) && eq(SW.linksOfItem(dlo.projects.items[0], req('srZ')), []), ids(SW.linksOfItem(dlo.projects.items[0], item(dlo, 'srA'))));
+
+    console.log('  removing');
+    const drm = mk(req('srA'), bug('sbA'), rel('slA', 'msA'), req('srO', { projectId: 'pjB' }), bug('sbO', { projectId: 'pjB' }), rel('slO', 'msX', { projectId: 'pjB' }));
+    check('removeItem removes a requirement or a bug', SW.removeItem(drm, 'srA') && SW.removeItem(drm, 'sbA') && eq(ids(drm.software.items), ['slA', 'srO', 'sbO', 'slO']), ids(drm.software.items));
+    check('removeItem returns false for a release or an unknown id, and removes nothing', !SW.removeItem(drm, 'slA') && !SW.removeItem(drm, 'nope') && drm.software.items.length === 4);
+    check('deleteProjectSoftware removes only that project\'s items (true), and false when it has none', SW.deleteProjectSoftware(drm, 'pjA') && eq(ids(drm.software.items), ['srO', 'sbO', 'slO']) && !SW.deleteProjectSoftware(drm, 'pjA'), ids(drm.software.items));
+    const ddp = mk(req('srA'), bug('sbA'), rel('slA', 'msA'), req('srO', { projectId: 'pjB' }));
+    check('deleting a project removes its software items too, and no other project\'s', K.deleteProject(ddp, 'pjA') && eq(ids(ddp.software.items), ['srO']) && ddp.projects.items.length === 1, ids(ddp.software.items));
+
+    console.log('  link kinds');
+    const dk3 = world(pjA()); dk3.projects.items[0].resources = [];
+    const R = (u, kind) => K.addResource(dk3, 'pjA', { url: u, ...(kind ? { kind } : {}) });
+    const kr = R('https://github.com/owner/repo', 'repo'), ki = R('https://github.com/owner/repo/issues/1', 'issue'), kp = R('https://github.com/owner/repo/pull/2', 'pr'), ku = R('https://example.com/a', 'wiki'), kn = R('https://example.com/b');
+    const rsOf = id => dk3.projects.items[0].resources.find(r => r.id === id);
+    check('a link added with kind repo, issue or pr keeps it', rsOf(kr).kind === 'repo' && rsOf(ki).kind === 'issue' && rsOf(kp).kind === 'pr', dk3.projects.items[0].resources);
+    check('an unknown kind is not kept, and a link added with no kind has no kind key', !('kind' in rsOf(ku)) && !('kind' in rsOf(kn)), [rsOf(ku), rsOf(kn)]);
+    const dk4 = world(pjA());
+    dk4.projects.items[0].resources = [rs('rsN', 'https://example.com/n', { title: 'Old', kind: 'newer' })];
+    const rN = () => dk4.projects.items[0].resources[0];
+    const E = (x) => K.editResource(dk4, 'pjA', 'rsN', { url: 'https://example.com/n', ...x });
+    check('editing a link with kind left out keeps the existing kind, including a newer MyDay\'s unknown kind', E({ title: 'New' }) && rN().title === 'New' && rN().kind === 'newer', rN());
+    check('…and the same values with kind left out return false', !E({ title: 'New' }) && rN().kind === 'newer');
+    check('editing with kind null removes it', E({ title: 'New', kind: null }) && !('kind' in rN()) && !E({ title: 'New', kind: null }), rN());
+    check('editing with kind pr sets it, and the same values again return false', E({ title: 'New', kind: 'pr' }) && rN().kind === 'pr' && !E({ title: 'New', kind: 'pr' }) && !E({ title: 'New' }), rN());
+    check('linkKindLabel maps repo, issue and pr to Repository, Issue and Pull request, and anything else to null', K.linkKindLabel('repo') === 'Repository' && K.linkKindLabel('issue') === 'Issue' && K.linkKindLabel('pr') === 'Pull request' && K.linkKindLabel('newer') === null && K.linkKindLabel(undefined) === null && K.linkKindLabel('') === null);
+    for (const [url, want] of [
+      ['https://github.com/owner/repo', 'github.com/owner/repo'], ['https://github.com/owner/repo/issues/12', 'Issue #12 · owner/repo'], ['https://github.com/owner/repo/pull/34', 'Pull request #34 · owner/repo'],
+      ['https://gitlab.com/group/proj/-/issues/5', 'Issue #5 · group/proj'], ['https://gitlab.com/group/proj/-/merge_requests/7', 'Merge request #7 · group/proj'],
+      ['https://www.example.org/some/page', 'example.org'], ['https://github.com/', 'github.com'], ['not a URL', 'not a URL'],
+      // Only where the address says so: not "issues" further down a path, a repository called issues, or GitLab's own pages.
+      ['https://github.com/o/r/blob/main/issues/12', 'github.com/o/r'], ['https://github.com/o/issues/issues/3', 'Issue #3 · o/issues'], ['https://github.com/owner', 'github.com/owner'],
+      ['https://gitlab.com/-/snippets/1', 'gitlab.com'], ['https://gitlab.com/group/sub/proj', 'gitlab.com/group/sub/proj'], ['https://gitlab.com/group/proj/-/issues/x', 'gitlab.com/group/proj']])
+      check(`linkWhere of ${url} reads "${want}"`, K.linkWhere(url) === want, K.linkWhere(url));
+
+    console.log('  kinds of project');
+    const kp0 = t => base('pjK', t === undefined ? {} : { template: t });
+    const tabs = p => TPL.tabsOf(p);
+    check('a general project has the tabs overview, milestones, decisions', eq(tabs(kp0()), ['overview', 'milestones', 'decisions']), tabs(kp0()));
+    check('a business project has overview, model, money, milestones, decisions', eq(tabs(kp0('business')), ['overview', 'model', 'money', 'milestones', 'decisions']), tabs(kp0('business')));
+    check('a case has overview, timeline, evidence, issues', eq(tabs(kp0('case')), ['overview', 'timeline', 'evidence', 'issues']), tabs(kp0('case')));
+    check('a research project has overview, milestones, decisions, research', eq(tabs(kp0('research')), ['overview', 'milestones', 'decisions', 'research']), tabs(kp0('research')));
+    check('a content project has overview, milestones, decisions, videos', eq(tabs(kp0('content')), ['overview', 'milestones', 'decisions', 'videos']), tabs(kp0('content')));
+    check('a software project has overview, requirements, bugs, milestones, decisions', eq(tabs(kp0('software')), ['overview', 'requirements', 'bugs', 'milestones', 'decisions']), tabs(kp0('software')));
+    check('tools research adds the research tab last on any kind (and only once on a research project)', ['business', 'case', 'content', 'software', undefined].every(t => { const p = { ...kp0(t), tools: ['research'] }; const x = tabs(p); return x[x.length - 1] === 'research' && x.filter(y => y === 'research').length === 1 && x.length === tabs(kp0(t)).length + 1; }) && eq(tabs({ ...kp0('research'), tools: ['research'] }), ['overview', 'milestones', 'decisions', 'research']));
+    check('an unknown template from a newer MyDay gets general\'s tabs, and its kind reads as general', eq(tabs(kp0('newer')), ['overview', 'milestones', 'decisions']) && TPL.kindOf(kp0('newer')) === 'general', tabs(kp0('newer')));
+    check('kindOf gives general for no template and for an unknown one, and the kind otherwise', TPL.kindOf(kp0()) === 'general' && TPL.kindOf(kp0('newer')) === 'general' && TPL.kindOf(kp0('software')) === 'software' && TPL.kindOf(kp0('case')) === 'case');
+    check('tabFor gives overview for a tab the project lacks (videos on software, requirements on general), and the tab when it has it', TPL.tabFor(kp0('software'), 'videos') === 'overview' && TPL.tabFor(kp0(), 'requirements') === 'overview' && TPL.tabFor(kp0('software'), 'bugs') === 'bugs' && TPL.tabFor(kp0('software'), 'requirements') === 'requirements' && TPL.tabFor(kp0('content'), 'bugs') === 'overview');
+    check('tabFor keeps compare as compare, and lets a case ask for milestones or decisions', TPL.tabFor(kp0(), 'compare') === 'compare' && TPL.tabFor(kp0('software'), 'compare') === 'compare' && TPL.tabFor(kp0('case'), 'milestones') === 'milestones' && TPL.tabFor(kp0('case'), 'decisions') === 'decisions' && TPL.tabFor(kp0('case'), 'money') === 'overview');
+    check('TAB_ROUTES includes requirements and bugs', TPL.TAB_ROUTES.includes('requirements') && TPL.TAB_ROUTES.includes('bugs'), TPL.TAB_ROUTES);
+    const dw = world(kp0());
+    check('changing general to software with nothing kept says only the new kind', TPL.kindChangeWords(dw, kp0(), 'software') === 'Now a Software project — its requirements and bugs each have a tab, and a milestone can be a release.', TPL.kindChangeWords(dw, kp0(), 'software'));
+    const dws = world(kp0('software')); dws.software.items = [req('srA', { projectId: 'pjK' })];
+    check('changing software with items to general says its requirements, bugs and release checklists are kept', TPL.kindChangeWords(dws, kp0('software'), 'general') === 'Now a general project. Its requirements, bugs and release checklists are kept, out of sight — switch back any time.', TPL.kindChangeWords(dws, kp0('software'), 'general'));
+    check('…software with no items says no kept sentence, and another project\'s items do not count', TPL.kindChangeWords(world(kp0('software')), kp0('software'), 'general') === 'Now a general project.' && (() => { const o = world(kp0('software')); o.software.items = [req('srA', { projectId: 'pjOther' })]; return TPL.kindChangeWords(o, kp0('software'), 'general') === 'Now a general project.'; })());
+    const dwc = world(kp0('content')); dwc.content.items = [{ id: 'cnA', projectId: 'pjK' }];
+    check('changing content with items to general says its ideas and videos are kept; content without items has no kept sentence', TPL.kindChangeWords(dwc, kp0('content'), 'general') === 'Now a general project. Its ideas and videos are kept, out of sight — switch back any time.' && TPL.kindChangeWords(world(kp0('content')), kp0('content'), 'general') === 'Now a general project.', TPL.kindChangeWords(dwc, kp0('content'), 'general'));
+    const pbm = { ...kp0('business'), model: { problem: 'x' } };
+    check('changing business with a model to general says its one page is kept', TPL.kindChangeWords(world(pbm), pbm, 'general') === 'Now a general project. Its one page is kept, out of sight — switch back any time.', TPL.kindChangeWords(world(pbm), pbm, 'general'));
+    const pcs = { ...kp0('case'), case: { events: [] } };
+    check('changing case with a case to general says its timeline, evidence and issues are kept', TPL.kindChangeWords(world(pcs), pcs, 'general') === 'Now a general project. Its timeline, evidence and issues are kept, out of sight — switch back any time.', TPL.kindChangeWords(world(pcs), pcs, 'general'));
+    const dsw = world(kp0()); dsw.software.items = [req('srA', { projectId: 'pjK', checks: [{ id: 'scA', text: 'A', done: true, on: DAY }] }), bug('sbA', { projectId: 'pjK' }), rel('slA', 'msA', { projectId: 'pjK' })];
+    const swBefore = clone(dsw.software);
+    check('changing a project to software and back to general leaves its software items exactly as they were', K.setTemplate(dsw, 'pjK', 'software') && dsw.projects.items[0].template === 'software' && eq(dsw.software, swBefore) && K.setTemplate(dsw, 'pjK', 'general') && !('template' in dsw.projects.items[0]) && eq(dsw.software, swBefore), dsw.software);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

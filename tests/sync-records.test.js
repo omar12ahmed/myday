@@ -84,6 +84,13 @@ const clone = o => JSON.parse(JSON.stringify(o));
     { id: 'amsync00001', title: 'Work in cybersecurity', why: 'A steadier career', links: [{ id: 'alsync00001', kind: 'project', ref: 'pj1' }, { id: 'alsync00002', kind: 'arabic' }],
       steps: [{ id: 'assync00001', text: 'Learn networking', done: true, linkId: 'alsync00002' }, { id: 'assync00002', text: 'Home lab' }], futureBit: { keep: [1] }, createdAt: '2026-10-24T09:00', updatedAt: '2026-10-26T09:00' },
     { id: 'amsyncA0001', title: 'A business in Hargeisa', links: [], steps: [], createdAt: '2026-10-25T09:00', updatedAt: '2026-10-25T09:00' }] };
+  // …and a Software project's items (specs/projects-software.md), made in a scrambled order: a requirement with a ticked check (what proved it, and the day) and an unticked one, in a release, with a link and a newer MyDay's key; a fixed bug with its day and its task; a release that is off; and the project's marked link they point at.
+  raw.projects.items[0].resources = [{ id: 'rssync00001', title: 'The code', url: 'https://github.com/owner/repo', kind: 'repo', addedOn: '2026-10-26' }];
+  raw.software = { items: [
+    { id: 'srsync00001', type: 'requirement', projectId: 'pj1', title: 'Sign in with an email', detail: 'A person can sign in', state: 'agreed', releaseId: 'slsync00001', linkIds: ['rssync00001'],
+      checks: [{ id: 'scsync00001', text: 'A good password signs in', done: true, on: '2026-10-28', proof: 'Test run 12' }, { id: 'scsync00002', text: 'A wrong password is refused' }], futureBit: { keep: [1] }, createdAt: '2026-10-27T09:00', updatedAt: '2026-10-28T09:00' },
+    { id: 'slsync00001', type: 'release', projectId: 'pj1', milestoneId: 'msGone', off: true, checks: [], createdAt: '2026-10-27T08:00', updatedAt: '2026-10-29T09:00' },
+    { id: 'sbsync00001', type: 'bug', projectId: 'pj1', title: 'Crash on save', state: 'fixed', happens: 'It closes', expected: 'It saves', steps: 'Open, save', closedOn: '2026-10-29', taskId: 'tk1', createdAt: '2026-10-27T09:00', updatedAt: '2026-10-29T09:00' }] };
   raw.notes.items[0].projectId = 'pj1';
   Object.assign(raw.notes.items[0], { linkedBy: 'rules', linkWhy: 'van · budget', notProjects: ['pjOld'], private: true }); // 1.13.0
   // An Arabic lesson session (after 1.15.0): first answers, one revealed, a note to self.
@@ -111,7 +118,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['ambition', 'arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['ambition', 'arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'software', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -355,6 +362,29 @@ const clone = o => JSON.parse(JSON.stringify(o));
       ['Why: A steadier career', '1 of 2 steps', '✓ Learn networking', 'Home lab', 'Links: project pj1; arabic']), R.recordLines('ambition:amsync00001', am1));
     check('an ambition with no why, steps or links has no lines', eq(R.recordLines('ambition:amsyncA0001', recs.get('ambition:amsyncA0001')), []), R.recordLines('ambition:amsyncA0001', recs.get('ambition:amsyncA0001')));
     { const gone = clone(data); R.putRecord(gone, 'ambition:amsync00001', null); check('an ambition deleted elsewhere removes it here', gone.ambitions.items.length === 2 && !gone.ambitions.items.some(x => x.id === 'amsync00001')); }
+  }
+
+  console.log('\n[1h] A Software project\'s requirements, bugs and release checklists (specs/projects-software.md)');
+  {
+    const rows = [...recs].filter(([k]) => k.startsWith('software:')), sq = recs.get('software:srsync00001'), sbg = recs.get('software:sbsync00001'), srl = recs.get('software:slsync00001');
+    check('each item is its own "software" record, exactly as written, with a newer MyDay\'s key kept', rows.length === 3 && eq(sq, raw.software.items[0]) && eq(sbg, raw.software.items[2]) && eq(srl, raw.software.items[1]) && eq(sq.futureBit, { keep: [1] }) && sq.checks[0].proof === 'Test run 12' && sq.checks[0].on === '2026-10-28' && sbg.closedOn === '2026-10-29' && srl.off === true, rows.map(([k]) => k));
+    check('an item arrives on another device exactly the same (clean), so its fingerprint doesn\'t change', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, clone(c))) === R.fingerprint(c)), rows.map(([k]) => k));
+    check('…and cleaning it twice gives the same again', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, R.cleanRecord(k, clone(c)))) === R.fingerprint(c)));
+    const back = clone(R.freshState());
+    for (const [k, c] of [...rows].reverse()) R.putRecord(back, k, clone(c));
+    check('put into a new MyDay in reverse, the items come back with every field, ordered by when they were made and then by id', eq(back.software.items.map(x => x.id), ['slsync00001', 'sbsync00001', 'srsync00001'])
+      && eq(back.software.items.map(x => JSON.stringify(x)).sort(), data.software.items.map(x => JSON.stringify(x)).sort()), back.software.items.map(x => x.id));
+    const sums = [R.recordSummary('software:srsync00001', sq), R.recordSummary('software:sbsync00001', sbg), R.recordSummary('software:slsync00001', srl)];
+    check('summaries are "Requirement: <title> · Agreed", "Bug: <title> · Fixed" and "Release checklist"', eq(sums, ['Requirement: Sign in with an email · Agreed', 'Bug: Crash on save · Fixed', 'Release checklist']), sums);
+    check('its label in words is "Software item"', R.recordLabel('software:srsync00001') === 'Software item', R.recordLabel('software:srsync00001'));
+    check('a requirement\'s lines are its detail, the checks count, each check (with "✓ " and what proved it when ticked), that it is in a release, and its links', eq(R.recordLines('software:srsync00001', sq),
+      ['Detail: A person can sign in', '1 of 2 checks ticked', '✓ A good password signs in (Test run 12)', 'A wrong password is refused', 'In a release', '1 link']), R.recordLines('software:srsync00001', sq));
+    check('a bug\'s lines are what happens, what should happen, the steps, when it was fixed and that it has a task', eq(R.recordLines('software:sbsync00001', sbg),
+      ['What happens: It closes', 'What should happen: It saves', 'Steps: Open, save', 'Fixed 2026-10-29', 'Has a task']), R.recordLines('software:sbsync00001', sbg));
+    check('a release that is off says "No longer a release"', eq(R.recordLines('software:slsync00001', srl), ['No longer a release']), R.recordLines('software:slsync00001', srl));
+    { const gone = clone(data); R.putRecord(gone, 'software:srsync00001', null); check('an item deleted elsewhere removes it here', gone.software.items.length === 2 && !gone.software.items.some(x => x.id === 'srsync00001')); }
+    const marked = project(recs, 'pj1', true), keptMarked = data.projects.items.find(p => p.id === 'pj1');
+    check('the project\'s marked link survives clean exactly, with its kind kept', !!marked && eq(marked.resources, keptMarked.resources) && marked.resources[0].kind === 'repo' && R.fingerprint(marked) === R.fingerprint(project(recs, 'pj1')), marked && marked.resources);
   }
 
   console.log('\n[2] What stays on each device');
