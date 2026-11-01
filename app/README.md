@@ -4,9 +4,10 @@
 cybersecurity", "Read Arabic literature" — at the top of the Projects home ("Your ambitions"). Each links, without
 moving anything, the projects and learning that are steps towards it (a project, a Study topic or course, the
 Cybersecurity path, the Arabic route) and keeps its own steps in order. Its page says where each stands in words — a
-project's stage and next step, a course's tasks, the Arabic route's stage and what you'll be able to do. Today then
-says "A step towards “Work in cybersecurity”" under a task from a linked project (in the plan, Due today and From your
-projects) and under a lesson from a linked path; a project's page says it too. Saved data stays schema 5: a new section
+project's stage and next step, a course's tasks and what's next, the Cybersecurity path's lessons and the next one, the
+Arabic route's stage and what you'll be able to do. Today then says "A step towards “Work in cybersecurity”" under a
+task from a linked project (in the plan, Due today and From your projects) and under a lesson from a linked path, topic
+or course (a Cybersecurity lesson copied into Study counts its course and topic); a project's page says it too. Saved data stays schema 5: a new section
 `ambitions`, synced as a new kind `ambition` (migration 20261101120000_sync_ambitions.sql, applied first), which 1.117.0
 keeps unread and its sync ignores (checked with the actual previous release: it leaves an ambition untouched through
 its own rename and deletion of a linked project, and this release then says the link is gone). Going back to 1.117.0
@@ -1575,7 +1576,8 @@ home (cards with what each links and its steps; + An ambition; "One to three is 
 (`#projects/a/<id>`): Edit, Steps, What it links (where each stands, in words, loaded lazily for Arabic and
 Cybersecurity; Link and Unlink; a link whose item is gone says so), Delete (nothing it links is touched). "A step
 towards “…”" under a linked project's tasks on Today (the plan, Due today, From your projects), under Today's Study
-card lessons from a linked path, course or topic, and under a linked project's title. Never sent to AI; display only.
+card lessons from a linked path, course or topic (a Cybersecurity lesson in Study through its module's course and the
+Cybersecurity topic), and under a linked project's title (each named ambition opens its page). Never sent to AI; display only.
 
 **Exploring a while; comparing the options (1.116.0; `specs/projects-exploring.md`):** a project remembers its
 board column and the day it entered it (`columnSince`, set on starting it, on a move into another column — Explore →
