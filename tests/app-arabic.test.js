@@ -712,6 +712,14 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await send('Network.setBlockedURLs', { urls: [] }); await send('Network.setCacheDisabled', { cacheDisabled: false }); await send('Network.setBypassServiceWorker', { bypass: false });
   await fresh('study/arabic/lesson.arabic-technical-demo'); await wait('[data-ar-explainers="1"]', 5000);
   check('…and with the file back, the technical demo lesson has its one explainer', await exists('[data-ar-explainers="1"]'));
+  // Module 28's quotes: the muṣḥaf's exact spelling with its reference and meaning, never voiced, never transliterated.
+  const quote12 = require(require('path').join(process.env.MYDAY_ROOT || require('path').resolve(__dirname, '..'), 'content/teaching/arabic/explainers.json')).lessons['lesson.arabic-quranic-scope'][0].quotes[0];
+  await fresh('study/arabic/lesson.arabic-quranic-scope'); await wait('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]', 5000);
+  await ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]').open = true`); await sleep(300);
+  const quoteInfo = await ev(`(() => { const f = document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"] figure[data-ar-explainer-quote="1:2"]'); if (!f) return null;
+    const ar = f.querySelector('[lang="ar"]'); return { text: ar?.textContent, dir: ar?.dir, caption: f.querySelector('figcaption')?.textContent, play: f.querySelectorAll('[data-action="ar-play"]').length, reading: !!ar?.parentElement?.querySelector('[data-ar-transliteration]') && !!f.querySelector(':scope > [lang="ar"] + [data-ar-transliteration]') }; })()`);
+  check('module 28: a quote shows in the muṣḥaf\'s exact spelling, right to left, with its meaning and "(Qur\'an 1:2)"', !!quoteInfo && quoteInfo.text === quote12.ar && quoteInfo.dir === 'rtl' && (quoteInfo.caption || '').includes(quote12.en) && (quoteInfo.caption || '').includes("(Qur'an 1:2)"), quoteInfo);
+  check('…with no play button and no transliteration of the quote', !!quoteInfo && quoteInfo.play === 0 && !quoteInfo.reading, quoteInfo);
 
   await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
   await go(wvHash); await wait(exSel, 5000);

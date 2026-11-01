@@ -28856,6 +28856,818 @@
     ],
     "phrases_ar": []
    }
+  ],
+  "lesson.arabic-quranic-scope": [
+   {
+    "id": "explainer.arabic-three-kinds-of-study",
+    "title_en": "Three kinds of study: اللُّغَة, التَّفْسِير, التَّجْوِيد",
+    "family_en": "Keeping language study apart from commentary and from recitation",
+    "table": [
+     {
+      "form_en": "language study",
+      "ar": "دِرَاسَةٌ لُغَوِيَّةٌ",
+      "en": "a study of the language"
+     },
+     {
+      "form_en": "commentary",
+      "ar": "التَّفْسِير",
+      "en": "commentary, exegesis"
+     },
+     {
+      "form_en": "recitation",
+      "ar": "التَّجْوِيد",
+      "en": "the rules of recitation"
+     },
+     {
+      "form_en": "the readings",
+      "ar": "الْقِرَاءَات",
+      "en": "the transmitted readings"
+     },
+     {
+      "form_en": "a verse",
+      "ar": "آيَة",
+      "en": "a verse"
+     },
+     {
+      "form_en": "a sūra",
+      "ar": "سُورَة",
+      "en": "a sūra, a chapter"
+     },
+     {
+      "form_en": "a translation of the meanings",
+      "ar": "تَرْجَمَةُ الْمَعَانِي",
+      "en": "a translation of the meanings"
+     }
+    ],
+    "steps": [
+     "Three different things can be studied in a Qur'anic text: its language, its التَّفْسِير, commentary, and its التَّجْوِيد, the rules for reciting it. This module is about the first.",
+     "A grammar point explains how the words relate. Commentary is a separate discipline, with its own sources and teachers.",
+     "A translation is one reading of the meaning, so it's often called تَرْجَمَةُ الْمَعَانِي, a translation of the meanings.",
+     "Recitation is learnt by ear, from a qualified teacher or a trusted recording."
+    ],
+    "examples": [
+     {
+      "ar": "أَدْرُسُ لُغَةَ النَّصِّ لَا تَفْسِيرَهُ.",
+      "en": "I'm studying the text's language, not its commentary.",
+      "words": [
+       {
+        "ar": "أَدْرُسُ",
+        "en": "I study"
+       },
+       {
+        "ar": "لُغَةَ",
+        "en": "the language (of)"
+       },
+       {
+        "ar": "النَّصِّ",
+        "en": "the text"
+       },
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "تَفْسِيرَهُ",
+        "en": "its commentary"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ تَرْجَمَةٌ لِلْمَعَانِي.",
+      "en": "This is a translation of the meanings.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "تَرْجَمَةٌ",
+        "en": "a translation"
+       },
+       {
+        "ar": "لِلْمَعَانِي",
+        "en": "of the meanings"
+       }
+      ]
+     },
+     {
+      "ar": "تَعَلَّمْتُ التَّجْوِيدَ مَعَ مُعَلِّمٍ.",
+      "en": "I learnt the rules of recitation with a teacher.",
+      "words": [
+       {
+        "ar": "تَعَلَّمْتُ",
+        "en": "I learnt"
+       },
+       {
+        "ar": "التَّجْوِيدَ",
+        "en": "the rules of recitation"
+       },
+       {
+        "ar": "مَعَ",
+        "en": "with"
+       },
+       {
+        "ar": "مُعَلِّمٍ",
+        "en": "a teacher"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is a translation called تَرْجَمَةُ الْمَعَانِي, a translation of the meanings?",
+     "a_en": "Because any translation is one reading of the meaning, put into other words. The Arabic text stays the text; a translation is a guide to it."
+    },
+    "selftest": [
+     {
+      "q_en": "What is التَّجْوِيد?",
+      "choices": [
+       "the rules of recitation",
+       "commentary",
+       "grammar"
+      ],
+      "answer": "the rules of recitation",
+      "why_en": "It's learnt by ear, with a teacher."
+     },
+     {
+      "q_en": "What is التَّفْسِير?",
+      "choices": [
+       "commentary",
+       "a translation",
+       "recitation"
+      ],
+      "answer": "commentary",
+      "why_en": "A separate discipline, with its own sources."
+     },
+     {
+      "q_en": "What is a آيَة?",
+      "choices": [
+       "a verse",
+       "a chapter",
+       "a reading"
+      ],
+      "answer": "a verse",
+      "why_en": "A chapter is a سُورَة."
+     }
+    ],
+    "quotes": [
+     {
+      "ar": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+      "ref": "1:2",
+      "en": "All praise is for God, Lord of the worlds.",
+      "note_en": "A language note: الْحَمْدُ ends in -u, so it's the subject. What the verse means more fully is a question for commentary."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-mushaf-spelling",
+      "en": "The muṣḥaf's own spelling, and how it differs from modern spelling."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-uthmani-script": [
+   {
+    "id": "explainer.arabic-mushaf-spelling",
+    "title_en": "The muṣḥaf's spelling: الرَّسْم and الضَّبْط",
+    "family_en": "How the muṣḥaf's spelling differs from modern spelling, and why a quote keeps it",
+    "table": [
+     {
+      "form_en": "the written letters",
+      "ar": "الرَّسْم",
+      "en": "the spelling, the written letters"
+     },
+     {
+      "form_en": "the marks",
+      "ar": "الضَّبْط",
+      "en": "the vowel marks and signs"
+     },
+     {
+      "form_en": "a small alif",
+      "ar": "أَلِفٌ صَغِيرَةٌ",
+      "en": "a small alif, written above a letter"
+     },
+     {
+      "form_en": "the joining hamza",
+      "ar": "هَمْزَةُ الْوَصْلِ",
+      "en": "the joining hamza"
+     },
+     {
+      "form_en": "a pause sign",
+      "ar": "عَلَامَةُ وَقْفٍ",
+      "en": "a pause sign"
+     },
+     {
+      "form_en": "in modern spelling",
+      "ar": "الصَّلَاة",
+      "en": "the prayer"
+     }
+    ],
+    "steps": [
+     "Printed muṣḥafs keep an old الرَّسْم, spelling, with their own الضَّبْط, marks and signs, so many words look different from modern Arabic.",
+     "A small alif above a letter stands for a long ā that modern spelling writes in full. In the first quote, the last word is الْعَالَمِينَ in modern spelling.",
+     "An alif with a small sign on top marks هَمْزَةُ الْوَصْلِ, the joining hamza, which is silent when words run together.",
+     "Some words keep an older spelling: الصَّلَاة is written with a و in the muṣḥaf, as the second quote shows.",
+     "Pause signs and other marks belong to the muṣḥaf's own system: look them up in its guide. Quote the muṣḥaf exactly, and write your own notes in modern spelling."
+    ],
+    "examples": [
+     {
+      "ar": "يُكْتَبُ الْمُصْحَفُ بِالرَّسْمِ الْعُثْمَانِيِّ.",
+      "en": "The muṣḥaf is written in the Uthmani spelling.",
+      "words": [
+       {
+        "ar": "يُكْتَبُ",
+        "en": "is written"
+       },
+       {
+        "ar": "الْمُصْحَفُ",
+        "en": "the muṣḥaf"
+       },
+       {
+        "ar": "بِالرَّسْمِ",
+        "en": "in the spelling"
+       },
+       {
+        "ar": "الْعُثْمَانِيِّ",
+        "en": "Uthmani"
+       }
+      ]
+     },
+     {
+      "ar": "لِكُلِّ عَلَامَةٍ مَعْنًى فِي دَلِيلِ الرُّمُوزِ.",
+      "en": "Each sign has a meaning in the guide to the symbols.",
+      "words": [
+       {
+        "ar": "لِكُلِّ",
+        "en": "for each: \"each … has\""
+       },
+       {
+        "ar": "عَلَامَةٍ",
+        "en": "sign"
+       },
+       {
+        "ar": "مَعْنًى",
+        "en": "a meaning"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "دَلِيلِ",
+        "en": "the guide (to)"
+       },
+       {
+        "ar": "الرُّمُوزِ",
+        "en": "the symbols"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why not modernise the muṣḥaf's spelling when you quote it?",
+     "a_en": "The spelling is part of the text as it has been handed down, and each sign has a meaning in its edition's guide. Quote it exactly, name the edition, and keep your own writing in modern spelling."
+    },
+    "selftest": [
+     {
+      "q_en": "What is الرَّسْم?",
+      "choices": [
+       "the spelling, the written letters",
+       "the recitation",
+       "the commentary"
+      ],
+      "answer": "the spelling, the written letters",
+      "why_en": "The marks and signs are الضَّبْط."
+     },
+     {
+      "q_en": "In the muṣḥaf, what does a small alif above a letter stand for?",
+      "choices": [
+       "a long ā",
+       "a pause",
+       "a doubled letter"
+      ],
+      "answer": "a long ā",
+      "why_en": "Modern spelling writes that ā in full."
+     },
+     {
+      "q_en": "What does الضَّبْط cover?",
+      "choices": [
+       "the vowel marks and signs",
+       "the letters",
+       "the meaning"
+      ],
+      "answer": "the vowel marks and signs",
+      "why_en": "The letters themselves are the رَسْم."
+     }
+    ],
+    "quotes": [
+     {
+      "ar": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+      "ref": "1:2",
+      "en": "All praise is for God, Lord of the worlds.",
+      "note_en": "In modern spelling, the last word is الْعَالَمِينَ, with its long ā written in full."
+     },
+     {
+      "ar": "وَيُقِيمُونَ ٱلصَّلَوٰةَ",
+      "ref": "2:3",
+      "en": "and they keep up the prayer",
+      "note_en": "In modern spelling, the second word is الصَّلَاةَ, with an alif for its long ā."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-morphology-as-an-aid",
+      "en": "Taking a word apart with a morphology annotation."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-quranic-morphology": [
+   {
+    "id": "explainer.arabic-morphology-as-an-aid",
+    "title_en": "Morphology as an aid: prefix, stem and suffix",
+    "family_en": "Reading a morphology annotation: the parts of a written word, and what each tells you",
+    "table": [
+     {
+      "form_en": "morphology",
+      "ar": "الصَّرْف",
+      "en": "morphology"
+     },
+     {
+      "form_en": "syntax",
+      "ar": "النَّحْو",
+      "en": "syntax"
+     },
+     {
+      "form_en": "a prefix",
+      "ar": "سَابِقَة",
+      "en": "a prefix"
+     },
+     {
+      "form_en": "the stem",
+      "ar": "جِذْعُ الْكَلِمَةِ",
+      "en": "the word's stem"
+     },
+     {
+      "form_en": "a suffix",
+      "ar": "لَاحِقَة",
+      "en": "a suffix"
+     },
+     {
+      "form_en": "an attached pronoun",
+      "ar": "ضَمِيرٌ مُتَّصِلٌ",
+      "en": "an attached pronoun"
+     },
+     {
+      "form_en": "the pattern of form X",
+      "ar": "اِسْتَفْعَلَ",
+      "en": "form X: often seeking something"
+     }
+    ],
+    "steps": [
+     "A morphology annotation splits a written word into its parts, and labels each one: person, number, case or mood.",
+     "In the quote's وَإِيَّاكَ, the parts are وَ, and; إِيَّا, which carries a pronoun standing before its verb; and كَ, you.",
+     "نَسْتَعِينُ, we seek help, is a form X verb from ع-و-ن, help, with نَـ, we, as its prefix: the pattern اِسْتَفْعَلَ often means seeking something.",
+     "Read the tag definitions rather than guessing at abbreviations, and note anything you can't explain, to check later."
+    ],
+    "examples": [
+     {
+      "ar": "تَتَكَوَّنُ الْكَلِمَةُ مِنْ سَابِقَةٍ وَجِذْعٍ وَلَاحِقَةٍ.",
+      "en": "The word is made up of a prefix, a stem and a suffix.",
+      "words": [
+       {
+        "ar": "تَتَكَوَّنُ",
+        "en": "is made up"
+       },
+       {
+        "ar": "الْكَلِمَةُ",
+        "en": "the word"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "of"
+       },
+       {
+        "ar": "سَابِقَةٍ",
+        "en": "a prefix"
+       },
+       {
+        "ar": "وَجِذْعٍ",
+        "en": "and a stem"
+       },
+       {
+        "ar": "وَلَاحِقَةٍ",
+        "en": "and a suffix"
+       }
+      ]
+     },
+     {
+      "ar": "اِسْتَعَانَ يُوسُفُ بِصَدِيقِهِ.",
+      "en": "Yūsuf asked his friend for help.",
+      "words": [
+       {
+        "ar": "اِسْتَعَانَ",
+        "en": "sought help"
+       },
+       {
+        "ar": "يُوسُفُ",
+        "en": "Yūsuf"
+       },
+       {
+        "ar": "بِصَدِيقِهِ",
+        "en": "from his friend"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does an annotation split وَإِيَّاكَ into three parts?",
+     "a_en": "Each part does a different job: وَ links it to what comes before, إِيَّا carries the pronoun when it stands before its verb, and كَ says who: you. One dictionary entry wouldn't show that."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a لَاحِقَة?",
+      "choices": [
+       "a suffix",
+       "a prefix",
+       "a stem"
+      ],
+      "answer": "a suffix",
+      "why_en": "A prefix is a سَابِقَة."
+     },
+     {
+      "q_en": "In نَسْتَعِينُ, what does نَـ tell you?",
+      "choices": [
+       "we",
+       "you",
+       "they"
+      ],
+      "answer": "we",
+      "why_en": "It's the prefix of a present verb for \"we\"."
+     },
+     {
+      "q_en": "What does the pattern اِسْتَفْعَلَ often add?",
+      "choices": [
+       "seeking something",
+       "doing it to each other",
+       "having it done to you"
+      ],
+      "answer": "seeking something",
+      "why_en": "Form X, as in seeking help."
+     }
+    ],
+    "quotes": [
+     {
+      "ar": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "ref": "1:5",
+      "en": "You alone we worship, and You alone we ask for help.",
+      "note_en": "A language note: إِيَّاكَ, you, comes before its verb, and نَسْتَعِينُ is form X of ع-و-ن."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-meaning-in-context",
+      "en": "Reading a word inside its clause and its passage."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-quranic-context": [
+   {
+    "id": "explainer.arabic-meaning-in-context",
+    "title_en": "Meaning in context: the pronoun, the particle, the passage",
+    "family_en": "Reading a word inside its clause and passage, and comparing translations",
+    "table": [
+     {
+      "form_en": "context",
+      "ar": "السِّيَاق",
+      "en": "context"
+     },
+     {
+      "form_en": "the pronoun refers to",
+      "ar": "يَعُودُ الضَّمِيرُ عَلَى",
+      "en": "the pronoun refers to"
+     },
+     {
+      "form_en": "the relative pronoun",
+      "ar": "الِاسْمُ الْمَوْصُولُ",
+      "en": "the relative pronoun"
+     },
+     {
+      "form_en": "a particle",
+      "ar": "حَرْف",
+      "en": "a particle"
+     },
+     {
+      "form_en": "a translator's choice",
+      "ar": "اِخْتِيَارُ الْمُتَرْجِمِ",
+      "en": "a translator's choice"
+     },
+     {
+      "form_en": "commentary",
+      "ar": "التَّفْسِير",
+      "en": "commentary"
+     }
+    ],
+    "steps": [
+     "Read a word inside its clause and its passage before you draw anything wider from it.",
+     "Find what each pronoun refers to: in the quote, the كَ of رَبِّكَ, your Lord, is the one addressed, and الَّذِي, who, refers back to رَبّ.",
+     "Compare two translations: where their wording differs, look at the Arabic relationship first, then name the difference as a translator's choice.",
+     "A grammatical possibility isn't automatically the intended meaning: for questions of interpretation, go to qualified commentary."
+    ],
+    "examples": [
+     {
+      "ar": "اِخْتَلَفَتِ التَّرْجَمَتَانِ فِي كَلِمَةٍ وَاحِدَةٍ.",
+      "en": "The two translations differed over one word.",
+      "words": [
+       {
+        "ar": "اِخْتَلَفَتِ",
+        "en": "differed (-i before the next word)"
+       },
+       {
+        "ar": "التَّرْجَمَتَانِ",
+        "en": "the two translations"
+       },
+       {
+        "ar": "فِي",
+        "en": "over"
+       },
+       {
+        "ar": "كَلِمَةٍ",
+        "en": "a word"
+       },
+       {
+        "ar": "وَاحِدَةٍ",
+        "en": "one"
+       }
+      ]
+     },
+     {
+      "ar": "يَتَّضِحُ الْمَعْنَى مِنَ السِّيَاقِ.",
+      "en": "The meaning becomes clear from the context.",
+      "words": [
+       {
+        "ar": "يَتَّضِحُ",
+        "en": "becomes clear"
+       },
+       {
+        "ar": "الْمَعْنَى",
+        "en": "the meaning"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "from (-a before the next word)"
+       },
+       {
+        "ar": "السِّيَاقِ",
+        "en": "the context"
+       }
+      ]
+     },
+     {
+      "ar": "رَجَعْتُ إِلَى التَّفْسِيرِ فِي هَذِهِ الْمَسْأَلَةِ.",
+      "en": "I turned to the commentary on this question.",
+      "words": [
+       {
+        "ar": "رَجَعْتُ",
+        "en": "I turned, I went back"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "التَّفْسِيرِ",
+        "en": "the commentary"
+       },
+       {
+        "ar": "فِي",
+        "en": "on"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْمَسْأَلَةِ",
+        "en": "question, matter"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why compare translations, rather than pick one?",
+     "a_en": "Each translator makes choices the English needs, and one English word can't carry every shade of the Arabic. Comparing them shows where the choices lie, and the Arabic shows what they're choosing between."
+    },
+    "selftest": [
+     {
+      "q_en": "What is السِّيَاق?",
+      "choices": [
+       "the context",
+       "the commentary",
+       "the translation"
+      ],
+      "answer": "the context",
+      "why_en": "The clause and the passage around a word."
+     },
+     {
+      "q_en": "In رَبِّكَ, who does كَ refer to?",
+      "choices": [
+       "the one addressed",
+       "the speaker",
+       "someone not present"
+      ],
+      "answer": "the one addressed",
+      "why_en": "كَ is \"you\", to one man."
+     },
+     {
+      "q_en": "Two translations word a phrase differently. What do you look at first?",
+      "choices": [
+       "the Arabic relationship",
+       "the shorter translation",
+       "which one sounds better"
+      ],
+      "answer": "the Arabic relationship",
+      "why_en": "Then name the difference as a translator's choice."
+     }
+    ],
+    "quotes": [
+     {
+      "ar": "ٱقْرَأْ بِٱسْمِ رَبِّكَ ٱلَّذِى خَلَقَ",
+      "ref": "96:1",
+      "en": "Read in the name of your Lord who created.",
+      "note_en": "A language note: اِقْرَأْ is a command to one person, and the pronoun in رَبِّكَ addresses that person."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-passage-study",
+      "en": "Putting it together in a sourced study of a short passage."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-quranic-reading-project": [
+   {
+    "id": "explainer.arabic-passage-study",
+    "title_en": "A sourced passage study: الْمُصْحَف, الْمَرَاجِع, حُدُودُ الدِّرَاسَةِ",
+    "family_en": "The words for a study's sources, scope and limits",
+    "table": [
+     {
+      "form_en": "a muṣḥaf",
+      "ar": "مُصْحَف",
+      "en": "a printed copy of the Qur'an"
+     },
+     {
+      "form_en": "a transmitted reading",
+      "ar": "رِوَايَة",
+      "en": "a transmitted reading"
+     },
+     {
+      "form_en": "the edition",
+      "ar": "الطَّبْعَة",
+      "en": "the edition"
+     },
+     {
+      "form_en": "the references",
+      "ar": "الْمَرَاجِع",
+      "en": "the references"
+     },
+     {
+      "form_en": "the scope",
+      "ar": "النِّطَاق",
+      "en": "the scope"
+     },
+     {
+      "form_en": "the limits",
+      "ar": "حُدُودُ الدِّرَاسَةِ",
+      "en": "the study's limits"
+     },
+     {
+      "form_en": "an open question",
+      "ar": "مَسْأَلَةٌ مَفْتُوحَةٌ",
+      "en": "an open question"
+     }
+    ],
+    "steps": [
+     "State the study's purpose and its النِّطَاق, its scope: a few verses, studied as language.",
+     "Name the مُصْحَف, the printed edition, and the رِوَايَة, the transmitted reading, it follows, and check every quote against it.",
+     "For each word, give its reference, its form and its analysis, with the source of that analysis. Mark your own analysis as yours.",
+     "End with حُدُودُ الدِّرَاسَةِ, the study's limits, and any مَسْأَلَةٌ مَفْتُوحَةٌ, open question: what the study doesn't settle."
+    ],
+    "examples": [
+     {
+      "ar": "اِعْتَمَدْتُ عَلَى طَبْعَةٍ مَعْرُوفَةٍ مِنَ الْمُصْحَفِ.",
+      "en": "I relied on a well-known printed edition of the Qur'an.",
+      "words": [
+       {
+        "ar": "اِعْتَمَدْتُ",
+        "en": "I relied"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "طَبْعَةٍ",
+        "en": "an edition"
+       },
+       {
+        "ar": "مَعْرُوفَةٍ",
+        "en": "well-known"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "of (-a before the next word)"
+       },
+       {
+        "ar": "الْمُصْحَفِ",
+        "en": "the muṣḥaf"
+       }
+      ]
+     },
+     {
+      "ar": "ذَكَرْتُ مَصْدَرَ كُلِّ تَحْلِيلٍ.",
+      "en": "I named the source of each analysis.",
+      "words": [
+       {
+        "ar": "ذَكَرْتُ",
+        "en": "I named, I mentioned"
+       },
+       {
+        "ar": "مَصْدَرَ",
+        "en": "the source (of)"
+       },
+       {
+        "ar": "كُلِّ",
+        "en": "each"
+       },
+       {
+        "ar": "تَحْلِيلٍ",
+        "en": "analysis"
+       }
+      ]
+     },
+     {
+      "ar": "بَقِيَتْ مَسْأَلَةٌ مَفْتُوحَةٌ.",
+      "en": "One question remains open.",
+      "words": [
+       {
+        "ar": "بَقِيَتْ",
+        "en": "remained"
+       },
+       {
+        "ar": "مَسْأَلَةٌ",
+        "en": "a question"
+       },
+       {
+        "ar": "مَفْتُوحَةٌ",
+        "en": "open"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why name the edition and the reading?",
+     "a_en": "Printed copies follow a transmitted reading, and editions can differ in their signs. Naming them lets someone else check every quote against the same text."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a مُصْحَف?",
+      "choices": [
+       "a printed copy of the Qur'an",
+       "a commentary",
+       "a dictionary"
+      ],
+      "answer": "a printed copy of the Qur'an",
+      "why_en": "The text is quoted from one, by edition."
+     },
+     {
+      "q_en": "What does النِّطَاق describe?",
+      "choices": [
+       "the study's scope",
+       "its references",
+       "its edition"
+      ],
+      "answer": "the study's scope",
+      "why_en": "What the study covers, and so what it leaves out."
+     },
+     {
+      "q_en": "What goes with each word you analyse?",
+      "choices": [
+       "its reference, and the source of the analysis",
+       "nothing more",
+       "only its translation"
+      ],
+      "answer": "its reference, and the source of the analysis",
+      "why_en": "So someone else can check it."
+     }
+    ],
+    "phrases_ar": []
+   }
   ]
  }
 }
