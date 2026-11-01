@@ -49,6 +49,10 @@ import { setFocusMode, useFocusMode } from '../shell/focusMode';
 import { useSayings } from '../shell/sayingsMode';
 import { todayPlace } from '../data/sayings';
 import { Saying } from '../components/Saying';
+import { markOffer, sayNotNow, startOfferTask, todaysOffer } from '../data/offers';
+import { noticed } from '../data/patterns/notice';
+import { setStartOffers } from '../data/patterns/saved';
+import { StartOfferCard } from './StartOfferCard';
 
 // The Today section. Saved data comes in as `data`; everything else here (an open proposal, the
 // evening check-in, the commitment form…) is kept only while the screen is open, as in the current
@@ -100,10 +104,6 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const [entering, setEntering] = useState(false);
   if (mode !== shownMode) { setShownMode(mode); setEntering(motionAllowed); }
 
-  // Remember that the nudge was shown today, so it isn't shown again.
-  useEffect(() => {
-    if (nudge.visible) update(dr => { if (dr.nudge.lastShownOn === k) return false; dr.nudge.lastShownOn = k; });
-  }, [nudge.visible, k]);
 
   // A timer left over from another day, or for a task that's gone or done, is cleared.
   useEffect(() => {
@@ -273,6 +273,19 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
 
   // ---------- Layout ----------
   const showNudge = nudge.visible && nudgeEligible(data, k);
+  // One unprompted offer today, at most (data/offers.ts; the owner's choices of 1 Nov 2026): a task that keeps moving, the
+  // learning nudge, or what MyDay noticed — and none the rest of a day you said "Not now", or the day after.
+  const startTask = canSave ? startOfferTask(data, k) : null;
+  const offer = todaysOffer(data.patterns.prefs, k, { start: !!startTask, nudge: showNudge, noticed: noticed(data, k).fresh.length > 0 });
+  // What's shown is remembered: today's offer (so nothing else comes today), and the nudge's own once a day.
+  useEffect(() => {
+    if (!offer || !canSave) return;
+    update(dr => { let changed = markOffer(dr.patterns.prefs, k, offer); if (offer === 'nudge' && dr.nudge.lastShownOn !== k) { dr.nudge.lastShownOn = k; changed = true; } return changed ? undefined : false; });
+  }, [offer, k, canSave]);
+  const notNow = () => update(dr => (sayNotNow(dr.patterns.prefs, k) ? undefined : false));
+  function noMoreStartOffers() {
+    if (update(dr => (setStartOffers(dr.patterns, false) ? undefined : false))) toast('No more offers to help you start. Switch them back on in What MyDay has noticed.');
+  }
   const proposalCard = proposal && <ProposalCard p={proposal} data={data} animate={animateProposal} act={act} />;
   const context = (
     <ContextCard data={data} k={k} open={contextOpen} onOpenChange={setContextOpen} form={form} setForm={setForm}
@@ -363,7 +376,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', !currentStudy && studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
         {slot('order-4', proposalCard)}
-        {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}
+        {slot('order-4', offer === 'noticed' && <NoticedLink data={data} k={k} />, 'slot-noticed')}
       </>
     );
   } else {
@@ -387,7 +400,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-3', dailyCard, 'slot-daily')}
         {slot('order-3', !currentStudy && studyCard, 'slot-study')}
         {slot('order-4', yesterdayOpen && <YesterdayCard onOpen={() => { setView('evening'); setEveningKey(shift(k, -1)); }} />)}
-        {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}
+        {slot('order-4', offer === 'noticed' && <NoticedLink data={data} k={k} />, 'slot-noticed')}
       </>
     );
   }
@@ -415,8 +428,9 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         </div>
       )}
       <div className="today-main contents lg:block lg:min-w-0">
-        {slot('order-0', showNudge && view !== 'edit' && (
-          <NudgeCard day={d} choosing={nudge.choosing} onShrink={shrink} onSwap={uid => swapLearning(uid)} onAdd={() => swapLearning(null)} onDismiss={hideNudge} />
+        {slot('order-0', offer === 'start' && startTask && view !== 'edit' && <StartOfferCard t={startTask} onNotNow={notNow} onNever={noMoreStartOffers} />)}
+        {slot('order-0', showNudge && offer === 'nudge' && view !== 'edit' && (
+          <NudgeCard day={d} choosing={nudge.choosing} onShrink={shrink} onSwap={uid => swapLearning(uid)} onAdd={() => swapLearning(null)} onDismiss={() => { hideNudge(); notNow(); }} />
         ))}
         {main}
       </div>

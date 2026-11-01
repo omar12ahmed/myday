@@ -253,11 +253,13 @@ export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayK
 }
 
 // ---------- A task that keeps moving ----------
-// Stuck: moved later 3 times or more, or a week past its date — unless you said what's in the way in the last week.
+// Stuck: moved later twice or more (STUCK_MOVES; 3 before 1.121.0, the owner's choice of 1 Nov 2026), or a week past its
+// date — unless you said what's in the way in the last week.
+export const STUCK_MOVES = 2;
 export function isStuck(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): boolean {
   if (isDone(data, t) || t.letGoOn || inQueue(data, t) || t.waiting || startsAfter(data, t).length) return false; // waiting, or starting after another task, isn't being stuck
   if (t.blockers.some(b => b.on > shift(k, -7))) return false;
-  return t.postponed >= 3 || (!!t.due && t.due <= shift(k, -7));
+  return t.postponed >= STUCK_MOVES || (!!t.due && t.due <= shift(k, -7));
 }
 // Your next day without work (from the Calendar), or the coming weekend if there's no rota.
 export function nextDayOff(data: MyDayData, k: DateKey = todayKey()): { date: DateKey; label: string } {

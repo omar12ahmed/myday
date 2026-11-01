@@ -56,8 +56,23 @@ An unknown `kind` from a newer MyDay is kept as it is and counted as "Something 
 What MyDay has noticed counts each new answer on its own ("What usually gets in the way: 'I want it perfect'"), with a
 tip for what MyDay does then.
 
+## 5. Offers on evidence, under one attention budget (step 2)
+
+The owner's choices (1 Nov 2026, about 03:10 UTC):
+- **When:** a task that keeps moving — **moved twice** (the Stuck card's threshold changes from 3 to 2 as well:
+  `STUCK_MOVES`, used by the Stuck card, Needs you and Your week), or a week past its date — with nothing said about it in
+  the last week (`isStuck`). The most moved first.
+- **How:** a card at the top of Today: "You've moved 'Renew passport' twice. Want an easier way in?" — **Help me start**
+  (its page, the card open) · **Not now** · **Don't suggest this again** (switched back on in Your preferences: "Offers to
+  help you start a task").
+- **One attention budget for Today's unprompted lines** (`data/offers.ts`): the start offer, the learning nudge and the
+  "newly noticed" line share **at most one a day**. In that order when more than one applies; once one has shown today
+  it's the only one, and **"Not now"** (the nudge's "Not today" too) means none for the rest of that day or the next.
+  Projects' Needs you and Worth a look are pages you open, so they aren't part of it.
+- **Kept with your preferences** (synced; older versions keep them, as the loader keeps unknown preferences): today's
+  offer (`offerOn`), the last "Not now" (`notNowOn`) and start offers off (`startOffers: false`). Never sent to AI.
+
 ## 4. Not in this step
 
-- Offers on evidence and one attention budget across MyDay (§10 step 2).
 - Learning which strategies help, "started", and fading (step 3).
 - Opening a course lesson from a study task (Study's own cards already do).

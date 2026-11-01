@@ -6,7 +6,7 @@ import { BackLink, Eyebrow, Note } from '../components/parts';
 import { Why } from '../components/Why';
 import { shortDate, todayKey } from '../data/dates';
 import { noticed, type Pattern, type Shown } from '../data/patterns/notice';
-import { answerAskOffer, answerPattern, ASK_QUESTIONS_MOST, CATEGORIES, forgetAnswer, forgetLearned, MINUTE_CHOICES, NAME_MAX, setAskQuestions, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
+import { answerAskOffer, answerPattern, ASK_QUESTIONS_MOST, CATEGORIES, forgetAnswer, forgetLearned, MINUTE_CHOICES, NAME_MAX, setAskQuestions, setMaxMinutes, setMaxTasks, setName, setStartOffers } from '../data/patterns/saved';
 import { useState } from 'react';
 import { AI_MODE } from '../ai/request';
 import { CAT_LABEL } from '../data/plan';
@@ -154,6 +154,15 @@ function PrefsCard({ data }: { data: MyDayData }) {
           <option value={ASK_QUESTIONS_MOST}>Up to {ASK_QUESTIONS_MOST} (the usual)</option>
         </Select>
       </Field>}
+      {/* Offers to help you start (1.121.0): on Today, one task that keeps moving; Today shows one unprompted offer a day at most. */}
+      <Field label="Offers to help you start a task" htmlFor="prefStartOffers" className="mt-4">
+        <Select id="prefStartOffers" value={prefs.startOffers === false ? 'off' : 'on'} onChange={e => {
+          if (update(d => (setStartOffers(d.patterns, e.target.value === 'on') ? undefined : false))) toast('Saved.');
+        }}>
+          <option value="on">On Today, when a task keeps moving (the usual)</option>
+          <option value="off">Off</option>
+        </Select>
+      </Field>
       <Note className="mb-0 mt-3">Shorter tasks keep how long they were, so the plan shows e.g. "25 min (shortened from 60)". Fewer tasks never means more: your energy's limit still applies.</Note>
     </Card>
   );

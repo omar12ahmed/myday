@@ -54,6 +54,11 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
   if (isDateKey(prefs.askAsked)) out.prefs.askAsked = prefs.askAsked; else delete out.prefs.askAsked; // …and when MyDay asked you, once
   // Questions before Ask MyDay offers something (1.113.0): 1–5, kept only when set (absent means 5).
   if (Number.isInteger(prefs.askQuestions) && (prefs.askQuestions as number) >= 1 && (prefs.askQuestions as number) <= ASK_QUESTIONS_MOST) out.prefs.askQuestions = prefs.askQuestions as number; else delete out.prefs.askQuestions;
+  // Today's one unprompted offer (1.121.0, data/offers.ts): today's, your last "Not now", and start offers off.
+  const offerOn = prefs.offerOn as { on?: unknown; kind?: unknown } | undefined;
+  if (offerOn && typeof offerOn === 'object' && isDateKey(offerOn.on) && typeof offerOn.kind === 'string' && offerOn.kind) out.prefs.offerOn = { on: offerOn.on, kind: offerOn.kind }; else delete out.prefs.offerOn;
+  if (isDateKey(prefs.notNowOn)) out.prefs.notNowOn = prefs.notNowOn; else delete out.prefs.notNowOn;
+  if (prefs.startOffers === false) out.prefs.startOffers = false; else delete out.prefs.startOffers;
   // What you did with Ask MyDay's suggestions (1.108.0): kept only when there are some, so a device that never counted
   // saves exactly as before; one that can't be read is counted, never dropped silently.
   if (Array.isArray(raw.askSeen)) {
@@ -133,6 +138,12 @@ export function forgetLearned(d: PatternsData): boolean {
 }
 // How many questions Ask MyDay may ask to help you think before it offers something (1–5); null goes back to the usual 5.
 export const ASK_QUESTIONS_MOST = 5;
+// Start offers on Today (1.121.0): on is the usual (nothing saved); off keeps `startOffers: false`.
+export function setStartOffers(d: PatternsData, on: boolean): boolean {
+  if (on === (d.prefs.startOffers !== false)) return false;
+  if (on) delete d.prefs.startOffers; else d.prefs.startOffers = false;
+  return true;
+}
 export function setAskQuestions(d: PatternsData, n: number | null): boolean {
   if (n !== null && !Number.isFinite(n)) return false;
   const v = n === null || n === ASK_QUESTIONS_MOST ? undefined : Math.min(ASK_QUESTIONS_MOST, Math.max(1, Math.round(n)));

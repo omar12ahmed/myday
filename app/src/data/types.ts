@@ -659,7 +659,10 @@ export interface PatternsData {
   // askQuestions: how many questions Ask MyDay may ask to help you think before it offers something (1–5; absent = 5)
   prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true; askUse?: true; askAsked?: DateKey; askQuestions?: number;
     // The weekly review (1.37.0): your review day (0 Sunday … 6; absent = Sunday), and the review day you've done or put off.
-    reviewDay?: number; reviewed?: DateKey; reviewHidden?: DateKey; [other: string]: unknown };
+    reviewDay?: number; reviewed?: DateKey; reviewHidden?: DateKey;
+    // Today's one unprompted offer (1.121.0, data/offers.ts): which one it is today, the day you last said "Not now" to
+    // one, and start offers switched off ("Don't suggest this again"; absent = on).
+    offerOn?: { on: DateKey; kind: string }; notNowOn?: DateKey; startOffers?: false; [other: string]: unknown };
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
   askSeen?: AskSeen[];                    // what you did with Ask MyDay's suggestions, newest last (at most 200, the last 8 weeks)
   [other: string]: unknown;

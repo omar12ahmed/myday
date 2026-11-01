@@ -16,7 +16,7 @@ import { experimentsHome, testsDone } from './experiments';
 import { checkBackDue, projectChaseTask } from './projectWaiting';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, heldBack, projectsInOrder, projectTasks, stillOpen } from './projects';
-import { chaseTask, deadlineLabel, isStuck } from './tasks';
+import { chaseTask, deadlineLabel, isStuck, STUCK_MOVES } from './tasks';
 import type { DateKey, MyDayData, Project, TaskItem } from './types';
 
 const days = (a: DateKey, b: DateKey) => Math.round((parseKey(b).getTime() - parseKey(a).getTime()) / 86_400_000);
@@ -70,7 +70,7 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
     for (const t of projectTasks(data, p).open.filter(t => isStuck(data, t, k))) {
       seen.add(t.id);
       add({ key: `stuck:${t.id}`, reason: 'stuck', title: t.title, href: taskHref(t), when: t.due ?? t.createdAt.slice(0, 10),
-        why: t.postponed >= 3 ? `moved ${t.postponed} times — something in the way?` : `planned for ${shortDate(t.due!)} — something in the way?` });
+        why: t.postponed >= STUCK_MOVES ? `moved ${t.postponed} times — something in the way?` : `planned for ${shortDate(t.due!)} — something in the way?` });
     }
     // The project's own wait, from its check-back day: "Still waiting on Priya" · "check back was Wed 4 Nov".
     if (checkBackDue(p, k)) add({ key: `pwait:${p.id}`, reason: 'waiting', title: `Still waiting on ${p.waiting!.on}`, href: `#projects/p/${enc(p.id)}`, when: p.waiting!.until!,

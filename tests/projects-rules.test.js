@@ -978,14 +978,14 @@ const clone = o => JSON.parse(JSON.stringify(o));
     ];
     wt.tasks.items = [
       TK('s1', null, { title: 'Pay council tax', postponed: 3 }), TK('s2', null, { title: 'Renew passport', due: '2026-10-10' }),
-      TK('s3', null, { title: 'Due only 6 days ago', due: '2026-10-12' }), TK('s4', null, { title: 'Moved twice', postponed: 2 }),
+      TK('s3', null, { title: 'Due only 6 days ago', due: '2026-10-12' }), TK('s4', null, { title: 'Moved once', postponed: 1 }),
       TK('s5', null, { title: 'Let go of', postponed: 5, letGoOn: '2026-10-10' }), TK('s6', null, { title: 'Ticked', postponed: 5, done: true, doneOn: '2026-10-16' }),
       TK('f1', 'pjB', { title: 'Find out: Crews would pay', done: true, doneOn: '2026-10-16' }),
     ];
     const wa = K.whatsWaiting(wt, k, 10);
     check('a task that has moved 3 times says so', wa[0].kind === 'stuck' && wa[0].text === '“Pay council tax” has moved 3 times', wa[0]);
     check('a task a week past due says when it was planned for', wa[1].kind === 'stuck' && wa[1].text === `“Renew passport” was planned for ${K.shortDate('2026-10-10')}`, wa[1]);
-    check('a task moved twice, one only 6 days past due, one let go of and one ticked are not stuck', wa.filter(w => w.kind === 'stuck').length === 2, wa.map(w => w.text));
+    check('a task moved once (stuck from twice since 1.121.0), one only 6 days past due, one let go of and one ticked are not stuck', wa.filter(w => w.kind === 'stuck').length === 2, wa.map(w => w.text));
     check('an active project quiet for 4 weeks says so (and a paused one is not mentioned)', wa[2].kind === 'quiet' && wa[2].text === '“Allotment plan” has been quiet for 4 weeks' && !wa.some(w => w.text.includes('Paused thing')), wa.map(w => w.text));
     check('an open decision 14 or more days old is mentioned with its project (not a newer one or a decided one)', wa[3].kind === 'decision' && wa[3].text === '“Which roaster?” is still open (Coffee subscription)' && wa.filter(w => w.kind === 'decision').length === 1, wa.map(w => w.text));
     check('a business idea whose Find out task is done asks what you found', wa[4].kind === 'found' && wa[4].text === 'Van hire idea: a Find out task is done — what did you find?', wa[4]);

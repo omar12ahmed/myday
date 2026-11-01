@@ -9,7 +9,7 @@ import { Choice, Choices, LinkButton, Note } from '../components/parts';
 import { shortDate, todayKey } from '../data/dates';
 import { BLOCKER_LABEL } from '../data/patterns/notice';
 import { update } from '../data/storage';
-import { nextDayOff, noteBlocker, setWaiting, TASK_LIMITS, unstick } from '../data/tasks';
+import { nextDayOff, noteBlocker, setWaiting, STUCK_MOVES, TASK_LIMITS, unstick } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { Blocker, DateKey, MyDayData, TaskItem } from '../data/types';
 
@@ -27,7 +27,7 @@ export function StuckCard({ data, t, stuck, onHandOver }: { data: MyDayData; t: 
   const [text, setText] = useState(''), [until, setUntil] = useState('');
   const k = todayKey(), off = nextDayOff(data, k);
   const intro = !stuck ? null
-    : t.postponed >= 3 ? `This one has moved ${t.postponed} times.` : t.due ? `This one was planned for ${shortDate(t.due)}.` : null;
+    : t.postponed >= STUCK_MOVES ? `This one has moved ${t.postponed} times.` : t.due ? `This one was planned for ${shortDate(t.due)}.` : null;
   function go() {
     if (!reason) return;
     if (reason === 'waiting') {
