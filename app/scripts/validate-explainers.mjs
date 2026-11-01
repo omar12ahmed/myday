@@ -118,11 +118,20 @@ const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course
 const QURANIC = 'module.arabic-quranic';
 // A sūra (1 to 114) and verse, or a forward range of verses: 1:2, 2:255-256.
 const goodRef = r => { const m = typeof r === 'string' && r.match(/^(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?$/); return !!m && +m[1] >= 1 && +m[1] <= 114 && +m[2] >= 1 && (m[3] === undefined || +m[3] > +m[2]); };
-// A quote in the muṣḥaf's spelling, made comparable with modern spelling for the secrets check: ٱ is ا, the tatweel and
-// the small muṣḥaf signs go, and a dagger alif is tried both as ا (الْعَالَمِينَ) and as nothing (هَذَا). ى and ي are
-// compared alike, on both sides.
-const quoteForms = s => ['\u0627', ''].map(alif => s.replace(/\u0671/g, '\u0627').replace(/[\u0640\u06D6-\u06ED\u0653-\u0655]/g, '').replace(/\u0670/g, alif));
+// A quote in the muṣḥaf's spelling, made comparable with modern spelling for the secrets check, word by word: ٱ is ا,
+// the tatweel and the small muṣḥaf signs go, a dagger alif may be ا (الْعَالَمِينَ) or nothing (هَذَا), ءا may be آ, and ى and
+// ي are alike (on both sides). A secret matches if each of its words is one of the forms of the quote's word there.
 const sameYa = s => s.replace(/\u0649/g, '\u064A');
+const quoteWordForms = w => {
+  const base = w.replace(/\u0671/g, '\u0627').replace(/[\u0640\u06D6-\u06ED\u0653-\u0655]/g, '');
+  const forms = ['\u0627', ''].map(alif => unmarked(base.replace(/\u0670/g, alif)));
+  return new Set([...forms, ...forms.map(f => f.replace(/\u0621\u0627/g, '\u0622'))].map(f => sameYa(f.replace(STOPS, ''))));
+};
+const quoteHolds = (quote, secret) => {
+  const w = quote.split(/\s+/).filter(x => letters(x)).map(quoteWordForms), s = wordsOf(secret).map(sameYa);
+  const is = (forms, x, first) => forms.has(x) || (first && [...forms].some(f => /^[\u0648\u0641]/.test(f) && f.slice(1) === x));
+  return w.some((_, i) => i + s.length <= w.length && s.every((x, j) => is(w[i + j], x, j === 0)));
+};
 // The course's own order, for "where this leads": a later lesson.
 const lessonAt = new Map(course.lessons.map((l, i) => [l.id, i]));
 const only = (where, o, allowed) => { if (o && typeof o === 'object') for (const k of Object.keys(o)) if (!allowed.includes(k)) fail(where, `unknown field ${k}`); };
@@ -262,7 +271,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
       ...(e.selftest ?? []).flatMap(q => q.choices ?? [])].filter(text);
     for (const s of everything) for (const run of runs(s)) for (const secret of secrets) if (contains(run, secret)) fail(at, `${run} gives away the lesson check's answer (${secret})`);
     for (const q of Array.isArray(e.quotes) ? e.quotes : []) if (text(q?.ar)) for (const secret of secrets)
-      if (quoteForms(q.ar).some(form => runs(form).some(run => contains(sameYa(run), sameYa(secret))))) fail(`${at}, quote ${q.ref}`, `gives away the lesson check's answer (${secret})`);
+      if (quoteHolds(q.ar, secret)) fail(`${at}, quote ${q.ref}`, `gives away the lesson check's answer (${secret})`);
   }
 }
 
