@@ -2375,9 +2375,9 @@
      "part_of_speech": "name",
      "root_ar": "م-ص-ر",
      "root_reading": "m-ṣ-r",
-     "example_ar": "أَنَا مِنْ مِصْرَ.",
-     "example_meaning_en": "I am from Egypt.",
-     "note": "Learn country names as whole words. In Modern Standard Arabic مِصْر doesn't take the -un ending: مِنْ مِصْرَ."
+     "example_ar": "مِصْرُ بَلَدٌ كَبِيرٌ.",
+     "example_meaning_en": "Egypt is a big country.",
+     "note": "Learn country names as whole words. In Modern Standard Arabic مِصْر doesn’t take the -un ending: مِصْرُ. After a preposition it ends in -a, not -i: إِلَى مِصْرَ."
     },
     {
      "id": "lexeme.arabic-origin-location-5",
@@ -2990,7 +2990,7 @@
      "root_reading": null,
      "example_ar": "هَؤُلَاءِ طُلَّابٌ.",
      "example_meaning_en": "These are students.",
-     "note": "For people only; for things in the plural, use هَذِهِ."
+     "note": "Said hāʾulāʾi: the long ā after هـ isn’t written as its own letter. The far form is أُولَئِكَ."
     },
     {
      "id": "lexeme.arabic-demonstratives-2",
@@ -3012,7 +3012,7 @@
      "root_reading": null,
      "example_ar": "تِلْكَ سَيَّارَةٌ جَدِيدَةٌ.",
      "example_meaning_en": "That is a new car.",
-     "note": "For a feminine noun, or things in the plural, further away."
+     "note": "For a feminine noun further away; the near form is هَذِهِ."
     },
     {
      "id": "lexeme.arabic-demonstratives-4",
@@ -3060,14 +3060,14 @@
     },
     {
      "id": "lexeme.arabic-demonstratives-8",
-     "form_ar": "هَذَا الْبَيْتُ",
-     "meaning_en": "this house",
+     "form_ar": "هَذَا الْقَلَمُ",
+     "meaning_en": "this pen",
      "part_of_speech": "chunk",
-     "root_ar": "ب-ي-ت",
-     "root_reading": "b-y-t",
-     "example_ar": "هَذَا الْبَيْتُ كَبِيرٌ.",
-     "example_meaning_en": "This house is big.",
-     "note": "هَذَا بَيْتٌ is “this is a house”. With the article, هَذَا الْبَيْتُ is “this house”, and it needs more to be a sentence: كَبِيرٌ."
+     "root_ar": "ق-ل-م",
+     "root_reading": "q-l-m",
+     "example_ar": "هَذَا الْقَلَمُ جَدِيدٌ.",
+     "example_meaning_en": "This pen is new.",
+     "note": "هَذَا is said hādhā: the long ā after هـ isn’t written as its own letter. For a feminine noun: هَذِهِ السَّيَّارَةُ."
     }
    ]
   },
