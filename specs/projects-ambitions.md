@@ -41,8 +41,10 @@ says what a task on Today moves forward, so the day can feel like a list rather 
   - Delete (asked first; nothing it links is touched).
 - **Today:** under a task from a project an ambition links — in today's plan, Due today and From your projects — a
   quiet "A step towards “Work in cybersecurity”" (two ambitions: both named). Today's Study card says the same under
-  a lesson from a linked path, topic or course.
-- **A project's page:** under its title, "A step towards “Work in cybersecurity”", opening that ambition.
+  a lesson from a linked path, topic or course (a Cybersecurity lesson copied into Study counts its module's course and
+  the Cybersecurity topic too).
+- **A project's page:** under its title, "A step towards “Work in cybersecurity”", opening that ambition (with two or
+  more, each named one opens its own page).
 - No percentages, scores or streaks — words and counts, as the rest of MyDay.
 
 ## 4. How it works
