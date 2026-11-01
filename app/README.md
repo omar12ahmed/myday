@@ -1,6 +1,6 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-**1.118.0 — Ambitions: what your work is a step towards:** name your long-term ambitions — "Work in
+**1.119.0 — Ambitions: what your work is a step towards:** name your long-term ambitions — "Work in
 cybersecurity", "Read Arabic literature" — at the top of the Projects home ("Your ambitions"). Each links, without
 moving anything, the projects and learning that are steps towards it (a project, a Study topic or course, the
 Cybersecurity path, the Arabic route) and keeps its own steps in order. Its page says where each stands in words — a
@@ -1568,7 +1568,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**Ambitions (1.118.0; `specs/projects-ambitions.md`):** long-term ambitions, one synced record each
+**Ambitions (1.119.0; `specs/projects-ambitions.md`):** long-term ambitions, one synced record each
 (`data/ambitions.ts`; kind `ambition`): a title, why it matters (optional), links by reference — a project, a Study topic
 or course (by id), the Cybersecurity path or the Arabic route (whichever path or goal is chosen there) — and steps of its
 own in order (ticked when behind you; each may point at one of its links). **Your ambitions** at the top of the Projects
@@ -2200,7 +2200,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectWaiting.ts`, `src/projects/ProjectWaiting.tsx` | A whole project waiting (1.109.0): `projectWaiting.ts` (set, change, stop, the check-back day, Chase it, the nudge's suggestion); `ProjectWaiting.tsx` (the Overview's card, the form, the nudge). Needs you's line is in `src/data/attention.ts`; Chase it is `src/tasks/ChaseIt.tsx`, shared with waiting tasks. |
 | `src/data/content.ts`, `src/projects/ContentView.tsx` | Content projects (1.114.0): `content.ts` (reading as written, ideas and videos, steps, options, examples, outline/shots/needs/steps and their tasks, clips, the post day and its task, posts, results, the size check); `ContentView.tsx` (the Overview's Videos card, the Videos tab, a video's page). Uploads in parts: `src/sync/files.ts` (`sendInParts`, `md5Of`, `videoFrame`) and `supabase/functions/files/` (the `mp-*` actions). |
 | `src/data/exploring.ts`, `src/projects/ExploringView.tsx` | Exploring a while (1.116.0): `exploring.ts` (three weeks in Exploring, comparing the options, what's still unknown); `ExploringView.tsx` (the Overview's ask, the compare page, the Decisions tab's link). |
-| `src/data/ambitions.ts`, `src/projects/AmbitionsView.tsx` | Ambitions (1.118.0): `ambitions.ts` (reading as written, adding, links and steps, what a task, project or lesson is a step towards, the wording); `AmbitionsView.tsx` (the Projects home's strip, an ambition's page, a project's line). Today's lines are in `src/today/` (PlanCard, DueTodayCard, ProjectCards) and `src/study/StudyTodayCard.tsx`. |
+| `src/data/ambitions.ts`, `src/projects/AmbitionsView.tsx` | Ambitions (1.119.0): `ambitions.ts` (reading as written, adding, links and steps, what a task, project or lesson is a step towards, the wording); `AmbitionsView.tsx` (the Projects home's strip, an ambition's page, a project's line). Today's lines are in `src/today/` (PlanCard, DueTodayCard, ProjectCards) and `src/study/StudyTodayCard.tsx`. |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
