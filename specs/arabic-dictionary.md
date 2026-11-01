@@ -1,8 +1,8 @@
 # Arabic dictionary
 
-Status: proposal (1 November 2026, myday-20). The owner asked for a dictionary holding every word in the course, with
+Status: the page is built on branch arabic-dictionary (§2), awaiting its checks, a review and the owner's yes to release; the words (§4) are planned with myday-5a. Proposal of 1 November 2026, myday-20. The owner asked for a dictionary holding every word in the course, with
 the option to add new words. They chose to build the page **next, after 1.124.0**, and to give **every word used in
-the course an entry, in batches**. Nothing here is built yet.
+the course an entry, in batches**.
 
 ## 1. Why
 
@@ -23,50 +23,65 @@ Three things stop it being one:
    it calls any match "one of the starter words", fills in only the meaning, and matches only after vowel marks are
    stripped, so آسِف and اسف don't meet.
 
-## 2. The page
+## 2. The page (built first)
 
 The tab **Vocabulary** becomes **Dictionary**. Its address stays `#study/arabic/vocabulary`, so every existing link
-keeps working: revision's "hasn't clicked yet", Keep a word, and the questions' notes.
+keeps working: revision's "hasn't clicked yet", Keep a word, and Search everywhere. The voice label's "Slower
+playback" and the revision glance name it too. A new card, **Look up a word**, heads the page.
 
-**Search** sits at the top, with one box:
-- **Arabic, with or without vowels.** Hamza and alif forms (أ إ آ ٱ ا), ى/ي, ة/ه and tatweel count as the same.
-  An article or a joined وَ, فَ, بِ, لِ or كَ in front is also tried without it, so الْكِتَاب finds كِتَاب.
-- **English:** words in the meaning, so "door" finds بَاب, but "indoor" doesn't.
-- **Latin letters:** the app's own reading, with the marks optional, so "kitab" or "kitāb" finds كِتَاب, and
-  "salam" finds سَلَام.
-- **Order:** results come exact first, then words that start with the search, then words that contain it.
-- **Size:** the first 50 results show, with "Show more" below, and the number found is announced to screen
-  readers. Nothing is sent anywhere: the search runs on the device.
+**Search**, with one box:
+- **Arabic, with or without vowels.** Hamza on a seat (أ إ آ ؤ ئ), ٱ, ى/ي, ة/ه and tatweel count as the same.
+  The article, alone or after a joined وَ, فَ, بِ or كَ, or as لِلْـ, is also tried without it, so الْكِتَاب,
+  بِالْكِتَابِ and لِلْكِتَابِ find كِتَاب. A single joined letter is tried off only when the rest is the whole word, so
+  وَكِتَاب finds كِتَاب, but وَقْت isn't read as قْت.
+- **English:** whole words in the meaning, matched from the start of a word, so "door" and "doo" find بَاب but
+  "indoor" doesn't.
+- **Latin letters:** the app's own reading, without accents, ʿ or ʾ, and with a doubled letter as one, so "kitab",
+  "kitāb" and "mudaris" find كِتَاب and مُدَرِّس.
+- **Order:** results come exact first, then words that start with the search, then (with two letters or more typed)
+  words that contain it. Ties keep the course's order: starter words, then each lesson's, then yours.
+- **Size:** the first 50 results show, with "Show more" below. The number found is announced to screen readers, and
+  "Nothing found" suggests keeping the word under Your words. The search runs on the device; nothing is sent.
 
 **Browse**, when the box is empty:
-- **A to ي:** by first letter, in Arabic order, ignoring vowels and the article.
-- **By root:** each root with its words, as word families do now.
-- **By lesson:** today's list, in course order.
+- **By first letter:** a button for each letter in dictionary order (hamza alone first; a letter with no words is
+  shown but off). Choosing one lists its words in Arabic order, ignoring vowels and the article.
+- **By root:** the same buttons, for the root's first letter. Each root is a heading with its words below. Starter
+  words take their word family's root, and phrases their main word's.
+- **By lesson:** the existing "Words from the lessons" card further down, in course order.
+- Nothing is listed until a letter is chosen, so the page stays light.
 
-**Filters:** All · Your words · In revision · Phrases · Starter words. Phrases shows the 100 everyday phrases grouped by
-situation, once they exist; it replaces the separate phrasebook page that was planned.
+**An entry** is the existing word row:
+- the form, meaning and part of speech;
+- the root, labelled "Root of the main word" on a phrase, since a chunk's root field gives only that (this applies
+  everywhere the row appears);
+- the voice, the example and the note;
+- the explainer link, and revision: "Add to revision", "Also practise writing it", "Take it out";
+- in the dictionary, also "Taught in <lesson>" or "A starter word, first in <lesson>", linking to the lesson.
 
-**An entry** is today's word row:
-- the form, meaning and part of speech, the root (on a phrase, labelled "root of the main word", since a chunk's root
-  field gives only that), voice, example and note;
-- the explainer link, and revision ("Add to revision", "Also practise writing it", "Take it out");
-- "Taught in <lesson>", linking to the lesson.
+**Your words** appear in search results marked **Yours**, with your meaning and note. "Show it in Your words" moves
+focus to the word's row on the Your words card, where Change, Remove and "Also practise writing it" stay, as now.
 
-Your own word shows in the same list, marked **Yours**, with your meaning and note, and Change or Remove as now.
+**Adding a word:** "Add your own word" looks in the dictionary as you type.
+- Every course word with the same letters (vowels, hamza seats and the article aside) is offered: "In the
+  dictionary: <word>, “<meaning>”, taught in <lesson>" (or "a starter word"), with **Use the course's meaning** and,
+  unless it's already in your revision, **Add it to revision instead**. Adding it to revision keeps no copy, closes
+  the form and says it first comes back tomorrow.
+- Otherwise, the word is kept as yours, exactly as before.
 
-**Adding a word:** "Add a word" looks in the dictionary first.
-- If the course has the word, its entry is shown, with "Add to revision". You can still keep your own meaning beside
-  it, as now.
-- If not, it's kept as yours, exactly as "Add your own word" does today.
-
-The message "One of the starter words" becomes "In the dictionary: <meaning>, taught in <lesson>".
+This replaces "One of the starter words".
 
 **Unchanged:**
-- the starter words' "Bring them back in revision" card;
+- Your words, the starter words' "Bring them back in revision" card;
+- word families, and the starter and lesson lists;
 - the gentle note after a few new words a day;
 - "Read it aloud, then check" for well-known words.
 
-**A phone:** search, filters and entries fit 320 px without scrolling sideways.
+**Later, with the 100 phrases:** a **Phrases** view grouped by situation, in place of the separate phrasebook page
+that was planned. Filters for "in revision" or "starter words" were considered and left out: search and the existing
+cards cover them.
+
+**A phone:** search, browse and entries fit 320 px without scrolling sideways.
 
 ## 3. Saved data
 
@@ -116,8 +131,11 @@ Your words are still never sent to AI.
    - listened to by the owner;
    - released with other work.
 
-   myday-20 drafts modules 4–13 (A1–A2) and myday-5a modules 14–30 (agreed 1 Nov). myday-5a merges, validates and
-   voices every batch.
+   The inventory (`node app/scripts/arabic-word-inventory.mjs [--modules 4-13] [--json]`) lists, lesson by lesson,
+   every form a lesson shows that no listed word covers. That's about 1,000 groups of forms on 1 November, fewer
+   dictionary words once each group is reduced: 40 in modules 1–3, 177 in 4–13, 579 in 14–24 and 208 in 25–30. To
+   share the work evenly, myday-20 drafts modules 1–19 (about 500 groups) and myday-5a modules 20–30 (about 500).
+   myday-5a merges, validates and voices every batch.
 
 The page doesn't wait for this: it ships first with the 800 words already listed, and grows with each batch.
 
@@ -134,9 +152,9 @@ The page doesn't wait for this: it ships first with the 800 words already listed
   prefixes, Latin with and without marks) and the ranking.
 - **Browser (app-arabic):**
   - search in Arabic, English and Latin;
-  - each browse mode and filter;
+  - browsing by first letter and by root, and Show more;
   - "Add a word" offering the course's entry, then keeping your own;
-  - your words marked Yours;
+  - your words marked Yours, and "Show it in Your words";
   - the old address still opening the page;
   - focus, labels and the announced count;
   - 320 px.
