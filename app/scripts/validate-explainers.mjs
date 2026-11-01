@@ -113,7 +113,9 @@ const contains = (run, secret) => {
 
 const lessonIds = new Set(course.lessons.map(l => l.id));
 const allWords = new Set(Object.values(courseWords).flatMap(l => l.words.map(w => w.id)));
-const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course_words', 'table', 'steps', 'examples', 'why', 'selftest', 'phrases_ar', 'leads_to'];
+const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course_words', 'table', 'steps', 'examples', 'why', 'selftest', 'phrases_ar', 'leads_to', 'quotes'];
+// Quoted Qur'anic phrases belong to module 28 alone (the owner's decisions of 31 October and 1 November 2026).
+const QURANIC = 'module.arabic-quranic', REF = /^\d{1,3}:\d{1,3}(-\d{1,3})?$/;
 // The course's own order, for "where this leads": a later lesson.
 const lessonAt = new Map(course.lessons.map((l, i) => [l.id, i]));
 const only = (where, o, allowed) => { if (o && typeof o === 'object') for (const k of Object.keys(o)) if (!allowed.includes(k)) fail(where, `unknown field ${k}`); };
@@ -160,6 +162,22 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
         if (!text(l?.en)) fail(`${at}, leads to ${i + 1}`, 'say how it builds on this one'); else labels.push([`leads to ${i + 1}`, l.en]);
         if (e.leads_to.findIndex(m => m?.id === l?.id) !== i) fail(`${at}, leads to ${i + 1}`, `${l?.id} is listed twice`);
         leads.push({ at, from: lessonId, self: e.id, to: l?.id, i, secrets });
+      });
+    }
+    // Quotes: a short Qur'anic phrase in the muṣḥaf's exact spelling (dagger alif and all), with its sūra and verse and
+    // its meaning; analysed only as language. So outside the house spelling rules, the readings and the voice (never
+    // added to what is shown or voiced), but still checked against the lesson's own check below. A note may name
+    // Arabic in modern spelling, checked like a table label and never voiced.
+    if (e.quotes !== undefined) {
+      if (course.lessons.find(l => l.id === lessonId)?.module_id !== QURANIC) fail(at, "quotes belong to module 28 (Qur'anic Arabic) only");
+      if (!Array.isArray(e.quotes) || e.quotes.length < 1 || e.quotes.length > 3) fail(at, 'quotes lists one to three quotes');
+      else e.quotes.forEach((q, i) => {
+        const where = `${at}, quote ${i + 1}`;
+        only(where, q, ['ar', 'ref', 'en', 'note_en']);
+        if (!text(q?.ar) || !ARABIC.test(q.ar) || /[A-Za-z0-9]/.test(q.ar)) fail(where, 'the quote, in Arabic script only');
+        if (!REF.test(q?.ref ?? '')) fail(where, 'its sūra and verse, like 1:2 or 2:255-256');
+        english(`${where} meaning`, q?.en);
+        if (q?.note_en !== undefined) { if (!text(q.note_en)) fail(`${where} note`, 'missing'); else labels.push([`quote ${i + 1} note`, q.note_en]); }
       });
     }
     // Table: one Arabic piece per row, English around it.
@@ -234,7 +252,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     for (const p of phrases) if (!used.has(p)) fail(`${at}, phrases_ar`, `${p} isn't used in the text`);
     // Nothing that answers its lesson's check, or the check of a lesson whose words link here.
     const everything = [...mixed.map(([, s]) => s), ...labels.map(([, s]) => s), ...(e.table ?? []).map(r => r.ar), ...(e.examples ?? []).map(x => x.ar),
-      ...(e.selftest ?? []).flatMap(q => q.choices ?? [])].filter(text);
+      ...(e.selftest ?? []).flatMap(q => q.choices ?? []), ...(Array.isArray(e.quotes) ? e.quotes.map(q => q?.ar) : [])].filter(text);
     for (const s of everything) for (const run of runs(s)) for (const secret of secrets) if (contains(run, secret)) fail(at, `${run} gives away the lesson check's answer (${secret})`);
   }
 }

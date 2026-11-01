@@ -492,6 +492,17 @@ check('vowelled and unvowelled versions are both kept where the package has them
   badExp('selftest-leak', f => { const qs = leadOf(f, 'lesson.arabic-relative-clauses', 'explainer.arabic-who-which').selftest; qs[0].why_en += ' For men, it\'s الَّذِينَ.'; }, "gives away question 2's answer", 'a self-test explanation holding a later question\'s Arabic answer');
   badExp('lead-twice', f => { sayOf(f).leads_to = [{ id: 'explainer.arabic-reporting', en: 'One.' }, { id: 'explainer.arabic-reporting', en: 'Two.' }]; }, 'is listed twice', 'the same "Where this leads" target listed twice');
   badExp('lead-vowel', f => { sayOf(f).leads_to[0].en = 'قال in reporting.'; }, 'is not fully vowelled', 'a "Where this leads" line holding unvowelled Arabic');
+  // Quotes: module 28 only, each with its sūra and verse and its meaning, in the muṣḥaf's own spelling.
+  const QUOTE = { ar: 'ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ', ref: '1:2', en: 'Praise be to God, Lord of the worlds.' };
+  const quranic = f => { const card = JSON.parse(JSON.stringify(sayOf(f))); card.id = 'explainer.arabic-quote-test'; delete card.course_words; delete card.leads_to;
+    card.phrases_ar = (card.phrases_ar ?? []).filter(p => JSON.stringify({ ...card, phrases_ar: [] }).includes(p)); // a phrase only its lead used
+    f.lessons['lesson.arabic-quranic-scope'] = [card]; return card; };
+  badExp('quote-elsewhere', f => { sayOf(f).quotes = [QUOTE]; }, 'quotes belong to module 28', 'a quote outside module 28');
+  badExp('quote-ref', f => { quranic(f).quotes = [{ ...QUOTE, ref: 'al-Fātiḥa 2' }]; }, 'its sūra and verse', 'a quote without its sūra and verse');
+  badExp('quote-meaning', f => { quranic(f).quotes = [{ ...QUOTE, en: '' }]; }, 'quote 1 meaning: missing', 'a quote without its meaning');
+  { const copy = JSON.parse(JSON.stringify(expSource)); quranic(copy).quotes = [QUOTE];
+    const file = path.join(expTemp, 'good-quote.json'); fs.writeFileSync(file, JSON.stringify(copy)); const r = runExp(file);
+    check('a module 28 card may quote in the muṣḥaf\'s spelling (ٱ, the dagger alif, the small sukūn), outside the house rules and the readings', r.code === 0, r.out.slice(-300)); }
   badExp('hint-answer', f => { const q = sayOf(f).selftest[0]; q.hint_en = `Think of ${q.answer} here.`; }, 'the hint gives away its own answer', 'a self-test hint containing its own question\'s answer');
   check('the real explainers file reports how many cards lead on to a later explainer: 76', realExp.out.includes('; 76 lead on to a later explainer.'), realExp.out);
   fs.rmSync(expTemp, { recursive: true, force: true }); fs.rmSync(expSplit, { recursive: true, force: true });

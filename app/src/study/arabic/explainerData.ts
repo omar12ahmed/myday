@@ -14,6 +14,9 @@ export interface Explainer {
   selftest: { q_en: string; choices: string[]; answer: string; why_en: string; hint_en?: string }[];
   // Where this leads: a later explainer that builds on this one, and how (the owner's choice, 31 October 2026).
   leads_to?: { id: string; en: string }[];
+  // Module 28 only: short Qur'anic phrases in the muṣḥaf's exact spelling, with sūra:verse and meaning, analysed only as
+  // language. Never voiced and shown without a transliteration (the owner's choice, 1 November 2026).
+  quotes?: { ar: string; ref: string; en: string; note_en?: string }[];
 }
 // What a link needs to know about a card without loading it: its id and title.
 export interface ExplainerRef { id: string; title_en: string }

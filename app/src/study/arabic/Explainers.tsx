@@ -104,6 +104,15 @@ function ExplainerCard({ e, book }: { e: Explainer; book: ExplainerIndex | null 
       <ul className="list-none p-0 m-0 grid gap-1">{x.words.map((w, j) => <li key={j} className="text-[15px]"><Ar className="text-[20px]">{w.ar}</Ar> <span className="text-fg-2"><WordNote text={w.en} /></span></li>)}</ul>
     </div>)}</div>
 
+    {(e.quotes?.length ?? 0) > 0 && <>
+      <H>Quoted</H>
+      <div className="grid gap-3">{e.quotes!.map((q, i) => <figure key={i} className="m-0 rounded-tile bg-surface-2 px-4 py-3" data-ar-explainer-quote={q.ref}>
+        <Ar block showReading={false} className="text-[24px] m-0 ar-quote">{q.ar}</Ar>
+        <figcaption className="text-[15px] mt-1">{q.en} <span className="text-fg-2">(Qur'an {q.ref})</span></figcaption>
+        {q.note_en && <p className="text-[15px] text-fg-2 mt-1 mb-0"><WordNote text={q.note_en} /></p>}
+      </figure>)}</div>
+    </>}
+
     <H>Why?</H>
     <p className="font-semibold mb-1"><WordNote text={e.why.q_en} /></p>
     <p className="leading-relaxed mt-0"><WordNote text={e.why.a_en} /></p>
