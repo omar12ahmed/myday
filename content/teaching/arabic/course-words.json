@@ -10645,7 +10645,7 @@
     {
      "id": "lexeme.arabic-professional-brief-4",
      "form_ar": "مُفَاضَلَة",
-     "meaning_en": "weighing up (options against each other), trade-off",
+     "meaning_en": "weighing up (options against each other)",
      "part_of_speech": "noun",
      "root_ar": "ف-ض-ل",
      "root_reading": "f-ḍ-l",
@@ -11099,12 +11099,12 @@
     {
      "id": "lexeme.arabic-poetry-entry-6",
      "form_ar": "شِعْرٌ حُرٌّ",
-     "meaning_en": "free verse",
+     "meaning_en": "Arabic free verse (tafʿīla verse)",
      "part_of_speech": "chunk",
      "root_ar": "ش-ع-ر",
      "root_reading": "sh-ʿ-r",
      "example_ar": "لَا يَلْتَزِمُ الشِّعْرُ الْحُرُّ بِقَافِيَةٍ وَاحِدَةٍ.",
-     "example_meaning_en": "Free verse doesn't stick to a single rhyme.",
+     "example_meaning_en": "Arabic free verse isn't bound to a single rhyme.",
      "note": "Also called شِعْرُ التَّفْعِيلَةِ: it keeps a metrical beat but varies the length of the line."
     },
     {
@@ -11301,13 +11301,13 @@
     {
      "id": "lexeme.arabic-classical-parsing-1",
      "form_ar": "إِعْرَاب",
-     "meaning_en": "iʿrāb: the case endings and parsing",
+     "meaning_en": "iʿrāb: grammatical inflection (case and verb mood), and parsing",
      "part_of_speech": "noun",
      "root_ar": "ع-ر-ب",
      "root_reading": "ʿ-r-b",
      "example_ar": "يَكْشِفُ الْإِعْرَابُ عَنْ وَظِيفَةِ كُلِّ كَلِمَةٍ فِي الْجُمْلَةِ.",
      "example_meaning_en": "Parsing shows the role of each word in the sentence.",
-     "note": "Both the endings and the analysis of them. أَعْرَبَ عَنْ also means “to express”: أَعْرَبَ عَنْ قَلَقِهِ."
+     "note": "Both grammatical inflection (case in nouns and mood in present-tense verbs) and the analysis of it. أَعْرَبَ عَنْ also means “to express”: أَعْرَبَ عَنْ قَلَقِهِ."
     },
     {
      "id": "lexeme.arabic-classical-parsing-2",
@@ -11318,7 +11318,7 @@
      "root_reading": "ʿ-m-l",
      "example_ar": "حَرْفُ الْجَرِّ عَامِلٌ يَجُرُّ الِاسْمَ الَّذِي بَعْدَهُ.",
      "example_meaning_en": "A preposition is a governor: it puts the noun after it in the genitive.",
-     "note": "In grammar, the word that causes an ending. Elsewhere “worker” (plural عُمَّال) or “factor” (plural عَوَامِل)."
+     "note": "In traditional grammar, a word or grammatical factor that determines an ending. Elsewhere “worker” (plural عُمَّال) or “factor” (plural عَوَامِل)."
     },
     {
      "id": "lexeme.arabic-classical-parsing-3",
@@ -11349,8 +11349,8 @@
      "part_of_speech": "chunk",
      "root_ar": "ح-ل-ل",
      "root_reading": "ḥ-l-l",
-     "example_ar": "فِي «هَذَا كِتَابٌ» اسْمُ الْإِشَارَةِ مَبْنِيٌّ فِي مَحَلِّ رَفْعٍ مُبْتَدَأٌ.",
-     "example_meaning_en": "In hādhā kitābun, the demonstrative has a fixed ending but is in the nominative position, as the subject.",
+     "example_ar": "فِي «هَذَا كِتَابٌ» اسْمُ الْإِشَارَةِ مُبْتَدَأٌ مَبْنِيٌّ فِي مَحَلِّ رَفْعٍ.",
+     "example_meaning_en": "In hādhā kitābun, the demonstrative is the subject: it has a fixed ending but is in the nominative position.",
      "note": "Said of a word whose ending can't show its role. Likewise فِي مَحَلِّ نَصْبٍ and فِي مَحَلِّ جَرٍّ."
     },
     {
@@ -11373,7 +11373,7 @@
      "root_reading": "w-j-h",
      "example_ar": "يَجُوزُ فِي هَذِهِ الْكَلِمَةِ وَجْهَانِ: الرَّفْعُ وَالنَّصْبُ.",
      "example_meaning_en": "Two analyses are possible for this word: nominative and accusative.",
-     "note": "Plural أَوْجُه in this sense; “faces” are وُجُوه."
+     "note": "Plural أَوْجُه, also وُجُوه in abstract uses; physical “faces” are usually وُجُوه."
     }
    ]
   },
@@ -11444,7 +11444,7 @@
      "root_reading": "sh-r-k",
      "example_ar": "«الْعَيْنُ» مُشْتَرَكٌ لَفْظِيٌّ، فَهِيَ عُضْوُ الْإِبْصَارِ وَنَبْعُ الْمَاءِ.",
      "example_meaning_en": "ʿayn is a word with several meanings: it is the eye, and a spring of water.",
-     "note": "One form with several unrelated meanings."
+     "note": "One form with distinct meanings; a traditional Arabic lexical category."
     },
     {
      "id": "lexeme.arabic-historical-lexicon-7",
@@ -11466,7 +11466,7 @@
      "root_reading": null,
      "example_ar": "قَدْ وَصَلَتِ الرِّسَالَةُ، وَقَدْ يَصِلُ الرَّدُّ غَدًا.",
      "example_meaning_en": "The letter has arrived, and the reply may come tomorrow.",
-     "note": "Before a past verb it confirms; before a present verb it means “may”."
+     "note": "With a past verb it usually marks something done, or confirms it; with a present verb it often means “may”, as here. In classical prose it can mean other things too, such as certainty: context decides."
     }
    ]
   },
@@ -11504,7 +11504,7 @@
      "root_reading": "m-t-n",
      "example_ar": "يُطْبَعُ الْمَتْنُ فِي أَعْلَى الصَّفْحَةِ، وَالشَّرْحُ تَحْتَهُ.",
      "example_meaning_en": "The base text is printed at the top of the page, and the commentary below it.",
-     "note": "Plural مُتُون. Also “deck”: عَلَى مَتْنِ الطَّائِرَةِ, “on board the plane”."
+     "note": "Plural مُتُون. The expression عَلَى مَتْنِ الطَّائِرَةِ means “on board the plane”."
     },
     {
      "id": "lexeme.arabic-edition-commentary-4",
