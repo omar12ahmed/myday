@@ -1,19 +1,21 @@
 // Makes the Arabic course's synthesised voice — run by hand when authoring, never by the build, never by the app.
 //
 //   GOOGLE_TTS_API_KEY=… node app/scripts/make-arabic-audio.mjs <source>      e.g. lesson-examples
+//   GOOGLE_TTS_API_KEY=… node app/scripts/make-arabic-audio.mjs <source> --redo-only
 //
 // For each text of that voiced source (arabic-voice-sources.mjs) that has no clip yet, or whose check says "redo", one
 // voice speaks the exact vowelled text; the clip is saved as an MP3 named by its contents and recorded in
 // content/arabic-audio/audio-audit.json under its text, as "to check". The build ships nothing until it's been
-// listened to (prepare-audio.mjs). The key (Google Cloud Text-to-Speech only) comes from the environment and is
-// never written anywhere.
+// listened to (prepare-audio.mjs). With --redo-only, only clips marked "redo" are made: a text of that source with no
+// clip yet waits for its own round (its words may not have been checked). The key (Google Cloud Text-to-Speech only)
+// comes from the environment and is never written anywhere.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spokenFor, voiceSources } from './arabic-voice-sources.mjs';
 
 const root = new URL('../../', import.meta.url);
 const dir = new URL('content/arabic-audio/', root), clips = new URL('clips/', dir), auditFile = new URL('audio-audit.json', dir);
-const sources = voiceSources(root), source = sources.find(s => s.id === process.argv[2]);
+const sources = voiceSources(root), source = sources.find(s => s.id === process.argv[2]), redoOnly = process.argv.includes('--redo-only');
 if (!source) throw new Error(`Name a voiced source: ${sources.map(s => s.id).join(', ')}`);
 const key = process.env.GOOGLE_TTS_API_KEY;
 if (!key) throw new Error('Set GOOGLE_TTS_API_KEY (a key for the Text-to-Speech API only).');
@@ -28,17 +30,19 @@ const today = new Date().toISOString().slice(0, 10);
 const spoken = spokenFor(root);
 // A clip the owner heard too fast, or with a sound wrong at the usual speed, can be redone slower: its "rate" (the
 // voice's speaking rate, from 0.5 to under 1, as prepare-audio.mjs checks) is set on the clip before the redo and kept
-// with it, so a later take keeps it. Every clip to be made is checked before any is made or any file is touched.
+// with it, so a later take keeps it. A rate belongs to the voice it was found for: made in another voice, a clip starts
+// again at the usual speed. Every clip to be made is checked before any is made or any file is touched.
 const slower = rate => typeof rate === 'number' && rate >= 0.5 && rate < 1;
+const rateOf = entry => entry?.voice === VOICE ? entry.rate : undefined;
 for (const text of source.texts) {
   const entry = audit.clips[text];
-  if (entry?.check === 'redo' && 'rate' in entry && !slower(entry.rate)) throw new Error(`“${text}”: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${entry.rate})`);
+  if (entry?.check === 'redo' && rateOf(entry) !== undefined && !slower(rateOf(entry))) throw new Error(`“${text}”: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${entry.rate})`);
 }
 let made = 0, chars = 0;
 for (const text of source.texts) {
   const entry = audit.clips[text];
-  if (entry && entry.check !== 'redo') continue;
-  const rate = entry?.rate;
+  if (entry ? entry.check !== 'redo' : redoOnly) continue;
+  const rate = rateOf(entry);
   const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST',
     signal: AbortSignal.timeout(30000),

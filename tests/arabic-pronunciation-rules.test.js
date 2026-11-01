@@ -200,7 +200,6 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   const voices = [audit.voice.name, ...(audit.earlier_voices || []).map(v => v.name)];
   // The voice for new clips: WaveNet B from 25 October 2026, Chirp 3 HD Charon again from 31 October (the owner's blind choice).
   check('every clip was made with the audit\'s voice or one it lists as earlier, and the voice for new clips is Chirp 3 HD Charon', audit.voice.name === 'ar-XA-Chirp3-HD-Charon' && voices.includes('ar-XA-Wavenet-B') && auditTexts.every(x => voices.includes(audit.clips[x].voice)), [...new Set(auditTexts.map(x => audit.clips[x].voice))]);
-  check('every reading-text clip, by sentence and whole, is in one voice', new Set([...src('reading-texts').texts, ...src('reading-wholes').texts].map(x => audit.clips[x]?.voice)).size === 1);
   check('every clip has one of the four known checks', auditTexts.every(x => Object.keys(audit.checks).includes(audit.clips[x].check)), [...new Set(auditTexts.map(x => audit.clips[x].check))]);
   check('the label says what the voice is and that no teacher has checked it', audit.label === 'Synthesised voice — a model to copy; checked by ear, not yet by a teacher.');
   const auditText = fs.readFileSync(path.join(audioDir, 'audio-audit.json'), 'utf8');
@@ -286,6 +285,12 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   check('a script may add marks to a partly marked text, and a colon in prose is read as written (only a dialogue line\'s speaker is left unsaid)', typeof boxed === 'object' && boxed['asset.some'][0].spoken === 'كَتَبَ سَامِي رِسَالَة.' && boxed['asset.box'][0].spoken === 'فِي الصُّنْدُوقِ ثَلَاثَةُ أَشْيَاءْ: قَلَمٌ وَكِتَابْ.', boxed);
   const wholeSource = src('reading-wholes');
   check('the round-ten source has each reading text read whole once: its sentences as voiced, line by line', !!wholeSource && wholeSource.round === 10 && same([...wholeSource.texts].sort(), Object.values(passages).map(wholeText).sort()) && wholeText(passages['asset.arabic-changed-plan']).split('\n').length === 6);
+  // Each reading text keeps one voice, its sentences and its whole: a text made again in another voice is made again
+  // whole (round twenty-one). A redo of one sentence fails here on purpose, naming the text to make again whole.
+  const readingSentences = new Set(src('reading-texts').texts);
+  const textVoices = parts => new Set([...parts.map(x => [x.text, x.plain, x.spoken].find(k => readingSentences.has(k))), wholeText(parts)].map(t => audit.clips[t]?.voice));
+  const mixedTexts = Object.entries(passages).filter(([, parts]) => textVoices(parts).size !== 1 || textVoices(parts).has(undefined)).map(([id]) => id);
+  check('each reading text, by sentence and whole, has a clip in one voice (make a text again whole, never one sentence)', Object.keys(passages).length >= 14 && mixedTexts.length === 0, mixedTexts);
   check('the prepared voice data names each reading text\'s whole text, and a whole clip ships only once checked', same(preparedAudio.wholes, Object.fromEntries(Object.entries(passages).map(([id, parts]) => [id, wholeText(parts)]))) && Object.values(preparedAudio.wholes).every(w => (preparedAudio.clips[w] ? audit.clips[w]?.check === 'checked' : audit.clips[w]?.check !== 'checked')));
   check('the prepared voice data lists the texts voiced from MyDay\'s scripts, and only those', same(preparedAudio.scripted, Object.keys(voiceScripts)));
   check('the prepared voice data lists the scripted pieces that ship, each with a checked clip', preparedAudio.scriptedPieces.length >= 250 && preparedAudio.scriptedPieces.every(t => realPieces[t] && preparedAudio.clips[t] && audit.clips[t]?.check === 'checked') && Object.keys(realPieces).filter(t => audit.clips[t]?.check === 'checked').length === preparedAudio.scriptedPieces.length);
@@ -306,7 +311,6 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   brokenAudio('voice', c => { c.clips[firstText].voice = 'ar-XA-Other'; }, "made with a voice the audit doesn't list", 'a clip made with a voice the audit does not list');
   brokenAudio('no-voice', c => { delete c.clips[firstText].voice; }, "made with a voice the audit doesn't list (none recorded)", 'a clip with no voice recorded');
   // A clip made again slower records its speaking rate (round nineteen); a rate is only ever slower.
-  check('a clip the owner heard too fast records the slower rate it was made again at', Object.values(audit.clips).some(c => c.rate === 0.9 && c.check === 'checked'));
   brokenAudio('rate-faster', c => { c.clips[firstText].rate = 1.2; }, "a clip's speaking rate is only ever slower", 'a clip made faster than the usual speed');
   brokenAudio('rate-word', c => { c.clips[firstText].rate = 'slow'; }, "a clip's speaking rate is only ever slower", 'a speaking rate that is not a number');
   brokenAudio('rate-one', c => { c.clips[firstText].rate = 1; }, "a clip's speaking rate is only ever slower", 'a speaking rate of exactly the usual speed');
