@@ -22852,6 +22852,15 @@
       "id": "explainer.arabic-standard-and-accents",
       "en": "Standard Arabic beside the dialects and accents you'll hear."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-fusha-register-1",
+     "lexeme.arabic-fusha-register-2",
+     "lexeme.arabic-fusha-register-3",
+     "lexeme.arabic-fusha-register-4",
+     "lexeme.arabic-fusha-register-5",
+     "lexeme.arabic-fusha-register-6",
+     "lexeme.arabic-fusha-register-7"
     ]
    }
   ],
@@ -23005,6 +23014,15 @@
       "id": "explainer.arabic-level-and-next-step",
       "en": "Describing your level later on, skill by skill."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-goal-baseline-1",
+     "lexeme.arabic-goal-baseline-2",
+     "lexeme.arabic-goal-baseline-3",
+     "lexeme.arabic-goal-baseline-4",
+     "lexeme.arabic-goal-baseline-5",
+     "lexeme.arabic-goal-baseline-6",
+     "lexeme.arabic-goal-baseline-7"
     ]
    }
   ],
@@ -23157,6 +23175,15 @@
       "id": "explainer.arabic-word-records",
       "en": "Recording a word fully, so you can use it."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-learning-loop-1",
+     "lexeme.arabic-learning-loop-2",
+     "lexeme.arabic-learning-loop-3",
+     "lexeme.arabic-learning-loop-4",
+     "lexeme.arabic-learning-loop-5",
+     "lexeme.arabic-learning-loop-6",
+     "lexeme.arabic-learning-loop-7"
     ]
    }
   ],
@@ -23304,7 +23331,16 @@
       "why_en": "A letter you send is a رِسَالَة."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-arabic-tools-1",
+     "lexeme.arabic-arabic-tools-2",
+     "lexeme.arabic-arabic-tools-3",
+     "lexeme.arabic-arabic-tools-4",
+     "lexeme.arabic-arabic-tools-5",
+     "lexeme.arabic-arabic-tools-6",
+     "lexeme.arabic-arabic-tools-7"
+    ]
    }
   ],
   "lesson.arabic-practice-contract": [
@@ -23463,6 +23499,15 @@
       "id": "explainer.arabic-planning-your-learning",
       "en": "Planning your own learning, later in the course."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-practice-contract-1",
+     "lexeme.arabic-practice-contract-2",
+     "lexeme.arabic-practice-contract-3",
+     "lexeme.arabic-practice-contract-4",
+     "lexeme.arabic-practice-contract-5",
+     "lexeme.arabic-practice-contract-6",
+     "lexeme.arabic-practice-contract-7"
     ]
    }
   ],
@@ -23599,7 +23644,16 @@
       "why_en": "It starts with خ, with its dot above."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-letter-families-1",
+     "lexeme.arabic-letter-families-2",
+     "lexeme.arabic-letter-families-3",
+     "lexeme.arabic-letter-families-4",
+     "lexeme.arabic-letter-families-5",
+     "lexeme.arabic-letter-families-6",
+     "lexeme.arabic-letter-families-7"
+    ]
    }
   ],
   "lesson.arabic-letter-joining": [
@@ -23739,7 +23793,16 @@
       "why_en": "Neither د nor ر joins the letter after it."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-letter-joining-1",
+     "lexeme.arabic-letter-joining-2",
+     "lexeme.arabic-letter-joining-3",
+     "lexeme.arabic-letter-joining-4",
+     "lexeme.arabic-letter-joining-5",
+     "lexeme.arabic-letter-joining-6",
+     "lexeme.arabic-letter-joining-7"
+    ]
    }
   ],
   "lesson.arabic-vowel-decoding": [
@@ -23881,6 +23944,15 @@
       "id": "explainer.arabic-reading-without-marks",
       "en": "Reading later on, when most of the vowel marks are left out."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-vowel-decoding-1",
+     "lexeme.arabic-vowel-decoding-2",
+     "lexeme.arabic-vowel-decoding-3",
+     "lexeme.arabic-vowel-decoding-4",
+     "lexeme.arabic-vowel-decoding-5",
+     "lexeme.arabic-vowel-decoding-6",
+     "lexeme.arabic-vowel-decoding-7"
     ]
    }
   ],
@@ -24023,6 +24095,15 @@
       "id": "explainer.arabic-sun-moon-letters",
       "en": "The shadda after الْـ: sun letters and moon letters."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-sukun-shadda-1",
+     "lexeme.arabic-sukun-shadda-2",
+     "lexeme.arabic-sukun-shadda-3",
+     "lexeme.arabic-sukun-shadda-4",
+     "lexeme.arabic-sukun-shadda-5",
+     "lexeme.arabic-sukun-shadda-6",
+     "lexeme.arabic-sukun-shadda-7"
     ]
    }
   ],
@@ -24172,6 +24253,15 @@
       "id": "explainer.arabic-words-run-together",
       "en": "Another alif, هَمْزَةُ الْوَصْلِ, that's silent when words run together."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-special-spellings-1",
+     "lexeme.arabic-special-spellings-2",
+     "lexeme.arabic-special-spellings-3",
+     "lexeme.arabic-special-spellings-4",
+     "lexeme.arabic-special-spellings-5",
+     "lexeme.arabic-special-spellings-6",
+     "lexeme.arabic-special-spellings-7"
     ]
    }
   ],
@@ -24308,6 +24398,15 @@
       "id": "explainer.arabic-one-spelling-several-words",
       "en": "More words that share a spelling, and how to choose between them."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-script-meaning-1",
+     "lexeme.arabic-script-meaning-2",
+     "lexeme.arabic-script-meaning-3",
+     "lexeme.arabic-script-meaning-4",
+     "lexeme.arabic-script-meaning-5",
+     "lexeme.arabic-script-meaning-6",
+     "lexeme.arabic-script-meaning-7"
     ]
    }
   ],
@@ -24467,6 +24566,15 @@
       "id": "explainer.arabic-listening-in-passes",
       "en": "Listening in passes later on, and the difference between hearing and listening."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-listening-noticing-1",
+     "lexeme.arabic-listening-noticing-2",
+     "lexeme.arabic-listening-noticing-3",
+     "lexeme.arabic-listening-noticing-4",
+     "lexeme.arabic-listening-noticing-5",
+     "lexeme.arabic-listening-noticing-6",
+     "lexeme.arabic-listening-noticing-7"
     ]
    }
   ],
@@ -24603,6 +24711,15 @@
       "id": "explainer.arabic-know-teach-learn",
       "en": "The doubled middle letter again, in عَلَّمَ, he taught."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-length-contrast-1",
+     "lexeme.arabic-length-contrast-2",
+     "lexeme.arabic-length-contrast-3",
+     "lexeme.arabic-length-contrast-4",
+     "lexeme.arabic-length-contrast-5",
+     "lexeme.arabic-length-contrast-6",
+     "lexeme.arabic-length-contrast-7"
     ]
    }
   ],
@@ -24730,7 +24847,16 @@
       "why_en": "With خ instead, the word is good."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-throat-sounds-1",
+     "lexeme.arabic-throat-sounds-2",
+     "lexeme.arabic-throat-sounds-3",
+     "lexeme.arabic-throat-sounds-4",
+     "lexeme.arabic-throat-sounds-5",
+     "lexeme.arabic-throat-sounds-6",
+     "lexeme.arabic-throat-sounds-7"
+    ]
    }
   ],
   "lesson.arabic-emphatics-qaf": [
@@ -24870,7 +24996,13 @@
       "why_en": "ظ is the heavy partner of ذ."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-emphatics-qaf-1",
+     "lexeme.arabic-emphatics-qaf-2",
+     "lexeme.arabic-emphatics-qaf-3",
+     "lexeme.arabic-emphatics-qaf-4"
+    ]
    },
    {
     "id": "explainer.arabic-qaf-and-th",
@@ -25006,7 +25138,13 @@
       "why_en": "ظ is the heavy partner of ذ."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-emphatics-qaf-5",
+     "lexeme.arabic-emphatics-qaf-6",
+     "lexeme.arabic-emphatics-qaf-7",
+     "lexeme.arabic-emphatics-qaf-8"
+    ]
    }
   ],
   "lesson.arabic-article-connected-speech": [
@@ -25153,6 +25291,15 @@
       "id": "explainer.arabic-words-run-together",
       "en": "More words that run together: هَمْزَةُ الْوَصْلِ."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-article-connected-speech-1",
+     "lexeme.arabic-article-connected-speech-2",
+     "lexeme.arabic-article-connected-speech-3",
+     "lexeme.arabic-article-connected-speech-4",
+     "lexeme.arabic-article-connected-speech-5",
+     "lexeme.arabic-article-connected-speech-6",
+     "lexeme.arabic-article-connected-speech-7"
     ]
    }
   ],
@@ -25289,6 +25436,15 @@
       "id": "explainer.arabic-case-endings",
       "en": "Who did what: the endings -u, -a and -i, and what they carry."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-pause-prosody-1",
+     "lexeme.arabic-pause-prosody-2",
+     "lexeme.arabic-pause-prosody-3",
+     "lexeme.arabic-pause-prosody-4",
+     "lexeme.arabic-pause-prosody-5",
+     "lexeme.arabic-pause-prosody-6",
+     "lexeme.arabic-pause-prosody-7"
     ]
    }
   ],
@@ -25494,6 +25650,15 @@
       "id": "explainer.arabic-synthesis",
       "en": "Bringing sources together, and saying who said what."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-academic-reading-1",
+     "lexeme.arabic-academic-reading-2",
+     "lexeme.arabic-academic-reading-3",
+     "lexeme.arabic-academic-reading-4",
+     "lexeme.arabic-academic-reading-5",
+     "lexeme.arabic-academic-reading-6",
+     "lexeme.arabic-academic-reading-7"
     ]
    }
   ],
@@ -25678,7 +25843,16 @@
       "why_en": "Mark one you don't know, and check it later."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-lecture-notes-1",
+     "lexeme.arabic-lecture-notes-2",
+     "lexeme.arabic-lecture-notes-3",
+     "lexeme.arabic-lecture-notes-4",
+     "lexeme.arabic-lecture-notes-5",
+     "lexeme.arabic-lecture-notes-6",
+     "lexeme.arabic-lecture-notes-7"
+    ]
    }
   ],
   "lesson.arabic-synthesis-citation": [
@@ -25866,6 +26040,16 @@
      "نَقَلَ الْمَقَالُ عَنْ رَحَّالَةٍ",
      "أَرَى أَنَّ",
      "اِتَّفَقْنَا عَلَى الْمَوْعِدِ"
+    ],
+    "course_words": [
+     "lexeme.arabic-synthesis-citation-1",
+     "lexeme.arabic-synthesis-citation-2",
+     "lexeme.arabic-synthesis-citation-3",
+     "lexeme.arabic-synthesis-citation-4",
+     "lexeme.arabic-synthesis-citation-5",
+     "lexeme.arabic-synthesis-citation-6",
+     "lexeme.arabic-synthesis-citation-7",
+     "lexeme.arabic-synthesis-citation-8"
     ]
    }
   ],
@@ -26033,6 +26217,16 @@
     "phrases_ar": [
      "نُوصِي بِأَنْ نُؤَجِّلَ الْقَرَارَ",
      "نُوصِي بِتَأْجِيلِ الْقَرَارِ"
+    ],
+    "course_words": [
+     "lexeme.arabic-professional-brief-1",
+     "lexeme.arabic-professional-brief-2",
+     "lexeme.arabic-professional-brief-3",
+     "lexeme.arabic-professional-brief-4",
+     "lexeme.arabic-professional-brief-5",
+     "lexeme.arabic-professional-brief-6",
+     "lexeme.arabic-professional-brief-7",
+     "lexeme.arabic-professional-brief-8"
     ]
    }
   ],
@@ -26207,6 +26401,15 @@
     "phrases_ar": [
      "قَاعِدَةٌ أَمْ تَفْضِيلٌ",
      "أَقَاعِدَةٌ هَذِهِ أَمْ تَفْضِيلٌ؟"
+    ],
+    "course_words": [
+     "lexeme.arabic-advanced-review-1",
+     "lexeme.arabic-advanced-review-2",
+     "lexeme.arabic-advanced-review-3",
+     "lexeme.arabic-advanced-review-4",
+     "lexeme.arabic-advanced-review-5",
+     "lexeme.arabic-advanced-review-6",
+     "lexeme.arabic-advanced-review-7"
     ]
    }
   ],
@@ -26393,6 +26596,15 @@
       "id": "explainer.arabic-narrator-and-characters",
       "en": "Who tells the story, and who speaks in it."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-literary-selection-1",
+     "lexeme.arabic-literary-selection-2",
+     "lexeme.arabic-literary-selection-3",
+     "lexeme.arabic-literary-selection-4",
+     "lexeme.arabic-literary-selection-5",
+     "lexeme.arabic-literary-selection-6",
+     "lexeme.arabic-literary-selection-7"
     ]
    }
   ],
@@ -26573,6 +26785,16 @@
       "id": "explainer.arabic-writing-about-a-text",
       "en": "Writing about a character, with evidence from the text."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-narrator-character-1",
+     "lexeme.arabic-narrator-character-2",
+     "lexeme.arabic-narrator-character-3",
+     "lexeme.arabic-narrator-character-4",
+     "lexeme.arabic-narrator-character-5",
+     "lexeme.arabic-narrator-character-6",
+     "lexeme.arabic-narrator-character-7",
+     "lexeme.arabic-narrator-character-8"
     ]
    }
   ],
@@ -26725,6 +26947,15 @@
       "id": "explainer.arabic-writing-about-a-text",
       "en": "Writing about an image's effect, with evidence from the text."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-imagery-style-1",
+     "lexeme.arabic-imagery-style-2",
+     "lexeme.arabic-imagery-style-3",
+     "lexeme.arabic-imagery-style-4",
+     "lexeme.arabic-imagery-style-5",
+     "lexeme.arabic-imagery-style-6",
+     "lexeme.arabic-imagery-style-7"
     ]
    }
   ],
@@ -26888,7 +27119,17 @@
       "why_en": "It's a pattern of long and short syllables."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-poetry-entry-1",
+     "lexeme.arabic-poetry-entry-2",
+     "lexeme.arabic-poetry-entry-3",
+     "lexeme.arabic-poetry-entry-4",
+     "lexeme.arabic-poetry-entry-5",
+     "lexeme.arabic-poetry-entry-6",
+     "lexeme.arabic-poetry-entry-7",
+     "lexeme.arabic-poetry-entry-8"
+    ]
    }
   ],
   "lesson.arabic-literary-review": [
@@ -27062,6 +27303,15 @@
      "يَخَافُ مِنَ الظَّلَامِ",
      "يَخَافُ الظَّلَامَ",
      "يَخَافُ مِنَ الْوَحْدَةِ"
+    ],
+    "course_words": [
+     "lexeme.arabic-literary-review-1",
+     "lexeme.arabic-literary-review-2",
+     "lexeme.arabic-literary-review-3",
+     "lexeme.arabic-literary-review-4",
+     "lexeme.arabic-literary-review-5",
+     "lexeme.arabic-literary-review-6",
+     "lexeme.arabic-literary-review-7"
     ]
    }
   ],
@@ -27227,6 +27477,15 @@
       "id": "explainer.arabic-old-dictionaries",
       "en": "Checking an old sense in a historical dictionary."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-classical-register-1",
+     "lexeme.arabic-classical-register-2",
+     "lexeme.arabic-classical-register-3",
+     "lexeme.arabic-classical-register-4",
+     "lexeme.arabic-classical-register-5",
+     "lexeme.arabic-classical-register-6",
+     "lexeme.arabic-classical-register-7"
     ]
    }
   ],
@@ -27384,6 +27643,15 @@
     ],
     "phrases_ar": [
      "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ"
+    ],
+    "course_words": [
+     "lexeme.arabic-classical-parsing-1",
+     "lexeme.arabic-classical-parsing-2",
+     "lexeme.arabic-classical-parsing-3",
+     "lexeme.arabic-classical-parsing-4",
+     "lexeme.arabic-classical-parsing-5",
+     "lexeme.arabic-classical-parsing-6",
+     "lexeme.arabic-classical-parsing-7"
     ]
    }
   ],
@@ -27543,6 +27811,16 @@
      "مَا النَّافِيَةُ",
      "مَا الِاسْتِفْهَامِيَّةُ",
      "مَا الْمَوْصُولَةُ"
+    ],
+    "course_words": [
+     "lexeme.arabic-historical-lexicon-1",
+     "lexeme.arabic-historical-lexicon-2",
+     "lexeme.arabic-historical-lexicon-3",
+     "lexeme.arabic-historical-lexicon-4",
+     "lexeme.arabic-historical-lexicon-5",
+     "lexeme.arabic-historical-lexicon-6",
+     "lexeme.arabic-historical-lexicon-7",
+     "lexeme.arabic-historical-lexicon-8"
     ]
    }
   ],
@@ -27716,6 +27994,15 @@
       "id": "explainer.arabic-annotating-a-passage",
       "en": "Writing your own notes on a short passage."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-edition-commentary-1",
+     "lexeme.arabic-edition-commentary-2",
+     "lexeme.arabic-edition-commentary-3",
+     "lexeme.arabic-edition-commentary-4",
+     "lexeme.arabic-edition-commentary-5",
+     "lexeme.arabic-edition-commentary-6",
+     "lexeme.arabic-edition-commentary-7"
     ]
    }
   ],
@@ -27893,6 +28180,15 @@
     "phrases_ar": [
      "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ",
      "يَعُودُ الضَّمِيرُ عَلَى"
+    ],
+    "course_words": [
+     "lexeme.arabic-classical-commentary-1",
+     "lexeme.arabic-classical-commentary-2",
+     "lexeme.arabic-classical-commentary-3",
+     "lexeme.arabic-classical-commentary-4",
+     "lexeme.arabic-classical-commentary-5",
+     "lexeme.arabic-classical-commentary-6",
+     "lexeme.arabic-classical-commentary-7"
     ]
    }
   ],
@@ -28057,6 +28353,15 @@
       "id": "explainer.arabic-beyond-word-for-word",
       "en": "Making the choices the brief calls for: idioms and set phrases."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-translation-brief-1",
+     "lexeme.arabic-translation-brief-2",
+     "lexeme.arabic-translation-brief-3",
+     "lexeme.arabic-translation-brief-4",
+     "lexeme.arabic-translation-brief-5",
+     "lexeme.arabic-translation-brief-6",
+     "lexeme.arabic-translation-brief-7"
     ]
    }
   ],
@@ -28203,7 +28508,16 @@
       "why_en": "Keep your words apart from the source's."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-translation-choices-1",
+     "lexeme.arabic-translation-choices-2",
+     "lexeme.arabic-translation-choices-3",
+     "lexeme.arabic-translation-choices-4",
+     "lexeme.arabic-translation-choices-5",
+     "lexeme.arabic-translation-choices-6",
+     "lexeme.arabic-translation-choices-7"
+    ]
    }
   ],
   "lesson.arabic-translation-qa": [
@@ -28371,6 +28685,15 @@
     ],
     "phrases_ar": [
      "جُمْلَةً جُمْلَةً"
+    ],
+    "course_words": [
+     "lexeme.arabic-translation-qa-1",
+     "lexeme.arabic-translation-qa-2",
+     "lexeme.arabic-translation-qa-3",
+     "lexeme.arabic-translation-qa-4",
+     "lexeme.arabic-translation-qa-5",
+     "lexeme.arabic-translation-qa-6",
+     "lexeme.arabic-translation-qa-7"
     ]
    }
   ],
@@ -28547,6 +28870,15 @@
     ],
     "phrases_ar": [
      "يَذْكُرُ أَنَّ"
+    ],
+    "course_words": [
+     "lexeme.arabic-oral-mediation-1",
+     "lexeme.arabic-oral-mediation-2",
+     "lexeme.arabic-oral-mediation-3",
+     "lexeme.arabic-oral-mediation-4",
+     "lexeme.arabic-oral-mediation-5",
+     "lexeme.arabic-oral-mediation-6",
+     "lexeme.arabic-oral-mediation-7"
     ]
    }
   ],
@@ -28715,6 +29047,15 @@
     ],
     "phrases_ar": [
      "اِسْتَعَنْتُ بِمُعْجَمٍ"
+    ],
+    "course_words": [
+     "lexeme.arabic-translation-portfolio-1",
+     "lexeme.arabic-translation-portfolio-2",
+     "lexeme.arabic-translation-portfolio-3",
+     "lexeme.arabic-translation-portfolio-4",
+     "lexeme.arabic-translation-portfolio-5",
+     "lexeme.arabic-translation-portfolio-6",
+     "lexeme.arabic-translation-portfolio-7"
     ]
    }
   ],
@@ -28883,6 +29224,15 @@
       "id": "explainer.arabic-security-plainly",
       "en": "Explaining a security idea plainly, with the right terms."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-technical-terminology-1",
+     "lexeme.arabic-technical-terminology-2",
+     "lexeme.arabic-technical-terminology-3",
+     "lexeme.arabic-technical-terminology-4",
+     "lexeme.arabic-technical-terminology-5",
+     "lexeme.arabic-technical-terminology-6",
+     "lexeme.arabic-technical-terminology-7"
     ]
    }
   ],
@@ -29054,7 +29404,16 @@
       "why_en": "The step is required."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-technical-docs-1",
+     "lexeme.arabic-technical-docs-2",
+     "lexeme.arabic-technical-docs-3",
+     "lexeme.arabic-technical-docs-4",
+     "lexeme.arabic-technical-docs-5",
+     "lexeme.arabic-technical-docs-6",
+     "lexeme.arabic-technical-docs-7"
+    ]
    }
   ],
   "lesson.arabic-security-explainer": [
@@ -29237,7 +29596,16 @@
       "why_en": "Security comes from several measures together."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-security-explainer-1",
+     "lexeme.arabic-security-explainer-2",
+     "lexeme.arabic-security-explainer-3",
+     "lexeme.arabic-security-explainer-4",
+     "lexeme.arabic-security-explainer-5",
+     "lexeme.arabic-security-explainer-6",
+     "lexeme.arabic-security-explainer-7"
+    ]
    }
   ],
   "lesson.arabic-incident-summary": [
@@ -29412,6 +29780,15 @@
       "id": "explainer.arabic-technical-demo",
       "en": "Presenting a small technical task, with its limits."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-incident-summary-1",
+     "lexeme.arabic-incident-summary-2",
+     "lexeme.arabic-incident-summary-3",
+     "lexeme.arabic-incident-summary-4",
+     "lexeme.arabic-incident-summary-5",
+     "lexeme.arabic-incident-summary-6",
+     "lexeme.arabic-incident-summary-7"
     ]
    }
   ],
@@ -29583,7 +29960,16 @@
       "why_en": "A count is a fact; an attack is a conclusion."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-technical-demo-1",
+     "lexeme.arabic-technical-demo-2",
+     "lexeme.arabic-technical-demo-3",
+     "lexeme.arabic-technical-demo-4",
+     "lexeme.arabic-technical-demo-5",
+     "lexeme.arabic-technical-demo-6",
+     "lexeme.arabic-technical-demo-7"
+    ]
    }
   ],
   "lesson.arabic-quranic-scope": [
@@ -29752,6 +30138,15 @@
       "id": "explainer.arabic-mushaf-spelling",
       "en": "The muṣḥaf's own spelling, and how it differs from modern spelling."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-quranic-scope-1",
+     "lexeme.arabic-quranic-scope-2",
+     "lexeme.arabic-quranic-scope-3",
+     "lexeme.arabic-quranic-scope-4",
+     "lexeme.arabic-quranic-scope-5",
+     "lexeme.arabic-quranic-scope-6",
+     "lexeme.arabic-quranic-scope-7"
     ]
    }
   ],
@@ -29909,6 +30304,15 @@
       "id": "explainer.arabic-morphology-as-an-aid",
       "en": "Taking a word apart with a morphology annotation."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-uthmani-script-1",
+     "lexeme.arabic-uthmani-script-2",
+     "lexeme.arabic-uthmani-script-3",
+     "lexeme.arabic-uthmani-script-4",
+     "lexeme.arabic-uthmani-script-5",
+     "lexeme.arabic-uthmani-script-6",
+     "lexeme.arabic-uthmani-script-7"
     ]
    }
   ],
@@ -30060,6 +30464,15 @@
       "id": "explainer.arabic-meaning-in-context",
       "en": "Reading a word inside its clause and its passage."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-quranic-morphology-1",
+     "lexeme.arabic-quranic-morphology-2",
+     "lexeme.arabic-quranic-morphology-3",
+     "lexeme.arabic-quranic-morphology-4",
+     "lexeme.arabic-quranic-morphology-5",
+     "lexeme.arabic-quranic-morphology-6",
+     "lexeme.arabic-quranic-morphology-7"
     ]
    }
   ],
@@ -30236,6 +30649,15 @@
       "id": "explainer.arabic-passage-study",
       "en": "Putting it together in a sourced study of a short passage."
      }
+    ],
+    "course_words": [
+     "lexeme.arabic-quranic-context-1",
+     "lexeme.arabic-quranic-context-2",
+     "lexeme.arabic-quranic-context-3",
+     "lexeme.arabic-quranic-context-4",
+     "lexeme.arabic-quranic-context-5",
+     "lexeme.arabic-quranic-context-6",
+     "lexeme.arabic-quranic-context-7"
     ]
    }
   ],
@@ -30395,7 +30817,16 @@
       "why_en": "So someone else can check it."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "course_words": [
+     "lexeme.arabic-quranic-reading-project-1",
+     "lexeme.arabic-quranic-reading-project-2",
+     "lexeme.arabic-quranic-reading-project-3",
+     "lexeme.arabic-quranic-reading-project-4",
+     "lexeme.arabic-quranic-reading-project-5",
+     "lexeme.arabic-quranic-reading-project-6",
+     "lexeme.arabic-quranic-reading-project-7"
+    ]
    }
   ]
  }

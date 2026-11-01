@@ -446,11 +446,11 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('each module\'s file holds exactly its own lessons\' explainers, as authored', Object.entries(expSource.lessons).every(([id, list]) => JSON.stringify(expModules[moduleOfLesson[id]]?.[id]) === JSON.stringify(list))
     && Object.values(expModules).reduce((n, m) => n + Object.keys(m).length, 0) === Object.keys(expSource.lessons).length);
   const expCards = Object.entries(expSource.lessons).flatMap(([id, list]) => list.map(e => [id, e]));
-  check('the index has each lesson\'s module (152), each card\'s lesson and title (175) and each course word\'s card (651), and nothing more',
+  check('the index has each lesson\'s module (152), each card\'s lesson and title (175) and each course word\'s card (986), and nothing more',
     JSON.stringify(expIndex.chunks) === JSON.stringify(Object.fromEntries(Object.keys(expSource.lessons).map(id => [id, moduleOfLesson[id]])))
     && JSON.stringify(expIndex.cards) === JSON.stringify(Object.fromEntries(expCards.map(([id, e]) => [e.id, [id, e.title_en]])))
     && JSON.stringify(expIndex.words) === JSON.stringify(Object.fromEntries(expCards.flatMap(([, e]) => (e.course_words ?? []).map(w => [w, e.id]))))
-    && Object.keys(expIndex.chunks).length === 152 && Object.keys(expIndex.cards).length === 175 && Object.keys(expIndex.words).length === 651);
+    && Object.keys(expIndex.chunks).length === 152 && Object.keys(expIndex.cards).length === 175 && Object.keys(expIndex.words).length === 986);
   check('the app\'s copy (app/src/study/arabic/explainer-data) is exactly this: prepared from the authored file as it is now', JSON.stringify(expFiles(expOut)) === JSON.stringify(expFiles(expSplit)) && expFiles(expOut).every(f => read(path.join(expOut, f)) === read(path.join(expSplit, f))));
   const gz = f => require('zlib').gzipSync(fs.readFileSync(path.join(expSplit, f))).length;
   check('sizes stay bounded: the index (loaded for links) under 16 KB compressed, each module\'s explainers under 16 KB', gz('explainers-index.json') < 16000 && Object.keys(expModules).every(m => gz(`explainers-${m}.json`) < 16000));
