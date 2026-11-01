@@ -703,10 +703,15 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   const digits = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-digits-prices"]'); const cell = d?.querySelector('[data-ar-explainer-row] td'); const n = cell?.querySelector('bdi[lang="ar"]'); const word = d?.querySelector('[data-ar-explainer-step] bdi[lang="ar"]:not(.ar-digits)'); const px = e => e ? parseFloat(getComputedStyle(e).fontSize) / parseFloat(getComputedStyle(e.parentElement).fontSize) : null; return { rows: d?.querySelectorAll('[data-ar-explainer-row]').length, text: cell?.textContent, digit: n?.textContent, digitClass: n?.className, digitScale: px(n), wordClass: word?.className, wordScale: px(word) }; })()`);
   check('module 7: the digits explainer shows the eleven digits ٠ to ١٠, each label\'s Arabic digit marked as Arabic', digits.rows === 11 && digits.text === '٠ · 0' && digits.digit === '٠', digits);
   check('…and a digit on its own is drawn larger than Arabic words (Naskh draws digits small), so ٤٧ reads at the size of the text', /\bar-digits\b/.test(digits.digitClass || '') && digits.digitScale > 1.3 && !/ar-digits/.test(digits.wordClass || '') && digits.wordScale < 1.2, digits);
-  await fresh('study/arabic/lesson.arabic-technical-demo'); await wait('[data-ar-check]', 5000);
-  check('a lesson without explainers (module 30\'s technical demo) shows no "How it works" section', !(await exists('[data-ar-explainers]')));
-  await sleep(500);
-  check('…and loads no module\'s explainers, only the index', await exChunks() === 'index', await exChunks());
+  // A lesson whose explainers can't load (its module's file blocked, as offline before it was ever fetched) shows no
+  // "How it works" section; every lesson has explainers now, so this is the path a lesson without them takes too.
+  await send('Network.enable'); await send('Network.setBypassServiceWorker', { bypass: true }); await send('Network.setCacheDisabled', { cacheDisabled: true });
+  await send('Network.setBlockedURLs', { urls: ['*explainers-arabic-technology-*.js'] });
+  await fresh('study/arabic/lesson.arabic-technical-demo'); await wait('[data-ar-check]', 5000); await sleep(800);
+  check('a lesson whose explainers can\'t load (module 30\'s file blocked) shows no "How it works" section', !(await exists('[data-ar-explainers]')));
+  await send('Network.setBlockedURLs', { urls: [] }); await send('Network.setCacheDisabled', { cacheDisabled: false }); await send('Network.setBypassServiceWorker', { bypass: false });
+  await fresh('study/arabic/lesson.arabic-technical-demo'); await wait('[data-ar-explainers="1"]', 5000);
+  check('…and with the file back, the technical demo lesson has its one explainer', await exists('[data-ar-explainers="1"]'));
 
   await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
   await go(wvHash); await wait(exSel, 5000);
