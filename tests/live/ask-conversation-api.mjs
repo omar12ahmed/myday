@@ -6,7 +6,10 @@
 // it) is held only by the pause between requests, never refused as a bad request. `--expect v24` checks the old server
 // instead (it refuses every conversation). `MYDAY_EXPECT=v26` also sends "how you work" with the conversation. `MYDAY_EXPECT=v27-before` (the v26 server, before
 // deploying v27) shows a request carrying "thinking" is refused, so the app must follow the deploy; `MYDAY_EXPECT=v27` sends
-// "thinking" with the conversation and asks one open question, whose choices must be ones the app can read. Never prints
+// "thinking" with the conversation and asks one open question, whose choices must be ones the app can read.
+// `MYDAY_EXPECT=v28-before` (the v27 server, before deploying v28) shows a request offering the look at your ambitions is
+// refused, so the app must follow the deploy; `MYDAY_EXPECT=v28` offers it with the conversation, asks "what am I working
+// towards?" (it should ask to look) and then answers from made-up ambitions' titles (three model calls). Never prints
 // the account's details or tokens. Only with the owner's yes.
 const env = process.env, URL_ = (env.SUPABASE_URL || '').replace(/\/+$/, ''), KEY = env.SUPABASE_PUBLISHABLE_KEY || '', SITE = 'https://omar12ahmed.github.io';
 if (!process.argv.includes('--live') || !env.MYDAY_LIVE_EMAIL?.endsWith('@example.com') || !KEY.startsWith('sb_publishable_')) {
@@ -30,7 +33,9 @@ const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate(
 const base = { version: 1, action: 'ask', date, weekday, time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, page: 'other', context: {}, can: ['day', 'search'] };
 const EX = { asked: 'What does a good weekly review look like? (made up)', answered: 'Look back at what moved, what you’re waiting on and what matters next week, in about 20 minutes.' };
 const V27 = env.MYDAY_EXPECT === 'v27', BEFORE27 = env.MYDAY_EXPECT === 'v27-before', THINK = { asked: 0, most: 5 };
-const conv = { ...base, text: 'and how long should it take?', conversation: { earlier: [EX], leftOut: 0 }, ...(['v26', 'v27'].includes(env.MYDAY_EXPECT) ? { howYouWork: ['Learning tasks: 20 min at most'] } : {}), ...(V27 ? { thinking: THINK } : {}) };
+const V28 = env.MYDAY_EXPECT === 'v28', BEFORE28 = env.MYDAY_EXPECT === 'v28-before', CANG = [...base.can, 'goals'];
+const GOALS = { tool: 'goals', query: 'all', found: 2, ambitions: ['Learn to sail (made up)', 'Write a short book (made up)'] };
+const conv = { ...base, text: 'and how long should it take?', conversation: { earlier: [EX], leftOut: 0 }, ...(['v26', 'v27', 'v28'].includes(env.MYDAY_EXPECT) ? { howYouWork: ['Learning tasks: 20 min at most'] } : {}), ...(V27 || V28 ? { thinking: THINK } : {}), ...(V28 ? { can: CANG } : {}) };
 const day = { tool: 'day', query: date, weekday, planned: false, rest: false, energy: null, tasks: [], minutesLeft: 0, due: [], busy: [], free: [{ start: '09:00', end: '17:00' }] };
 
 const bad = [
@@ -42,12 +47,18 @@ const bad = [
   ['how you work: a line over 120 characters (v26)', { ...base, text: 'x', howYouWork: ['x'.repeat(121)] }],
   ['thinking: a limit over 5 (v27)', { ...base, text: 'x', thinking: { asked: 0, most: 6 } }],
   ['thinking: a field it doesn\'t know (v27)', { ...base, text: 'x', thinking: { ...THINK, why: 'x' } }],
+  ['your ambitions: 13 titles in the look (v28)', { ...base, text: 'x', can: CANG, lookup: { ...GOALS, found: 13, ambitions: Array.from({ length: 13 }, (_, i) => `Ambition ${i}`) } }],
+  ['your ambitions: an ambition\'s why in the look (v28)', { ...base, text: 'x', can: CANG, lookup: { ...GOALS, why: 'x' } }],
 ];
 for (const [why, c] of bad) { const x = await ask(c); check(`refused as a bad request: ${why}`, x.status === 400, `${x.status} ${JSON.stringify(x.j).slice(0, 120)}`); }
 
 if (BEFORE27) {
   const t = await ask({ ...base, text: 'x', thinking: THINK });
   check('the v26 server refuses a request carrying "thinking" (so publish the app only after deploying v27)', t.status === 400, `${t.status}`);
+}
+if (BEFORE28) {
+  const g = await ask({ ...base, text: 'x', can: CANG });
+  check('the v27 server refuses a request offering the look at your ambitions (so publish the app only after deploying v28)', g.status === 400, `${g.status}`);
 }
 const ok = await ask(conv);
 if (OLD) check('the v24 server refuses a conversation (so publish the app only after deploying)', ok.status === 400, `${ok.status}`);
@@ -65,6 +76,18 @@ else {
     check('v27: an open question with "thinking" is accepted and answered', open.status === 200 && open.j.ok === true && !!q && typeof q.message === 'string', `${open.status} ${JSON.stringify(open.j).slice(0, 160)}`);
     check('…its choices, if any, are on an answer with no action: 1 to 4, each 1–40 characters', !q?.choices || (q.kind === 'answer' && !q.action && Array.isArray(q.choices) && q.choices.length >= 1 && q.choices.length <= 4 && q.choices.every(c => typeof c === 'string' && c.length > 0 && c.length <= 40)), JSON.stringify(q).slice(0, 240));
     console.log(`(the open question was answered as "${q?.kind}"${q?.choices ? ` with ${q.choices.length} choices` : ' without choices'})`);
+  }
+  if (V28) {
+    // Asked about their goals with the look on offer, then answered from made-up titles, each after the pause.
+    await new Promise(res => setTimeout(res, 7000));
+    const want = await ask({ ...base, text: 'What am I working towards?', can: CANG, thinking: THINK });
+    let w = null; try { w = JSON.parse(want.j.output); } catch { /* checked below */ }
+    check('v28: "What am I working towards?" with the look on offer asks to look at your ambitions', want.status === 200 && w?.kind === 'lookup' && w.lookup?.tool === 'goals', `${want.status} ${JSON.stringify(want.j).slice(0, 200)}`);
+    await new Promise(res => setTimeout(res, 7000));
+    const got = await ask({ ...base, text: 'What am I working towards?', can: CANG, thinking: THINK, lookup: GOALS });
+    let a = null; try { a = JSON.parse(got.j.output); } catch { /* checked below */ }
+    check('…and with the look, answers from the titles it was sent', got.status === 200 && a?.kind === 'answer' && /sail/i.test(a.message) && /book/i.test(a.message), `${got.status} ${JSON.stringify(got.j).slice(0, 240)}`);
+    console.log(`(the answer: "${String(a?.message ?? '').slice(0, 200)}")`);
   }
 }
 console.log(`${pass} passed, ${fail} failed`);
