@@ -1,7 +1,7 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
  "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–24 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied and re-checked), checked by the owner on 2026-10-31 and voiced (rounds sixteen and eighteen); modules 1–3 and 25–30 (335 words, 1 November 2026): cross-checked by an independent reviewer (no errors; 21 improvements applied), checked by the owner’s fluent checker (corrections applied after each was checked), and voiced (rounds twenty-three and twenty-five, approved by ear)",
- "version": "1.8",
+ "version": "1.9",
  "lessons": {
   "lesson.arabic-fusha-register": {
    "seed": [],
@@ -82,6 +82,30 @@
      "example_ar": "لِكُلِّ مِنْطَقَةٍ لَهْجَةٌ.",
      "example_meaning_en": "Every region has its own dialect.",
      "note": "Plural مَنَاطِق."
+    },
+    {
+     "id": "lexeme.arabic-fusha-register-8",
+     "form_ar": "كُلّ",
+     "meaning_en": "every, each; all",
+     "part_of_speech": "noun",
+     "root_ar": "ك-ل-ل",
+     "root_reading": "k-l-l",
+     "example_ar": "لِكُلِّ بَلَدٍ لَهْجَتُهُ.",
+     "example_meaning_en": "Every country has its own dialect.",
+     "note": "Before a noun without the article it means “every”: كُلَّ يَوْمٍ, every day. Before a definite noun it means “all”: كُلُّ الْبُيُوتِ, all the houses.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-fusha-register-9",
+     "form_ar": "أَخْبَار",
+     "meaning_en": "news",
+     "part_of_speech": "noun (plural)",
+     "root_ar": "خ-ب-ر",
+     "root_reading": "kh-b-r",
+     "example_ar": "شَاهَدْتُ الْأَخْبَارَ.",
+     "example_meaning_en": "I watched the news.",
+     "note": "The plural of خَبَر, “a piece of news”. For the news on TV or radio it is used with the article: الْأَخْبَار.",
+     "dictionary": true
     }
    ]
   },
@@ -164,6 +188,18 @@
      "example_ar": "تَعَلَّمْتُ الْحُرُوفَ سَابِقًا.",
      "example_meaning_en": "I learned the letters before.",
      "note": "From سَبَقَ, “to come before”."
+    },
+    {
+     "id": "lexeme.arabic-goal-baseline-8",
+     "form_ar": "أَهْلًا",
+     "meaning_en": "hello; welcome",
+     "part_of_speech": "chunk",
+     "root_ar": "أ-ه-ل",
+     "root_reading": "ʾ-h-l",
+     "example_ar": "أَهْلًا يَا سَلْمَى!",
+     "example_meaning_en": "Hello, Salma!",
+     "note": "The short form of أَهْلًا وَسَهْلًا. The reply to a man is أَهْلًا بِكَ, to a woman أَهْلًا بِكِ.",
+     "dictionary": true
     }
    ]
   },
@@ -246,6 +282,18 @@
      "example_ar": "أُحَاوِلُ مِنْ جَدِيدٍ.",
      "example_meaning_en": "I'm trying again.",
      "note": "Literally “from new”. Like مَرَّةً أُخْرَى, “once more”."
+    },
+    {
+     "id": "lexeme.arabic-learning-loop-8",
+     "form_ar": "أَجَابَ",
+     "meaning_en": "answered, replied",
+     "part_of_speech": "verb",
+     "root_ar": "ج-و-ب",
+     "root_reading": "j-w-b",
+     "example_ar": "أُجِيبُ مِنَ الذَّاكِرَةِ.",
+     "example_meaning_en": "I answer from memory.",
+     "note": "Present يُجِيبُ; “I answer” is أُجِيبُ. The noun is إِجَابَة, “an answer”.",
+     "dictionary": true
     }
    ]
   },
@@ -328,6 +376,30 @@
      "example_ar": "اِضْغَطْ هُنَا.",
      "example_meaning_en": "Press here.",
      "note": "Present يَضْغَطُ. On a screen it also means “tap” or “click”."
+    },
+    {
+     "id": "lexeme.arabic-arabic-tools-8",
+     "form_ar": "لَوْحَةُ الْمَفَاتِيحِ",
+     "meaning_en": "keyboard",
+     "part_of_speech": "chunk",
+     "root_ar": "ل-و-ح",
+     "root_reading": "l-w-ḥ",
+     "example_ar": "أَكْتُبُ الْعَرَبِيَّةَ عَلَى لَوْحَةِ الْمَفَاتِيحِ.",
+     "example_meaning_en": "I type Arabic on the keyboard.",
+     "note": "Literally “the board of the keys”: لَوْحَة is a board or panel, and مَفَاتِيح is the plural of مِفْتَاح, “key”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-arabic-tools-9",
+     "form_ar": "دَفْتَر",
+     "meaning_en": "notebook, exercise book",
+     "part_of_speech": "noun",
+     "root_ar": "د-ف-ت-ر",
+     "root_reading": "d-f-t-r",
+     "example_ar": "هَذَا دَفْتَرِي الْجَدِيدُ.",
+     "example_meaning_en": "This is my new notebook.",
+     "note": "Plural دَفَاتِر. دَفْتَرِي is “my notebook”, like اِسْمِي, “my name”.",
+     "dictionary": true
     }
    ]
   },
@@ -410,6 +482,18 @@
      "example_ar": "هَذَا جَدْوَلِي لِلْأُسْبُوعِ.",
      "example_meaning_en": "This is my timetable for the week.",
      "note": "Plural جَدَاوِل. Also a table of figures."
+    },
+    {
+     "id": "lexeme.arabic-practice-contract-8",
+     "form_ar": "دَقِيقَة",
+     "meaning_en": "minute",
+     "part_of_speech": "noun",
+     "root_ar": "د-ق-ق",
+     "root_reading": "d-q-q",
+     "example_ar": "أَدْرُسُ عَشْرَ دَقَائِقَ الْيَوْمَ.",
+     "example_meaning_en": "I study for ten minutes today.",
+     "note": "Plural دَقَائِق: عَشْرُ دَقَائِقَ is “ten minutes”. The same word also means “precise, exact”.",
+     "dictionary": true
     }
    ]
   },
@@ -492,6 +576,54 @@
      "example_ar": "ثَوْبُهُ أَبْيَضُ.",
      "example_meaning_en": "His robe is white.",
      "note": "Plural ثِيَاب."
+    },
+    {
+     "id": "lexeme.arabic-letter-families-8",
+     "form_ar": "ثَلْج",
+     "meaning_en": "snow; ice",
+     "part_of_speech": "noun",
+     "root_ar": "ث-ل-ج",
+     "root_reading": "th-l-j",
+     "example_ar": "الثَّلْجُ أَبْيَضُ.",
+     "example_meaning_en": "Snow is white.",
+     "note": "Also “ice”. Plural ثُلُوج.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-letter-families-9",
+     "form_ar": "يَد",
+     "meaning_en": "hand",
+     "part_of_speech": "noun",
+     "root_ar": "ي-د-ي",
+     "root_reading": "y-d-y",
+     "example_ar": "فِي يَدِي قَلَمٌ.",
+     "example_meaning_en": "There is a pen in my hand.",
+     "note": "Feminine. Two hands: يَدَانِ; plural أَيْدٍ.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-letter-families-10",
+     "form_ar": "حُبّ",
+     "meaning_en": "love",
+     "part_of_speech": "noun",
+     "root_ar": "ح-ب-ب",
+     "root_reading": "ḥ-b-b",
+     "example_ar": "الْحُبُّ جَمِيلٌ.",
+     "example_meaning_en": "Love is beautiful.",
+     "note": "The verb is أُحِبُّ, “I love, I like”. حَبِيب is “darling, beloved”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-letter-families-11",
+     "form_ar": "أَبْيَض",
+     "meaning_en": "white",
+     "part_of_speech": "adjective",
+     "root_ar": "ب-ي-ض",
+     "root_reading": "b-y-ḍ",
+     "example_ar": "هَذَا ثَوْبٌ أَبْيَضُ.",
+     "example_meaning_en": "This is a white garment.",
+     "note": "Feminine بَيْضَاء: وَرَقَةٌ بَيْضَاءُ, a white sheet of paper. Colour words of this shape never take -un.",
+     "dictionary": true
     }
    ]
   },
@@ -574,6 +706,54 @@
      "example_ar": "هَذِهِ مَلَابِسُ جَدِيدَةٌ.",
      "example_meaning_en": "These are new clothes.",
      "note": "The singular, مَلْبَس, is less common. Notice لَا in the middle."
+    },
+    {
+     "id": "lexeme.arabic-letter-joining-8",
+     "form_ar": "نَار",
+     "meaning_en": "fire",
+     "part_of_speech": "noun",
+     "root_ar": "ن-و-ر",
+     "root_reading": "n-w-r",
+     "example_ar": "النَّارُ حَارَّةٌ.",
+     "example_meaning_en": "The fire is hot.",
+     "note": "Feminine. Plural نِيرَان. From the same root as نُور, “light”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-letter-joining-9",
+     "form_ar": "زَيْت",
+     "meaning_en": "oil",
+     "part_of_speech": "noun",
+     "root_ar": "ز-ي-ت",
+     "root_reading": "z-y-t",
+     "example_ar": "زَيْتُ الزَّيْتُونِ لَذِيذٌ.",
+     "example_meaning_en": "Olive oil is delicious.",
+     "note": "زَيْتُون is “olives”. Plural زُيُوت.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-letter-joining-10",
+     "form_ar": "أَحْمَر",
+     "meaning_en": "red",
+     "part_of_speech": "adjective",
+     "root_ar": "ح-م-ر",
+     "root_reading": "ḥ-m-r",
+     "example_ar": "الْوَرْدُ أَحْمَرُ.",
+     "example_meaning_en": "The roses are red.",
+     "note": "Feminine حَمْرَاء. Like أَبْيَض, it never takes -un: وَرْدٌ أَحْمَرُ, red roses.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-letter-joining-11",
+     "form_ar": "وَرْد",
+     "meaning_en": "roses, flowers",
+     "part_of_speech": "noun",
+     "root_ar": "و-ر-د",
+     "root_reading": "w-r-d",
+     "example_ar": "فِي الْحَدِيقَةِ وَرْدٌ كَثِيرٌ.",
+     "example_meaning_en": "There are lots of roses in the garden.",
+     "note": "A word for roses in general: one rose is وَرْدَة.",
+     "dictionary": true
     }
    ]
   },
@@ -656,6 +836,42 @@
      "example_ar": "هَذَا النَّصُّ مُشَكَّلٌ.",
      "example_meaning_en": "This text has its vowel marks.",
      "note": "Also مَشْكُول. The vowel marks themselves are called تَشْكِيل."
+    },
+    {
+     "id": "lexeme.arabic-vowel-decoding-8",
+     "form_ar": "جَمَال",
+     "meaning_en": "beauty",
+     "part_of_speech": "noun",
+     "root_ar": "ج-م-ل",
+     "root_reading": "j-m-l",
+     "example_ar": "أُحِبُّ جَمَالَ الْبَحْرِ.",
+     "example_meaning_en": "I love the beauty of the sea.",
+     "note": "From the root of جَمِيل, “beautiful”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-vowel-decoding-9",
+     "form_ar": "حُلْو",
+     "meaning_en": "sweet",
+     "part_of_speech": "adjective",
+     "root_ar": "ح-ل-و",
+     "root_reading": "ḥ-l-w",
+     "example_ar": "الْعِنَبُ حُلْوٌ.",
+     "example_meaning_en": "The grapes are sweet.",
+     "note": "Feminine حُلْوَة. In everyday speech it also means “nice, pretty”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-vowel-decoding-10",
+     "form_ar": "لَعِبَ",
+     "meaning_en": "played",
+     "part_of_speech": "verb",
+     "root_ar": "ل-ع-ب",
+     "root_reading": "l-ʿ-b",
+     "example_ar": "أَلْعَبُ كُرَةَ الْقَدَمِ.",
+     "example_meaning_en": "I play football.",
+     "note": "Present يَلْعَبُ; “I play” is أَلْعَبُ, “we play” نَلْعَبُ, “they play” يَلْعَبُونَ. The noun is لُعْبَة, “game, toy”.",
+     "dictionary": true
     }
    ]
   },
@@ -820,6 +1036,30 @@
      "example_ar": "اِشْتَرَيْتُ خُبْزًا.",
      "example_meaning_en": "I bought some bread.",
      "note": "Present يَشْتَرِي. Like اِسْم, it starts with hamzat al-waṣl."
+    },
+    {
+     "id": "lexeme.arabic-special-spellings-8",
+     "form_ar": "نَظَرَ",
+     "meaning_en": "looked",
+     "part_of_speech": "verb",
+     "root_ar": "ن-ظ-ر",
+     "root_reading": "n-ẓ-r",
+     "example_ar": "أَنْظُرُ فِي الْمِرْآةِ.",
+     "example_meaning_en": "I look in the mirror.",
+     "note": "Present يَنْظُرُ; “I look” is أَنْظُرُ. You look at something with إِلَى: نَظَرَ إِلَى الصُّورَةِ.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-special-spellings-9",
+     "form_ar": "أَزْرَق",
+     "meaning_en": "blue",
+     "part_of_speech": "adjective",
+     "root_ar": "ز-ر-ق",
+     "root_reading": "z-r-q",
+     "example_ar": "السَّمَاءُ زَرْقَاءُ.",
+     "example_meaning_en": "The sky is blue.",
+     "note": "Feminine زَرْقَاء, as here, because سَمَاء is feminine. Like أَبْيَض, it never takes -un.",
+     "dictionary": true
     }
    ]
   },
@@ -902,6 +1142,18 @@
      "example_ar": "تَرْجَمْتُ الْجُمْلَةَ.",
      "example_meaning_en": "I translated the sentence.",
      "note": "Present يُتَرْجِمُ. A four-letter root. The noun is تَرْجَمَة."
+    },
+    {
+     "id": "lexeme.arabic-script-meaning-8",
+     "form_ar": "رَفَعَ",
+     "meaning_en": "raised, lifted",
+     "part_of_speech": "verb",
+     "root_ar": "ر-ف-ع",
+     "root_reading": "r-f-ʿ",
+     "example_ar": "رَفَعَ الطَّالِبُ يَدَهُ.",
+     "example_meaning_en": "The student raised his hand.",
+     "note": "Present يَرْفَعُ. رَفَعَ الْعَلَمَ is “he raised the flag”.",
+     "dictionary": true
     }
    ]
   },
@@ -984,6 +1236,18 @@
      "example_ar": "اِقْرَأْ بِصَوْتٍ عَالٍ.",
      "example_meaning_en": "Read aloud.",
      "note": "Literally “with a high voice”: here high means loud, not high-pitched."
+    },
+    {
+     "id": "lexeme.arabic-listening-noticing-8",
+     "form_ar": "عَالٍ",
+     "meaning_en": "high; loud",
+     "part_of_speech": "adjective",
+     "root_ar": "ع-ل-و",
+     "root_reading": "ʿ-l-w",
+     "example_ar": "الْجَبَلُ عَالٍ.",
+     "example_meaning_en": "The mountain is high.",
+     "note": "With the article: الْعَالِي. Feminine عَالِيَة. بِصَوْتٍ عَالٍ is “aloud, in a loud voice”.",
+     "dictionary": true
     }
    ]
   },
@@ -1066,6 +1330,42 @@
      "example_ar": "الْحَلَّاقُ مَشْغُولٌ.",
      "example_meaning_en": "The barber is busy.",
      "note": "Plural حَلَّاقُونَ. Compare حَلْق, “throat”, with no doubling and no long ā."
+    },
+    {
+     "id": "lexeme.arabic-length-contrast-8",
+     "form_ar": "مَالِك",
+     "meaning_en": "owner",
+     "part_of_speech": "noun",
+     "root_ar": "م-ل-ك",
+     "root_reading": "m-l-k",
+     "example_ar": "مَالِكُ الْمَطْعَمِ مِصْرِيٌّ.",
+     "example_meaning_en": "The owner of the restaurant is Egyptian.",
+     "note": "A long ā after the m; مَلِك, with a short a, is “king”. Plural مُلَّاك.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-length-contrast-9",
+     "form_ar": "عَالَم",
+     "meaning_en": "world",
+     "part_of_speech": "noun",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "الْعَالَمُ كَبِيرٌ.",
+     "example_meaning_en": "The world is big.",
+     "note": "Plural عَوَالِم. عَلَم, with a short a, is “flag”; عَالِم, with i, is “scholar, scientist”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-length-contrast-10",
+     "form_ar": "شَدِيد",
+     "meaning_en": "strong, intense, severe",
+     "part_of_speech": "adjective",
+     "root_ar": "ش-د-د",
+     "root_reading": "sh-d-d",
+     "example_ar": "الْحَرُّ شَدِيدٌ الْيَوْمَ.",
+     "example_meaning_en": "The heat is intense today.",
+     "note": "Feminine شَدِيدَة. Often used of weather and feelings: بَرْدٌ شَدِيدٌ, severe cold.",
+     "dictionary": true
     }
    ]
   },
@@ -1148,6 +1448,78 @@
      "example_ar": "أَطْبُخُ الْعَشَاءَ.",
      "example_meaning_en": "I'm cooking dinner.",
      "note": "The meals: فَطُور, غَدَاء and عَشَاء."
+    },
+    {
+     "id": "lexeme.arabic-throat-sounds-8",
+     "form_ar": "أَلَم",
+     "meaning_en": "pain",
+     "part_of_speech": "noun",
+     "root_ar": "أ-ل-م",
+     "root_reading": "ʾ-l-m",
+     "example_ar": "عِنْدِي أَلَمٌ فِي رَأْسِي.",
+     "example_meaning_en": "I have a pain in my head.",
+     "note": "Plural آلَام. أَمَل, “hope”, has the same letters in a different order.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-throat-sounds-9",
+     "form_ar": "هَوَاء",
+     "meaning_en": "air",
+     "part_of_speech": "noun",
+     "root_ar": "ه-و-ي",
+     "root_reading": "h-w-y",
+     "example_ar": "الْهَوَاءُ بَارِدٌ الْيَوْمَ.",
+     "example_meaning_en": "The air is cold today.",
+     "note": "Masculine. The same root gives هِوَايَة, “hobby”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-throat-sounds-10",
+     "form_ar": "خَرَجَ",
+     "meaning_en": "went out, came out",
+     "part_of_speech": "verb",
+     "root_ar": "خ-ر-ج",
+     "root_reading": "kh-r-j",
+     "example_ar": "خَرَجَ يُوسُفُ مِنَ الْبَيْتِ.",
+     "example_meaning_en": "Yusuf went out of the house.",
+     "note": "Present يَخْرُجُ; “she comes out” is تَخْرُجُ. The opposite is دَخَلَ, “entered”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-throat-sounds-11",
+     "form_ar": "جَاهِز",
+     "meaning_en": "ready",
+     "part_of_speech": "adjective",
+     "root_ar": "ج-ه-ز",
+     "root_reading": "j-h-z",
+     "example_ar": "الْغَدَاءُ جَاهِزٌ.",
+     "example_meaning_en": "Lunch is ready.",
+     "note": "Feminine جَاهِزَة: a woman says أَنَا جَاهِزَةٌ, “I'm ready”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-throat-sounds-12",
+     "form_ar": "طَبَخَ",
+     "meaning_en": "cooked",
+     "part_of_speech": "verb",
+     "root_ar": "ط-ب-خ",
+     "root_reading": "ṭ-b-kh",
+     "example_ar": "أَطْبُخُ الْعَشَاءَ.",
+     "example_meaning_en": "I cook dinner.",
+     "note": "Present يَطْبُخُ; “I cook” is أَطْبُخُ. مَطْبَخ is “kitchen”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-throat-sounds-13",
+     "form_ar": "رَأْس",
+     "meaning_en": "head",
+     "part_of_speech": "noun",
+     "root_ar": "ر-أ-س",
+     "root_reading": "r-ʾ-s",
+     "example_ar": "عِنْدِي أَلَمٌ فِي رَأْسِي.",
+     "example_meaning_en": "I have a pain in my head.",
+     "note": "Plural رُؤُوس. رَئِيس, “head, chief”, is from the same root.",
+     "dictionary": true
     }
    ]
   },
@@ -1241,6 +1613,174 @@
      "example_ar": "الطَّعَامُ لَذِيذٌ.",
      "example_meaning_en": "The food is delicious.",
      "note": "For a feminine noun: لَذِيذَة. ذ is like th in “this”."
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-9",
+     "form_ar": "قَلْب",
+     "meaning_en": "heart",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ل-ب",
+     "root_reading": "q-l-b",
+     "example_ar": "عِنْدَهُ قَلْبٌ طَيِّبٌ.",
+     "example_meaning_en": "He has a kind heart.",
+     "note": "Plural قُلُوب. كَلْب, with k, is “dog”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-10",
+     "form_ar": "كَلْب",
+     "meaning_en": "dog",
+     "part_of_speech": "noun",
+     "root_ar": "ك-ل-ب",
+     "root_reading": "k-l-b",
+     "example_ar": "عِنْدِي كَلْبٌ صَغِيرٌ.",
+     "example_meaning_en": "I have a small dog.",
+     "note": "Plural كِلَاب. A female dog is كَلْبَة.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-11",
+     "form_ar": "صَيْف",
+     "meaning_en": "summer",
+     "part_of_speech": "noun",
+     "root_ar": "ص-ي-ف",
+     "root_reading": "ṣ-y-f",
+     "example_ar": "الصَّيْفُ حَارٌّ هُنَا.",
+     "example_meaning_en": "Summer is hot here.",
+     "note": "The other seasons: شِتَاء, winter; رَبِيع, spring; خَرِيف, autumn. سَيْف, with s, is “sword”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-12",
+     "form_ar": "طِين",
+     "meaning_en": "mud, clay",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ي-ن",
+     "root_reading": "ṭ-y-n",
+     "example_ar": "هَذَا الْبَيْتُ مِنَ الطِّينِ.",
+     "example_meaning_en": "This house is made of mud.",
+     "note": "تِين, with a light t, is “figs”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-13",
+     "form_ar": "ضِرْس",
+     "meaning_en": "molar, back tooth",
+     "part_of_speech": "noun",
+     "root_ar": "ض-ر-س",
+     "root_reading": "ḍ-r-s",
+     "example_ar": "أَلَمُ الضِّرْسِ شَدِيدٌ.",
+     "example_meaning_en": "Toothache is severe.",
+     "note": "Plural ضُرُوس or أَضْرَاس. A front tooth is سِنّ.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-14",
+     "form_ar": "ذِرَاع",
+     "meaning_en": "arm",
+     "part_of_speech": "noun",
+     "root_ar": "ذ-ر-ع",
+     "root_reading": "dh-r-ʿ",
+     "example_ar": "ذِرَاعُ الطِّفْلِ صَغِيرَةٌ.",
+     "example_meaning_en": "The child's arm is small.",
+     "note": "Usually feminine. Two arms: ذِرَاعَانِ; plural أَذْرُع.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-15",
+     "form_ar": "ظِلّ",
+     "meaning_en": "shade, shadow",
+     "part_of_speech": "noun",
+     "root_ar": "ظ-ل-ل",
+     "root_reading": "ẓ-l-l",
+     "example_ar": "أَجْلِسُ فِي الظِّلِّ.",
+     "example_meaning_en": "I sit in the shade.",
+     "note": "Plural ظِلَال.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-16",
+     "form_ar": "شَكّ",
+     "meaning_en": "doubt",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ك-ك",
+     "root_reading": "sh-k-k",
+     "example_ar": "عِنْدِي شَكٌّ فِي هَذَا.",
+     "example_meaning_en": "I have a doubt about this.",
+     "note": "لَا شَكَّ is “no doubt”. شَقّ, with q, is “a crack”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-17",
+     "form_ar": "شَقّ",
+     "meaning_en": "crack, split",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ق-ق",
+     "root_reading": "sh-q-q",
+     "example_ar": "فِي الْكَأْسِ شَقٌّ.",
+     "example_meaning_en": "There is a crack in the glass.",
+     "note": "Plural شُقُوق. شَكّ, with k, is “doubt”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-18",
+     "form_ar": "ظُهْر",
+     "meaning_en": "noon, midday",
+     "part_of_speech": "noun",
+     "root_ar": "ظ-ه-ر",
+     "root_reading": "ẓ-h-r",
+     "example_ar": "أَرْجِعُ إِلَى الْبَيْتِ ظُهْرًا.",
+     "example_meaning_en": "I go back home at noon.",
+     "note": "بَعْدَ الظُّهْرِ is “in the afternoon”. ظَهْر, with a, is “back” (of the body).",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-19",
+     "form_ar": "حَظّ",
+     "meaning_en": "luck",
+     "part_of_speech": "noun",
+     "root_ar": "ح-ظ-ظ",
+     "root_reading": "ḥ-ẓ-ẓ",
+     "example_ar": "حَظُّكَ جَيِّدٌ الْيَوْمَ!",
+     "example_meaning_en": "You're in luck today!",
+     "note": "حَظًّا سَعِيدًا, “good luck”, is this word with -an. Plural حُظُوظ.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-20",
+     "form_ar": "اِمْتِحَان",
+     "meaning_en": "exam, test",
+     "part_of_speech": "noun",
+     "root_ar": "م-ح-ن",
+     "root_reading": "m-ḥ-n",
+     "example_ar": "عِنْدِي امْتِحَانٌ غَدًا.",
+     "example_meaning_en": "I have an exam tomorrow.",
+     "note": "Plural اِمْتِحَانَات. اِخْتِبَار is a shorter test or quiz.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-21",
+     "form_ar": "طَعَام",
+     "meaning_en": "food",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ع-م",
+     "root_reading": "ṭ-ʿ-m",
+     "example_ar": "الطَّعَامُ لَذِيذٌ.",
+     "example_meaning_en": "The food is delicious.",
+     "note": "مَطْعَم, “restaurant”, is from the same root.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-emphatics-qaf-22",
+     "form_ar": "طَيِّب",
+     "meaning_en": "kind, good; tasty",
+     "part_of_speech": "adjective",
+     "root_ar": "ط-ي-ب",
+     "root_reading": "ṭ-y-b",
+     "example_ar": "عِنْدَهُ قَلْبٌ طَيِّبٌ.",
+     "example_meaning_en": "He has a kind heart.",
+     "note": "Feminine طَيِّبَة. Of food it means “tasty”: طَعَامٌ طَيِّبٌ.",
+     "dictionary": true
     }
    ]
   },
@@ -1323,6 +1863,30 @@
      "example_ar": "نَزَلَ الْمَطَرُ.",
      "example_meaning_en": "It rained.",
      "note": "Plural أَمْطَار. With the article: al-maṭar."
+    },
+    {
+     "id": "lexeme.arabic-article-connected-speech-8",
+     "form_ar": "طَرِيق",
+     "meaning_en": "road, way",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ر-ق",
+     "root_reading": "ṭ-r-q",
+     "example_ar": "الطَّرِيقُ طَوِيلٌ.",
+     "example_meaning_en": "The road is long.",
+     "note": "Plural طُرُق. فِي الطَّرِيقِ is “on the way”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-article-connected-speech-9",
+     "form_ar": "نَزَلَ",
+     "meaning_en": "went down, came down; fell (of rain)",
+     "part_of_speech": "verb",
+     "root_ar": "ن-ز-ل",
+     "root_reading": "n-z-l",
+     "example_ar": "نَزَلَ الْمَطَرُ.",
+     "example_meaning_en": "The rain came down.",
+     "note": "Present يَنْزِلُ. Also “got off” a bus or a train.",
+     "dictionary": true
     }
    ]
   },
@@ -1514,6 +2078,18 @@
      "example_ar": "مَسَاءُ الْخَيْرِ. — مَسَاءُ النُّورِ.",
      "example_meaning_en": "Good evening. — Good evening (lit. evening of light).",
      "note": "Like صَبَاحُ الْخَيْرِ, with the starter word مَسَاء, “evening”."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-10",
+     "form_ar": "سَلَام",
+     "meaning_en": "peace",
+     "part_of_speech": "noun",
+     "root_ar": "س-ل-م",
+     "root_reading": "s-l-m",
+     "example_ar": "نُرِيدُ السَّلَامَ فِي الْعَالَمِ.",
+     "example_meaning_en": "We want peace in the world.",
+     "note": "In السَّلَامُ عَلَيْكُمْ, “peace be upon you”. مَعَ السَّلَامَةِ, “goodbye”, has سَلَامَة, “safety”, from the same root.",
+     "dictionary": true
     }
    ]
   },
@@ -1868,6 +2444,102 @@
      "example_ar": "أَسْكُنُ فِي بِرِيطَانِيَا.",
      "example_meaning_en": "I live in Britain.",
      "note": "A borrowed name with no Arabic root. Names ending in ـا (بِرِيطَانِيَا، سُورِيَا، كَنَدَا) never change their ending."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-11",
+     "form_ar": "عَنْ",
+     "meaning_en": "about; away from",
+     "part_of_speech": "preposition",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَتَكَلَّمُ عَنْ بَلَدِي.",
+     "example_meaning_en": "I talk about my country.",
+     "note": "Before the article it becomes عَنِ: عَنِ الْبَيْتِ. بَعِيدٌ عَنْ is “far from”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-12",
+     "form_ar": "طَاوِلَة",
+     "meaning_en": "table",
+     "part_of_speech": "noun",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "الْقَلَمُ عَلَى الطَّاوِلَةِ.",
+     "example_meaning_en": "The pen is on the table.",
+     "note": "Plural طَاوِلَات. A borrowed word (from Italian).",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-13",
+     "form_ar": "لُبْنَانِيّ",
+     "meaning_en": "Lebanese",
+     "part_of_speech": "adjective",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "صَدِيقِي لُبْنَانِيٌّ.",
+     "example_meaning_en": "My friend is Lebanese.",
+     "note": "Feminine لُبْنَانِيَّة. The country is لُبْنَان.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-14",
+     "form_ar": "الْعِرَاق",
+     "meaning_en": "Iraq",
+     "part_of_speech": "name",
+     "root_ar": "ع-ر-ق",
+     "root_reading": "ʿ-r-q",
+     "example_ar": "بَغْدَادُ فِي الْعِرَاقِ.",
+     "example_meaning_en": "Baghdad is in Iraq.",
+     "note": "Always with the article, like الْقَاهِرَة. The capital is بَغْدَاد.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-15",
+     "form_ar": "عِرَاقِيّ",
+     "meaning_en": "Iraqi",
+     "part_of_speech": "adjective",
+     "root_ar": "ع-ر-ق",
+     "root_reading": "ʿ-r-q",
+     "example_ar": "هَذَا طَالِبٌ عِرَاقِيٌّ.",
+     "example_meaning_en": "This is an Iraqi student.",
+     "note": "Feminine عِرَاقِيَّة: هِيَ عِرَاقِيَّةٌ, she is Iraqi.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-16",
+     "form_ar": "سُورِيَا",
+     "meaning_en": "Syria",
+     "part_of_speech": "name",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "هِيَ مِنْ سُورِيَا، فَهِيَ سُورِيَّةٌ.",
+     "example_meaning_en": "She is from Syria, so she is Syrian.",
+     "note": "Also written سُورِيَة. The capital is دِمَشْق.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-17",
+     "form_ar": "سُورِيّ",
+     "meaning_en": "Syrian",
+     "part_of_speech": "adjective",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "الْمُعَلِّمُ سُورِيٌّ.",
+     "example_meaning_en": "The teacher is Syrian.",
+     "note": "Feminine سُورِيَّة.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-origin-location-18",
+     "form_ar": "بَغْدَاد",
+     "meaning_en": "Baghdad",
+     "part_of_speech": "name",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "بَغْدَادُ فِي الْعِرَاقِ.",
+     "example_meaning_en": "Baghdad is in Iraq.",
+     "note": "The capital of الْعِرَاق. Like many place names, it never takes -un.",
+     "dictionary": true
     }
    ]
   },
@@ -2194,6 +2866,18 @@
      "example_ar": "الْكِتَابُ جَيِّدٌ.",
      "example_meaning_en": "The book is good.",
      "note": "For a feminine noun: جَيِّدَة."
+    },
+    {
+     "id": "lexeme.arabic-adjective-agreement-9",
+     "form_ar": "شَقَّة",
+     "meaning_en": "flat, apartment",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ق-ق",
+     "root_reading": "sh-q-q",
+     "example_ar": "أَسْكُنُ فِي شَقَّةٍ صَغِيرَةٍ.",
+     "example_meaning_en": "I live in a small flat.",
+     "note": "Plural شُقَق.",
+     "dictionary": true
     }
    ]
   },
@@ -2577,6 +3261,18 @@
      "example_ar": "هُوَ يَتَكَلَّمُ الْعَرَبِيَّةَ قَلِيلًا.",
      "example_meaning_en": "He speaks Arabic a little.",
      "note": "“I speak” is أَتَكَلَّمُ. The same root as كَلِمَة, “word”."
+    },
+    {
+     "id": "lexeme.arabic-present-person-9",
+     "form_ar": "الْقَاهِرَة",
+     "meaning_en": "Cairo",
+     "part_of_speech": "name",
+     "root_ar": "ق-ه-ر",
+     "root_reading": "q-h-r",
+     "example_ar": "أَسْكُنُ فِي الْقَاهِرَةِ.",
+     "example_meaning_en": "I live in Cairo.",
+     "note": "The capital of مِصْر. Always with the article; literally “the victorious”.",
+     "dictionary": true
     }
    ]
   },
@@ -2672,6 +3368,18 @@
      "example_ar": "نَذْهَبُ مَعًا.",
      "example_meaning_en": "We go together.",
      "note": "From مَعَ, “with”."
+    },
+    {
+     "id": "lexeme.arabic-present-group-9",
+     "form_ar": "طِفْل",
+     "meaning_en": "child",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ف-ل",
+     "root_reading": "ṭ-f-l",
+     "example_ar": "الْأَطْفَالُ يَلْعَبُونَ فِي الْحَدِيقَةِ.",
+     "example_meaning_en": "The children are playing in the garden.",
+     "note": "Plural أَطْفَال. A girl is طِفْلَة.",
+     "dictionary": true
     }
    ]
   },
@@ -2875,6 +3583,30 @@
      "example_ar": "أُحِبُّ الْعَرَبِيَّةَ كَثِيرًا.",
      "example_meaning_en": "I like Arabic very much.",
      "note": "Comes at the end, after what you like."
+    },
+    {
+     "id": "lexeme.arabic-preference-existence-9",
+     "form_ar": "سِبَاحَة",
+     "meaning_en": "swimming",
+     "part_of_speech": "noun",
+     "root_ar": "س-ب-ح",
+     "root_reading": "s-b-ḥ",
+     "example_ar": "أُحِبُّ السِّبَاحَةَ كَثِيرًا.",
+     "example_meaning_en": "I like swimming very much.",
+     "note": "The verb is سَبَحَ, “swam”, present يَسْبَحُ. مَسْبَح is “swimming pool”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-preference-existence-10",
+     "form_ar": "خَرِيطَة",
+     "meaning_en": "map",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ر-ط",
+     "root_reading": "kh-r-ṭ",
+     "example_ar": "نَحْتَاجُ إِلَى خَرِيطَةٍ.",
+     "example_meaning_en": "We need a map.",
+     "note": "Plural خَرَائِط.",
+     "dictionary": true
     }
    ]
   },
@@ -2973,6 +3705,18 @@
      "example_ar": "أَرْجِعُ إِلَى الْبَيْتِ مَسَاءً.",
      "example_meaning_en": "I come back home in the evening.",
      "note": "مَسَاءً is “in the evening”."
+    },
+    {
+     "id": "lexeme.arabic-routine-sequence-9",
+     "form_ar": "تَغَدَّى",
+     "meaning_en": "had lunch",
+     "part_of_speech": "verb",
+     "root_ar": "غ-د-و",
+     "root_reading": "gh-d-w",
+     "example_ar": "أَتَغَدَّى، ثُمَّ أَنَامُ قَلِيلًا.",
+     "example_meaning_en": "I have lunch, then I sleep a little.",
+     "note": "Present يَتَغَدَّى; “I have lunch” is أَتَغَدَّى. From غَدَاء, “lunch”; “had dinner” is تَعَشَّى.",
+     "dictionary": true
     }
    ]
   },
@@ -3077,6 +3821,90 @@
      "example_ar": "هَذِهِ خَمْسَةُ كُتُبٍ.",
      "example_meaning_en": "These are five books.",
      "note": "The digit is ٥ (5). Like ثَلَاثَة, the noun after it is plural."
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-10",
+     "form_ar": "صِفْر",
+     "meaning_en": "zero",
+     "part_of_speech": "number",
+     "root_ar": "ص-ف-ر",
+     "root_reading": "ṣ-f-r",
+     "example_ar": "رَقْمُ هَاتِفِي يَبْدَأُ بِصِفْرٍ.",
+     "example_meaning_en": "My phone number starts with a zero.",
+     "note": "The digit is ٠ (0). The English words “cipher” and “zero” both come from it.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-11",
+     "form_ar": "ثَمَانِيَة",
+     "meaning_en": "eight",
+     "part_of_speech": "number",
+     "root_ar": "ث-م-ن",
+     "root_reading": "th-m-n",
+     "example_ar": "فِي الصَّفِّ ثَمَانِيَةُ طُلَّابٍ.",
+     "example_meaning_en": "There are eight students in the class.",
+     "note": "The digit is ٨ (8). Like ثَلَاثَة, the noun after it is plural.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-12",
+     "form_ar": "تِسْعَة",
+     "meaning_en": "nine",
+     "part_of_speech": "number",
+     "root_ar": "ت-س-ع",
+     "root_reading": "t-s-ʿ",
+     "example_ar": "عِنْدِي تِسْعَةُ أَقْلَامٍ.",
+     "example_meaning_en": "I have nine pens.",
+     "note": "The digit is ٩ (9), which looks like the English 9.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-13",
+     "form_ar": "الثُّلَاثَاء",
+     "meaning_en": "Tuesday",
+     "part_of_speech": "noun",
+     "root_ar": "ث-ل-ث",
+     "root_reading": "th-l-th",
+     "example_ar": "الثُّلَاثَاءُ بَعْدَ الِاثْنَيْنِ.",
+     "example_meaning_en": "Tuesday comes after Monday.",
+     "note": "From the root of ثَلَاثَة, “three”: the third day of the week. The days are usually said with يَوْم before them.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-14",
+     "form_ar": "ثَالِث",
+     "meaning_en": "third",
+     "part_of_speech": "adjective",
+     "root_ar": "ث-ل-ث",
+     "root_reading": "th-l-th",
+     "example_ar": "هَذَا دَرْسِي الثَّالِثُ.",
+     "example_meaning_en": "This is my third lesson.",
+     "note": "Feminine ثَالِثَة: السَّاعَةُ الثَّالِثَةُ is “three o'clock”. From ثَلَاثَة.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-15",
+     "form_ar": "الْأَرْبِعَاء",
+     "meaning_en": "Wednesday",
+     "part_of_speech": "noun",
+     "root_ar": "ر-ب-ع",
+     "root_reading": "r-b-ʿ",
+     "example_ar": "عِنْدِي مَوْعِدٌ يَوْمَ الْأَرْبِعَاءِ.",
+     "example_meaning_en": "I have an appointment on Wednesday.",
+     "note": "From the root of أَرْبَعَة, “four”: the fourth day of the week.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-16",
+     "form_ar": "الْخَمِيس",
+     "meaning_en": "Thursday",
+     "part_of_speech": "noun",
+     "root_ar": "خ-م-س",
+     "root_reading": "kh-m-s",
+     "example_ar": "الدَّرْسُ يَوْمَ الْخَمِيسِ.",
+     "example_meaning_en": "The lesson is on Thursday.",
+     "note": "From خَمْسَة, “five”: the fifth day, counting from الْأَحَد, Sunday, “the first”.",
+     "dictionary": true
     }
    ]
   },
@@ -3197,6 +4025,78 @@
      "example_ar": "الْمَوْعِدُ بَعْدَ الظُّهْرِ.",
      "example_meaning_en": "The appointment is in the afternoon.",
      "note": "Literally “after noon” (الظُّهْر). “In the evening” is مَسَاءً."
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-11",
+     "form_ar": "رَابِع",
+     "meaning_en": "fourth",
+     "part_of_speech": "adjective",
+     "root_ar": "ر-ب-ع",
+     "root_reading": "r-b-ʿ",
+     "example_ar": "الْمَوْعِدُ فِي السَّاعَةِ الرَّابِعَةِ.",
+     "example_meaning_en": "The appointment is at four o'clock.",
+     "note": "Feminine رَابِعَة. From أَرْبَعَة, “four”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-12",
+     "form_ar": "خَامِس",
+     "meaning_en": "fifth",
+     "part_of_speech": "adjective",
+     "root_ar": "خ-م-س",
+     "root_reading": "kh-m-s",
+     "example_ar": "السَّاعَةُ الْخَامِسَةُ وَالنِّصْفُ.",
+     "example_meaning_en": "It's half past five.",
+     "note": "Feminine خَامِسَة. From خَمْسَة, “five”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-13",
+     "form_ar": "سَابِع",
+     "meaning_en": "seventh",
+     "part_of_speech": "adjective",
+     "root_ar": "س-ب-ع",
+     "root_reading": "s-b-ʿ",
+     "example_ar": "السَّاعَةُ السَّابِعَةُ وَالرُّبْعُ.",
+     "example_meaning_en": "It's quarter past seven.",
+     "note": "Feminine سَابِعَة. From سَبْعَة, “seven”; رُبْع is “a quarter”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-14",
+     "form_ar": "عَاشِر",
+     "meaning_en": "tenth",
+     "part_of_speech": "adjective",
+     "root_ar": "ع-ش-ر",
+     "root_reading": "ʿ-sh-r",
+     "example_ar": "السَّاعَةُ الْعَاشِرَةُ إِلَّا رُبْعًا.",
+     "example_meaning_en": "It's quarter to ten.",
+     "note": "Feminine عَاشِرَة. From عَشَرَة, “ten”.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-15",
+     "form_ar": "سَادِس",
+     "meaning_en": "sixth",
+     "part_of_speech": "adjective",
+     "root_ar": "س-د-س",
+     "root_reading": "s-d-s",
+     "example_ar": "أَصِلُ فِي السَّاعَةِ السَّادِسَةِ وَالنِّصْفِ.",
+     "example_meaning_en": "I arrive at half past six.",
+     "note": "Feminine سَادِسَة. From سِتَّة, “six”, with d in place of the t.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-16",
+     "form_ar": "السَّبْت",
+     "meaning_en": "Saturday",
+     "part_of_speech": "noun",
+     "root_ar": "س-ب-ت",
+     "root_reading": "s-b-t",
+     "example_ar": "لَا أَعْمَلُ يَوْمَ السَّبْتِ.",
+     "example_meaning_en": "I don't work on Saturday.",
+     "note": "The root means “rest”. In full: يَوْمُ السَّبْتِ.",
+     "dictionary": true
     }
    ]
   },
@@ -3390,6 +4290,42 @@
      "example_ar": "تَفَضَّلْ، هَذَا شَايُكَ.",
      "example_meaning_en": "Here you are, this is your tea.",
      "note": "To a woman: تَفَضَّلِي. The same root as مِنْ فَضْلِكَ."
+    },
+    {
+     "id": "lexeme.arabic-food-shopping-9",
+     "form_ar": "كِيلُو",
+     "meaning_en": "kilo",
+     "part_of_speech": "noun",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أُرِيدُ كِيلُو تُفَّاحٍ، مِنْ فَضْلِكَ.",
+     "example_meaning_en": "I'd like a kilo of apples, please.",
+     "note": "A borrowed word, short for كِيلُوغْرَام. Its ending never changes.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-food-shopping-10",
+     "form_ar": "طَازَج",
+     "meaning_en": "fresh",
+     "part_of_speech": "adjective",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "الْخُبْزُ طَازَجٌ.",
+     "example_meaning_en": "The bread is fresh.",
+     "note": "Feminine طَازَجَة: فَاكِهَةٌ طَازَجَةٌ, fresh fruit. A borrowed word, from Persian.",
+     "dictionary": true
+    },
+    {
+     "id": "lexeme.arabic-food-shopping-11",
+     "form_ar": "أَكْبَر",
+     "meaning_en": "bigger, biggest; older",
+     "part_of_speech": "adjective",
+     "root_ar": "ك-ب-ر",
+     "root_reading": "k-b-r",
+     "example_ar": "بَيْتُكَ أَكْبَرُ مِنْ بَيْتِي.",
+     "example_meaning_en": "Your house is bigger than mine.",
+     "note": "From كَبِير. The same form for a feminine noun: الْمَدِينَةُ أَكْبَرُ. It never takes -un.",
+     "dictionary": true
     }
    ]
   },

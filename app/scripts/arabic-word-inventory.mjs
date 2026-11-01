@@ -16,6 +16,8 @@ const course = read('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json');
 const teaching = read('content/teaching/arabic-fusha.json').lessons;
 const explainers = read('content/teaching/arabic/explainers.json').lessons;
 const words = read('content/teaching/arabic/course-words.json').lessons;
+// Forms already placed (content/teaching/arabic/word-forms.json): an inflected form under its entry, or not a word.
+const placed = read('content/teaching/arabic/word-forms.json');
 const args = process.argv.slice(2), asJson = args.includes('--json');
 const range = (args[args.indexOf('--modules') + 1] ?? '').match(/^(\d+)(?:-(\d+))?$/);
 if (args.includes('--modules') && !range) { console.error('--modules wants a number or a range, such as 4-13'); process.exit(2); }
@@ -72,7 +74,7 @@ const seen = new Set(), report = [];
 for (const l of lessonsInOrder) {
   const found = new Map();
   for (const [where, text] of shown(l)) for (const t of tokens(text)) {
-    if (seen.has(t) || listed.has(t) || NAMES.has(t) || [...stems(t)].some(s => listedStems.has(s) || NAMES.has(s))) continue;
+    if (seen.has(t) || listed.has(t) || NAMES.has(t) || [...stems(t)].some(s => listedStems.has(s) || NAMES.has(s) || s in placed.forms || s in placed.not_words)) continue;
     if (!found.has(t)) found.set(t, { form: t, count: 0, where, context: text.length > 140 ? text.slice(0, 140) + '…' : text });
     found.get(t).count++;
   }

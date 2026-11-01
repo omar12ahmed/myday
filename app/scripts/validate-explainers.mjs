@@ -324,5 +324,20 @@ if (problems.length) {
   console.error(`Arabic explainers: ${problems.length} problem${problems.length === 1 ? '' : 's'}\n- ${problems.join('\n- ')}`);
   process.exit(1);
 }
+// The dictionary's word forms (content/teaching/arabic/word-forms.json): each form keyed as search keys it, pointing to a
+// course word or starter word, and not itself a listed form (that one is found anyway).
+const wordForms = read('content/teaching/arabic/word-forms.json');
+const knownIds = new Set([...Object.values(courseWords).flatMap(l => l.words.map(w => w.id)), ...course.lexicon_seed.map(w => w.id)]);
+const formKey = s => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/\u0640/g, '').replace(/\u0671/g, '\u0627').replace(/\u0649/g, '\u064A').replace(/\u0629/g, '\u0647').replace(/[^\u0621-\u064A\s]/g, ' ').replace(/\s+/g, ' ').trim();
+const listedKeys = new Set([...Object.values(courseWords).flatMap(l => l.words.map(w => formKey(w.form_ar))), ...course.lexicon_seed.map(w => formKey(w.form_ar))]);
+for (const [form, id] of Object.entries(wordForms.forms ?? {})) {
+  if (form !== formKey(form)) fail(`word-forms ${form}`, `key it as search does: ${formKey(form)}`);
+  if (!knownIds.has(id)) fail(`word-forms ${form}`, `points to ${id}, which isn't a course word or starter word`);
+  if (listedKeys.has(form)) fail(`word-forms ${form}`, 'is a listed word itself');
+}
+for (const [form, why] of Object.entries(wordForms.not_words ?? {})) {
+  if (form !== formKey(form)) fail(`word-forms ${form}`, `key it as search does: ${formKey(form)}`);
+  if (!text(why)) fail(`word-forms ${form}`, 'say why it isn\'t a dictionary word');
+}
 if (reported.size) console.log(`Course words: ${reported.size} of the lessons' own words show a phrase from their lesson check's answer (approved before this check; for the owner's checker): ${[...reported].join(', ')}`);
 console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away${leads.length ? `; ${new Set(leads.map(l => l.self)).size} ${new Set(leads.map(l => l.self)).size === 1 ? 'leads' : 'lead'} on to a later explainer` : ''}.`);

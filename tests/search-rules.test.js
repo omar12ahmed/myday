@@ -240,6 +240,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const lc = D.letterCounts('letter'), rc = D.letterCounts('root');
   check('the letters\' word counts add up to every course word, and each matches its list', [...lc.values()].reduce((a, b) => a + b, 0) === ents.length && D.LETTERS.every(l => (lc.get(l) ?? 0) === D.withLetter(ents, l).length));
   check('the letters\' root counts match the roots listed under each', D.LETTERS.every(l => (rc.get(l) ?? 0) === D.rootsWith(ents, l).length));
+  // An inflected form the course shows finds its entry (content/teaching/arabic/word-forms.json), a little below the word.
+  const tifl = ents.find(e => e.w.form_ar === 'طِفْل');
+  check('"الأطفال" and "أطفال" find طِفْل, "child", through its plural in word-forms.json (rank 0.5)', !!tifl && first('الأطفال')?.id === tifl.id && first('أطفال')?.id === tifl.id && D.rank(tifl, 'أطفال') === 0.5, [firstAr('الأطفال'), firstAr('أطفال')]);
+  check('…and a dictionary-only word is in the dictionary like any other (طِفْل is one)', !!tifl && tifl.w.dictionary === true && D.withLetter(ents, 'ط').includes(tifl));
 
   fs.rmSync(dir, { recursive: true, force: true });
   const sm = summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

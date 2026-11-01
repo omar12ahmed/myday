@@ -6,6 +6,7 @@ import type { KeptWord } from '../../data/arabic/types';
 import { allLessonWords, allWords, courseLessons, isCourseWord, lessonWords, type AnyWord } from './courseWords';
 import { familyOf } from './families';
 import texts from './data/texts.json';
+import wordForms from '../../../../content/teaching/arabic/word-forms.json';
 import { transliterate } from './transliterate';
 
 // The letters in dictionary order (hamza alone first; hamza on a seat counts as its seat, as Arabic dictionaries do).
@@ -25,6 +26,8 @@ const ARTICLE = /^(?:وال|فال|بال|كال|لل|ال)(?=..)/;
 const bare = (key: string) => key.replace(ARTICLE, '');
 // A single joined وَ, فَ, بِ, لِ or كَ in front: tried too, but only as the whole word (وَكِتَاب finds كِتَاب; وَقْت stays).
 const JOINED = /^[وفبلك](?=...)/;
+// An inflected form the course shows, and the entry it's under (word-forms.json): الْأَطْفَال or أطفال finds طِفْل.
+const formOf = new Map(Object.entries(wordForms.forms).map(([form, id]) => [bare(form), id]));
 
 export type Entry =
   | { kind: 'word'; id: string; w: AnyWord; lessonId: string | null; firstIn: string | null; order: number; ar: string; lat: string; en: string; root: string | null }
@@ -66,7 +69,7 @@ export function rank(e: Entry, query: string): number | null {
       f === q ? 0 : f.startsWith(q) ? 1 : q.length >= 2 && f.includes(q) ? 2 : null,
       b !== q ? (f === b ? 0.5 : b.length >= 3 && f.startsWith(b) ? 1.5 : null) : null,
       joined !== null && f === joined ? 0.75 : null,
-    ]));
+    ]).concat(formOf.get(b) === e.id ? 0.5 : null));
   }
   const words = enWords(query), all = enWords(e.en);
   const parts = e.en.replace(/\s*\(.*$/, '').split(/[/;,]/).map(p => enWords(p)).filter(p => p.length);
