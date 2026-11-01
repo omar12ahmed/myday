@@ -152,7 +152,12 @@ that differ by one sound (قَلْب, كَلْب), voiced. Module 1 (orientation
 **Module 28, Qur'anic Arabic (owner, 31 October 2026):** short quoted Qur'anic phrases may serve as language examples,
 fully vowelled and analysed only as language (spelling, morphology, grammar), with no interpretation. This is the
 owner's choice beyond the brief's "no religious framing". Each quote keeps its exact spelling, and the fluent checker
-verifies it; whether quotes are voiced is decided with the owner first.
+verifies it.
+
+**How module 28's quotes appear (owner, 1 November 2026):** in the exact muṣḥaf spelling (Uthmani script, with its dagger
+alif and other signs), each with its sūra and verse and its meaning. No voice and no transliteration: the app's reading
+rules are for modern spelling, and recitation is its own discipline. The quotes sit in a part of the card of their own,
+outside the house spelling rules and outside everything that is voiced; the rest of each card follows the house rules.
 
 ## 7. Where this leads, and a second go (owner, 31 October 2026)
 
