@@ -1,4 +1,4 @@
-import { Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Fragment, useContext, useDeferredValue, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
@@ -45,7 +45,7 @@ import { WordNote } from './WordNote';
 import { ExplainerLink, LessonExplainers } from './Explainers';
 import { explainerFor, useExplainers, useLessonExplainers, type ExplainerRef } from './explainerData';
 import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
-import { courseEntries, dictionarySize, inDictionary, LETTERS, rootsWith, search, withLetter, type Entry } from './dictionary';
+import { courseEntries, dictionarySize, inDictionary, letterCounts, LETTERS, rootsWith, search, withLetter, type Entry } from './dictionary';
 import { ARABIC_TINY, toStep } from '../journey/dom';
 import { takeStep } from '../journey/pending';
 import { useJourney } from '../journey/useJourney';
@@ -819,8 +819,10 @@ function YourWords({ data }: { data: MyDayData }) {
   const already = ar.trim() ? keptWord(data, ar) : null, found = ar.trim() && !already ? inDictionary(ar) : [];
   const add = () => {
     const k = todayKey(); let res: { id: string; added: boolean } | null = null;
-    if (update(d => { res = keepWord(d, { ar, meaning, note }, k); if (!res?.added) return false; })) { setMsg(`Kept ${ar.trim()}. It comes back in revision from tomorrow.`); setAr(''); setMeaning(''); setNote(''); setAdding(false); }
+    if (update(d => { res = keepWord(d, { ar, meaning, note }, k); if (!res?.added) return false; })) { setMsg(`Kept ${ar.trim()}. It comes back in revision from tomorrow.`); done(); }
   };
+  // Closing the form after keeping or adding a word: the form empties, and focus goes back to "Add your own word".
+  const done = () => { setAr(''); setMeaning(''); setNote(''); setAdding(false); requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-action="ar-word-own"]')?.focus()); };
   const fromLabel = (from?: string) => !from ? null : from.startsWith('lesson.') ? lessonIndex[from]?.title : assets.get(from)?.title;
   async function remove(id: string, word: string) {
     if (await confirm({ title: 'Remove this word?', body: `${word}: it leaves your words and your revision. Your past answers stay in your history.`, confirmLabel: 'Remove it', cancelLabel: 'Keep it' }))
@@ -828,21 +830,21 @@ function YourWords({ data }: { data: MyDayData }) {
   }
   return <Card data-ar-your-words={words.length}><Eyebrow>Dictionary</Eyebrow><h2>Your words</h2>
     <p className="text-[15px]">{words.length ? `${plural(words.length, 'word')} you kept, each with your meaning.` : 'None yet. Keep a word from a lesson’s examples or a reading text, or add one here.'} A word you keep comes back in revision from the next day, Arabic → meaning; writing it from memory is your choice.</p>
-    {msg && <p role="status" className="text-[15px]">{msg}</p>}
+    <p role="status" className={msg ? 'text-[15px]' : 'sr-only'}>{msg}</p>
     {!adding ? <Button inline variant="ghost" data-action="ar-word-own" onClick={() => { setAdding(true); setMsg(null); }}>Add your own word</Button>
       : <form className="grid gap-3 rounded-tile border border-outline px-4 py-3" onSubmit={e => { e.preventDefault(); add(); }} data-ar-own-word="">
         <Field label="The word in Arabic" htmlFor="arOwnWord"><TextInput id="arOwnWord" data-s="ar-own-ar" dir="rtl" lang="ar" className="ar-input" maxLength={AR_MAX} value={ar} onChange={e => setAr(e.target.value)} placeholder="بَيْت" /></Field>
         {already && <p className="text-sm m-0" data-ar-keep-already="">Already in your words: {already.meaning}.</p>}
         {found.map(e => e.kind === 'word' && <p key={e.id} className="text-sm text-fg-2 m-0" data-ar-own-in-dict={e.id}>In the dictionary: <Ar>{e.w.form_ar}</Ar>, “{e.w.meaning_en}”, {e.lessonId ? <>taught in <InlineLink href={'#study/arabic/' + e.lessonId}>{lessonIndex[e.lessonId]?.title}</InlineLink></> : 'a starter word'}.{' '}
           <button type="button" className={LINKISH} onClick={() => setMeaning(e.w.meaning_en)}>Use the course’s meaning</button>
-          {!wordInRevision(data, e.id) && <>{' · '}<button type="button" className={LINKISH} data-action="ar-own-dict-add" onClick={() => { addToRevision([wordCard(e.id, 'recognise')]); setMsg(`${e.w.form_ar} is in your revision now: it first comes back tomorrow.`); setAr(''); setMeaning(''); setNote(''); setAdding(false); }}>Add it to revision instead</button></>}</p>)}
+          {!wordInRevision(data, e.id) && <>{' · '}<button type="button" className={LINKISH} data-action="ar-own-dict-add" onClick={() => { if (addToRevision([wordCard(e.id, 'recognise')])) { setMsg(`${e.w.form_ar} is in your revision now: it first comes back tomorrow.`); done(); } }}>Add it to revision instead</button></>}</p>)}
         <Field label="Your meaning" htmlFor="arOwnMeaning"><TextInput id="arOwnMeaning" data-s="ar-own-meaning" maxLength={MEANING_MAX} value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="e.g. house" /></Field>
         <Field label="A note (optional)" htmlFor="arOwnNote"><TextInput id="arOwnNote" data-s="ar-own-note" maxLength={NOTE_MAX} value={note} onChange={e => setNote(e.target.value)} /></Field>
         <div className="flex flex-wrap gap-2"><Button inline type="submit" variant="primary" data-action="ar-own-save" disabled={!ar.trim() || !meaning.trim() || !!already}>Keep it</Button><Button inline variant="ghost" onClick={() => setAdding(false)}>Cancel</Button></div>
       </form>}
     {words.length > 0 && <ul className="list-none p-0 m-0 mt-3 divide-y divide-outline" data-ar-kept-words="">{[...words].reverse().map(w => {
       const recognise = cardState(data, keptCardId(w.id, 'recognise')), write = w.write ? cardState(data, keptCardId(w.id, 'write')) : null, from = fromLabel(w.from);
-      return <li key={w.id} className="py-3" data-ar-kept={w.id} tabIndex={-1}>
+      return <li key={w.id} className="py-3 focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm" data-ar-kept={w.id} tabIndex={-1}>
         <Ar block className="text-[26px] font-medium m-0">{w.ar}</Ar>
         {editing === w.id ? <form className="grid gap-2 mt-2" onSubmit={e => { e.preventDefault(); update(d => { if (!editWord(d, w.id, { meaning: editMeaning, note: editNote })) return false; }); setEditing(null); }}>
             <Field label="Your meaning" htmlFor={'arEditM' + w.id}><TextInput id={'arEditM' + w.id} maxLength={MEANING_MAX} value={editMeaning} onChange={e => setEditMeaning(e.target.value)} /></Field>
@@ -872,8 +874,11 @@ function Dictionary({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) 
   const explainers = useExplainers(), kept = data.arabic.words ?? [], size = dictionarySize();
   const [q, setQ] = useState(''), [upTo, setUpTo] = useState(FOUND_PAGE);
   const [by, setBy] = useState<'letter' | 'root'>('letter'), [letter, setLetter] = useState<string | null>(null);
-  const found = q.trim() ? search(q, kept) : null, all = courseEntries();
-  const count = (l: string) => (by === 'letter' ? withLetter(all, l).length : rootsWith(all, l).length);
+  // Typing stays quick: the list follows the box a moment later when there's a lot to draw.
+  const typed = useDeferredValue(q), found = typed.trim() ? search(typed, kept) : null, all = courseEntries(), counts = letterCounts(by);
+  const count = (l: string) => counts.get(l) ?? 0;
+  // Show more: focus goes to the first of the words it adds, so the keyboard stays in the list when the button goes.
+  const more = () => { const from = upTo; setUpTo(n => n + FOUND_PAGE); requestAnimationFrame(() => document.querySelectorAll<HTMLElement>('[data-ar-dictionary] [data-ar-dict-list] > li')[from]?.focus()); };
   const list = (entries: Entry[]) => <ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-dict-list={entries.length}>
     {entries.map(e => e.kind === 'yours' ? <YoursRow key={e.id} k={e.k} />
       : <WordRow key={e.id} data={data} w={e.w} takeOut={takeOut} explainer={explainerFor(explainers, e.id)} taught={{ lessonId: e.lessonId, firstIn: e.firstIn }} />)}
@@ -884,7 +889,7 @@ function Dictionary({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) 
     <p role="status" className="text-[15px] mt-2" data-ar-dict-found={found ? found.length : ''}>{!found ? '' : found.length
       ? `${plural(found.length, 'word')} found${found.length > upTo ? `; the first ${upTo} are below` : ''}.` : 'Nothing found. If it’s a word you’ve met, you can keep it under Your words.'}</p>
     {found ? <>{list(found.slice(0, upTo))}
-      {found.length > upTo && <Button inline variant="ghost" data-action="ar-dict-more" onClick={() => setUpTo(n => n + FOUND_PAGE)}>Show more</Button>}</>
+      {found.length > upTo && <Button inline variant="ghost" data-action="ar-dict-more" onClick={more}>Show more</Button>}</>
     : <>
       <h3 className="mb-2">Browse</h3>
       <Choices label="Browse by">
@@ -906,8 +911,8 @@ function Dictionary({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) 
 const rootReading = (entries: Entry[]) => entries.map(e => e.kind !== 'word' ? '' : isCourseWord(e.w) ? e.w.root_reading ?? '' : familyOf(e.id)?.root_reading ?? '').find(Boolean) ?? '';
 // A word you kept, as the dictionary shows it: yours, with your meaning; changed or removed under Your words.
 function YoursRow({ k }: { k: KeptWord }) {
-  const show = () => { const el = document.querySelector<HTMLElement>(`[data-ar-kept="${k.id}"]`); el?.scrollIntoView({ block: 'center' }); el?.focus(); };
-  return <li className="py-3" data-ar-dict-yours={k.id}>
+  const show = () => { const el = document.querySelector<HTMLElement>(`[data-ar-kept="${k.id}"]`); el?.scrollIntoView({ block: 'center' }); el?.focus({ preventScroll: true }); };
+  return <li className="py-3 focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm" data-ar-dict-yours={k.id} tabIndex={-1}>
     <p className="m-0 flex flex-wrap items-baseline gap-2"><Ar className="text-[26px] font-medium">{k.ar}</Ar><span className="text-xs font-semibold rounded-full bg-primary-container text-on-primary-container px-2 py-0.5">Yours</span></p>
     <p className="text-[15px] m-0">{k.meaning}</p>{k.note && <p className="text-sm text-fg-2 m-0" dir="auto">{k.note}</p>}
     <Button inline variant="ghost" data-action="ar-dict-yours" onClick={show}>Show it in Your words</Button>

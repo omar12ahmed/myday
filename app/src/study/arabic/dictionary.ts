@@ -52,22 +52,27 @@ export const yourEntries = (kept: KeptWord[]): Entry[] => kept.map((k, i) => ({
 export const dictionarySize = () => ({ starter: texts.lexicon.length, course: courseEntries().length - texts.lexicon.length });
 
 // How well an entry fits what you typed: 0 the word itself, 1 it starts with it, 2 it has it inside; null no match.
-// Arabic is matched on the Arabic (with the article or a joined letter tried off as well); anything else on the English
-// meaning, word by word from the start of a word ("door" finds a door, not "indoor"), and on the app's Latin reading.
+// Arabic is matched on the Arabic, the entry's own article aside. With your article or joined letter taken off, a match
+// ranks a little lower, and only as the word itself or, with three letters or more left, its start: كَانَتْ comes before
+// أَنْتَ for كانت, and الآن doesn't bring in every word starting أن. Anything else is matched on the English meaning (any
+// of its alternatives, "house/home"), word by word from the start of a word ("door" finds a door, not "indoor"), and on
+// the app's Latin reading.
 export function rank(e: Entry, query: string): number | null {
   const best = (xs: (number | null)[]) => { const ns = xs.filter((x): x is number => x !== null); return ns.length ? Math.min(...ns) : null; };
   if (hasArabic(query)) {
     const q = arKey(query); if (!q) return null;
-    const forms = [...new Set([e.ar, bare(e.ar)])], qs = [...new Set([q, bare(q)])], joined = JOINED.test(bare(q)) ? bare(q).slice(1) : null;
-    return best(forms.flatMap(f => [
-      ...qs.map(x => f === x ? 0 : f.startsWith(x) ? 1 : x === q && x.length >= 2 && f.includes(x) ? 2 : null),
-      joined !== null && f === joined ? 0 : null,
+    const b = bare(q), joined = JOINED.test(b) ? b.slice(1) : null;
+    return best([...new Set([e.ar, bare(e.ar)])].flatMap(f => [
+      f === q ? 0 : f.startsWith(q) ? 1 : q.length >= 2 && f.includes(q) ? 2 : null,
+      b !== q ? (f === b ? 0.5 : b.length >= 3 && f.startsWith(b) ? 1.5 : null) : null,
+      joined !== null && f === joined ? 0.75 : null,
     ]));
   }
-  const words = enWords(query), mean = enWords(e.en.replace(/\s*\(.*$/, '')), all = enWords(e.en);
+  const words = enWords(query), all = enWords(e.en);
+  const parts = e.en.replace(/\s*\(.*$/, '').split(/[/;,]/).map(p => enWords(p)).filter(p => p.length);
   const en = !words.length ? null
-    : words.join(' ') === mean.join(' ') ? 0
-    : mean[0]?.startsWith(words[0]) && words.every(w => all.some(m => m.startsWith(w))) ? 1
+    : parts.some(p => p.join(' ') === words.join(' ')) ? 0
+    : parts.some(p => p[0].startsWith(words[0])) && words.every(w => all.some(m => m.startsWith(w))) ? 1
     : words.every(w => all.some(m => m.startsWith(w))) ? 2 : null;
   const q = latKey(query);
   const lat = !q || !e.lat ? null : e.lat === q ? 0 : e.lat.startsWith(q) ? 1 : q.length >= 3 && e.lat.includes(q) ? 2 : null;
@@ -87,14 +92,27 @@ const byArabic = (a: string, b: string) => a.localeCompare(b, 'ar');
 export function withLetter(entries: Entry[], letter: string): Entry[] {
   return entries.filter(e => letterOf(e) === letter).sort((a, b) => byArabic(bare(a.ar), bare(b.ar)) || a.order - b.order);
 }
+// How many words (or roots) each letter has, worked out once: the course's words don't change while the app runs.
+const counted: Partial<Record<'letter' | 'root', Map<string, number>>> = {};
+export function letterCounts(by: 'letter' | 'root'): Map<string, number> {
+  const have = counted[by]; if (have) return have;
+  const m = new Map<string, number>(), roots = new Set<string>();
+  for (const e of courseEntries()) {
+    const l = by === 'letter' ? letterOf(e) : e.root && !roots.has(e.root) ? (roots.add(e.root), rootLetter(e.root)) : null;
+    if (l) m.set(l, (m.get(l) ?? 0) + 1);
+  }
+  return (counted[by] = m);
+}
 // Roots starting with a letter, each with its words in the course's order.
 export function rootsWith(entries: Entry[], letter: string): { root: string; entries: Entry[] }[] {
   const roots = new Map<string, Entry[]>();
   for (const e of entries) if (e.root && rootLetter(e.root) === letter) roots.set(e.root, [...roots.get(e.root) ?? [], e]);
   return [...roots].map(([root, es]) => ({ root, entries: es })).sort((a, b) => byArabic(arKey(a.root), arKey(b.root)));
 }
-// The course's words that the dictionary would offer for what you type (vowel marks, hamza seats and the article aside).
+// The course's words that the dictionary would offer for what you type (vowel marks, hamza seats and the article aside;
+// a joined letter isn't, so بيت isn't offered كَالْبَيْتِ).
+const noArticle = (key: string) => key.replace(/^ال(?=..)/, '');
 export function inDictionary(ar: string): Entry[] {
   const q = arKey(ar); if (!q) return [];
-  return courseEntries().filter(e => e.ar === q || bare(e.ar) === bare(q));
+  return courseEntries().filter(e => e.ar === q || noArticle(e.ar) === noArticle(q));
 }

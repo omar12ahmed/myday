@@ -34,12 +34,16 @@ playback" and the revision glance name it too. A new card, **Look up a word**, h
   The article, alone or after a joined وَ, فَ, بِ or كَ, or as لِلْـ, is also tried without it, so الْكِتَاب,
   بِالْكِتَابِ and لِلْكِتَابِ find كِتَاب. A single joined letter is tried off only when the rest is the whole word, so
   وَكِتَاب finds كِتَاب, but وَقْت isn't read as قْت.
+  A match found only by taking your article or joined letter off ranks a little below the word as typed, and with
+  fewer than three letters left it must be the whole word: كانت finds كَانَتْ before أَنْتَ, and الآن doesn't bring in
+  every word starting أن.
 - **English:** whole words in the meaning, matched from the start of a word, so "door" and "doo" find بَاب but
-  "indoor" doesn't.
+  "indoor" doesn't. A meaning with alternatives matches any of them exactly: "home" finds بَيْت, "house/home".
 - **Latin letters:** the app's own reading, without accents, ʿ or ʾ, and with a doubled letter as one, so "kitab",
   "kitāb" and "mudaris" find كِتَاب and مُدَرِّس.
-- **Order:** results come exact first, then words that start with the search, then (with two letters or more typed)
-  words that contain it. Ties keep the course's order: starter words, then each lesson's, then yours.
+- **Order:** results come exact first, then words that start with the search, then words that contain it (with two
+  Arabic letters or three Latin ones typed). Ties keep the course's order: starter words, then each lesson's, then
+  yours. "Show more" moves focus to the first word it adds.
 - **Size:** the first 50 results show, with "Show more" below. The number found is announced to screen readers, and
   "Nothing found" suggests keeping the word under Your words. The search runs on the device; nothing is sent.
 
@@ -63,10 +67,12 @@ playback" and the revision glance name it too. A new card, **Look up a word**, h
 focus to the word's row on the Your words card, where Change, Remove and "Also practise writing it" stay, as now.
 
 **Adding a word:** "Add your own word" looks in the dictionary as you type.
-- Every course word with the same letters (vowels, hamza seats and the article aside) is offered: "In the
+- Every course word with the same letters (vowels, hamza seats and the article aside, but not a joined letter, so
+  بيت isn't offered كَالْبَيْتِ) is offered: "In the
   dictionary: <word>, “<meaning>”, taught in <lesson>" (or "a starter word"), with **Use the course's meaning** and,
   unless it's already in your revision, **Add it to revision instead**. Adding it to revision keeps no copy, closes
-  the form and says it first comes back tomorrow.
+  the form, says it first comes back tomorrow and puts focus back on "Add your own word". If the save is refused (say,
+  another tab saved first), nothing is announced and the form stays as it was.
 - Otherwise, the word is kept as yours, exactly as before.
 
 This replaces "One of the starter words".

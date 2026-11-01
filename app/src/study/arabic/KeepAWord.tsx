@@ -9,6 +9,7 @@ import type { MyDayData } from '../../data/types';
 import { InlineLink } from '../parts';
 import { Ar } from './Ar';
 import { starterFor } from './starter';
+import { isCourseWord } from './courseWords';
 
 // "Keep a word" (specs/study-home-and-lessons.md §6): under a lesson's examples or a reading text. Tap the word (the
 // sentence's words, punctuation left out, vowel marks as written), give your meaning (the course's is filled in for
@@ -42,7 +43,7 @@ export function KeepAWord({ data, sentences, from }: { data: MyDayData; sentence
       <Button inline variant="ghost" onClick={() => setWord(null)}>Choose another word</Button>
     </> : <form onSubmit={e => { e.preventDefault(); save(); }} data-ar-keep-form="">
       <Ar block className="text-[30px] m-0">{word}</Ar>
-      {starter && <p className="text-sm text-fg-2">One of the starter words: the course’s meaning is filled in; change it if you like. Example: <Ar>{starter.example_ar}</Ar> {starter.example_meaning_en}</p>}
+      {starter && <p className="text-sm text-fg-2">{isCourseWord(starter) ? 'One of the course’s words' : 'One of the starter words'}: the course’s meaning is filled in; change it if you like. Example: <Ar>{starter.example_ar}</Ar> {starter.example_meaning_en}</p>}
       <div className="grid gap-3 mt-2">
         <Field label="Your meaning" htmlFor={id + 'm'}><TextInput id={id + 'm'} data-s="ar-keep-meaning" maxLength={MEANING_MAX} required value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="e.g. house" /></Field>
         <Field label="A note (optional)" htmlFor={id + 'n'}><TextInput id={id + 'n'} data-s="ar-keep-note" maxLength={NOTE_MAX} value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. heard in the greetings lesson" /></Field>

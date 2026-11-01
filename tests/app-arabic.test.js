@@ -973,6 +973,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
     check('…and lists exactly 50', await count(ROWS) === 50);
     await click('[data-action="ar-dict-more"]'); await sleep(200);
     check('"Show more" adds 50 more, or all of them if fewer', await count(ROWS) === Math.min(100, total), [await count(ROWS), total]);
+    check('…and moves focus to the first word it added (the 51st)', await ev(`document.activeElement === document.querySelectorAll(${JSON.stringify(ROWS)})[50]`));
     f = await found();
     check('…and the status follows (says the first 100 below, or nothing more is hidden)', total > 100 ? f.text === `${total} words found; the first 100 are below.` : f.text === `${total} words found.`, f);
 
@@ -1014,13 +1015,14 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
     const inDict = await ev(`[...document.querySelectorAll('[data-ar-own-in-dict]')].map(e => ({ id: e.dataset.arOwnInDict, text: e.textContent, href: e.querySelector('a')?.getAttribute('href') }))`);
     const sorryRow = inDict.find(r => r.id === SORRY);
     check('typing آسف in "Add your own word" shows the dictionary\'s آسِف, "sorry", with a link to its lesson', !!sorryRow && sorryRow.text.includes('sorry') && sorryRow.text.includes('آسِف') && sorryRow.href === '#study/arabic/lesson.arabic-messages-needs', inDict);
-    check('…and exactly one of the rows is for آسِف (the other is لِلْأَسَفِ, "unfortunately", which has the same letters under its article)', inDict.filter(r => r.id === SORRY).length === 1 && inDict.every(r => r.id === SORRY || r.text.includes('unfortunately')), inDict);
+    check('…and it\'s the only word offered: لِلْأَسَفِ, "unfortunately", isn\'t, since only the article is set aside, not a joined لِ', inDict.length === 1 && inDict[0].id === SORRY, inDict);
     await ev(`[...document.querySelectorAll('[data-ar-own-in-dict] button')].find(b => b.textContent === 'Use the course’s meaning').click()`); await sleep(150);
     check('"Use the course\'s meaning" fills the meaning field with "sorry"', await ev(`document.querySelector('[data-s="ar-own-meaning"]').value`) === 'sorry');
     await click('[data-action="ar-own-dict-add"]'); await sleep(300);
     const a18 = await AR();
     check('"Add it to revision instead" puts آسِف in revision (recognise card)', a18.cards.some(c => c.id === SORRY + ':recognise'), a18.cards.map(c => c.id));
     check('…keeps no new word of your own', a18.words.length === 1 && a18.words[0].id === kw18[0].id, a18.words);
+    check('…and focus goes back to "Add your own word"', await ev(`document.activeElement === document.querySelector('[data-action="ar-word-own"]')`));
     check('…closes the form and says the word "is in your revision now"', !(await exists('[data-ar-own-word]')) && (await T.text('[data-ar-your-words] p[role="status"]')).includes('is in your revision now'), await T.text('[data-ar-your-words] p[role="status"]'));
     await click('[data-action="ar-word-own"]'); await sleep(150);
     await typeIn('[data-s="ar-own-ar"]', 'آسف'); await sleep(200);

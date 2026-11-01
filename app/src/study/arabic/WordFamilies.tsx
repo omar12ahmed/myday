@@ -97,7 +97,7 @@ function FamilyCard({ f, wide, open, onOpen }: { f: Family; wide: boolean; open:
 function WordNote({ f, id, onClose }: { f: Family; id: string; onClose: () => void }) {
   const w = byId.get(id)!, note = (f.word_notes as Record<string, string | undefined>)[id];
   function show() {
-    const li = document.querySelector<HTMLElement>(`[data-ar-word="${CSS.escape(id)}"]`);
+    const li = document.querySelector<HTMLElement>(`[data-ar-vocabulary] [data-ar-word="${CSS.escape(id)}"]`);
     if (!li) return;
     li.scrollIntoView({ block: 'center' });
     li.focus({ preventScroll: true });

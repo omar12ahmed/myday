@@ -230,6 +230,16 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('the course already has آسِف for "اسف", in lesson.arabic-messages-needs', !!sorry && sorry.lessonId === 'lesson.arabic-messages-needs', sorry && sorry.lessonId);
   check('the course already has الْعَرَبِيَّة for "عربية"', D.inDictionary('عربية').some(e => e.w.form_ar === 'الْعَرَبِيَّة'), D.inDictionary('عربية').map(e => e.w.form_ar));
   check('a Latin word that is not Arabic is not in the dictionary (qwerty)', D.inDictionary('qwerty').length === 0);
+  // After review: a match found by taking your article or joined letter off ranks below the word you typed, and the add
+  // form sets only the article aside.
+  check('"كانت" finds كَانَتْ first, before أَنْتَ (its ك taken off)', firstAr('كانت') === 'كَانَتْ' && D.search('كانت', []).findIndex(e => e.w.form_ar === 'أَنْتَ') > 0, D.search('كانت', []).map(e => e.w.form_ar));
+  check('"الآن" finds الْآنَ first, and doesn\'t bring in every word starting أن (two letters left once the article is off)', firstAr('الآن') === 'الْآنَ' && D.search('الآن', []).length < 10, D.search('الآن', []).map(e => e.w.form_ar));
+  check('a word found with your article taken off ranks a little below the word as typed (الكتاب: كِتَاب at 0.5)', D.rank(first('الكتاب'), 'الكتاب') === 0.5 && D.rank(first('كتاب'), 'كتاب') === 0);
+  check('a meaning with alternatives matches any of them exactly ("home" finds بَيْت, "house/home", first)', firstAr('home') === 'بَيْت' && D.rank(first('home'), 'home') === 0, firstAr('home'));
+  check('"Add your own word" sets only the article aside: بيت offers بَيْت alone, not كَالْبَيْتِ; اسف offers آسِف, not لِلْأَسَفِ', D.inDictionary('بيت').map(e => e.w.form_ar).join() === 'بَيْت' && D.inDictionary('اسف').map(e => e.w.form_ar).join() === 'آسِف' && D.inDictionary('العربية').some(e => e.w.form_ar === 'الْعَرَبِيَّة'), [D.inDictionary('بيت').map(e => e.w.form_ar), D.inDictionary('اسف').map(e => e.w.form_ar)]);
+  const lc = D.letterCounts('letter'), rc = D.letterCounts('root');
+  check('the letters\' word counts add up to every course word, and each matches its list', [...lc.values()].reduce((a, b) => a + b, 0) === ents.length && D.LETTERS.every(l => (lc.get(l) ?? 0) === D.withLetter(ents, l).length));
+  check('the letters\' root counts match the roots listed under each', D.LETTERS.every(l => (rc.get(l) ?? 0) === D.rootsWith(ents, l).length));
 
   fs.rmSync(dir, { recursive: true, force: true });
   const sm = summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
