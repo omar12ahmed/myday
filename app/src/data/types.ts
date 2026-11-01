@@ -144,6 +144,7 @@ export interface MyDayData {
   research: ResearchData;
   content: ContentData;  // a Content project's ideas and videos (specs/projects-content.md); one synced record each
   ambitions: AmbitionsData; // your long-term ambitions and what they link (specs/projects-ambitions.md); one synced record each
+  software: SoftwareData; // a Software project's requirements, bugs and release checklists (specs/projects-software.md); one synced record each
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -274,6 +275,16 @@ export interface ContentData { items: ContentItem[]; [other: string]: unknown }
 // kind: 'project' | 'topic' | 'course' (ref: its id) | 'cyber' | 'arabic' (whichever path or goal is chosen there; no
 // ref). A kind, field or step from a newer MyDay is kept.
 export interface AmbitionsData { items: Ambition[]; [other: string]: unknown }
+// Software projects (specs/projects-software.md): a requirement with its acceptance checks, a bug, or a milestone's
+// release checklist. One record each, saying which project it belongs to; read as written (a newer MyDay's types and
+// fields kept). A check is ticked with what proved it and the day.
+export interface SoftwareData { items: SoftwareItem[]; [other: string]: unknown }
+export interface SoftwareCheck { id: string; text: string; done?: boolean; proof?: string; on?: DateKey; [other: string]: unknown }
+interface SoftwareBase { id: string; type: string; projectId: string; createdAt: string; updatedAt: string; [other: string]: unknown }
+export interface SoftwareRequirement extends SoftwareBase { type: 'requirement'; title: string; detail?: string; state?: 'proposed' | 'agreed' | 'built' | 'dropped'; checks?: SoftwareCheck[]; releaseId?: string; linkIds?: string[] }
+export interface SoftwareBug extends SoftwareBase { type: 'bug'; title: string; happens?: string; expected?: string; steps?: string; state?: 'open' | 'fixed' | 'wontfix'; closedOn?: DateKey; taskId?: string; releaseId?: string; linkIds?: string[] }
+export interface SoftwareRelease extends SoftwareBase { type: 'release'; milestoneId: string; checks?: SoftwareCheck[]; off?: boolean }
+export type SoftwareItem = SoftwareRequirement | SoftwareBug | SoftwareRelease; // (a newer MyDay's type is kept, never read)
 export interface AmbitionLink { id: string; kind: string; ref?: string; [other: string]: unknown }
 export interface AmbitionStep { id: string; text: string; done?: boolean; linkId?: string; [other: string]: unknown }
 export interface Ambition { id: string; title: string; why?: string; links?: AmbitionLink[]; steps?: AmbitionStep[]; createdAt: string; updatedAt: string; [other: string]: unknown }
@@ -295,7 +306,8 @@ export interface ContentItem {
   postOn?: DateKey | null; postTaskId?: string | null; posts?: ContentPost[]; results?: ContentResult[]; worked?: string; didnt?: string;
   createdAt: string; updatedAt: string; [other: string]: unknown;
 }
-export interface ProjectResource { id: string; title: string; url: string; note?: string; addedOn: DateKey; [other: string]: unknown }
+// `kind` marks a link to code (specs/projects-software.md): where it points is read from its address, never its state.
+export interface ProjectResource { id: string; title: string; url: string; note?: string; kind?: string; addedOn: DateKey; [other: string]: unknown }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
 // A milestone: a big marker on the way, in your order. `aim` is a date to aim for (guidance, never "late");

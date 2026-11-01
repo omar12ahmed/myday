@@ -27,7 +27,7 @@ import { SECTIONS } from '../data/projectSections';
 import { amountText, breakEvenText, monthText, normalizeMoney } from '../data/businessMoney';
 import { STATUS_LABEL as EXPERIMENT_STATUS, statusOf } from '../data/experiments';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Ambition, Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
+import type { Ambition, Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, SoftwareItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, cleanCyberLesson, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard, CyberLesson, PortfolioEntry } from '../data/cybersecurity/types';
@@ -39,11 +39,12 @@ import { resourceName } from '../data/projectResources';
 import { sizeLabel } from '../data/files';
 import { platformLabel, resultWords, stepLabel, videoOf } from '../data/content';
 import { linksOf, linksWords, stepsOf, stepsWords } from '../data/ambitions';
+import { bugState, bugStateLabel, checksOf, checksWords, isBug, isRequirement, reqState, requirementStateLabel } from '../data/software';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | 'ambition' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | 'ambition' | 'software' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -333,6 +334,20 @@ const MANY: Many[] = [
     // Its why, its steps and what it links, in words, so two versions that differ only there can be told apart.
     lines: c => { const a = c as unknown as Ambition;
       return [a.why ? `Why: ${a.why}` : '', stepsWords(a), ...stepsOf(a).map(s => `${s.done ? '✓ ' : ''}${s.text}`), linksOf(a).length ? `Links: ${linksOf(a).map(l => l.ref ? `${l.kind} ${l.ref}` : l.kind).join('; ')}` : ''].filter(Boolean); } },
+  // A Software project's requirements, bugs and release checklists (specs/projects-software.md; from migration
+  // 20261101180000_sync_software.sql): one record each, saying which project it belongs to.
+  { kind: 'software', label: 'Software item',
+    items: d => d.software.items, put: (dr, id, c) => putItem(dr.software.items, id, c, (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)),
+    clean: (id, raw) => same(id, via({ software: { items: [raw] } }).software.items[0]),
+    summary: c => { const x = c as unknown as SoftwareItem, t = (s: unknown) => (typeof s === 'string' && s ? (s.length > 80 ? s.slice(0, 80) + '…' : s) : '(untitled)');
+      return isRequirement(x) ? `Requirement: ${t(x.title)} · ${requirementStateLabel(reqState(x))}` : isBug(x) ? `Bug: ${t(x.title)} · ${bugStateLabel(bugState(x))}` : x.type === 'release' ? 'Release checklist' : 'Software item'; },
+    // Its words, checks (with "✓ " when ticked, and what proved it) and links, so two versions that differ only there
+    // can be told apart.
+    lines: c => { const x = c as unknown as SoftwareItem, cs = checksOf(x), s = (v: unknown) => (typeof v === 'string' ? v : '');
+      const checks = cs.length ? [checksWords(cs), ...cs.map(k => `${k.done ? '✓ ' : ''}${k.text}${k.proof ? ` (${k.proof})` : ''}`)] : [];
+      const links = Array.isArray(x.linkIds) && x.linkIds.length ? `${x.linkIds.length} link${x.linkIds.length === 1 ? '' : 's'}` : '';
+      if (isBug(x)) return [s(x.happens) && `What happens: ${s(x.happens)}`, s(x.expected) && `What should happen: ${s(x.expected)}`, s(x.steps) && `Steps: ${s(x.steps)}`, x.closedOn ? `${bugStateLabel(bugState(x))} ${x.closedOn}` : '', x.taskId ? 'Has a task' : '', x.releaseId ? 'In a release' : '', links].filter((v): v is string => !!v);
+      return [s((x as { detail?: unknown }).detail) && `Detail: ${s((x as { detail?: unknown }).detail)}`, ...checks, isRequirement(x) && x.releaseId ? 'In a release' : '', x.type === 'release' && x.off ? 'No longer a release' : '', links].filter((v): v is string => !!v); } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),

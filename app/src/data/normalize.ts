@@ -22,6 +22,7 @@ import { emptyProjects, normalizeProjects } from './projects';
 import { emptyReading, normalizeReading } from './reading';
 import { emptyFiles, normalizeFiles } from './files';
 import { emptyAmbitions, normalizeAmbitions } from './ambitions';
+import { emptySoftware, normalizeSoftware } from './software';
 import { emptyContent, normalizeContent } from './content';
 import { emptyResearch, normalizeResearch } from './research';
 import { emptyTasks, normalizeTasks } from './tasks';
@@ -94,6 +95,7 @@ export function freshState(): MyDayData {
     research: emptyResearch(),
     content: emptyContent(),
     ambitions: emptyAmbitions(),
+    software: emptySoftware(),
     saves: { seq: 0, log: [] },
   };
 }
@@ -277,13 +279,14 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   s.research = normalizeResearch(raw.research, report); // a project's research (specs/projects-research.md); absent before → none yet
   s.content = normalizeContent(raw.content, report);    // a Content project's ideas and videos (specs/projects-content.md); likewise
   s.ambitions = normalizeAmbitions(raw.ambitions, report); // your ambitions (specs/projects-ambitions.md); likewise
+  s.software = normalizeSoftware(raw.software, report); // a Software project's requirements, bugs and releases (specs/projects-software.md); likewise
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
   // A whole section of the wrong kind (e.g. damaged into text) can't be read. Like the current MyDay, its
   // empty default is used — but it's counted, so it's never left out silently (see storage.ts).
   const wrong = (v: unknown, kind: 'object' | 'array') => v !== null && v !== undefined && (kind === 'array' ? !Array.isArray(v) : !isObj(v));
-  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'reading', 'files', 'research', 'content', 'ambitions']) if (wrong(raw[k], 'object')) report.dropped++;
+  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'reading', 'files', 'research', 'content', 'ambitions', 'software']) if (wrong(raw[k], 'object')) report.dropped++;
   for (const k of ['queue', 'commitments']) if (wrong(raw[k], 'array')) report.dropped++;
   if (isObj(raw.lists)) for (const cat of CATS) if (cat in raw.lists && wrong(raw.lists[cat], 'array')) report.dropped++;
   if (isObj(raw.health)) for (const k of ['workout', 'food', 'daily']) if (wrong(raw.health[k], 'object')) report.dropped++;

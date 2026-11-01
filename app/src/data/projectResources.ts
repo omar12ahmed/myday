@@ -51,26 +51,45 @@ export function normalizeResources(raw: unknown, report: { dropped: number }): P
 
 // ---------- Changing ----------
 const project = (d: MyDayData, id: string) => d.projects.items.find(p => p.id === id);
-export interface ResourceInput { url: string; title?: string; note?: string }
+export interface ResourceInput { url: string; title?: string; note?: string; kind?: string | null }
+// A link to code, marked (specs/projects-software.md): a repository, an issue or a pull request. Unmarked is a plain link.
+export const LINK_KINDS = [{ id: 'repo', label: 'Repository' }, { id: 'issue', label: 'Issue' }, { id: 'pr', label: 'Pull request' }] as const;
+export const linkKindLabel = (k: unknown) => LINK_KINDS.find(x => x.id === k)?.label ?? null;
+const kindIn = (k: unknown) => (LINK_KINDS.some(x => x.id === k) ? k as string : null);
+// Where a link to code points, read from its address (GitHub and GitLab paths; otherwise the site):
+// "github.com/owner/repo", "Issue #12 · owner/repo", "Pull request #34 · owner/repo". Never its state.
+export function linkWhere(url: string): string {
+  let u: URL;
+  try { u = new URL(url); } catch { return url; }
+  const host = u.hostname.replace(/^www\./, ''), parts = u.pathname.split('/').filter(Boolean);
+  if (host !== 'github.com' && host !== 'gitlab.com') return siteOf(url);
+  const dash = parts.indexOf('-'), path = dash > 0 ? [...parts.slice(0, dash), ...parts.slice(dash + 1)] : parts;
+  const repo = dash > 0 ? parts.slice(0, dash).join('/') : path.slice(0, 2).join('/');
+  const at = path.findIndex(x => x === 'issues' || x === 'pull' || x === 'pulls' || x === 'merge_requests'), n = at >= 0 ? path[at + 1] : undefined;
+  if (at >= 0 && n && /^\d+$/.test(n)) return `${path[at] === 'issues' ? 'Issue' : path[at] === 'merge_requests' ? 'Merge request' : 'Pull request'} #${n} · ${repo}`;
+  return repo ? `${host}/${repo}` : host;
+}
 // Keep a link. Returns its id, or null when the project isn't there, the address isn't a web address, it's already
 // kept in this project, or the project has 30 links.
 export function addResource(d: MyDayData, projectId: string, input: ResourceInput, k: DateKey = todayKey()): string | null {
   const p = project(d, projectId), url = webAddress(input.url), list = p?.resources ?? [];
   if (!p || !url || list.length >= RESOURCE_LIMITS.resources || list.some(r => r.url === url)) return null;
-  const note = tidyText(input.note ?? '', RESOURCE_LIMITS.note), id = 'rs' + uid();
-  p.resources = [...list, { id, title: tidyText(input.title ?? '', RESOURCE_LIMITS.title), url, ...(note ? { note } : {}), addedOn: k }];
+  const note = tidyText(input.note ?? '', RESOURCE_LIMITS.note), id = 'rs' + uid(), kind = kindIn(input.kind);
+  p.resources = [...list, { id, title: tidyText(input.title ?? '', RESOURCE_LIMITS.title), url, ...(note ? { note } : {}), ...(kind ? { kind } : {}), addedOn: k }];
   p.updatedAt = localStamp();
   return id;
 }
-// Change a link's address, title or note. Returns false when nothing changed, the address isn't a web address, or
-// another link in the project already has it.
+// Change a link's address, title, note or what it is (`kind` left out: unchanged; null: plain). Returns false when
+// nothing changed, the address isn't a web address, or another link in the project already has it.
 export function editResource(d: MyDayData, projectId: string, id: string, input: ResourceInput): boolean {
   const p = project(d, projectId), r = p?.resources?.find(x => x.id === id), url = webAddress(input.url);
   if (!p || !r || !url || p.resources!.some(x => x.id !== id && x.url === url)) return false;
   const title = tidyText(input.title ?? '', RESOURCE_LIMITS.title), note = tidyText(input.note ?? '', RESOURCE_LIMITS.note);
-  if (r.url === url && r.title === title && (r.note ?? '') === note) return false;
+  const kind = input.kind === undefined ? (r.kind ?? null) : kindIn(input.kind);
+  if (r.url === url && r.title === title && (r.note ?? '') === note && (r.kind ?? null) === kind) return false;
   r.url = url; r.title = title;
   if (note) r.note = note; else delete r.note;
+  if (kind) r.kind = kind; else if (input.kind !== undefined) delete r.kind; // (a newer MyDay's kind stays unless you change it)
   p.updatedAt = localStamp();
   return true;
 }

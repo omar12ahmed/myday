@@ -41,7 +41,8 @@ request looks like any other web page.
   state (**Proposed → Agreed → Built → Dropped**), its **acceptance checks** ("Given…, when…, then…" or plain lines),
   the release it's in (a milestone marked as a release), and links it points at (a pull request, an issue). Tick an
   acceptance check when it's proven, and say what proved it ("tests/app-projects [56] 1281/0", or a link) — the day is
-  kept. Add, reorder, edit; a dropped requirement stays, out of the counts.
+  kept. In the order you added them (reordering would need its own saved order, later); a dropped requirement
+  stays, out of the counts.
 - **Bugs** (`#projects/p/<id>/bugs`): each bug: its title, **what happens**, **what should happen**, **steps to repeat
   it**, **open / fixed / won't fix** (with the day), the release it's in, and links (the issue, the pull request that
   fixed it). **Fix it** makes a project task "Fix: <bug>" linked to it (once; the bug then shows its task and whether
@@ -62,7 +63,7 @@ request looks like any other web page.
 
 - **Saved data (schema stays 5, the AGENTS.md exception):** a new top-level section `software: { items }` keyed by
   `projectId`, like Research and Content, one record per item in a new synced kind **`software`** (migration
-  `<date>_sync_software.sql`, built from the live lists, applied first with the owner's yes). An item is one of:
+  `20261101180000_sync_software.sql`, built from the live lists, applied first with the owner's yes). An item is one of:
   - `requirement`: `{ id ('sr'+uid), type, projectId, title, detail?, state: 'proposed'|'agreed'|'built'|'dropped',
     checks: [{ id, text, done?, proof?, on? }], releaseId?, linkIds?: string[], createdAt, updatedAt }`;
   - `bug`: `{ id ('sb'+uid), type, projectId, title, happens?, expected?, steps?, state: 'open'|'fixed'|'wontfix',
