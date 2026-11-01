@@ -98,13 +98,16 @@ const sentAsk = d => d.events.filter(e => e.method === 'Network.requestWillBeSen
   await mac.click('[data-action=ask-go]');
   const answered = await shown(mac) && (await mac.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown';
   check('Ask MyDay answers', answered, (await mac.text('[data-s=ask-panel]')).slice(-260));
-  const sent = sentAsk(mac), first = sent[0], last = sent[sent.length - 1];
+  const sent = sentAsk(mac), first = sent[0], last = sent[sent.length - 1], looks = sent.slice(1);
+  const codes = mac.events.filter(e => e.method === 'Network.responseReceived' && e.params.response.url.includes('functions/v1/ai-plan')).map(e => e.params.response.status);
+  console.log(`(requests to Ask MyDay: ${sent.length}; responses: ${JSON.stringify(codes)}; the look's titles: ${JSON.stringify(last?.lookup?.ambitions)})`);
   check('the first request offered the look at your ambitions, and carried no ambition', first?.can?.includes('goals') && !first.lookup && !JSON.stringify(first).includes(AM1), first && { can: first.can, lookup: first.lookup });
-  check('…it asked to look, and the app sent your ambitions\' titles: this one, never the private one', sent.length === 2 && last?.lookup?.tool === 'goals' && last.lookup.ambitions.includes(AM1) && !last.lookup.ambitions.includes(AM2) && last.lookup.found >= 1,
-    last?.lookup && { tool: last.lookup.tool, n: last.lookup.ambitions?.length, found: last.lookup.found });
+  // (A request sent within the server's pause between requests is held and sent again, so the look may go more than once.)
+  check('…it asked to look, and the app sent your ambitions\' titles: this one, never the private one', looks.length >= 1 && looks.every(c => c.lookup?.tool === 'goals' && c.lookup.ambitions.includes(AM1) && !c.lookup.ambitions.includes(AM2) && c.lookup.found >= 1),
+    looks.map(c => c.lookup && { tool: c.lookup.tool, n: c.lookup.ambitions?.length, found: c.lookup.found }));
   check('…no request carried the private one\'s title or any why', !sent.some(c => { const j = JSON.stringify(c); return j.includes(AM2) || j.includes(WHY); }));
   const line = await mac.text('[data-s=ask-looked]');
-  check('above the answer: "Looked at your ambitions: …", with the private one left out', /^Looked at your ambitions: .+ — (one|\d+) left out \(linked to a private project, or one that’s gone\)\.$/.test(line.trim()), line);
+  check('above the answer: "Looked at your ambitions: …", with the private one left out', /^Looked at your ambitions: .+ — (one|\d+) left out \(linked to a private project, or one that’s gone\)\.( Checked at \d\d:\d\d\.)?$/.test(line.trim()), line);
   console.log(`(the answer: ${(await mac.text('[data-s=ask-message]')).slice(0, 220)})`);
   await mac.ev(`[...document.querySelectorAll('[data-action=ask-dismiss]')].pop()?.click()`); await D.sleep(300);
   await mac.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await D.sleep(400);
