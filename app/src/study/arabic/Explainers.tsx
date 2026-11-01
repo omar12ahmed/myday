@@ -108,8 +108,8 @@ function ExplainerCard({ e, book }: { e: Explainer; book: ExplainerIndex | null 
       <H>Quoted</H>
       <div className="grid gap-3">{e.quotes!.map((q, i) => <figure key={i} className="m-0 rounded-tile bg-surface-2 px-4 py-3" data-ar-explainer-quote={q.ref}>
         <Ar block showReading={false} className="text-[24px] m-0 ar-quote">{q.ar}</Ar>
-        <figcaption className="text-[15px] mt-1">{q.en} <span className="text-fg-2">(Qur'an {q.ref})</span></figcaption>
-        {q.note_en && <p className="text-[15px] text-fg-2 mt-1 mb-0"><WordNote text={q.note_en} /></p>}
+        <figcaption className="text-[15px] mt-1">{q.en} <span className="text-fg-2">(Qur'an {q.ref})</span>
+          {q.note_en && <span className="block text-fg-2 mt-1"><WordNote text={q.note_en} /></span>}</figcaption>
       </figure>)}</div>
     </>}
 

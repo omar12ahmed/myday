@@ -115,7 +115,14 @@ const lessonIds = new Set(course.lessons.map(l => l.id));
 const allWords = new Set(Object.values(courseWords).flatMap(l => l.words.map(w => w.id)));
 const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course_words', 'table', 'steps', 'examples', 'why', 'selftest', 'phrases_ar', 'leads_to', 'quotes'];
 // Quoted Qur'anic phrases belong to module 28 alone (the owner's decisions of 31 October and 1 November 2026).
-const QURANIC = 'module.arabic-quranic', REF = /^\d{1,3}:\d{1,3}(-\d{1,3})?$/;
+const QURANIC = 'module.arabic-quranic';
+// A sūra (1 to 114) and verse, or a forward range of verses: 1:2, 2:255-256.
+const goodRef = r => { const m = typeof r === 'string' && r.match(/^(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?$/); return !!m && +m[1] >= 1 && +m[1] <= 114 && +m[2] >= 1 && (m[3] === undefined || +m[3] > +m[2]); };
+// A quote in the muṣḥaf's spelling, made comparable with modern spelling for the secrets check: ٱ is ا, the tatweel and
+// the small muṣḥaf signs go, and a dagger alif is tried both as ا (الْعَالَمِينَ) and as nothing (هَذَا). ى and ي are
+// compared alike, on both sides.
+const quoteForms = s => ['\u0627', ''].map(alif => s.replace(/\u0671/g, '\u0627').replace(/[\u0640\u06D6-\u06ED\u0653-\u0655]/g, '').replace(/\u0670/g, alif));
+const sameYa = s => s.replace(/\u0649/g, '\u064A');
 // The course's own order, for "where this leads": a later lesson.
 const lessonAt = new Map(course.lessons.map((l, i) => [l.id, i]));
 const only = (where, o, allowed) => { if (o && typeof o === 'object') for (const k of Object.keys(o)) if (!allowed.includes(k)) fail(where, `unknown field ${k}`); };
@@ -175,7 +182,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
         const where = `${at}, quote ${i + 1}`;
         only(where, q, ['ar', 'ref', 'en', 'note_en']);
         if (!text(q?.ar) || !ARABIC.test(q.ar) || /[A-Za-z0-9]/.test(q.ar)) fail(where, 'the quote, in Arabic script only');
-        if (!REF.test(q?.ref ?? '')) fail(where, 'its sūra and verse, like 1:2 or 2:255-256');
+        if (!goodRef(q?.ref)) fail(where, 'its sūra (1 to 114) and verse, like 1:2 or 2:255-256');
         english(`${where} meaning`, q?.en);
         if (q?.note_en !== undefined) { if (!text(q.note_en)) fail(`${where} note`, 'missing'); else labels.push([`quote ${i + 1} note`, q.note_en]); }
       });
@@ -252,8 +259,10 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     for (const p of phrases) if (!used.has(p)) fail(`${at}, phrases_ar`, `${p} isn't used in the text`);
     // Nothing that answers its lesson's check, or the check of a lesson whose words link here.
     const everything = [...mixed.map(([, s]) => s), ...labels.map(([, s]) => s), ...(e.table ?? []).map(r => r.ar), ...(e.examples ?? []).map(x => x.ar),
-      ...(e.selftest ?? []).flatMap(q => q.choices ?? []), ...(Array.isArray(e.quotes) ? e.quotes.map(q => q?.ar) : [])].filter(text);
+      ...(e.selftest ?? []).flatMap(q => q.choices ?? [])].filter(text);
     for (const s of everything) for (const run of runs(s)) for (const secret of secrets) if (contains(run, secret)) fail(at, `${run} gives away the lesson check's answer (${secret})`);
+    for (const q of Array.isArray(e.quotes) ? e.quotes : []) if (text(q?.ar)) for (const secret of secrets)
+      if (quoteForms(q.ar).some(form => runs(form).some(run => contains(sameYa(run), sameYa(secret))))) fail(`${at}, quote ${q.ref}`, `gives away the lesson check's answer (${secret})`);
   }
 }
 

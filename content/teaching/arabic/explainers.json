@@ -29013,8 +29013,8 @@
      {
       "ar": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
       "ref": "1:2",
-      "en": "All praise is for God, Lord of the worlds.",
-      "note_en": "A language note: الْحَمْدُ ends in -u, so it's the subject. What the verse means more fully is a question for commentary."
+      "en": "Praise belongs to God, Lord of the worlds.",
+      "note_en": "A language note: الْحَمْدُ ends in -u, the nominative: it's the subject of a sentence without a verb, and the next word says what belongs to whom. What the verse means more fully is a question for commentary."
      }
     ],
     "phrases_ar": [],
@@ -29137,7 +29137,7 @@
        "the commentary"
       ],
       "answer": "the spelling, the written letters",
-      "why_en": "The marks and signs are الضَّبْط."
+      "why_en": "From رَسَمَ, to draw: the letters as drawn, before anything is added to them."
      },
      {
       "q_en": "In the muṣḥaf, what does a small alif above a letter stand for?",
@@ -29164,7 +29164,7 @@
      {
       "ar": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
       "ref": "1:2",
-      "en": "All praise is for God, Lord of the worlds.",
+      "en": "Praise belongs to God, Lord of the worlds.",
       "note_en": "In modern spelling, the last word is الْعَالَمِينَ, with its long ā written in full."
      },
      {
@@ -29227,7 +29227,7 @@
     ],
     "steps": [
      "A morphology annotation splits a written word into its parts, and labels each one: person, number, case or mood.",
-     "In the quote's وَإِيَّاكَ, the parts are وَ, and; إِيَّا, which carries a pronoun standing before its verb; and كَ, you.",
+     "In the quote's وَإِيَّاكَ, an annotation shows two parts: وَ, and; and إِيَّاكَ, you, the object pronoun that stands before its verb. Grammarians take it further, into إِيَّا and كَ, the part that says who.",
      "نَسْتَعِينُ, we seek help, is a form X verb from ع-و-ن, help, with نَـ, we, as its prefix: the pattern اِسْتَفْعَلَ often means seeking something.",
      "Read the tag definitions rather than guessing at abbreviations, and note anything you can't explain, to check later."
     ],
@@ -29282,8 +29282,8 @@
      }
     ],
     "why": {
-     "q_en": "Why does an annotation split وَإِيَّاكَ into three parts?",
-     "a_en": "Each part does a different job: وَ links it to what comes before, إِيَّا carries the pronoun when it stands before its verb, and كَ says who: you. One dictionary entry wouldn't show that."
+     "q_en": "Why does an annotation split وَإِيَّاكَ at all?",
+     "a_en": "The وَ links it to what comes before, and إِيَّاكَ is a word of its own: the object pronoun used when the object stands before its verb. One dictionary entry wouldn't show that."
     },
     "selftest": [
      {
@@ -29373,7 +29373,7 @@
     ],
     "steps": [
      "Read a word inside its clause and its passage before you draw anything wider from it.",
-     "Find what each pronoun refers to: in the quote, the كَ of رَبِّكَ, your Lord, is the one addressed, and الَّذِي, who, refers back to رَبّ.",
+     "Find what each pronoun refers to: in the quote, the كَ of رَبِّكَ, your Lord, refers to the one addressed, and الَّذِي, who, refers back to رَبّ.",
      "Compare two translations: where their wording differs, look at the Arabic relationship first, then name the difference as a translator's choice.",
      "A grammatical possibility isn't automatically the intended meaning: for questions of interpretation, go to qualified commentary."
     ],
@@ -29522,9 +29522,9 @@
       "en": "a printed copy of the Qur'an"
      },
      {
-      "form_en": "a transmitted reading",
+      "form_en": "a transmission",
       "ar": "رِوَايَة",
-      "en": "a transmitted reading"
+      "en": "a transmission of a reading"
      },
      {
       "form_en": "the edition",
@@ -29554,7 +29554,7 @@
     ],
     "steps": [
      "State the study's purpose and its النِّطَاق, its scope: a few verses, studied as language.",
-     "Name the مُصْحَف, the printed edition, and the رِوَايَة, the transmitted reading, it follows, and check every quote against it.",
+     "Name the مُصْحَف, the printed edition, and the رِوَايَة, the transmission of the reading, it follows, and check every quote against it.",
      "For each word, give its reference, its form and its analysis, with the source of that analysis. Mark your own analysis as yours.",
      "End with حُدُودُ الدِّرَاسَةِ, the study's limits, and any مَسْأَلَةٌ مَفْتُوحَةٌ, open question: what the study doesn't settle."
     ],

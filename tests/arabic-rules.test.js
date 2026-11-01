@@ -498,10 +498,13 @@ check('vowelled and unvowelled versions are both kept where the package has them
     card.phrases_ar = (card.phrases_ar ?? []).filter(p => JSON.stringify({ ...card, phrases_ar: [] }).includes(p)); // a phrase only its lead used
     f.lessons['lesson.arabic-quranic-scope'] = [card]; return card; };
   badExp('quote-elsewhere', f => { sayOf(f).quotes = [QUOTE]; }, 'quotes belong to module 28', 'a quote outside module 28');
-  badExp('quote-ref', f => { quranic(f).quotes = [{ ...QUOTE, ref: 'al-Fātiḥa 2' }]; }, 'its sūra and verse', 'a quote without its sūra and verse');
+  badExp('quote-ref', f => { quranic(f).quotes = [{ ...QUOTE, ref: 'al-Fātiḥa 2' }]; }, 'its sūra (1 to 114) and verse', 'a quote without its sūra and verse');
   badExp('quote-meaning', f => { quranic(f).quotes = [{ ...QUOTE, en: '' }]; }, 'quote 1 meaning: missing', 'a quote without its meaning');
+  badExp('quote-sura', f => { quranic(f).quotes = [{ ...QUOTE, ref: '115:1' }]; }, 'its sūra (1 to 114)', 'a quote from a sūra that doesn\'t exist');
+  // In the muṣḥaf's spelling (ٱ, a dagger alif on a tatweel) a word still matches the lesson check's answer in modern spelling.
+  badExp('quote-secret', f => { f.lessons['lesson.arabic-quranic-morphology'][0].quotes.push({ ar: 'وَهَـٰذَا كِتَـٰبٌ', ref: '6:92', en: 'And this is a book.' }); }, 'gives away the lesson check\'s answer (كتاب)', 'a quote holding the lesson check\'s answer, in the muṣḥaf\'s spelling');
   { const copy = JSON.parse(JSON.stringify(expSource)); quranic(copy).quotes = [QUOTE];
-    const file = path.join(expTemp, 'good-quote.json'); fs.writeFileSync(file, JSON.stringify(copy)); const r = runExp(file);
+    const file = path.join(expTemp, 'good-quote.json'); fs.writeFileSync(file, JSON.stringify(copy)); const r = runExp(file, ['--readings']);
     check('a module 28 card may quote in the muṣḥaf\'s spelling (ٱ, the dagger alif, the small sukūn), outside the house rules and the readings', r.code === 0, r.out.slice(-300)); }
   badExp('hint-answer', f => { const q = sayOf(f).selftest[0]; q.hint_en = `Think of ${q.answer} here.`; }, 'the hint gives away its own answer', 'a self-test hint containing its own question\'s answer');
   check('the real explainers file reports how many cards lead on to a later explainer: 80', realExp.out.includes('; 80 lead on to a later explainer.'), realExp.out);

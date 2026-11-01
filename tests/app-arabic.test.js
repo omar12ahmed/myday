@@ -717,9 +717,9 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await fresh('study/arabic/lesson.arabic-quranic-scope'); await wait('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]', 5000);
   await ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]').open = true`); await sleep(300);
   const quoteInfo = await ev(`(() => { const f = document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"] figure[data-ar-explainer-quote="1:2"]'); if (!f) return null;
-    const ar = f.querySelector('[lang="ar"]'); return { text: ar?.textContent, dir: ar?.dir, caption: f.querySelector('figcaption')?.textContent, play: f.querySelectorAll('[data-action="ar-play"]').length, reading: !!ar?.parentElement?.querySelector('[data-ar-transliteration]') && !!f.querySelector(':scope > [lang="ar"] + [data-ar-transliteration]') }; })()`);
+    const ar = f.querySelector('[lang="ar"]'); return { text: ar?.textContent, dir: ar?.dir, caption: f.querySelector('figcaption')?.textContent, reading: !!f.querySelector(':scope > [lang="ar"] + [data-ar-transliteration]'), noteReading: !!f.querySelector('figcaption [data-ar-transliteration]') }; })()`);
   check('module 28: a quote shows in the muṣḥaf\'s exact spelling, right to left, with its meaning and "(Qur\'an 1:2)"', !!quoteInfo && quoteInfo.text === quote12.ar && quoteInfo.dir === 'rtl' && (quoteInfo.caption || '').includes(quote12.en) && (quoteInfo.caption || '').includes("(Qur'an 1:2)"), quoteInfo);
-  check('…with no play button and no transliteration of the quote', !!quoteInfo && quoteInfo.play === 0 && !quoteInfo.reading, quoteInfo);
+  check('…with no transliteration of the quote, while its note\'s modern Arabic keeps its reading (readings are on)', !!quoteInfo && !quoteInfo.reading && quoteInfo.noteReading, quoteInfo);
 
   await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
   await go(wvHash); await wait(exSel, 5000);
