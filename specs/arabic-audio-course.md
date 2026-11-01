@@ -209,6 +209,9 @@ Round twenty-four (module 22's split explainers): 59 new clips in Charon, approv
 Round twenty-five (the course words for modules 25–30, course words 1.8): 690 clips, approved by ear; every course word
 now has a voice. Where every take of a short word was transcribed as another word, the owner chose by ear from four
 takes (two in Charon, two in WaveNet B): three Charon takes and three WaveNet B fallbacks. The keys were deleted.
+Round twenty-six (the first dictionary words, modules 1–7, myday-20's 78; four older course words fixed so they don't
+give away their lesson's check; module 5's this-that card): 188 clips in Charon, approved by ear ("all good"). Seven
+clips whose texts are no longer shown were retired. The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
