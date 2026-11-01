@@ -84,6 +84,9 @@ const SAY = 'details[data-ar-explainer="explainer.arabic-say"]';
   check('…and they come back on Try', await mac.until(`document.querySelectorAll('[data-ar-task] [data-action="ar-play"]').length === 4`, 10000));
 
   // The explainers: the Say card's 10 forms, 3 sentences and its steps' Arabic; a form plays.
+  // The explainers sit in the Understand step and load with their module's file (1.121.0), so go back and wait for the card.
+  if (await mac.ev(`!!document.querySelector('[data-action="ar-step"][data-v="understand"]')`)) await mac.click('[data-action="ar-step"][data-v="understand"]');
+  if (!await mac.until(`!!document.querySelector('${SAY}')`, 20000)) await openAt(mac, 'study/arabic/' + WV, `!!document.querySelector('${SAY}')`);
   await mac.ev(`document.querySelector('${SAY}').open = true`); await D.sleep(400);
   const say = await clips(mac, SAY);
   check('the Say explainer has its 27 play buttons (10 forms, 3 sentences, 14 in its steps), none in its questions', say.length === 27 && say.filter(n => n.includes(':form:')).length === 10
