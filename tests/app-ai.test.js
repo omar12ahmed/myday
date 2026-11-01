@@ -885,6 +885,59 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8k2] "I don\'t know where to start" on the Stuck card hands over to Ask MyDay (practice mode)');
+  {
+    const at = `${TODAY}T08:00`;
+    const TKM = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 3, blockers: [], letGoOn: null, ...x });
+    const PJH = { id: 'pjHs', title: 'Quiet plans', summary: '', stage: 'explore', status: 'active', private: true, nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at };
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.projects.items.push(${JSON.stringify(PJH)}); s.tasks.items.push(${JSON.stringify(TKM('tkHs', 'Sort out the garage'))}, ${JSON.stringify(TKM('tkHp', 'Draft the private letter', { projectId: 'pjHs' }))}); }`);
+    await mock.until(`document.querySelector('#app')`);
+    const saved = async () => (await mock.data()).tasks.items.find(t => t.id === 'tkHs');
+    const link = '[data-action=stuck-ask]';
+    await mock.ev(`location.hash = 'today/tasks/tkHs'`); await mock.until(`document.getElementById('stuckCard')`, 5000);
+    check('a task moved 3 times shows the Stuck card on its page', await mock.exists('#stuckCard'));
+    await mock.click('[data-s=blocker][data-id=big]'); await sleep(150);
+    check('choosing "It\'s too big" shows no link to Ask MyDay', !(await mock.exists(link)) && !(await mock.exists('[data-s=stuck-ask]')));
+    await mock.click('[data-s=blocker][data-id=start]'); await sleep(150);
+    await mock.type('#stuckText', 'find the shelves');
+    check('choosing "I don\'t know where to start" still shows the first-step field and "Make that today\'s task"', (await mock.exists('#stuckText')) && (await mock.text('[data-action=unstick]')).includes("Make that today's task"), await mock.text('[data-action=unstick]'));
+    check('…and below them: "Not sure what the first step is? Think it through with Ask MyDay"', (await mock.text('[data-s=stuck-ask]')) === 'Not sure what the first step is? Think it through with Ask MyDay' && (await mock.text(link)) === 'Think it through with Ask MyDay', await mock.text('[data-s=stuck-ask]'));
+    await mock.click(link); await mock.until(`document.getElementById('captureText')`, 5000); await sleep(200);
+    const phaseNow = () => mock.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`);
+    check('tapping it opens + with "I don\'t know where to start with this" typed in', (await mock.ev(`document.getElementById('captureText').value`)) === "I don't know where to start with this");
+    check('…Ask MyDay hasn\'t been asked: nothing is sent until you tap it', (await phaseNow()) === 'idle' && !(await mock.exists('[data-s=ask-thread]')) && !(await mock.exists('[data-s=ask-message]')), await phaseNow());
+    check('…its preview is about this task', (await mock.text('[data-s=ask-sends]')).includes('Sort out the garage'), await mock.text('[data-s=ask-sends]'));
+    let t0 = await saved();
+    check('the answer is kept on the task, today, and its moves are still 3', eq(t0.blockers, [{ reason: 'start', on: TODAY }]) && t0.postponed === 3 && t0.due === null, t0);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(250);
+    check('closed, the card is still open as you left it (your answer chosen, your first step typed) and focus is back on the link', await mock.exists('#stuckCard')
+      && (await mock.ev(`document.querySelector('[data-s=blocker][data-id=start]').getAttribute('aria-pressed')`)) === 'true' && (await mock.ev(`document.getElementById('stuckText').value`)) === 'find the shelves'
+      && (await mock.ev(`document.activeElement?.dataset?.action || ''`)) === 'stuck-ask', await mock.ev(`document.activeElement?.outerHTML.slice(0, 120)`));
+    await mock.ev(`location.hash = 'today'`); await sleep(300); await mock.ev(`location.hash = 'today/tasks/tkHs'`); await mock.until(`!!document.querySelector('[data-action=task-stuck]')`, 5000);
+    check('…and back on the task later, it has stepped back, as after any answer; "Something in the way?" brings it back', !(await mock.exists('#stuckCard')) && await mock.exists('[data-action=task-stuck]'));
+    await mock.click('[data-action=task-stuck]'); await mock.until(`document.getElementById('stuckCard')`, 5000);
+    await mock.click('[data-s=blocker][data-id=start]'); await sleep(150);
+    await mock.click(link); await mock.until(`document.getElementById('captureText')`, 5000); await sleep(200);
+    t0 = await saved();
+    check('tapping the link again the same day opens + again but adds no second "start" entry', (await mock.ev(`document.getElementById('captureText').value`)) === "I don't know where to start with this" && eq(t0.blockers, [{ reason: 'start', on: TODAY }]), t0.blockers);
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    check('tapping Ask MyDay answers by asking "which part feels hardest to begin"', (await phaseNow()) === 'shown' && (await mock.text('[data-s=ask-message]')).includes('which part feels hardest to begin'), await mock.text('[data-s=ask-message]'));
+    check('…with exactly three choices: Knowing the first step, It feels too big, Finding the time', eq(await mock.ev(`[...document.querySelectorAll('[data-s=ask-choice]')].map(b => b.textContent.trim())`), ['Knowing the first step', 'It feels too big', 'Finding the time']));
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(250);
+    // Then the card itself, the same day: the first step becomes a task, and the answer isn't counted twice.
+    await mock.type('#stuckText', 'Clear one shelf'); await mock.click('[data-action=unstick]'); await sleep(300);
+    const t1 = await saved();
+    check('finishing the card the same day makes the first step today\'s task, and keeps the answer once', (await mock.data()).tasks.items.some(x => x.title === 'Clear one shelf' && x.due === TODAY)
+      && t1.blockers.filter(b => b.reason === 'start' && b.on === TODAY).length === 1 && t1.postponed === 0, t1);
+    await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => t.title !== 'Clear one shelf'); }`);
+    await mock.ev(`location.hash = 'today/tasks/tkHp'`); await mock.until(`document.getElementById('stuckCard')`, 5000);
+    await mock.click('[data-s=blocker][data-id=start]'); await sleep(150);
+    check('a task in a private project shows the first-step field but no link to Ask MyDay', (await mock.exists('#stuckText')) && !(await mock.exists(link)) && !(await mock.exists('[data-s=stuck-ask]')));
+    await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => !['tkHs', 'tkHp'].includes(t.id)); s.projects.items = s.projects.items.filter(p => p.id !== 'pjHs'); }`);
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[8l] Milestones and decisions with Ask MyDay; private projects');
   {
     const at = `${TODAY}T08:00`;

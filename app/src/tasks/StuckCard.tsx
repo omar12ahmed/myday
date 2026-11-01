@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { AI_MODE } from '../ai/request';
+import { aiReach } from '../ai/reach';
+import { openCapture } from '../capture/openCapture';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
-import { Choice, Choices, Note } from '../components/parts';
+import { Choice, Choices, LinkButton, Note } from '../components/parts';
 import { shortDate, todayKey } from '../data/dates';
 import { BLOCKER_LABEL } from '../data/patterns/notice';
 import { update } from '../data/storage';
-import { nextDayOff, setWaiting, TASK_LIMITS, unstick } from '../data/tasks';
+import { nextDayOff, noteBlocker, setWaiting, TASK_LIMITS, unstick } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { Blocker, DateKey, MyDayData, TaskItem } from '../data/types';
 
@@ -18,7 +21,8 @@ const WAITING_LABEL = "I'm waiting on someone or something";
 
 // "What's getting in the way?" for a task that keeps moving (or whenever you ask). Each answer changes the task so
 // it's easier to start — it never just says "try again". See unstick() in data/tasks.ts.
-export function StuckCard({ data, t, stuck }: { data: MyDayData; t: TaskItem; stuck: boolean }) {
+// `onHandOver`: told before your answer is kept, so the page can keep this card open (see TaskEditor).
+export function StuckCard({ data, t, stuck, onHandOver }: { data: MyDayData; t: TaskItem; stuck: boolean; onHandOver?: () => void }) {
   const [reason, setReason] = useState<Reason | null>(null);
   const [text, setText] = useState(''), [until, setUntil] = useState('');
   const k = todayKey(), off = nextDayOff(data, k);
@@ -53,6 +57,11 @@ export function StuckCard({ data, t, stuck }: { data: MyDayData; t: TaskItem; st
     other: { label: 'Just note it' },
   };
   const a = reason ? action[reason] : null;
+  // Not sure of the first step? Think it through with Ask MyDay (the owner's choices of 31 Oct 2026): + opens about this
+  // task and waits for you to tap Ask MyDay; your answer is kept with the task, as the others are. Only while AI help is
+  // on and the task may reach it.
+  const askable = AI_MODE !== 'off' && aiReach(data).task(t);
+  const thinkItThrough = () => { onHandOver?.(); update(d => (noteBlocker(d, t.id, 'start', k) ? undefined : false)); openCapture("I don't know where to start with this"); };
   return (
     <Card id="stuckCard" aria-labelledby="stuck-h" tone={stuck ? 'accent' : 'plain'}>
       <h3 id="stuck-h" className="m-0">What's getting in the way?</h3>
@@ -64,6 +73,7 @@ export function StuckCard({ data, t, stuck }: { data: MyDayData; t: TaskItem; st
         <form onSubmit={e => { e.preventDefault(); go(); }}>
           {a.body}
           <Button inline type="submit" variant="primary" className="mt-3" data-action="unstick" disabled={a.needsText && !text.trim()}>{a.label}</Button>
+          {reason === 'start' && askable && <p className="text-[15px] m-0 mt-3" data-s="stuck-ask">Not sure what the first step is? <LinkButton data-action="stuck-ask" onClick={thinkItThrough}>Think it through with Ask MyDay</LinkButton></p>}
         </form>
       )}
       {reason !== 'waiting' && <Note className="mb-0 mt-3 text-sm">Your answer is kept with the task, so MyDay can notice what usually gets in the way.</Note>}

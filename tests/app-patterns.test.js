@@ -109,6 +109,7 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   check('opening it asks "What\'s getting in the way?", kindly', (await exists('#stuckCard')) && (await text('[data-s=stuck-intro]')) === "This one has moved 3 times. That's useful to know, not a problem — let's change the task, not push harder.");
   check('…with eight answers, including "I\'m waiting on someone or something" after the missing-something one', eq(await ev(`[...document.querySelectorAll('[data-s=blocker]')].map(b => b.textContent)`), ["It's too big", "I don't know where to start", "It's boring", "I'm too tired for it", "I'm missing something I need", "I'm waiting on someone or something", "It doesn't matter any more", 'Something else']));
   await click('[data-s=blocker][data-id=start]'); await sleep(150);
+  check('…and, with AI help off in this build, there is no "Think it through with Ask MyDay" link', (await exists('#stuckText')) && !(await exists('[data-action=stuck-ask]')) && !(await exists('[data-s=stuck-ask]')));
   check('"I don\'t know where to start" asks for the very first step (and waits for it)', (await text('label[for=stuckText]')) === "What's the very first step?" && (await ev(`document.querySelector('[data-action=unstick]').disabled`)));
   await type('#stuckText', 'find the latest bill'); await click('[data-action=unstick]'); await sleep(300);
   let items = (await data()).tasks.items;

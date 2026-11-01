@@ -213,6 +213,26 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('…unticking it brings it back', o.letGoOn === null && K.groupOf(d, o, today) !== 'done');
   check('every answer is kept on the task (4 here)', o.blockers.map(b => b.reason).join() === 'boring,info,tired,notneeded');
 
+  // "I don't know where to start", handed over to Ask MyDay: kept with the task, which is otherwise left as it was.
+  const ns = K.addTask(d.tasks, { title: 'Plan the allotment', due: K.shift(today, 2), listId: 'tl1', category: 'admin' });
+  const NS = () => d.tasks.items.find(x => x.id === ns);
+  K.editTask(d.tasks, ns, { due: K.shift(today, 4) }); K.editTask(d.tasks, ns, { due: K.shift(today, 6) });
+  const nsBefore = JSON.stringify(NS());
+  check('noting "start" returns true and records it for today', K.noteBlocker(d, ns, 'start', today) === true && eq(NS().blockers, [{ reason: 'start', on: today }]), NS().blockers);
+  check('…leaving its moves, its date and its title as they were', NS().postponed === 2 && NS().due === K.shift(today, 6) && NS().title === 'Plan the allotment' && JSON.stringify({ ...NS(), blockers: [] }) === JSON.stringify({ ...JSON.parse(nsBefore), blockers: [] }), NS());
+  check('noting "start" again the same day returns false and adds nothing', K.noteBlocker(d, ns, 'start', today) === false && eq(NS().blockers, [{ reason: 'start', on: today }]), NS().blockers);
+  check('noting "start" on another day adds a second entry', K.noteBlocker(d, ns, 'start', K.shift(today, 1)) === true && eq(NS().blockers, [{ reason: 'start', on: today }, { reason: 'start', on: K.shift(today, 1) }]), NS().blockers);
+  check('noting a task that isn\'t there returns false', K.noteBlocker(d, 'tkNone', 'start', today) === false);
+  for (let i = 2; i < K.TASK_LIMITS.blockers + 5; i++) K.noteBlocker(d, ns, 'start', K.shift(today, i));
+  const st = K.addTask(d.tasks, { title: 'Clear the loft', listId: 'tl1', category: 'admin' }), ST = () => d.tasks.items.find(x => x.id === st);
+  ST().postponed = 3;
+  check('a stuck task, handed over, steps back for a week like any answer; its moves stay, so a week later it offers itself again', K.isStuck(d, ST(), today) && K.noteBlocker(d, st, 'start', today)
+    && !K.isStuck(d, ST(), today) && ST().postponed === 3 && K.isStuck(d, ST(), K.shift(today, 8)), ST());
+  const stMsg = K.unstick(d, st, { reason: 'start', step: 'Find the loft key' }, today);
+  check('…and finishing the card the same day still makes the first step a task, but doesn\'t count the answer twice', !!stMsg && d.tasks.items.some(x => x.title === 'Find the loft key' && x.due === today)
+    && ST().postponed === 0 && ST().blockers.filter(b => b.reason === 'start' && b.on === today).length === 1, ST().blockers);
+  check('the answers kept are capped at the limit, keeping the newest', NS().blockers.length === K.TASK_LIMITS.blockers && NS().blockers[NS().blockers.length - 1].on === K.shift(today, K.TASK_LIMITS.blockers + 4), NS().blockers.length);
+
   console.log('\n[10b] A task moved to a later day comes off today\'s plan (and only then)');
   {
     const p2 = fresh(), built = date => ({ energy: 4, rest: false, builtAt: date + 'T08:00', checkedIn: false, tasks: [] });

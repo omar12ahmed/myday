@@ -62,10 +62,23 @@ A question's choices come back from the AI and are checked like the rest of a re
 
   Then an independent review.
 
-## 4. Later, with "Help me start"
+## 4. "I don't know where to start" on a task
 
-When the initiation proposal's "Help me start" is built, its "I don't know where to start" hands over to Ask MyDay with
-the task, so thinking it through starts from that task.
+The Stuck card ("What's getting in the way?") keeps its answers and wording. When you choose "I don't know where to
+start", below its first-step field it now says "Not sure what the first step is? **Think it through with Ask
+MyDay**", while AI help is on and the task may reach it (not in a private project). The owner's choices (31 Oct 2026):
+- **Tapping it opens +, and waits for you:** "I don't know where to start with this" is typed, on the task's own page,
+  so the preview shows what would be sent about it. Nothing goes until you tap Ask MyDay.
+- **Your answer is kept with the task,** as the card's other answers are, so What MyDay has noticed can learn what
+  usually gets in the way (once a day: finishing the card the same day doesn't count it twice). The card stays open, as
+  you left it, while you're on the task's page, so you can write the first step when you come back from +. Then, like
+  any answer, it steps back for a week ("Something in the way?" brings it back at any time); as the count of moves
+  stays, it offers itself again a week later if nothing has changed.
+- **Ask's step at the end is a task for today,** like the card's own "Make that today's task". There's no server
+  change: Ask's instructions already treat not knowing where to start as open.
+
+Built with myday-af's OK on the Stuck card. When the initiation proposal's "Help me start" is built, it can hand over
+the same way.
 
 ## 5. The owner's decisions (31 Oct 2026)
 

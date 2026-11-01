@@ -255,6 +255,18 @@ export function nextDayOff(data: MyDayData, k: DateKey = todayKey()): { date: Da
   return { date: shift(k, 1), label: 'tomorrow' };
 }
 export type Unstuck = { reason: Blocker; step?: string; need?: string };
+// An answer to "What's getting in the way?" kept with the task without changing it, for when you take it elsewhere:
+// "I don't know where to start", handed over to Ask MyDay to think it through (specs/ask-help-you-think.md §4). Once a
+// day per answer (and unstick won't add the same answer again that day). Like any answer it quiets the card for a week
+// (isStuck; the task's page keeps it open for that visit, and "Something in the way?" brings it back at any time);
+// unlike unstick, the count of moves stays, so the card offers itself again a week later if nothing has changed.
+export function noteBlocker(data: MyDayData, id: string, reason: Blocker, k: DateKey = todayKey()): boolean {
+  const t = data.tasks.items.find(x => x.id === id);
+  if (!t || t.blockers.some(b => b.reason === reason && b.on === k)) return false;
+  t.blockers = [...t.blockers, { reason, on: k }].slice(-TASK_LIMITS.blockers);
+  return true;
+}
+
 // What each answer does — it changes the task so it's easier to start, never just "try again":
 //   too big / don't know where to start → the first step (you write it) becomes its own 10-minute task for today,
 //     and the whole task waits under Any time;
@@ -266,7 +278,8 @@ export function unstick(data: MyDayData, id: string, u: Unstuck, k: DateKey = to
   if (!t) return null;
   const step = (u.step ?? '').trim(), need = (u.need ?? '').trim();
   if ((u.reason === 'big' || u.reason === 'start') && !step) return null;
-  t.blockers = [...t.blockers, { reason: u.reason, on: k }].slice(-TASK_LIMITS.blockers);
+  // (Already kept today — handed over to Ask MyDay first, say — it isn't counted twice for What MyDay has noticed.)
+  if (!t.blockers.some(b => b.reason === u.reason && b.on === k)) t.blockers = [...t.blockers, { reason: u.reason, on: k }].slice(-TASK_LIMITS.blockers);
   t.postponed = 0;
   switch (u.reason) {
     case 'big': case 'start': {
