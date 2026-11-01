@@ -62,12 +62,20 @@ export function linkWhere(url: string): string {
   let u: URL;
   try { u = new URL(url); } catch { return url; }
   const host = u.hostname.replace(/^www\./, ''), parts = u.pathname.split('/').filter(Boolean);
-  if (host !== 'github.com' && host !== 'gitlab.com') return siteOf(url);
-  const dash = parts.indexOf('-'), path = dash > 0 ? [...parts.slice(0, dash), ...parts.slice(dash + 1)] : parts;
-  const repo = dash > 0 ? parts.slice(0, dash).join('/') : path.slice(0, 2).join('/');
-  const at = path.findIndex(x => x === 'issues' || x === 'pull' || x === 'pulls' || x === 'merge_requests'), n = at >= 0 ? path[at + 1] : undefined;
-  if (at >= 0 && n && /^\d+$/.test(n)) return `${path[at] === 'issues' ? 'Issue' : path[at] === 'merge_requests' ? 'Merge request' : 'Pull request'} #${n} · ${repo}`;
-  return repo ? `${host}/${repo}` : host;
+  // "Issue #12 · owner/repo" only where the address says so: GitHub's /owner/repo/issues|pull/<n>, GitLab's
+  // /group/project/-/issues|merge_requests/<n> (nowhere else in the path).
+  const numbered = (what: string | undefined, n: string | undefined, repo: string, kinds: Record<string, string>) => (what && kinds[what] && n && /^\d+$/.test(n) ? `${kinds[what]} #${n} · ${repo}` : null);
+  if (host === 'github.com') {
+    if (parts.length < 2) return parts.length ? `${host}/${parts[0]}` : host;
+    const repo = `${parts[0]}/${parts[1]}`;
+    return numbered(parts[2], parts[3], repo, { issues: 'Issue', pull: 'Pull request' }) ?? `${host}/${repo}`;
+  }
+  if (host === 'gitlab.com') {
+    const dash = parts.indexOf('-'), repo = (dash >= 0 ? parts.slice(0, dash) : parts).join('/');
+    if (!repo) return host;
+    return (dash > 0 ? numbered(parts[dash + 1], parts[dash + 2], repo, { issues: 'Issue', merge_requests: 'Merge request' }) : null) ?? `${host}/${repo}`;
+  }
+  return siteOf(url);
 }
 // Keep a link. Returns its id, or null when the project isn't there, the address isn't a web address, it's already
 // kept in this project, or the project has 30 links.

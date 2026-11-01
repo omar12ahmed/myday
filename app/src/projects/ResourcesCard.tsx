@@ -69,13 +69,13 @@ function ResourceForm({ p, r, onDone }: { p: Project; r?: ProjectResource; onDon
   const key = r?.id ?? 'new';
   const [url, setUrl] = useState(r?.url ?? ''), [title, setTitle] = useState(r?.title ?? ''), [note, setNote] = useState(r?.note ?? '');
   const [error, setError] = useState(''), [kind, setKind] = useState<string | null>(null); // null: not changed here
-  const kindNow = kind ?? (linkKindLabel(r?.kind) ? r!.kind as string : '');
+  const kindNow = kind ?? (typeof r?.kind === 'string' ? r.kind : '');
   function save() {
     const whole = webAddress(url);
     if (!whole) { setError(NOT_AN_ADDRESS); focusSoon(`resourceUrl-${key}`); return; }
     if ((p.resources ?? []).some(x => x.id !== r?.id && x.url === whole)) { setError('That link is already kept in this project.'); focusSoon(`resourceUrl-${key}`); return; }
     // (A kind from a newer MyDay stays unless you choose one here.)
-    const input: ResourceInput = { url, title, note, ...(kind !== null ? { kind: kind || null } : {}) };
+    const input: ResourceInput = { url, title, note, ...(kind !== null && kind !== (r?.kind ?? '') ? { kind: kind || null } : {}) };
     // Editing: nothing changed closes quietly; a save that didn't happen keeps the form (and what you typed) open.
     if (r) {
       if (whole === r.url && tidyText(title, RESOURCE_LIMITS.title) === r.title && tidyText(note, RESOURCE_LIMITS.note) === (r.note ?? '') && (kind === null || kind === (r.kind ?? ''))) { onDone(); return; }
@@ -105,6 +105,8 @@ function ResourceForm({ p, r, onDone }: { p: Project; r?: ProjectResource; onDon
           <Select id={`resourceKind-${key}`} className="!w-auto" value={kindNow} onChange={e => setKind(e.target.value)}>
             <option value="">A web page</option>
             {LINK_KINDS.map(k => <option key={k.id} value={k.id}>{k.label}</option>)}
+            {/* A kind from a newer MyDay: kept, and still there to choose after trying another. */}
+            {r?.kind && !linkKindLabel(r.kind) && <option value={r.kind as string}>As a newer MyDay marked it</option>}
           </Select>
         </Field>
       </div>

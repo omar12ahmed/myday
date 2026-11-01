@@ -68,8 +68,10 @@ request looks like any other web page.
     checks: [{ id, text, done?, proof?, on? }], releaseId?, linkIds?: string[], createdAt, updatedAt }`;
   - `bug`: `{ id ('sb'+uid), type, projectId, title, happens?, expected?, steps?, state: 'open'|'fixed'|'wontfix',
     closedOn?, taskId?, releaseId?, linkIds?, createdAt, updatedAt }`;
-  - `release`: `{ id ('sl'+uid), type, projectId, milestoneId, checks: [{ id, text, done?, proof?, on? }], off?: true,
-    createdAt, updatedAt }` — a milestone is a release while it has a release item that isn't `off`.
+  - `release`: `{ id ('sl'+milestoneId), type, projectId, milestoneId, checks: [{ id, text, done?, proof?, on? }], off?:
+    true, createdAt, updatedAt }` — a milestone is a release while it has a release item that isn't `off`. Its id comes
+    from the milestone, so two devices marking the same milestone make one record (a conflict you settle, never two
+    releases); should two exist anyway, whatever is in either counts towards the one release.
   Read as written: an item or check of a type this version doesn't know is kept; unknown fields kept. A requirement's
   or bug's `releaseId` names the release item, so a renamed milestone needs nothing.
 - **The project type:** `template: 'software'` (`data/businessModel.ts`). 1.120.0 keeps an unknown template as written
@@ -81,8 +83,8 @@ request looks like any other web page.
   approved): each type's label, tabs and what the switch toast says it keeps. The tab list, the tab routes, the type
   switcher and the new-project form read it, instead of repeating the conditions. Other places keep their own checks
   for now. (This also fixes the switcher showing a Content project as "General".)
-- **Limits** per project: 200 requirements (20 checks each, a check 300, proof 300), 500 bugs, 30 releases (30 own
-  checks each); a title 160, a detail / happens / expected 2,000, steps 4,000; 12 links per item.
+- **Limits** per project: 200 requirements (20 checks each, a check 300, proof 300), 500 bugs, 30 releases in use (a
+  release switched off, or whose milestone has gone, doesn't count; 30 own checks each); a title 160, a detail / happens / expected 2,000, steps 4,000; 12 links per item.
 - **Deleting a project** deletes its software items (like its research and videos); the task "Fix: …" stays, as a
   project's tasks do.
 - **AI:** nothing of a requirement, bug or release is sent to AI (ai/reach.ts's never list); myday-94 told.

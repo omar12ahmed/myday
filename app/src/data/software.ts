@@ -70,20 +70,29 @@ export const linksOfItem = (p: Project, x: SoftwareRequirement | SoftwareBug): P
 // A milestone is a release while it has a release item that isn't off. Its checklist: the acceptance checks of the
 // requirements in it (not dropped), its own checks, and the bugs in it that are still open.
 const milestonesOf = (p: Project): Milestone[] => p.milestones ?? [];
-export const releaseOfMilestone = (data: MyDayData, projectId: string, milestoneId: string): SoftwareRelease | null =>
-  ofProject(data, projectId).filter(isRelease).find(r => r.milestoneId === milestoneId && !r.off) ?? null;
+export const releaseOfMilestone = (data: MyDayData, projectId: string, milestoneId: string): SoftwareRelease | null => {
+  const on = ofProject(data, projectId).filter(isRelease).filter(r => r.milestoneId === milestoneId && !r.off);
+  return on.find(r => r.id === releaseIdFor(milestoneId)) ?? on.sort(byMade)[0] ?? null; // (the fixed id first)
+};
+// Every release item of the same milestone that's on — normally one; two if two devices marked it before fixed ids —
+// so whatever is in either counts towards it.
+const sameRelease = (data: MyDayData, release: SoftwareRelease) => new Set(ofProject(data, release.projectId).filter(isRelease).filter(r => r.milestoneId === release.milestoneId && !r.off).map(r => r.id));
 // The releases, in the milestones' order (a release whose milestone has gone isn't listed).
 export function releasesOf(data: MyDayData, p: Project): { release: SoftwareRelease; milestone: Milestone }[] {
   return milestonesOf(p).flatMap(m => { const r = releaseOfMilestone(data, p.id, m.id); return r ? [{ release: r, milestone: m }] : []; });
 }
-export const releaseById = (data: MyDayData, p: Project, id: string | undefined) => (id ? releasesOf(data, p).find(x => x.release.id === id) ?? null : null);
+export function releaseById(data: MyDayData, p: Project, id: string | undefined) {
+  const r = id ? ofProject(data, p.id).filter(isRelease).find(x => x.id === id && !x.off) : undefined;
+  return r ? releasesOf(data, p).find(x => x.milestone.id === r.milestoneId) ?? null : null;
+}
 export interface Checklist {
   requirements: { requirement: SoftwareRequirement; checks: SoftwareCheck[] }[];
   own: SoftwareCheck[]; openBugs: SoftwareBug[]; total: number; ticked: number; ready: boolean;
 }
 export function releaseChecklist(data: MyDayData, release: SoftwareRelease): Checklist {
-  const reqs = requirementsOf(data, release.projectId).filter(r => r.releaseId === release.id && reqState(r) !== 'dropped').map(r => ({ requirement: r, checks: checksOf(r) }));
-  const own = checksOf(release), openBugs = bugsOf(data, release.projectId).filter(b => b.releaseId === release.id && bugState(b) === 'open');
+  const ids = sameRelease(data, release), inIt = (x: SoftwareRequirement | SoftwareBug) => !!x.releaseId && ids.has(x.releaseId);
+  const reqs = requirementsOf(data, release.projectId).filter(r => inIt(r) && reqState(r) !== 'dropped').map(r => ({ requirement: r, checks: checksOf(r) }));
+  const own = checksOf(release), openBugs = bugsOf(data, release.projectId).filter(b => inIt(b) && bugState(b) === 'open');
   const all = [...reqs.flatMap(r => r.checks), ...own], ticked = all.filter(c => c.done).length;
   // Ready: at least one check, every check ticked, and no bug in it open.
   return { requirements: reqs, own, openBugs, total: all.length, ticked, ready: all.length > 0 && ticked === all.length && !openBugs.length };
@@ -198,14 +207,22 @@ export function bugTask(data: MyDayData, b: SoftwareBug) {
   return t ? { task: t, done: isDone(data, t) } : null;
 }
 
-// Mark a milestone as a release (its own checks come back if it was one before). Returns the release's id.
-export function markRelease(d: MyDayData, projectId: string, milestoneId: string): string | null {
+// A release's id comes from its milestone, so two devices marking the same milestone make the same record (and meet as
+// one record's conflict) rather than two releases for one milestone.
+export const releaseIdFor = (milestoneId: string) => (ID.test('sl' + milestoneId) ? 'sl' + milestoneId : null);
+// Releases in use: on, with their milestone still there (one that's off, or whose milestone has gone, isn't counted).
+export const releasesInUse = (d: MyDayData, p: Project) => releasesOf(d, p).length;
+// Mark a milestone as a release (its own checks come back if it was one before). Returns the release's id, 'full' at
+// 30 releases, or null.
+export function markRelease(d: MyDayData, projectId: string, milestoneId: string): string | 'full' | null {
   const p = projectOf(d, projectId);
   if (!p || !milestonesOf(p).some(m => m.id === milestoneId)) return null;
   const was = d.software.items.filter(isRelease).find(r => r.projectId === projectId && r.milestoneId === milestoneId);
-  if (was) { if (!was.off) return was.id; delete was.off; touch(was); return was.id; }
-  if (count(d, projectId, 'release') >= SOFTWARE_LIMITS.releases) return null;
-  const id = 'sl' + uid(), now = localStamp();
+  if (was && !was.off) return was.id;
+  if (releasesInUse(d, p) >= SOFTWARE_LIMITS.releases) return 'full';
+  if (was) { delete was.off; touch(was); return was.id; }
+  const id = releaseIdFor(milestoneId) ?? 'sl' + uid(), now = localStamp();
+  if (d.software.items.some(x => x.id === id)) return null; // (an item of another kind with that id: never overwritten)
   d.software.items.push({ id, type: 'release', projectId, milestoneId, checks: [], createdAt: now, updatedAt: now });
   return id;
 }
@@ -263,9 +280,9 @@ export function removeCheck(d: MyDayData, itemId: string, checkId: string): bool
 export function toggleLink(d: MyDayData, itemId: string, linkId: string): boolean {
   const x = find(d, itemId), p = x && projectOf(d, x.projectId);
   if (!x || !p || !(isRequirement(x) || isBug(x)) || !(p.resources ?? []).some(r => r.id === linkId)) return false;
-  const saved = listOf(x.linkIds).filter((v): v is string => typeof v === 'string');
-  if (saved.includes(linkId)) { const rest = saved.filter(v => v !== linkId); if (rest.length) x.linkIds = rest; else delete x.linkIds; }
-  else { if (saved.length >= SOFTWARE_LIMITS.links) return false; x.linkIds = [...saved, linkId]; }
+  const saved = listOf(x.linkIds) as string[], ids = saved.filter(v => typeof v === 'string'); // (a newer MyDay's entries kept)
+  if (ids.includes(linkId)) { const rest = saved.filter(v => v !== linkId); if (rest.length) x.linkIds = rest; else delete x.linkIds; }
+  else { if (ids.length >= SOFTWARE_LIMITS.links) return false; x.linkIds = [...saved, linkId]; }
   touch(x);
   return true;
 }
