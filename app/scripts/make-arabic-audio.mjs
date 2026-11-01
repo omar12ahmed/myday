@@ -22,9 +22,11 @@ const sources = voiceSources(root), source = sources.find(s => s.id === process.
 if (!source) throw new Error(`Name a voiced source: ${sources.map(s => s.id).join(', ')}`);
 const options = process.argv.slice(3), unknown = options.filter(o => o !== '--redo-only' && !/^--only=./.test(o));
 if (unknown.length) throw new Error(`Unknown option ${unknown.join(' ')}: use --redo-only or --only=<file>`);
+if (options.filter(o => o.startsWith('--only=')).length > 1) throw new Error('Give --only once: one file lists the batch');
 const redoOnly = options.includes('--redo-only'), onlyFile = options.find(o => o.startsWith('--only='))?.slice('--only='.length);
 const only = onlyFile ? new Set(readFileSync(onlyFile, 'utf8').split('\n').map(t => t.trim()).filter(Boolean)) : null;
-if (only && ![...only].every(t => source.texts.includes(t))) throw new Error(`${onlyFile}: lists a text that isn't in ${source.id}`);
+const outside = only ? [...only].find(t => !source.texts.includes(t)) : undefined;
+if (outside !== undefined) throw new Error(`${onlyFile}: lists a text that isn't in ${source.id}: “${outside}”`);
 const key = process.env.GOOGLE_TTS_API_KEY;
 if (!key) throw new Error('Set GOOGLE_TTS_API_KEY (a key for the Text-to-Speech API only).');
 if (!existsSync(auditFile)) throw new Error('No audio-audit.json: round one made it; restore it from Git.');

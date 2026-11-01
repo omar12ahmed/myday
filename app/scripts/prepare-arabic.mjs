@@ -87,6 +87,8 @@ for (const m of c.modules) {
 const words = JSON.parse(readFileSync(fileURLToPath(new URL('../../content/teaching/arabic/course-words.json', import.meta.url)), 'utf8'));
 const lessonIds = new Set(c.lessons.map(l => l.id)), seedIds = new Set(c.lexicon_seed.map(w => w.id)), wordIds = new Set();
 const forms = new Map(c.lexicon_seed.map(w => [w.form_ar, w.id]));
+// The fields a course word may have; a misspelt one (say "dictionary_only") stops the build rather than being ignored.
+const WORD_FIELDS = new Set(['id', 'form_ar', 'meaning_en', 'part_of_speech', 'root_ar', 'root_reading', 'example_ar', 'example_meaning_en', 'note', 'dictionary']);
 const ARABIC = /[\u0621-\u064A]/, MARKS = /[\u064B-\u0652]/, ROOT_FORM = /^[\u0621-\u064A](-[\u0621-\u064A]){2,3}$/;
 for (const [lessonId, entry] of Object.entries(words.lessons)) {
   if (!lessonIds.has(lessonId)) fail(`course words for an unknown lesson ${lessonId}`);
@@ -100,6 +102,8 @@ for (const [lessonId, entry] of Object.entries(words.lessons)) {
     for (const f of ['form_ar', 'meaning_en', 'part_of_speech', 'example_ar', 'example_meaning_en', 'note']) if (typeof w[f] !== 'string' || !w[f].trim()) fail(`${w.id}: no ${f}`);
     if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || !markedThrough(w.form_ar) || !ARABIC.test(w.example_ar) || !markedThrough(w.example_ar)) fail(`${w.id}: the word and its example must be fully vowelled Arabic`);
     if ((w.root_ar === null) !== (w.root_reading === null) || (w.root_ar !== null && (!ROOT_FORM.test(w.root_ar) || typeof w.root_reading !== 'string' || !w.root_reading.trim()))) fail(`${w.id}: a root is written like ك-ت-ب, with its reading, or both are null`);
+    const unknownField = Object.keys(w).find(k => !WORD_FIELDS.has(k));
+    if (unknownField) fail(`${w.id}: unknown field "${unknownField}" (a word has ${[...WORD_FIELDS].join(', ')})`);
     // A word listed for the dictionary only (specs/arabic-dictionary.md): never one of the lesson's own words or a
     // review card unless the learner adds it. The field is true or absent.
     if (w.dictionary !== undefined && w.dictionary !== true) fail(`${w.id}: "dictionary" is true or absent, not ${JSON.stringify(w.dictionary)}`);

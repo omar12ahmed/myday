@@ -326,6 +326,7 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   check('the clip maker refuses an option it doesn\'t know (a misspelt --redo-only)', maker(['explainers', '--redoonly']).includes('Unknown option --redoonly'));
   const onlyList = path.join(temp, 'only-texts.txt'); fs.writeFileSync(onlyList, 'نَصٌّ لَيْسَ فِي الدَّرْسِ.\n');
   check('the clip maker refuses an --only list with a text outside its source', maker(['explainers', `--only=${onlyList}`]).includes("lists a text that isn't in explainers"));
+  check('the clip maker refuses a second --only list rather than ignoring it', maker(['explainers', `--only=${onlyList}`, `--only=${onlyList}`]).includes('Give --only once'));
   brokenAudio('fallback-main', c => { c.clips[firstText].voice = c.voice.name; c.clips[firstText].fallback = c.voice.name; }, 'a fallback is an earlier voice the audit lists', 'a fallback naming the voice for new clips');
   brokenAudio('fallback-other', c => { c.clips[firstText].voice = c.voice.name; c.clips[firstText].fallback = c.earlier_voices[0].name; }, 'a fallback is an earlier voice the audit lists', 'a fallback that is not the voice the clip was made in');
   const halfDir = path.join(temp, 'audio-rate-half');
