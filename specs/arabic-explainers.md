@@ -6,7 +6,7 @@ card), 16–24 and module 14's verb moods and passive, with the "where this lead
 123 explainers. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
 checker, voiced and listened to, then released.
 Approved by the owner's checker and waiting for their voice and a release: modules 1–3 (eighteen), and modules 25–27, 29
-and 30 (twenty-five). Module 28 (five, with quotes, §6): cross-checked, its quotes compared with Tanzil's text, with the owner's checker.
+and 30 (twenty-five). Module 28 (five, with quotes, §6): cross-checked, its quotes compared with Tanzil's text, and approved by the owner's checker (1 November 2026).
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 
@@ -160,6 +160,9 @@ verifies it.
 alif and other signs), each with its sūra and verse and its meaning. No voice and no transliteration: the app's reading
 rules are for modern spelling, and recitation is its own discipline. The quotes sit in a part of the card of their own,
 outside the house spelling rules and outside everything that is voiced; the rest of each card follows the house rules.
+A tatweel under a small alif (ٱلْعَـٰلَمِينَ, in 1:2) is a display aid, not a letter of the rasm: Quran.com's Uthmani text has
+it and Tanzil offers it as an option. The owner chose to keep it (1 November 2026), since the small alif then sits clear of
+the fatḥa in the app's font, as in a printed muṣḥaf.
 
 ## 7. Where this leads, and a second go (owner, 31 October 2026)
 
