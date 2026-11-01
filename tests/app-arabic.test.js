@@ -938,7 +938,8 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   {
     const until = async (predicate, label, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return true; await sleep(100); } throw new Error('Timed out waiting for ' + label); };
     const Q = '[data-s="ar-dict-q"]', FOUND = '[data-ar-dict-found]', ROWS = '[data-ar-dictionary] [data-ar-dict-list] > li';
-    const search = async q => { await typeIn(Q, q); await sleep(200); };
+    // The list follows the box a moment later (useDeferredValue): wait until the results say they're for what was typed.
+    const search = async q => { await typeIn(Q, q); await until(() => ev(`document.querySelector('[data-ar-dict-found]')?.dataset.arDictFor === ${JSON.stringify(q)}`), 'the results for ' + q); await sleep(50); };
     const found = () => ev(`(() => { const e = document.querySelector('[data-ar-dict-found]'); return { text: e.textContent, n: e.dataset.arDictFound, role: e.getAttribute('role') }; })()`);
     const firstWord = () => ev(`document.querySelector(${JSON.stringify(ROWS)})?.dataset.arWord ?? null`);
     const rowIds = () => ev(`[...document.querySelectorAll(${JSON.stringify(ROWS)})].map(e => e.dataset.arWord)`);

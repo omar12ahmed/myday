@@ -886,7 +886,7 @@ function Dictionary({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) 
   return <Card data-ar-dictionary=""><Eyebrow>Dictionary</Eyebrow><h2>Look up a word</h2>
     <p className="text-[15px]">{plural(size.course + size.starter, 'word')}: each lesson’s words and the {size.starter} starter words{kept.length ? `, and ${plural(kept.length, 'word')} of your own` : ''}. Search in Arabic, with or without vowel marks, in English, or in Latin letters, such as “kitab”.</p>
     <Field label="Search the dictionary" htmlFor="arDictQ"><TextInput id="arDictQ" type="search" data-s="ar-dict-q" dir="auto" value={q} onChange={e => { setQ(e.target.value); setUpTo(FOUND_PAGE); }} placeholder="كِتَاب, book or kitab" /></Field>
-    <p role="status" className="text-[15px] mt-2" data-ar-dict-found={found ? found.length : ''}>{!found ? '' : found.length
+    <p role="status" className="text-[15px] mt-2" data-ar-dict-found={found ? found.length : ''} data-ar-dict-for={typed}>{!found ? '' : found.length
       ? `${plural(found.length, 'word')} found${found.length > upTo ? `; the first ${upTo} are below` : ''}.` : 'Nothing found. If it’s a word you’ve met, you can keep it under Your words.'}</p>
     {found ? <>{list(found.slice(0, upTo))}
       {found.length > upTo && <Button inline variant="ghost" data-action="ar-dict-more" onClick={more}>Show more</Button>}</>
