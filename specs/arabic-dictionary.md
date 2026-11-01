@@ -1,6 +1,6 @@
 # Arabic dictionary
 
-Status: the page is built on branch arabic-dictionary (§2), awaiting its checks, a review and the owner's yes to release; the words (§4) are planned with myday-5a. Proposal of 1 November 2026, myday-20. The owner asked for a dictionary holding every word in the course, with
+Status: the page is live (1.127.0, §2); dictionary-only words (§4) start with modules 1–7, 78 words, in the next release, with word-forms.json and the check against lesson checks; modules 8–19 (myday-20) and 20–30 (myday-5a) follow in batches. Proposal of 1 November 2026, myday-20. The owner asked for a dictionary holding every word in the course, with
 the option to add new words. They chose to build the page **next, after 1.124.0**, and to give **every word used in
 the course an entry, in batches**.
 

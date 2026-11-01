@@ -1,5 +1,20 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.130.0 — Dictionary words for modules 1–7, and course words that never give a check away:** 78 more words in the
+**Dictionary**: words modules 1–7 already use, in their examples, explanations and reading texts, that had no entry
+yet. Among them are كُلّ, عَنْ, طَرِيق, اِمْتِحَان, صَيْف, الْقَاهِرَة, the days and the ordinal numbers; each is fully
+vowelled, with its meaning, root, an example and a note, all voiced. They're **dictionary-only**: found in the
+Dictionary and in Search, and folded in each lesson under **Also in this lesson**. They're never one of the lesson's own
+new words, so marking a lesson ready doesn't bring them into revision; you add any you want, and a dictionary word says
+"Used in" its lesson. The Dictionary also finds a word by a form a lesson uses (أطفال finds طِفْل), through
+`content/teaching/arabic/word-forms.json`. The build now checks every course word against its lesson's check: a phrase
+from the answer in a dictionary word fails it, and the lessons' own words are reported. Four older words that gave a
+check away were changed (myday-5a, approved by the owner's checker): هَذَا الْبَيْتُ is now هَذَا الْقَلَمُ, and module 5's
+"this, that" card follows. The explainers for modules 1–3 and 25–30 now link from their lessons' words (986 links in
+all). The words were cross-checked independently and approved by the owner's checker. Voice, round twenty-six
+(myday-5a): 188 clips in Chirp 3 HD Charon, all listened to; 7 retired; 5,730 clips. No saved-data change. Going back
+to 1.129.0 is safe: a dictionary word you added to revision stays saved there, unasked.
+
 **1.129.0 — Words for every Arabic lesson:** the 47 lessons that had no course words now have them: modules 1–3
 (getting started, the script and the sounds, Pre-A1: 120 words with very short examples) and the six specialist
 branches, modules 25–30 (academic and professional Arabic, literature, classical prose, Qur'anic Arabic as language
