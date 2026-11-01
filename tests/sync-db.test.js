@@ -443,6 +443,35 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('a kind that is still unknown is refused', r4[0].status === 'rejected', r4);
   }
 
+  console.log('\n[24] A Career project’s items (Career projects, 20261101200000_sync_career.sql)');
+  {
+    const CA = await S.addUser(db, 'career-a@example.test', 'x'), CB = await S.addUser(db, 'career-b@example.test', 'x');
+    const cpush = (who, changes) => S.as(db, who, q => q('select public.sync_push_v3($1, $2::jsonb, $3, $4) as r', [who, JSON.stringify(changes), 'dev-cr', 0])).then(x => x.rows[0].r);
+    const cpull = who => S.as(db, who, q => q('select * from public.sync_pull_v2($1, 0, 500)', [who])).then(x => x.rows);
+    const canon = v => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v);
+    const eq = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b)); // (jsonb orders keys its own way)
+    const role = { id: 'crdbtest0001', type: 'role', projectId: 'pjdbcareer', title: 'SOC analyst', portfolioIds: ['pfdbtest01'], futureBit: { keep: [1] }, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' };
+    const appl = { id: 'cadbtest0001', type: 'application', projectId: 'pjdbcareer', company: 'Acme Security', title: 'Junior SOC analyst', roleId: role.id, stage: 'interviewing', appliedOn: '2026-10-20',
+      interviews: [{ id: 'cidbtest01', on: '2026-11-04', at: '10:00', kind: 'video', prep: 'Their SIEM', questions: [{ id: 'cqdbtest01', text: 'What does a good first month look like?', done: true }], taskId: 'tkdbprep01' }],
+      createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' };
+    let r5 = await cpush(CA, [change('career', role.id, 0, role), change('career', appl.id, 0, appl)]);
+    check('a role and an application save through sync_push, each its own record (version 1)', r5.length === 2 && r5.every(x => x.status === 'applied' && x.version === 1), r5);
+    const got = (await cpull(CA)).filter(x => x.kind === 'career');
+    check('they come back exactly, an interview and a newer MyDay\'s key included', got.length === 2 && eq(got.find(x => x.record_id === role.id)?.data, role) && eq(got.find(x => x.record_id === appl.id)?.data, appl), got.map(x => x.record_id));
+    check('another account cannot read them, through sync_pull or the table', !(await cpull(CB)).some(x => x.kind === 'career') && (await S.as(db, CB, q => q(`select * from public.sync_records where kind = 'career'`))).rows.length === 0);
+    r5 = await cpush(CA, [change('career', appl.id, 0, { ...appl, stage: 'offer' })]);
+    check('a stale device cannot overwrite one (conflict)', r5[0].status === 'conflict', r5);
+    r5 = await cpush(CA, [change('career', appl.id, 1, { ...appl, stage: 'closed', closedOn: '2026-11-05', closedWhy: 'Not this time' })]);
+    check('an update with the right version is applied', r5[0].status === 'applied' && r5[0].version === 2, r5);
+    r5 = await cpush(CA, [change('career', role.id, 1, null, { deleted: true })]);
+    check('removing one reaches other devices as a tombstone (the kind is deletable)', r5[0].status === 'applied' && (await cpull(CA)).some(x => x.kind === 'career' && x.record_id === role.id && x.deleted && x.data === null), r5);
+    r5 = await cpush(CA, [change('software', 'srdbcareer1', 0, { id: 'srdbcareer1', type: 'requirement', projectId: 'pjdbcareer', title: 'x', createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' }),
+      change('ambition', 'amdbcareer1', 0, { id: 'amdbcareer1', title: 'x', createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' }), change('project', 'pjdbcareer', 0, { projectId: 'pjdbcareer', value: { id: 'pjdbcareer', title: 'x', template: 'career' } })]);
+    check('every earlier kind is still accepted after the kind lists change again (software, ambition, project)', r5.length === 3 && r5.every(x => x.status === 'applied'), r5);
+    r5 = await cpush(CA, [change('careers', 'x1', 0, {})]);
+    check('a kind that is still unknown is refused', r5[0].status === 'rejected', r5);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
