@@ -510,6 +510,21 @@ check('vowelled and unvowelled versions are both kept where the package has them
     const file = path.join(expTemp, 'good-quote.json'); fs.writeFileSync(file, JSON.stringify(copy)); const r = runExp(file, ['--readings']);
     check('a module 28 card may quote in the muṣḥaf\'s spelling (ٱ, the dagger alif, the small sukūn), outside the house rules and the readings', r.code === 0, r.out.slice(-300)); }
   badExp('hint-answer', f => { const q = sayOf(f).selftest[0]; q.hint_en = `Think of ${q.answer} here.`; }, 'the hint gives away its own answer', 'a self-test hint containing its own question\'s answer');
+  // Course words against their lesson check (specs/arabic-dictionary.md §4): a dictionary word whose example shows a
+  // phrase from its lesson check's answer fails the build; the same word as one of the lesson's own words, approved
+  // before this check, is only reported, by id.
+  {
+    const words = JSON.parse(read(path.join(ROOT, 'content/teaching/arabic/course-words.json')));
+    const wordsCopy = flag => { const c = JSON.parse(JSON.stringify(words)), list = c.lessons['lesson.arabic-demonstratives'].words;
+      list.push({ id: `lexeme.arabic-demonstratives-${list.length + 1}`, form_ar: 'جِدَار', meaning_en: 'wall', part_of_speech: 'noun', root_ar: 'ج-د-ر', root_reading: 'j-d-r',
+        example_ar: 'هَذَا الْبَيْتُ لَهُ جِدَارٌ عَالٍ.', example_meaning_en: 'This house has a high wall.', note: 'Plural جُدْرَان.', ...(flag ? { dictionary: true } : {}) });
+      const file = path.join(expTemp, `words-${flag ? 'dictionary' : 'own'}.json`); fs.writeFileSync(file, JSON.stringify(c)); return { file, id: list.at(-1).id }; };
+    const dict = wordsCopy(true), own = wordsCopy(false), rd = runExp(null, ['--words', dict.file]), ro = runExp(null, ['--words', own.file]);
+    check('a dictionary word whose example shows a phrase from its lesson check\'s answer (هَذَا الْبَيْتُ) fails the build', rd.code !== 0 && rd.out.includes(`${dict.id} example: shows its lesson check's answer`), rd.out.slice(-300));
+    check('…the same as one of the lesson\'s own words passes, reported by id for the owner\'s checker', ro.code === 0 && /Course words: \d+ of the lessons' own words show a phrase/.test(ro.out) && ro.out.includes(own.id), ro.out.slice(-300));
+    const real = runExp(null);
+    check('the real course words pass; any of the lessons\' own words that show their check\'s phrase are listed, not failed', real.code === 0);
+  }
   check('the real explainers file reports how many cards lead on to a later explainer: 80', realExp.out.includes('; 80 lead on to a later explainer.'), realExp.out);
   fs.rmSync(expTemp, { recursive: true, force: true }); fs.rmSync(expSplit, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });

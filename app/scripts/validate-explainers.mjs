@@ -14,13 +14,16 @@ import { arabicRuns } from '../src/study/arabic/arabic-runs.mjs';
 
 const root = new URL('../../', import.meta.url);
 const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));
-const args = process.argv.slice(2), withReadings = args.includes('--readings'), given = args.find(a => !a.startsWith('--'));
+const args = process.argv.slice(2), withReadings = args.includes('--readings');
+// --words <file>: another course-words file (a test's copy), checked with the explainers' file.
+const wordsAt = args.indexOf('--words'), wordsFile = wordsAt >= 0 ? args[wordsAt + 1] : null;
+const given = args.find((a, i) => !a.startsWith('--') && (wordsAt < 0 || i !== wordsAt + 1));
 // Usually the authored file; a test can pass another one (a path) to check that a broken file fails.
 const file = given ? JSON.parse(readFileSync(given, 'utf8')) : read('content/teaching/arabic/explainers.json');
 const course = read('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json');
 const keys = read('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json').answer_keys;
 const teaching = read('content/teaching/arabic-fusha.json').lessons;
-const courseWords = read('content/teaching/arabic/course-words.json').lessons;
+const courseWords = (wordsFile ? JSON.parse(readFileSync(wordsFile, 'utf8')) : read('content/teaching/arabic/course-words.json')).lessons;
 const problems = [];
 const fail = (where, message) => problems.push(`${where}: ${message}`);
 
@@ -92,10 +95,11 @@ const onePiece = s => runs(s).length === 1 && s.replace(runs(s)[0], '').replace(
 // A lesson check's answer, or a whole Arabic phrase from its question, is a secret unless the lesson already shows it;
 // so is each word of an answer that neither the lesson nor the question shows (يدع, from لم يدع, in any piece).
 const pieces = s => runs(s).flatMap(r => r.split(/[\u060C\u061B\u061F/]/)).map(p => unmarked(p).replace(STOPS, ' ').replace(/\s+/g, ' ').trim()).filter(p => letters(p) && kind(p) !== 'letters');
-const secretsFor = lessonId => {
+// (withWords false: the lesson's course words don't count as shown, for checking those words themselves.)
+const secretsOf = (lessonId, withWords) => {
   const lesson = course.lessons.find(l => l.id === lessonId), t = teaching[lessonId] ?? {};
   const shownPieces = [lesson.example?.text_ar ?? '', ...(lesson.key_concepts ?? []), t.explanation, t.example, t.practice, t.solution,
-    ...(courseWords[lessonId]?.words ?? []).flatMap(w => [w.form_ar, w.example_ar, w.note])].filter(text).flatMap(pieces);
+    ...(withWords ? courseWords[lessonId]?.words ?? [] : []).flatMap(w => [w.form_ar, w.example_ar, w.note])].filter(text).flatMap(pieces);
   const shown = new Set(shownPieces), shownWords = new Set(shownPieces.flatMap(wordsOf));
   const check = course.assessments.find(a => a.id === lesson.knowledge_check_id);
   const prompts = (check?.questions ?? []).flatMap(q => pieces(q.prompt)), askedWords = new Set(prompts.flatMap(wordsOf));
@@ -104,6 +108,7 @@ const secretsFor = lessonId => {
   const words = answers.flatMap(wordsOf).filter(w => letters(w) > 1 && !shownWords.has(w) && !askedWords.has(w));
   return [...new Set([...asked, ...answers, ...words])].filter(p => !shown.has(p) && !(wordsOf(p).length === 1 && shownWords.has(p)));
 };
+const secretsFor = lessonId => secretsOf(lessonId, true);
 // The lesson each course word is in: an explainer is shown there too, through its link.
 const wordLesson = new Map(Object.entries(courseWords).flatMap(([l, x]) => x.words.map(w => [w.id, l])));
 const contains = (run, secret) => {
@@ -285,6 +290,23 @@ for (const { at, from, self, to, i, secrets } of leads) {
   else for (const run of runs(cards.get(to).title_en ?? '')) for (const secret of secrets) if (contains(run, secret)) fail(where, `its link shows ${run}, which gives away the lesson check's answer (${secret})`);
 }
 
+// Course words (specs/arabic-dictionary.md §4): a word's form, example and note mustn't show a phrase from its own
+// lesson check's answer. Here the lesson's course words don't count as shown, as they do for the explainers above.
+// Single words aren't held back: a word list teaches the very words a check asks you to use. Nor are earlier lessons'
+// phrases: short common phrases (عَلَى الْمَكْتَبِ, فِي الصَّبَاحِ) rightly come back later. It fails for the dictionary's
+// words; for the lessons' own words, approved before this check, it reports, for the owner's checker to decide.
+const courseOrder = course.modules.flatMap(m => m.lesson_ids ?? m.lessons.map(x => x.id ?? x));
+const reported = new Set();
+for (const lessonId of courseOrder) {
+  const phrases = secretsOf(lessonId, false).filter(secret => wordsOf(secret).length > 1);
+  for (const w of courseWords[lessonId]?.words ?? []) {
+    for (const [field, value] of [['form', w.form_ar], ['example', w.example_ar], ['note', w.note]])
+      for (const run of runs(value ?? '')) for (const secret of phrases) if (contains(run, secret)) {
+        if (w.dictionary) fail(`${w.id} ${field}`, `shows its lesson check's answer (${secret})`);
+        else reported.add(w.id);
+      }
+  }
+}
 if (withReadings && !problems.length) {
   const { bundle } = await import(new URL('../../ai-eval/build.mjs', import.meta.url).href);
   const dir = mkdtempSync(path.join(tmpdir(), 'myday-explainers-'));
@@ -302,4 +324,5 @@ if (problems.length) {
   console.error(`Arabic explainers: ${problems.length} problem${problems.length === 1 ? '' : 's'}\n- ${problems.join('\n- ')}`);
   process.exit(1);
 }
+if (reported.size) console.log(`Course words: ${reported.size} of the lessons' own words show a phrase from their lesson check's answer (approved before this check; for the owner's checker): ${[...reported].join(', ')}`);
 console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away${leads.length ? `; ${new Set(leads.map(l => l.self)).size} ${new Set(leads.map(l => l.self)).size === 1 ? 'leads' : 'lead'} on to a later explainer` : ''}.`);

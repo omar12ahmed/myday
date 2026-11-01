@@ -3,7 +3,7 @@
 // own reading), and browsed by first letter or by root. It all runs here: nothing is sent.
 import { fold } from '../../data/projectSearch';
 import type { KeptWord } from '../../data/arabic/types';
-import { allWords, courseLessons, isCourseWord, lessonWords, type AnyWord } from './courseWords';
+import { allLessonWords, allWords, courseLessons, isCourseWord, lessonWords, type AnyWord } from './courseWords';
 import { familyOf } from './families';
 import texts from './data/texts.json';
 import { transliterate } from './transliterate';
@@ -42,7 +42,7 @@ export function courseEntries(): Entry[] {
     root: isCourseWord(w) ? w.root_ar : familyOf(w.id)?.root_ar ?? null,
   });
   const starter = allWords.filter(w => !isCourseWord(w));
-  const own = courseLessons.flatMap(l => lessonWords(l).own.map(w => [w, l] as const));
+  const own = courseLessons.flatMap(l => allLessonWords(l).map(w => [w, l] as const));
   course = [...starter.map((w, i) => word(w, null, i)), ...own.map(([w, l], i) => word(w, l, starter.length + i))];
   return course;
 }

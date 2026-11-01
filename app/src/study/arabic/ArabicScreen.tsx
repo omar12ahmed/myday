@@ -44,7 +44,7 @@ import { KeepAWord } from './KeepAWord';
 import { WordNote } from './WordNote';
 import { ExplainerLink, LessonExplainers } from './Explainers';
 import { explainerFor, useExplainers, useLessonExplainers, type ExplainerRef } from './explainerData';
-import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
+import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord, type CourseWord } from './courseWords';
 import { courseEntries, dictionarySize, inDictionary, letterCounts, LETTERS, rootsWith, search, withLetter, type Entry } from './dictionary';
 import { ARABIC_TINY, toStep } from '../journey/dom';
 import { takeStep } from '../journey/pending';
@@ -993,13 +993,14 @@ function CourseWords({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord)
     {lessons.map(id => <section key={id} data-ar-course-lesson={id} className="mt-4">
       <h3 className="mb-1"><InlineLink href={'#study/arabic/' + id}>{lessonIndex[id].title}</InlineLink></h3>
       <ul className="list-none p-0 m-0 divide-y divide-outline">{lessonWords(id).own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={explainerFor(explainers, w.id)} />)}</ul>
+      <AlsoInLesson data={data} words={lessonWords(id).also} takeOut={takeOut} explainer={id => explainerFor(explainers, id)} />
     </section>)}
   </Card>;
 }
 // A lesson's words under its explanation (folded away with it while you check yourself): its own words, then the
 // starter words it uses. They join revision when you mark the lesson ready to move on (markReady).
 function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) {
-  const takeOut = useTakeOut(), { own, starter } = lessonWords(lessonId), explainers = useExplainers(), here = useLessonExplainers(lessonId);
+  const takeOut = useTakeOut(), { own, starter, also } = lessonWords(lessonId), explainers = useExplainers(), here = useLessonExplainers(lessonId);
   // A link to a card in this lesson shows once that card has loaded here too, so following it always finds the card.
   const linkFor = (id: string) => { const f = explainerFor(explainers, id); return f && (f.lessonId !== lessonId || here?.some(e => e.id === f.e.id)) ? f : null; };
   if (!own.length) return null;
@@ -1012,6 +1013,17 @@ function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) 
     <ul className="list-none p-0 m-0 divide-y divide-outline">{own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={linkFor(w.id)} />)}</ul>
     {starter.length > 0 && <><h4 className="mb-0 mt-3">Starter words it uses</h4>
       <ul className="list-none p-0 m-0 divide-y divide-outline">{starter.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul></>}
+    <AlsoInLesson data={data} words={also} takeOut={takeOut} explainer={linkFor} />
+  </details>;
+}
+// The other words a lesson uses, listed for the dictionary only (specs/arabic-dictionary.md §4): folded away under the
+// lesson's own words, and never brought into revision by Ready; each can be added like any word.
+function AlsoInLesson({ data, words, takeOut, explainer }: { data: MyDayData; words: CourseWord[]; takeOut: (w: AnyWord) => void; explainer: (id: string) => { lessonId: string; e: ExplainerRef } | null }) {
+  if (!words.length) return null;
+  return <details className="mt-3" data-ar-lesson-also={words.length}>
+    <summary className="cursor-pointer min-h-11 py-2 font-semibold text-primary">Also in this lesson: {plural(words.length, 'word')}</summary>
+    <p className="text-sm text-fg-2 mt-1">Other words the lesson uses, from the dictionary. They join your revision only if you add them.</p>
+    <ul className="list-none p-0 m-0 divide-y divide-outline">{words.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={explainer(w.id)} />)}</ul>
   </details>;
 }
 
