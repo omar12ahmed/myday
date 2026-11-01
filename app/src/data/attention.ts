@@ -10,7 +10,8 @@
 //
 // The selection rules below are shared: each project's Worth a look and Your week's What needs you read the same
 // ones, so a reason is decided once (each keeps its own wording for where it's shown).
-import { awaitingAnswer, isBusiness, isCase } from './businessModel';
+import { awaitingAnswer, isBusiness, isCareer, isCase } from './businessModel';
+import { applicationsOf, companyOf, needsFollowUp } from './career';
 import { caseCounts } from './caseFile';
 import { experimentsHome, testsDone } from './experiments';
 import { checkBackDue, projectChaseTask } from './projectWaiting';
@@ -54,6 +55,7 @@ export interface Need {
   href: string;                        // opens the thing itself
   when: string;                        // for the order (a day, or when it was opened)
   chase?: { taskId: string; added: boolean } | { projectId: string; added: boolean }; // a task's wait, or the project's
+  followUp?: { applicationId: string }; // "Heard back?" on a Career project's application: Follow up or Close it
 }
 const taskHref = (t: TaskItem) => `#today/tasks/${enc(t.id)}`;
 const dayWords = (day: DateKey, k: DateKey) => day === k ? 'today' : day === shift(k, 1) ? 'tomorrow' : `on ${shortDate(day)}`;
@@ -80,6 +82,11 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
       add({ key: `waiting:${t.id}`, reason: 'waiting', title: t.title, href: taskHref(t), when: t.waiting!.until!, chase: { taskId: t.id, added: !!chaseTask(data, t) },
         why: `waiting on ${t.waiting!.on} — expected ${t.waiting!.until === k ? 'today' : shortDate(t.waiting!.until!)}` });
     }
+    // A Career project's application at Applied for 10 days, not yet followed up (specs/projects-career.md): once,
+    // until you follow up, close it or move it on.
+    if (isCareer(p)) for (const a of applicationsOf(data, p.id).filter(x => needsFollowUp(x, k)))
+      add({ key: `follow:${a.id}`, reason: 'waiting', title: `Heard back from ${companyOf(a)}?`, href: `#projects/p/${enc(p.id)}/applications`, when: a.appliedOn!,
+        followUp: { applicationId: a.id }, why: `applied ${shortDate(a.appliedOn!)}` });
     for (const t of pastOpen(data, p, k).filter(t => !seen.has(t.id))) {
       seen.add(t.id);
       add({ key: `past:${t.id}`, reason: 'past', title: t.title, href: taskHref(t), when: t.due!, why: `still open, was ${t.deadline?.kind === 'aim' ? 'aimed for' : 'due'} ${shortDate(t.due!)}` });

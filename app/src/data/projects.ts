@@ -18,6 +18,7 @@ import { normalizeResources } from './projectResources';
 import { deleteProjectContent } from './content';
 import { deleteProjectResearch } from './research';
 import { deleteProjectSoftware } from './software';
+import { deleteProjectCareer } from './career';
 import { normalizeStudyLinks } from './studyLinks';
 import { forgetStartsAfter, isDone, onTodaysPlan, taskOrder, startsAfter } from './tasks';
 import type { Commitment, DateKey, Finished, MyDayData, ProjectWaiting, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
@@ -208,6 +209,7 @@ export function deleteProject(d: MyDayData, id: string): boolean {
   deleteProjectResearch(d, id);              // its questions, sources and findings go with it
   deleteProjectContent(d, id);               // and its ideas and videos, their files likewise (specs/projects-content.md)
   deleteProjectSoftware(d, id);              // and its requirements, bugs and release checklists (specs/projects-software.md)
+  deleteProjectCareer(d, id);                // and its roles and applications (specs/projects-career.md)
   d.projects.items.splice(i, 1);
   for (const n of d.notes.items) if (n.projectId === id) delete n.projectId;
   for (const t of d.tasks.items) if (t.projectId === id) { delete t.projectId; delete t.after; } // ("Starts after" is within a project)

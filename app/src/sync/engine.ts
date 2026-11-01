@@ -27,6 +27,7 @@ import { KEPT_CONVERSATION_KEY, LAST_ASK_KEY } from '../ai/lastAskKey';
 import { CONTENT_RECORD_BYTES, deleteProjectContent } from '../data/content';
 import { deleteProjectResearch } from '../data/research';
 import { deleteProjectSoftware } from '../data/software';
+import { deleteProjectCareer } from '../data/career';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
 import { freshState as freshData } from '../data/normalize';
@@ -433,12 +434,13 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
           changed = noteCloudVersion(next, key, here, cloud, draft) || changed; // changed in both places: you decide
         }
       }
-      // A project deleted elsewhere takes its research, content and software items with it here (that device may not know
+      // A project deleted elsewhere takes its research, content, software and career items with it here (that device may not know
       // them), and the deletions go to your account from here (specs/projects-research.md, projects-content.md, projects-software.md).
       for (const row of latest.values()) if (row.kind === 'project' && row.deleted && !draft.projects.items.some(p => p.id === row.record_id)) {
         if (deleteProjectResearch(draft, row.record_id)) changed = true;
         if (deleteProjectContent(draft, row.record_id)) changed = true;
         if (deleteProjectSoftware(draft, row.record_id)) changed = true;
+        if (deleteProjectCareer(draft, row.record_id)) changed = true;
       }
       if (!changed) return false;
       orderProjectParts(draft, positions);
@@ -561,10 +563,10 @@ export async function clearThisDevice() {
   void run();
 }
 
-// A research, content or software record (specs/projects-research.md, projects-content.md, projects-software.md)
+// A research, content, software or career record (specs/projects-research.md, projects-content.md, projects-software.md, projects-career.md)
 // belongs to a project: it's applied after projects, and its deletion waits while its project is still here with its
 // deletion undecided.
-const ofProject = (kind: string) => kind === 'research' || kind === 'content' || kind === 'software';
+const ofProject = (kind: string) => kind === 'research' || kind === 'content' || kind === 'software' || kind === 'career';
 function heldByProject(link: Link, here: Content | undefined): boolean {
   const pid = here && typeof (here as { projectId?: unknown }).projectId === 'string' ? (here as { projectId: string }).projectId : null;
   return !!pid && !!link.conflicts[keyOf('project', pid)];
@@ -743,7 +745,7 @@ export async function resolveConflicts(keys: string[], choice: 'here' | 'cloud')
         const entries = [...todo.map(k => [k, link.conflicts[k].content] as [string, Content | null]),
           ...subtree.map(row => [keyOf(row.kind, row.record_id), row.deleted ? null : cleanRecord(keyOf(row.kind, row.record_id), row.data)] as [string, Content | null])];
         putRecords(draft, entries);
-        for (const [k, c] of entries) if (c === null && k.startsWith('project:')) { deleteProjectResearch(draft, k.slice('project:'.length)); deleteProjectContent(draft, k.slice('project:'.length)); deleteProjectSoftware(draft, k.slice('project:'.length)); } // its research, content and software items go with it
+        for (const [k, c] of entries) if (c === null && k.startsWith('project:')) { deleteProjectResearch(draft, k.slice('project:'.length)); deleteProjectContent(draft, k.slice('project:'.length)); deleteProjectSoftware(draft, k.slice('project:'.length)); deleteProjectCareer(draft, k.slice('project:'.length)); } // its research, content, software and career items go with it
       }, touchesToday); }
       finally { applying = false; }
       if (r === 'not-saved') { st.kept.splice(st.kept.length - keep.length, keep.length); writeState(st); ok = false; return; }

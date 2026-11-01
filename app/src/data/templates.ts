@@ -6,14 +6,14 @@ import { isCase, knownTemplate, type TemplateChoice } from './businessModel';
 import { hasResearch } from './research';
 import type { MyDayData, Project } from './types';
 
-export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos' | 'requirements' | 'bugs' | 'compare';
+export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos' | 'requirements' | 'bugs' | 'applications' | 'compare';
 export type ShownTab = Exclude<ProjectTab, 'compare'>; // a tab on the bar (comparing opens from Decisions)
 export const TAB_LABEL: Record<ShownTab, string> = {
   overview: 'Overview', model: 'Model', money: 'Money', milestones: 'Milestones', decisions: 'Decisions', timeline: 'Timeline', evidence: 'Evidence',
-  issues: 'Issues', research: 'Research', videos: 'Videos', requirements: 'Requirements', bugs: 'Bugs',
+  issues: 'Issues', research: 'Research', videos: 'Videos', requirements: 'Requirements', bugs: 'Bugs', applications: 'Applications',
 };
 // Every tab with its own address (#projects/p/<id>/<tab>); the Overview is the project's own address.
-export const TAB_ROUTES: ProjectTab[] = ['model', 'money', 'milestones', 'decisions', 'timeline', 'evidence', 'issues', 'research', 'videos', 'requirements', 'bugs', 'compare'];
+export const TAB_ROUTES: ProjectTab[] = ['model', 'money', 'milestones', 'decisions', 'timeline', 'evidence', 'issues', 'research', 'videos', 'requirements', 'bugs', 'applications', 'compare'];
 
 interface KindDef {
   tabs: ShownTab[];     // after the Overview (Research comes last on any kind while it's on)
@@ -31,6 +31,8 @@ const KINDS: Record<TemplateChoice, KindDef> = {
     keeps: (d, p) => (d.content.items.some(x => x.projectId === p.id) ? 'its ideas and videos' : null) },
   software: { tabs: ['requirements', 'bugs', 'milestones', 'decisions'], now: 'Now a Software project — its requirements and bugs each have a tab, and a milestone can be a release.',
     keeps: (d, p) => (d.software.items.some(x => x.projectId === p.id) ? 'its requirements, bugs and release checklists' : null) },
+  career: { tabs: ['applications', 'milestones', 'decisions'], now: 'Now a Career project — the roles you’re aiming for and your applications are on the Applications tab.',
+    keeps: (d, p) => (d.career.items.some(x => x.projectId === p.id) ? 'its roles and applications' : null) },
 };
 // A project's kind as this version knows it (one from a newer MyDay shows as general, its tabs and all).
 export const kindOf = (p: Project): TemplateChoice => (knownTemplate(p) ? (p.template as TemplateChoice | undefined) ?? 'general' : 'general');

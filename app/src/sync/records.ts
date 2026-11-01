@@ -27,7 +27,7 @@ import { SECTIONS } from '../data/projectSections';
 import { amountText, breakEvenText, monthText, normalizeMoney } from '../data/businessMoney';
 import { STATUS_LABEL as EXPERIMENT_STATUS, statusOf } from '../data/experiments';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Ambition, Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, SoftwareItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
+import type { Ambition, Book, Category, Commitment, ContentItem, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, SoftwareItem, CareerItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, cleanCyberLesson, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard, CyberLesson, PortfolioEntry } from '../data/cybersecurity/types';
@@ -40,11 +40,12 @@ import { sizeLabel } from '../data/files';
 import { platformLabel, resultWords, stepLabel, videoOf } from '../data/content';
 import { linksOf, linksWords, stepsOf, stepsWords } from '../data/ambitions';
 import { bugState, bugStateLabel, checksOf, checksWords, isBug, isRequirement, reqState, requirementStateLabel } from '../data/software';
+import { companyOf, interviewKindLabel, interviewsOf, isApplication, isRole, questionsOf, stageLabel, stageOf } from '../data/career';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | 'ambition' | 'software' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | 'content' | 'ambition' | 'software' | 'career' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -348,6 +349,21 @@ const MANY: Many[] = [
       const links = Array.isArray(x.linkIds) && x.linkIds.length ? `${x.linkIds.length} link${x.linkIds.length === 1 ? '' : 's'}` : '';
       if (isBug(x)) return [s(x.happens) && `What happens: ${s(x.happens)}`, s(x.expected) && `What should happen: ${s(x.expected)}`, s(x.steps) && `Steps: ${s(x.steps)}`, x.closedOn ? `${bugStateLabel(bugState(x))} ${x.closedOn}` : '', x.taskId ? 'Has a task' : '', x.releaseId ? 'In a release' : '', links].filter((v): v is string => !!v);
       return [s((x as { detail?: unknown }).detail) && `Detail: ${s((x as { detail?: unknown }).detail)}`, ...checks, isRequirement(x) && x.releaseId ? 'In a release' : '', x.type === 'release' && x.off ? 'No longer a release' : '', links].filter((v): v is string => !!v); } },
+  // A Career project's roles and applications, with their interviews (specs/projects-career.md; from migration
+  // 20261101200000_sync_career.sql): one record each, saying which project it belongs to.
+  { kind: 'career', label: 'Career item',
+    items: d => d.career.items, put: (dr, id, c) => putItem(dr.career.items, id, c, (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)),
+    clean: (id, raw) => same(id, via({ career: { items: [raw] } }).career.items[0]),
+    summary: c => { const x = c as unknown as CareerItem, t = (s: unknown) => (typeof s === 'string' && s ? (s.length > 80 ? s.slice(0, 80) + '…' : s) : '(untitled)');
+      return isRole(x) ? `Role: ${t(x.title)}${x.aside ? ' · set aside' : ''}` : isApplication(x) ? `Application: ${t(companyOf(x))} · ${stageLabel(stageOf(x))}` : 'Career item'; },
+    // Its words, days, interviews and questions, so two versions that differ only there can be told apart.
+    lines: c => { const x = c as unknown as CareerItem, s = (v: unknown) => (typeof v === 'string' ? v : '');
+      if (isRole(x)) return [s(x.notes) && `Notes: ${s(x.notes)}`, Array.isArray(x.portfolioIds) && x.portfolioIds.length ? `${x.portfolioIds.length} portfolio entr${x.portfolioIds.length === 1 ? 'y' : 'ies'}` : ''].filter((v): v is string => !!v);
+      if (!isApplication(x)) return [];
+      return [s(x.title) && `Role: ${s(x.title)}`, s(x.contact) && `Contact: ${s(x.contact)}`, s(x.url) && `Link: ${s(x.url)}`, s(x.notes) && `Notes: ${s(x.notes)}`,
+        x.appliedOn ? `Applied ${x.appliedOn}` : '', x.closedOn ? `Closed ${x.closedOn}${x.closedWhy ? ` · ${x.closedWhy}` : ''}` : '', x.followedOn ? `Followed up ${x.followedOn}` : '',
+        ...interviewsOf(x).map(iv => { const q = questionsOf(iv);
+          return `Interview ${iv.on}${iv.at ? ` at ${iv.at}` : ''}${interviewKindLabel(iv.kind) ? ` (${interviewKindLabel(iv.kind)})` : ''}${iv.prep ? ' · prep' : ''}${q.length ? ` · ${q.filter(y => y.done).length} of ${q.length} questions asked` : ''}${iv.went ? ' · how it went' : ''}`; })].filter((v): v is string => !!v); } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),

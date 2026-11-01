@@ -147,6 +147,7 @@ export interface MyDayData {
   content: ContentData;  // a Content project's ideas and videos (specs/projects-content.md); one synced record each
   ambitions: AmbitionsData; // your long-term ambitions and what they link (specs/projects-ambitions.md); one synced record each
   software: SoftwareData; // a Software project's requirements, bugs and release checklists (specs/projects-software.md); one synced record each
+  career: CareerData; // a Career project's roles and applications, with their interviews (specs/projects-career.md); one synced record each
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -287,6 +288,19 @@ export interface SoftwareRequirement extends SoftwareBase { type: 'requirement';
 export interface SoftwareBug extends SoftwareBase { type: 'bug'; title: string; happens?: string; expected?: string; steps?: string; state?: 'open' | 'fixed' | 'wontfix'; closedOn?: DateKey; taskId?: string; releaseId?: string; linkIds?: string[] }
 export interface SoftwareRelease extends SoftwareBase { type: 'release'; milestoneId: string; checks?: SoftwareCheck[]; off?: boolean }
 export type SoftwareItem = SoftwareRequirement | SoftwareBug | SoftwareRelease; // (a newer MyDay's type is kept, never read)
+// Career projects (specs/projects-career.md): a role you're aiming for, or an application with its interviews. One
+// record each, saying which project it belongs to; read as written (a newer MyDay's types, stages and fields kept).
+export interface CareerData { items: CareerItem[]; [other: string]: unknown }
+interface CareerBase { id: string; type: string; projectId: string; createdAt: string; updatedAt: string; [other: string]: unknown }
+export interface CareerRole extends CareerBase { type: 'role'; title: string; notes?: string; aside?: boolean; portfolioIds?: string[] }
+export type CareerStage = 'interested' | 'applied' | 'interviewing' | 'offer' | 'closed';
+export interface CareerQuestion { id: string; text: string; done?: boolean; [other: string]: unknown }
+export interface CareerInterview { id: string; on: DateKey; at?: string; kind?: string; prep?: string; questions?: CareerQuestion[]; went?: string; taskId?: string; [other: string]: unknown }
+export interface CareerApplication extends CareerBase {
+  type: 'application'; company: string; title?: string; roleId?: string; url?: string; contact?: string; notes?: string; stage?: CareerStage;
+  appliedOn?: DateKey; closedOn?: DateKey; closedWhy?: string; followedOn?: DateKey; followTaskId?: string; interviews?: CareerInterview[];
+}
+export type CareerItem = CareerRole | CareerApplication; // (a newer MyDay's type is kept, never read)
 export interface AmbitionLink { id: string; kind: string; ref?: string; [other: string]: unknown }
 export interface AmbitionStep { id: string; text: string; done?: boolean; linkId?: string; [other: string]: unknown }
 export interface Ambition { id: string; title: string; why?: string; links?: AmbitionLink[]; steps?: AmbitionStep[]; createdAt: string; updatedAt: string; [other: string]: unknown }
