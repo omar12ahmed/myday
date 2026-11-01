@@ -95,9 +95,10 @@ export function careerGlance(data: MyDayData, p: Project, k: DateKey = todayKey(
   return { open: apps.length, interviewing: apps.filter(a => stageOf(a) === 'interviewing').length, offers: apps.filter(a => stageOf(a) === 'offer').length,
     roles: rolesOf(data, p.id).filter(r => !r.aside).length, next };
 }
-// The follow-up nudge's rule: at Applied for 10 days or more, not yet followed up.
+// The follow-up nudge's rule: at Applied for 10 days or more, not yet answered (Follow up or Close it, `askedOn`, for
+// good — reopening doesn't bring it back), and no interview yet.
 export const needsFollowUp = (a: CareerApplication, k: DateKey = todayKey()) =>
-  stageOf(a) === 'applied' && isDateKey(a.appliedOn) && a.appliedOn <= shift(k, -FOLLOW_UP_DAYS) && !a.followedOn;
+  stageOf(a) === 'applied' && isDateKey(a.appliedOn) && a.appliedOn <= shift(k, -FOLLOW_UP_DAYS) && !a.followedOn && !a.askedOn && !interviewsOf(a).length;
 
 // ---------- Changing them (inside update(); each returns whether anything changed, or an id) ----------
 const touch = (x: CareerItem) => { x.updatedAt = localStamp(); };
@@ -198,6 +199,7 @@ export function setStage(d: MyDayData, id: string, stage: CareerStage, k: DateKe
 export function closeApplication(d: MyDayData, id: string, why: string, k: DateKey = todayKey()): boolean {
   const a = app(d, id);
   if (!a || stageOf(a) === 'closed') return false;
+  if (stageOf(a) === 'applied') a.askedOn = k; // (closing answers "Heard back?" for good)
   a.stage = 'closed'; a.closedOn = k;
   const w = tidyText(why, CAREER_LIMITS.why);
   if (w) a.closedWhy = w; else delete a.closedWhy;
@@ -218,7 +220,7 @@ export function followUp(d: MyDayData, id: string, k: DateKey = todayKey()): str
   const tid = addTask(d.tasks, { title: tidyText(`Follow up: ${companyOf(a)}`, TASK_LIMITS.title), minutes: 10, due: k });
   if (!tid) return null;
   d.tasks.items.find(t => t.id === tid)!.projectId = a.projectId;
-  a.followedOn = k; a.followTaskId = tid; touch(a);
+  a.followedOn = k; a.askedOn = k; a.followTaskId = tid; touch(a);
   return tid;
 }
 
@@ -227,11 +229,11 @@ export function followUp(d: MyDayData, id: string, k: DateKey = todayKey()): str
 export const prepareDay = (on: DateKey, k: DateKey = todayKey()): DateKey | null => (on > k ? shift(on, -1) : on === k ? k : null);
 const prepareTitle = (a: CareerApplication) => tidyText(`Prepare for ${companyOf(a)} interview`, TASK_LIMITS.title);
 export interface InterviewInput { at?: string | null; kind?: string | null }
-// An interview on a day (a time and kind if you like): makes its Prepare task and moves the application to
-// Interviewing (from Interested or Applied). Returns its id, or null.
+// An interview on a day (a time and kind if you like), on an application that isn't closed: makes its Prepare task and
+// moves the application to Interviewing (from Interested or Applied). Returns its id, or null.
 export function addInterview(d: MyDayData, id: string, on: DateKey, input: InterviewInput = {}, k: DateKey = todayKey()): string | null {
   const a = app(d, id);
-  if (!a || !isDateKey(on) || interviewsOf(a).length >= CAREER_LIMITS.interviews) return null;
+  if (!a || !isDateKey(on) || !isOpen(a) || interviewsOf(a).length >= CAREER_LIMITS.interviews) return null; // (open it again first)
   const iid = 'ci' + uid(), iv: CareerInterview = { id: iid, on };
   if (input.at && TIME.test(input.at)) iv.at = input.at;
   if (input.kind && INTERVIEW_KINDS.some(x => x.id === input.kind)) iv.kind = input.kind;
@@ -246,7 +248,8 @@ export function addInterview(d: MyDayData, id: string, on: DateKey, input: Inter
   return iid;
 }
 export interface InterviewPatch { on?: DateKey; at?: string | null; kind?: string | null; prep?: string; went?: string }
-// Changing its day moves its Prepare task (if not done), or makes one if it had none and the day hasn't passed.
+// Changing its day moves its Prepare task (if not done), or makes one if it never had one and the day hasn't passed
+// (one you deleted isn't made again).
 export function editInterview(d: MyDayData, id: string, interviewId: string, patch: InterviewPatch, k: DateKey = todayKey()): boolean {
   const a = app(d, id), iv = a && interviewsOf(a).find(x => x.id === interviewId);
   if (!a || !iv) return false;
@@ -255,7 +258,7 @@ export function editInterview(d: MyDayData, id: string, interviewId: string, pat
     iv.on = patch.on; changed = true;
     const due = prepareDay(patch.on, k), t = iv.taskId ? d.tasks.items.find(x => x.id === iv.taskId) : undefined;
     if (t && !isDone(d, t) && due) { t.due = due; leaveTodaysPlanIfLater(d, t.id, k); } // (as a task's own date change does)
-    else if (!t && due) {
+    else if (!iv.taskId && due) {
       const tid = addTask(d.tasks, { title: prepareTitle(a), minutes: 30, due });
       if (tid) { d.tasks.items.find(x => x.id === tid)!.projectId = a.projectId; iv.taskId = tid; }
     }

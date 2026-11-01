@@ -85,7 +85,7 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
     // A Career project's application at Applied for 10 days, not yet followed up (specs/projects-career.md): once,
     // until you follow up, close it or move it on.
     if (isCareer(p)) for (const a of applicationsOf(data, p.id).filter(x => needsFollowUp(x, k)))
-      add({ key: `follow:${a.id}`, reason: 'waiting', title: `Heard back from ${companyOf(a)}?`, href: `#projects/p/${enc(p.id)}/applications`, when: a.appliedOn!,
+      add({ key: `follow:${a.id}`, reason: 'waiting', title: `Heard back from ${companyOf(a)}?`, href: `#projects/p/${enc(p.id)}/applications/${enc(a.id)}`, when: a.appliedOn!,
         followUp: { applicationId: a.id }, why: `applied ${shortDate(a.appliedOn!)}` });
     for (const t of pastOpen(data, p, k).filter(t => !seen.has(t.id))) {
       seen.add(t.id);

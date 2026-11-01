@@ -82,7 +82,7 @@ export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: 
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
-      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'requirements' ? <RequirementsView data={data} p={p} /> : tab === 'bugs' ? <BugsView data={data} p={p} /> : tab === 'applications' ? <ApplicationsView data={data} p={p} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'requirements' ? <RequirementsView data={data} p={p} /> : tab === 'bugs' ? <BugsView data={data} p={p} /> : tab === 'applications' ? <ApplicationsView data={data} p={p} openId={sub} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
       <ExploringCard p={p} />

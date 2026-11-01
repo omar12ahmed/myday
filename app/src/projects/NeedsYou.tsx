@@ -36,7 +36,7 @@ export function NeedsYouCard({ data, all }: { data: MyDayData; all: Need[] }) {
   const pick = (g: NeedGroup | null) => { setChosen(g); setMore(false); };
   return (
     <Card aria-labelledby="needs-h" id="needsYou">
-      <h2 id="needs-h" className="flex items-baseline gap-2 m-0">Needs you{all.length > 0 && <>{' '}<span className="text-fg-3 font-normal tabular-nums" data-s="needs-count">{all.length}</span></>}</h2>
+      <h2 id="needs-h" tabIndex={-1} className="flex items-baseline gap-2 m-0">Needs you{all.length > 0 && <>{' '}<span className="text-fg-3 font-normal tabular-nums" data-s="needs-count">{all.length}</span></>}</h2>
       {!all.length ? <p className="text-[15px] text-fg-2 m-0 mt-2" data-s="needs-none">Nothing needs you right now.</p> : <>
         {(groups.length > 1 || projects.length > 1) && (
           <div className="flex flex-wrap items-center gap-2 mt-3" data-s="needs-filters">

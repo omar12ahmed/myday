@@ -11,6 +11,7 @@ import {
   questionsOf, removeInterview, removeItem, removeQuestion, roleTitle, rolesOf, setClosedWhy, setStage, stageLabel, stageOf, STAGES, tickQuestion, togglePortfolio,
 } from '../data/career';
 import { shortDate, todayKey } from '../data/dates';
+import { webAddress } from '../data/projectResources';
 import { update } from '../data/storage';
 import { TASK_LIMITS } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -28,17 +29,19 @@ const plural = (n: number, one: string, many = one + 's') => `${n} ${n === 1 ? o
 const tidy = (s: string, max: number) => Array.from(s.trim()).slice(0, max).join('');
 const ROW_LINK = 'inline-flex items-center min-h-11 text-fg no-underline hover:underline underline-offset-4';
 const nameOf = (a: CareerApplication) => (a.title ? `${companyOf(a)} — ${a.title}` : companyOf(a));
+// A date typed part-way (the browser commits each part, e.g. a year of 0002) isn't saved until it's a likely day.
+const likelyDay = (v: string) => /^(19|20)\d\d-\d\d-\d\d$/.test(v);
 
 // ---------- The Overview ----------
 export function CareerCard({ data, p }: { data: MyDayData; p: Project }) {
-  const g = careerGlance(data, p), n = g.next;
+  const g = careerGlance(data, p), n = g.next, aside = rolesOf(data, p.id).length - g.roles;
   return (
     <Card aria-labelledby="careerH" data-s="career-card">
       <h3 id="careerH" className="m-0 flex items-center gap-2"><Briefcase size={20} aria-hidden="true" className="text-primary" /> Career at a glance</h3>
       <ul className="list-none p-0 m-0 mt-1 grid text-[15px]">
         <li><a href={tabHref(p, 'applications')} className={ROW_LINK} data-s="cr-open">{g.open ? [`${plural(g.open, 'application')} open`, g.interviewing && `${g.interviewing} interviewing`, g.offers && plural(g.offers, 'offer')].filter(Boolean).join(' · ') : 'No applications open'}</a></li>
         <li><a href={tabHref(p, 'applications')} className={ROW_LINK} data-s="cr-next">{n ? `Next interview: ${companyOf(n.application)} — ${shortDate(n.interview.on)}${n.interview.at ? ` at ${n.interview.at}` : ''}` : 'No interview coming up'}</a></li>
-        <li><a href={tabHref(p, 'applications')} className={ROW_LINK} data-s="cr-roles">{g.roles ? `${plural(g.roles, 'role')} you’re aiming for` : 'No roles yet — name the ones you’re aiming for'}</a></li>
+        <li><a href={tabHref(p, 'applications')} className={ROW_LINK} data-s="cr-roles">{g.roles ? `${plural(g.roles, 'role')} you’re aiming for` : aside ? `No role you’re aiming for right now (${aside} set aside)` : 'No roles yet — name the ones you’re aiming for'}</a></li>
       </ul>
     </Card>
   );
@@ -47,7 +50,7 @@ export function CareerCard({ data, p }: { data: MyDayData; p: Project }) {
 // ---------- Closing gently: why, in your words ----------
 // Tap a reason or write your own; Close keeps it and the day. `onDone` after closing (or cancelling: false).
 function CloseForm({ a, onDone }: { a: CareerApplication; onDone: (closed: boolean) => void }) {
-  const [why, setWhy] = useState(''), id = `closeWhy-${a.id}`;
+  const [chip, setChip] = useState(''), [own, setOwn] = useState(''), id = `closeWhy-${a.id}`, why = own.trim() ? own : chip;
   function close(w: string) {
     if (save(d => closeApplication(d, a.id, w))) { toast(`Closed${w.trim() ? ` — ${tidy(w, CAREER_LIMITS.why)}` : ''}.`); onDone(true); }
   }
@@ -55,9 +58,9 @@ function CloseForm({ a, onDone }: { a: CareerApplication; onDone: (closed: boole
     <form className="grid gap-2 rounded-tile border border-outline p-3 mt-2" onSubmit={e => { e.preventDefault(); close(why); }} data-s="close-form">
       <p className="m-0 text-[15px]">Why, in your words? <span className="text-fg-2">(It’s only for you.)</span></p>
       <Choices label={`Why “${nameOf(a)}” closed`}>
-        {CLOSE_REASONS.map(r => <Choice key={r} on={why === r} data-action="close-why" data-why={r} onClick={() => setWhy(r)}>{r}</Choice>)}
+        {CLOSE_REASONS.map(r => <Choice key={r} on={!own.trim() && chip === r} data-action="close-why" data-why={r} onClick={() => { setChip(chip === r ? '' : r); setOwn(''); }}>{r}</Choice>)}
       </Choices>
-      <Field label="Or your own words" htmlFor={id}><TextInput id={id} value={CLOSE_REASONS.includes(why) ? '' : why} maxLength={CAREER_LIMITS.why} onChange={e => setWhy(e.target.value)} /></Field>
+      <Field label="Or your own words" htmlFor={id}><TextInput id={id} aria-label={`Or your own words, for “${nameOf(a)}”`} value={own} maxLength={CAREER_LIMITS.why} onChange={e => setOwn(e.target.value)} /></Field>
       <div className="flex flex-wrap gap-2.5">
         <Button inline type="submit" variant="primary" data-action="close-confirm" aria-label={`Close “${nameOf(a)}”`}>Close it</Button>
         <Button inline variant="ghost" data-action="close-cancel" onClick={() => onDone(false)}>Not now</Button>
@@ -78,7 +81,7 @@ export function FollowUpActions({ data, applicationId }: { data: MyDayData; appl
   if (closing) return <CloseForm a={a} onDone={closed => { setClosing(false); focusSoon(closed ? 'needs-h' : `followClose-${a.id}`); }} />;
   return (
     <div className="flex flex-wrap gap-2" data-s="follow-up">
-      <Button inline variant="tonal" data-action="follow-up" aria-label={`Follow up with ${companyOf(a)} — make a task`} onClick={follow}>Follow up</Button>
+      <Button inline variant="tonal" data-action="follow-up" aria-label={`Follow up on “${nameOf(a)}” — make a task`} onClick={follow}>Follow up</Button>
       <Button inline variant="ghost" id={`followClose-${a.id}`} data-action="follow-close" aria-label={`Close “${nameOf(a)}”`} onClick={() => { setClosing(true); focusSoon(`closeWhy-${a.id}`); }}>Close it</Button>
     </div>
   );
@@ -86,13 +89,14 @@ export function FollowUpActions({ data, applicationId }: { data: MyDayData; appl
 
 // ---------- The Applications tab ----------
 const ORDER: CareerStage[] = ['interviewing', 'offer', 'applied', 'interested'];
-function useOpened() {
-  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
+function useOpened(first?: string) {
+  const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set(first ? [first] : []));
   const toggle = (id: string, open: boolean) => setOpened(o => { if (o.has(id) === open) return o; const n = new Set(o); if (open) n.add(id); else n.delete(id); return n; });
   return [opened, toggle] as const;
 }
-export function ApplicationsView({ data, p }: { data: MyDayData; p: Project }) {
-  const all = applicationsOf(data, p.id), roles = rolesOf(data, p.id), [opened, setOpen] = useOpened();
+// `openId`: an application to open on arrival (from Needs you's "Heard back?").
+export function ApplicationsView({ data, p, openId }: { data: MyDayData; p: Project; openId?: string }) {
+  const all = applicationsOf(data, p.id), roles = rolesOf(data, p.id), [opened, setOpen] = useOpened(openId);
   const open = all.filter(isOpen), closed = all.filter(a => !isOpen(a));
   const row = (a: CareerApplication) => <ApplicationRow key={a.id} data={data} a={a} roles={roles} open={opened.has(a.id)} onToggle={o => setOpen(a.id, o)} />;
   return (
@@ -151,12 +155,12 @@ function RolesCard({ data, p, roles }: { data: MyDayData; p: Project; roles: Car
                   </summary>
                   {opened.has(r.id) && (
                     <div className="pb-3 grid gap-2">
-                      <Field label="Role" htmlFor={`roleTitle-${r.id}`}><CommitInput id={`roleTitle-${r.id}`} key={r.title} defaultValue={r.title} maxLength={CAREER_LIMITS.title} onCommit={el => { if (!el.value.trim()) { el.value = r.title; return; } save(d => editRole(d, r.id, { title: el.value })); }} /></Field>
+                      <Field label="Role" htmlFor={`roleTitle-${r.id}`}><CommitInput id={`roleTitle-${r.id}`} aria-label={`Role “${name}”`} key={r.title} defaultValue={r.title} maxLength={CAREER_LIMITS.title} onCommit={el => { if (!el.value.trim()) { el.value = r.title; return; } save(d => editRole(d, r.id, { title: el.value })); }} /></Field>
                       <Field label="Notes (optional)" htmlFor={`roleNotes-${r.id}`}><CommitTextarea id={`roleNotes-${r.id}`} aria-label={`Notes (optional), for “${name}”`} rows={2} key={r.notes ?? ''} defaultValue={r.notes ?? ''} maxLength={CAREER_LIMITS.notes} onCommit={el => save(d => editRole(d, r.id, { notes: el.value }))} /></Field>
                       <fieldset className="border-0 p-0 m-0" data-s="role-portfolio">
                         <legend className="text-sm font-semibold mb-1">Work that shows it<span className="sr-only">, for “{name}”</span></legend>
                         {portfolio.length ? <ul className="list-none p-0 m-0">{portfolio.map(e => (
-                          <li key={e.id} className="min-h-11 flex items-center"><label className="flex items-center gap-2 cursor-pointer py-1 min-w-0"><input type="checkbox" className="size-5 flex-none accent-[var(--primary)]" checked={on.has(e.id)} data-action="role-portfolio" value={e.id}
+                          <li key={e.id}><label className="flex items-center gap-2 cursor-pointer min-h-11 min-w-0"><input type="checkbox" className="size-5 flex-none accent-[var(--primary)]" checked={on.has(e.id)} data-action="role-portfolio" value={e.id}
                             onChange={() => { if (!save(d => togglePortfolio(d, r.id, e.id)) && !on.has(e.id)) toast(`That’s ${CAREER_LIMITS.portfolio} pieces of work — as many as one role keeps.`); }} /><span className="break-words">{e.title}</span></label></li>))}</ul>
                           : <p className="m-0 text-sm text-fg-2">Your Cybersecurity portfolio has no entries yet — they’re added in Study, and stay there.</p>}
                       </fieldset>
@@ -224,28 +228,28 @@ function ApplicationRow({ data, a, roles, open, onToggle }: { data: MyDayData; a
         {open && (
           <div className="pb-3 grid gap-2">
             <div className="grid gap-2 sm:grid-cols-2">
-              <Field label="Company" htmlFor={`appCompany-${a.id}`}><CommitInput id={`appCompany-${a.id}`} key={a.company} defaultValue={a.company} maxLength={CAREER_LIMITS.company} onCommit={el => { if (!el.value.trim()) { el.value = a.company; return; } save(d => editApplication(d, a.id, { company: el.value })); }} /></Field>
-              <Field label="The role, as advertised" htmlFor={`appTitle-${a.id}`}><CommitInput id={`appTitle-${a.id}`} aria-label={`The role, as advertised, for ${companyOf(a)}`} key={a.title ?? ''} defaultValue={a.title ?? ''} maxLength={CAREER_LIMITS.title} onCommit={el => save(d => editApplication(d, a.id, { title: el.value }))} /></Field>
-              {roles.length > 0 && <Field label="For which of your roles" htmlFor={`appRole-${a.id}`}><Select id={`appRole-${a.id}`} aria-label={`For which of your roles, for ${companyOf(a)}`} value={role ? role.id : ''} onChange={e => save(d => editApplication(d, a.id, { roleId: e.target.value || null }))}><option value="">None in particular</option>{roles.map(r => <option key={r.id} value={r.id}>{roleTitle(r)}{r.aside ? ' (set aside)' : ''}</option>)}</Select></Field>}
-              <Field label="The advert or application (a link)" htmlFor={`appUrl-${a.id}`}><CommitInput id={`appUrl-${a.id}`} aria-label={`The advert or application (a link), for ${companyOf(a)}`} inputMode="url" spellCheck={false} key={a.url ?? ''} defaultValue={a.url ?? ''} maxLength={CAREER_LIMITS.url}
-                onCommit={el => { if (!save(d => editApplication(d, a.id, { url: el.value })) && el.value.trim() && el.value.trim() !== (a.url ?? '')) { toast('That isn’t a web address — nothing changed.'); el.value = a.url ?? ''; } }} /></Field>
-              <Field label="Who you’re in touch with" htmlFor={`appContact-${a.id}`}><CommitInput id={`appContact-${a.id}`} aria-label={`Who you’re in touch with, for ${companyOf(a)}`} key={a.contact ?? ''} defaultValue={a.contact ?? ''} maxLength={CAREER_LIMITS.contact} onCommit={el => save(d => editApplication(d, a.id, { contact: el.value }))} /></Field>
+              <Field label="Company" htmlFor={`appCompany-${a.id}`}><CommitInput id={`appCompany-${a.id}`} aria-label={`Company, for “${name}”`} key={a.company} defaultValue={a.company} maxLength={CAREER_LIMITS.company} onCommit={el => { if (!el.value.trim()) { el.value = a.company; return; } save(d => editApplication(d, a.id, { company: el.value })); }} /></Field>
+              <Field label="The role, as advertised" htmlFor={`appTitle-${a.id}`}><CommitInput id={`appTitle-${a.id}`} aria-label={`The role, as advertised, for “${name}”`} key={a.title ?? ''} defaultValue={a.title ?? ''} maxLength={CAREER_LIMITS.title} onCommit={el => save(d => editApplication(d, a.id, { title: el.value }))} /></Field>
+              {roles.length > 0 && <Field label="For which of your roles" htmlFor={`appRole-${a.id}`}><Select id={`appRole-${a.id}`} aria-label={`For which of your roles, for “${name}”`} value={role ? role.id : ''} onChange={e => save(d => editApplication(d, a.id, { roleId: e.target.value || null }))}><option value="">None in particular</option>{roles.map(r => <option key={r.id} value={r.id}>{roleTitle(r)}{r.aside ? ' (set aside)' : ''}</option>)}</Select></Field>}
+              <Field label="The advert or application (a link)" htmlFor={`appUrl-${a.id}`}><CommitInput id={`appUrl-${a.id}`} aria-label={`The advert or application (a link), for “${name}”`} inputMode="url" spellCheck={false} key={a.url ?? ''} defaultValue={a.url ?? ''} maxLength={CAREER_LIMITS.url}
+                onCommit={el => { if (el.value.trim() && !webAddress(el.value)) { toast('That isn’t a web address — nothing changed.'); el.value = a.url ?? ''; return; } save(d => editApplication(d, a.id, { url: el.value })); }} /></Field>
+              <Field label="Who you’re in touch with" htmlFor={`appContact-${a.id}`}><CommitInput id={`appContact-${a.id}`} aria-label={`Who you’re in touch with, for “${name}”`} key={a.contact ?? ''} defaultValue={a.contact ?? ''} maxLength={CAREER_LIMITS.contact} onCommit={el => save(d => editApplication(d, a.id, { contact: el.value }))} /></Field>
             </div>
-            <Field label="Notes" htmlFor={`appNotes-${a.id}`}><CommitTextarea id={`appNotes-${a.id}`} aria-label={`Notes, for ${companyOf(a)}`} rows={2} key={a.notes ?? ''} defaultValue={a.notes ?? ''} maxLength={CAREER_LIMITS.notes} onCommit={el => save(d => editApplication(d, a.id, { notes: el.value }))} /></Field>
+            <Field label="Notes" htmlFor={`appNotes-${a.id}`}><CommitTextarea id={`appNotes-${a.id}`} aria-label={`Notes, for “${name}”`} rows={2} key={a.notes ?? ''} defaultValue={a.notes ?? ''} maxLength={CAREER_LIMITS.notes} onCommit={el => save(d => editApplication(d, a.id, { notes: el.value }))} /></Field>
             {st === 'closed' ? (
               <div className="grid gap-2" data-s="app-closed">
-                <Field label="Why it closed" htmlFor={`appWhy-${a.id}`}><CommitInput id={`appWhy-${a.id}`} aria-label={`Why it closed, for ${companyOf(a)}`} key={a.closedWhy ?? ''} defaultValue={a.closedWhy ?? ''} maxLength={CAREER_LIMITS.why} onCommit={el => save(d => setClosedWhy(d, a.id, el.value))} /></Field>
+                <Field label="Why it closed" htmlFor={`appWhy-${a.id}`}><CommitInput id={`appWhy-${a.id}`} aria-label={`Why it closed, for “${name}”`} key={a.closedWhy ?? ''} defaultValue={a.closedWhy ?? ''} maxLength={CAREER_LIMITS.why} onCommit={el => save(d => setClosedWhy(d, a.id, el.value))} /></Field>
                 <div><Button inline variant="tonal" data-action="app-reopen" aria-label={`Open “${name}” again`} onClick={() => { if (save(d => setStage(d, a.id, a.appliedOn ? 'applied' : 'interested'))) { toast('Open again.'); focusSoon('appsH'); } }}>Open it again</Button></div>
               </div>
             ) : (<>
               <Choices label={`Where “${name}” is at`}>
                 {STAGES.filter(s => s.id !== 'closed').map(s => <Choice key={s.id} id={`appStage-${a.id}-${s.id}`} on={st === s.id} data-action="app-stage" data-stage={s.id} onClick={() => move(s.id)}>{s.label}</Choice>)}
               </Choices>
-              {a.appliedOn && <Field label="Applied on" htmlFor={`appAppliedOn-${a.id}`} className="max-w-xs"><CommitInput id={`appAppliedOn-${a.id}`} aria-label={`Applied on, for ${companyOf(a)}`} type="date" className="!w-auto" key={a.appliedOn} defaultValue={a.appliedOn} max={todayKey()} onCommit={el => { if (!el.value) { el.value = a.appliedOn!; return; } save(d => editApplication(d, a.id, { appliedOn: el.value as DateKey })); }} /></Field>}
+              {a.appliedOn && <Field label="Applied on" htmlFor={`appAppliedOn-${a.id}`} className="max-w-xs"><CommitInput id={`appAppliedOn-${a.id}`} aria-label={`Applied on, for “${name}”`} type="date" className="!w-auto" key={a.appliedOn} defaultValue={a.appliedOn} max={todayKey()} onCommit={el => { if (!likelyDay(el.value)) { if (!el.value) el.value = a.appliedOn!; return; } save(d => editApplication(d, a.id, { appliedOn: el.value as DateKey })); }} /></Field>}
               {closing ? <CloseForm a={a} onDone={closed => { setClosing(false); focusSoon(closed ? 'appsH' : `appClose-${a.id}`); }} />
                 : <div><Button inline variant="ghost" id={`appClose-${a.id}`} data-action="app-close" aria-label={`Close “${name}”`} onClick={() => { setClosing(true); focusSoon(`closeWhy-${a.id}`); }}>Close it</Button></div>}
             </>)}
-            <Interviews data={data} a={a} />
+            <Interviews data={data} a={a} name={name} />
             <div><Button inline variant="ghost" data-action="app-remove" aria-label={`Remove “${name}”`} onClick={remove}><Trash2 size={16} aria-hidden="true" /> Remove</Button></div>
           </div>
         )}
@@ -255,31 +259,35 @@ function ApplicationRow({ data, a, roles, open, onToggle }: { data: MyDayData; a
 }
 
 // ---------- An application's interviews ----------
-function Interviews({ data, a }: { data: MyDayData; a: CareerApplication }) {
+function Interviews({ data, a, name }: { data: MyDayData; a: CareerApplication; name: string }) {
   const list = interviewsOf(a), [on, setOn] = useState(''), [at, setAt] = useState(''), [kind, setKind] = useState(''), full = list.length >= CAREER_LIMITS.interviews, company = companyOf(a);
   function add() {
-    let iid: string | null = null;
-    if (!save(d => !!(iid = addInterview(d, a.id, on as DateKey, { at: at || null, kind: kind || null })))) { if (full) toast(`That’s ${CAREER_LIMITS.interviews} interviews — as many as one application keeps.`); return; }
+    let iid: string | null = null, made = false;
+    if (!save(d => {
+      iid = addInterview(d, a.id, on as DateKey, { at: at || null, kind: kind || null });
+      const x = d.career.items.find(y => y.id === a.id); made = !!iid && !!x && isApplication(x) && !!interviewsOf(x).find(v => v.id === iid)?.taskId;
+      return !!iid;
+    })) { if (full) toast(`That’s ${CAREER_LIMITS.interviews} interviews — as many as one application keeps.`); return; }
     const due = prepareDay(on as DateKey);
-    toast(due ? `Interview added — “${tidy(`Prepare for ${company} interview`, TASK_LIMITS.title)}” is on ${shortDate(due)}.` : 'Interview added.');
+    toast(made && due ? `Interview added — “${tidy(`Prepare for ${company} interview`, TASK_LIMITS.title)}” is on ${shortDate(due)}.` : 'Interview added.');
     setOn(''); setAt(''); setKind(''); focusSoon(`ivPrep-${iid}`);
   }
   return (
     <section className="mt-1" aria-labelledby={`ivH-${a.id}`} data-s="interviews">
-      <h4 id={`ivH-${a.id}`} tabIndex={-1} className="m-0 text-[15px]">Interviews<span className="sr-only"> with {company}</span></h4>
-      {list.length > 0 && <ul className="list-none p-0 m-0">{list.map(iv => <InterviewRow key={iv.id} data={data} a={a} iv={iv} />)}</ul>}
-      <form className="flex flex-wrap items-end gap-2 mt-1" onSubmit={e => { e.preventDefault(); add(); }} data-s="iv-form">
-        <Field label="An interview on" htmlFor={`ivNewOn-${a.id}`}><TextInput id={`ivNewOn-${a.id}`} aria-label={`An interview with ${company} on`} type="date" className="!w-auto" value={on} onChange={e => setOn(e.target.value)} /></Field>
-        <Field label="At (optional)" htmlFor={`ivNewAt-${a.id}`}><TextInput id={`ivNewAt-${a.id}`} aria-label={`At (optional), for the interview with ${company}`} type="time" className="!w-auto" value={at} onChange={e => setAt(e.target.value)} /></Field>
-        <Field label="How (optional)" htmlFor={`ivNewKind-${a.id}`}><Select id={`ivNewKind-${a.id}`} aria-label={`How (optional), for the interview with ${company}`} className="!w-auto" value={kind} onChange={e => setKind(e.target.value)}><option value="">—</option>{INTERVIEW_KINDS.map(k => <option key={k.id} value={k.id}>{k.label}</option>)}</Select></Field>
-        <Button inline type="submit" variant="tonal" data-action="iv-add" aria-label={`Add the interview with ${company}`} disabled={!on || full}><CalendarPlus size={18} aria-hidden="true" /> Add</Button>
-      </form>
+      <h4 id={`ivH-${a.id}`} tabIndex={-1} className="m-0 text-[15px]">Interviews<span className="sr-only">, for “{name}”</span></h4>
+      {list.length > 0 && <ul className="list-none p-0 m-0">{list.map(iv => <InterviewRow key={iv.id} data={data} a={a} iv={iv} name={name} />)}</ul>}
+      {!isOpen(a) ? <p className="m-0 mt-1 text-sm text-fg-2" data-s="iv-closed">Open it again to add an interview.</p> : <form className="flex flex-wrap items-end gap-2 mt-1" onSubmit={e => { e.preventDefault(); add(); }} data-s="iv-form">
+        <Field label="An interview on" htmlFor={`ivNewOn-${a.id}`}><TextInput id={`ivNewOn-${a.id}`} aria-label={`An interview on, for “${name}”`} type="date" className="!w-auto" value={on} onChange={e => setOn(e.target.value)} /></Field>
+        <Field label="At (optional)" htmlFor={`ivNewAt-${a.id}`}><TextInput id={`ivNewAt-${a.id}`} aria-label={`At (optional), for a new interview for “${name}”`} type="time" className="!w-auto" value={at} onChange={e => setAt(e.target.value)} /></Field>
+        <Field label="How (optional)" htmlFor={`ivNewKind-${a.id}`}><Select id={`ivNewKind-${a.id}`} aria-label={`How (optional), for a new interview for “${name}”`} className="!w-auto" value={kind} onChange={e => setKind(e.target.value)}><option value="">—</option>{INTERVIEW_KINDS.map(k => <option key={k.id} value={k.id}>{k.label}</option>)}</Select></Field>
+        <Button inline type="submit" variant="tonal" data-action="iv-add" aria-label={`Add the interview, for “${name}”`} disabled={!likelyDay(on) || full}><CalendarPlus size={18} aria-hidden="true" /> Add</Button>
+      </form>}
     </section>
   );
 }
-function InterviewRow({ data, a, iv }: { data: MyDayData; a: CareerApplication; iv: CareerInterview }) {
+function InterviewRow({ data, a, iv, name }: { data: MyDayData; a: CareerApplication; iv: CareerInterview; name: string }) {
   const confirm = useConfirm(), t = interviewTask(data, iv), qs = questionsOf(iv), [q, setQ] = useState(''), company = companyOf(a);
-  const when = `${shortDate(iv.on)}${iv.at ? ` at ${iv.at}` : ''}`;
+  const when = `${shortDate(iv.on)}${iv.at ? ` at ${iv.at}` : ''}`, iname = `“${name}” on ${when}`; // (two rounds with one company: each named for its day)
   async function remove() {
     if (!(await confirm({ title: 'Remove this interview?', body: `${company}, ${when}. Its Prepare task stays.`, confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
     if (save(d => removeInterview(d, a.id, iv.id))) { toast('Interview removed.'); focusSoon(`ivH-${a.id}`); }
@@ -293,25 +301,25 @@ function InterviewRow({ data, a, iv }: { data: MyDayData; a: CareerApplication; 
       <p className="m-0 font-medium" data-s="iv-line">{[when, interviewKindLabel(iv.kind)].filter(Boolean).join(' · ')}</p>
       {t && <p className="m-0 text-sm text-fg-2" data-s="iv-task">Its task: <a href={`#today/tasks/${enc(t.task.id)}`} className="inline-flex items-center min-h-11 text-primary underline-offset-4 hover:underline">{t.task.title}</a>{t.done ? ' — done' : t.task.due ? ` — ${shortDate(t.task.due)}` : ''}</p>}
       <div className="grid gap-2 sm:grid-cols-3">
-        <Field label="On" htmlFor={`ivOn-${iv.id}`}><CommitInput id={`ivOn-${iv.id}`} aria-label={`On, for the interview with ${company}`} type="date" className="!w-auto" key={iv.on} defaultValue={iv.on} onCommit={el => { if (!el.value) { el.value = iv.on; return; } save(d => editInterview(d, a.id, iv.id, { on: el.value as DateKey })); }} /></Field>
-        <Field label="At" htmlFor={`ivAt-${iv.id}`}><CommitInput id={`ivAt-${iv.id}`} aria-label={`At, for the interview with ${company}`} type="time" className="!w-auto" key={iv.at ?? ''} defaultValue={iv.at ?? ''} onCommit={el => save(d => editInterview(d, a.id, iv.id, { at: el.value || null }))} /></Field>
-        <Field label="How" htmlFor={`ivKind-${iv.id}`}><Select id={`ivKind-${iv.id}`} aria-label={`How, for the interview with ${company}`} className="!w-auto" value={iv.kind ?? ''} onChange={e => save(d => editInterview(d, a.id, iv.id, { kind: e.target.value || null }))}><option value="">—</option>{INTERVIEW_KINDS.map(k => <option key={k.id} value={k.id}>{k.label}</option>)}</Select></Field>
+        <Field label="On" htmlFor={`ivOn-${iv.id}`}><CommitInput id={`ivOn-${iv.id}`} aria-label={`On, for the interview with ${iname}`} type="date" className="!w-auto" key={iv.on} defaultValue={iv.on} onCommit={el => { if (!likelyDay(el.value)) { if (!el.value) el.value = iv.on; return; } save(d => editInterview(d, a.id, iv.id, { on: el.value as DateKey })); }} /></Field>
+        <Field label="At" htmlFor={`ivAt-${iv.id}`}><CommitInput id={`ivAt-${iv.id}`} aria-label={`At, for the interview with ${iname}`} type="time" className="!w-auto" key={iv.at ?? ''} defaultValue={iv.at ?? ''} onCommit={el => save(d => editInterview(d, a.id, iv.id, { at: el.value || null }))} /></Field>
+        <Field label="How" htmlFor={`ivKind-${iv.id}`}><Select id={`ivKind-${iv.id}`} aria-label={`How, for the interview with ${iname}`} className="!w-auto" value={iv.kind ?? ''} onChange={e => save(d => editInterview(d, a.id, iv.id, { kind: e.target.value || null }))}><option value="">—</option>{INTERVIEW_KINDS.map(k => <option key={k.id} value={k.id}>{k.label}</option>)}</Select></Field>
       </div>
-      <Field label="Prep notes" htmlFor={`ivPrep-${iv.id}`}><CommitTextarea id={`ivPrep-${iv.id}`} aria-label={`Prep notes, for the interview with ${company}`} rows={3} key={iv.prep ?? ''} defaultValue={iv.prep ?? ''} maxLength={CAREER_LIMITS.prep} placeholder="What they do, what the role needs, stories that show you can" onCommit={el => save(d => editInterview(d, a.id, iv.id, { prep: el.value }))} /></Field>
+      <Field label="Prep notes" htmlFor={`ivPrep-${iv.id}`}><CommitTextarea id={`ivPrep-${iv.id}`} aria-label={`Prep notes, for the interview with ${iname}`} rows={3} key={iv.prep ?? ''} defaultValue={iv.prep ?? ''} maxLength={CAREER_LIMITS.prep} placeholder="What they do, what the role needs, stories that show you can" onCommit={el => save(d => editInterview(d, a.id, iv.id, { prep: el.value }))} /></Field>
       <fieldset className="border-0 p-0 m-0" data-s="iv-questions">
-        <legend className="text-sm font-semibold mb-1">Questions to ask<span className="sr-only"> {company}</span></legend>
+        <legend className="text-sm font-semibold mb-1">Questions to ask<span className="sr-only">, for the interview with {iname}</span></legend>
         {qs.length > 0 && <ul className="list-none p-0 m-0">{qs.map(x => (
           <li key={x.id} className="flex items-center gap-2" data-s="question" data-id={x.id} data-done={x.done ? 'yes' : 'no'}>
             <label className="flex items-center gap-2 flex-1 min-w-0 min-h-11 cursor-pointer"><input type="checkbox" className="size-5 flex-none accent-[var(--primary)]" checked={!!x.done} aria-label={`Asked: ${x.text}`} data-action="question-tick" onChange={() => save(d => tickQuestion(d, a.id, iv.id, x.id))} /><span className="break-words">{x.text}</span></label>
             <Button inline variant="ghost" aria-label={`Remove the question “${x.text}”`} data-action="question-remove" onClick={() => { if (save(d => removeQuestion(d, a.id, iv.id, x.id))) focusSoon(`qNew-${iv.id}`); }}><Trash2 size={16} aria-hidden="true" /></Button>
           </li>))}</ul>}
         <form className="flex flex-wrap items-end gap-2 mt-1" onSubmit={e => { e.preventDefault(); addQ(); }}>
-          <Field label="Add a question" htmlFor={`qNew-${iv.id}`} className="flex-1 min-w-[12rem]"><TextInput id={`qNew-${iv.id}`} aria-label={`Add a question to ask ${company}`} value={q} maxLength={CAREER_LIMITS.question} placeholder="e.g. What does a good first month look like?" onChange={e => setQ(e.target.value)} /></Field>
-          <Button inline type="submit" variant="tonal" data-action="question-add" aria-label={`Add the question for ${company}`} disabled={!q.trim()}><Plus size={18} aria-hidden="true" /></Button>
+          <Field label="Add a question" htmlFor={`qNew-${iv.id}`} className="flex-1 min-w-[12rem]"><TextInput id={`qNew-${iv.id}`} aria-label={`Add a question to ask, for the interview with ${iname}`} value={q} maxLength={CAREER_LIMITS.question} placeholder="e.g. What does a good first month look like?" onChange={e => setQ(e.target.value)} /></Field>
+          <Button inline type="submit" variant="tonal" data-action="question-add" aria-label={`Add the question, for the interview with ${iname}`} disabled={!q.trim()}><Plus size={18} aria-hidden="true" /></Button>
         </form>
       </fieldset>
-      <Field label="How it went (afterwards)" htmlFor={`ivWent-${iv.id}`}><CommitTextarea id={`ivWent-${iv.id}`} aria-label={`How it went, for the interview with ${company}`} rows={2} key={iv.went ?? ''} defaultValue={iv.went ?? ''} maxLength={CAREER_LIMITS.went} onCommit={el => save(d => editInterview(d, a.id, iv.id, { went: el.value }))} /></Field>
-      <div><Button inline variant="ghost" data-action="iv-remove" aria-label={`Remove the interview with ${company} on ${when}`} onClick={remove}><Trash2 size={16} aria-hidden="true" /> Remove</Button></div>
+      <Field label="How it went (afterwards)" htmlFor={`ivWent-${iv.id}`}><CommitTextarea id={`ivWent-${iv.id}`} aria-label={`How it went, for the interview with ${iname}`} rows={2} key={iv.went ?? ''} defaultValue={iv.went ?? ''} maxLength={CAREER_LIMITS.went} onCommit={el => save(d => editInterview(d, a.id, iv.id, { went: el.value }))} /></Field>
+      <div><Button inline variant="ghost" data-action="iv-remove" aria-label={`Remove the interview for ${iname}`} onClick={remove}><Trash2 size={16} aria-hidden="true" /> Remove</Button></div>
     </li>
   );
 }

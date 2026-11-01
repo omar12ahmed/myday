@@ -361,7 +361,7 @@ const MANY: Many[] = [
       if (isRole(x)) return [s(x.notes) && `Notes: ${s(x.notes)}`, Array.isArray(x.portfolioIds) && x.portfolioIds.length ? `${x.portfolioIds.length} portfolio entr${x.portfolioIds.length === 1 ? 'y' : 'ies'}` : ''].filter((v): v is string => !!v);
       if (!isApplication(x)) return [];
       return [s(x.title) && `Role: ${s(x.title)}`, s(x.contact) && `Contact: ${s(x.contact)}`, s(x.url) && `Link: ${s(x.url)}`, s(x.notes) && `Notes: ${s(x.notes)}`,
-        x.appliedOn ? `Applied ${x.appliedOn}` : '', x.closedOn ? `Closed ${x.closedOn}${x.closedWhy ? ` · ${x.closedWhy}` : ''}` : '', x.followedOn ? `Followed up ${x.followedOn}` : '',
+        x.appliedOn ? `Applied ${x.appliedOn}` : '', x.closedOn ? `Closed ${x.closedOn}${x.closedWhy ? ` · ${x.closedWhy}` : ''}` : '', x.followedOn ? `Followed up ${x.followedOn}` : '', x.followTaskId ? 'Has a follow-up task' : '', x.askedOn && !x.followedOn ? `“Heard back?” answered ${x.askedOn}` : '',
         ...interviewsOf(x).map(iv => { const q = questionsOf(iv);
           return `Interview ${iv.on}${iv.at ? ` at ${iv.at}` : ''}${interviewKindLabel(iv.kind) ? ` (${interviewKindLabel(iv.kind)})` : ''}${iv.prep ? ' · prep' : ''}${q.length ? ` · ${q.filter(y => y.done).length} of ${q.length} questions asked` : ''}${iv.went ? ' · how it went' : ''}`; })].filter((v): v is string => !!v); } },
   { kind: 'book', label: 'Book (Reading)',

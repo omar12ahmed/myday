@@ -33,7 +33,7 @@ import { AreaDot, AreaLabel } from './AreaBits';
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
   if (parts[1] === 'a' && parts[2]) return <AmbitionPage data={data} id={parts[2]} />; // an ambition (specs/projects-ambitions.md)
-  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={TAB_ROUTES.includes(parts[3] as ProjectTab) ? parts[3] as ProjectTab : 'overview'} sub={parts[3] === 'videos' ? parts[4] : undefined} /></div>;
+  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={TAB_ROUTES.includes(parts[3] as ProjectTab) ? parts[3] as ProjectTab : 'overview'} sub={parts[3] === 'videos' || parts[3] === 'applications' ? parts[4] : undefined} /></div>;
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (

@@ -298,7 +298,7 @@ export interface CareerQuestion { id: string; text: string; done?: boolean; [oth
 export interface CareerInterview { id: string; on: DateKey; at?: string; kind?: string; prep?: string; questions?: CareerQuestion[]; went?: string; taskId?: string; [other: string]: unknown }
 export interface CareerApplication extends CareerBase {
   type: 'application'; company: string; title?: string; roleId?: string; url?: string; contact?: string; notes?: string; stage?: CareerStage;
-  appliedOn?: DateKey; closedOn?: DateKey; closedWhy?: string; followedOn?: DateKey; followTaskId?: string; interviews?: CareerInterview[];
+  appliedOn?: DateKey; closedOn?: DateKey; closedWhy?: string; followedOn?: DateKey; askedOn?: DateKey; followTaskId?: string; interviews?: CareerInterview[];
 }
 export type CareerItem = CareerRole | CareerApplication; // (a newer MyDay's type is kept, never read)
 export interface AmbitionLink { id: string; kind: string; ref?: string; [other: string]: unknown }

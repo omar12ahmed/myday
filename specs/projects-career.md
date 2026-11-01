@@ -61,21 +61,28 @@ and memory, an application is easily forgotten, a follow-up never sent, an inter
     updatedAt }`;
   - `application`: `{ id ('ca'+uid), type, projectId, company, title?, roleId?, url?, contact?, notes?, stage:
     'interested'|'applied'|'interviewing'|'offer'|'closed', appliedOn?, closedOn?, closedWhy?, followedOn?,
-    followTaskId?, interviews?: [{ id, on, at?, kind?, prep?, questions?: [{ id, text, done? }], went?, taskId? }],
+    askedOn?, followTaskId?, interviews?: [{ id, on, at?, kind?, prep?, questions?: [{ id, text, done? }], went?, taskId? }],
     createdAt, updatedAt }`.
   Read as written: an item, stage, kind or field this version doesn't know is kept; changes keep entries this version
   can't read.
 - **The project kind:** `template: 'career'` in `data/businessModel.ts` and `data/templates.ts`. 1.122.0 keeps an
   unknown template as written and shows the project as General.
-- **The nudge** (`data/attention.ts`): an application at stage `applied`, `appliedOn` 10 or more days ago, no
-  `followedOn`, in an active Career project. Follow up sets `followedOn` and makes the task; Close it closes the
-  application (which also ends the nudge).
+- **The nudge** (`data/attention.ts`): an application at stage `applied`, `appliedOn` 10 or more days ago, not yet
+  answered (`askedOn`), no interview yet, in an active Career project; its line opens the application itself. Follow up
+  sets `followedOn` and `askedOn` and makes the task; Close it (from Applied) sets `askedOn` too, so opening it again
+  never brings the nudge back.
+- **Interviews** are added only to an application that isn't closed (open it again first). A Prepare task you deleted
+  isn't made again when the interview's day changes.
+- **Two devices:** an application holds its interviews and questions, so changing the same application on two devices
+  at once is one record's conflict (you choose a version, as for any record); a Prepare or follow-up task made on the
+  other device stays as an ordinary task.
 - **Limits** per project: 20 roles, 300 applications, 10 interviews per application, 20 questions per interview, 20
   portfolio entries per role; company 120, title 160, contact 200, why closed 200, notes 2,000, prep 4,000, how it went
   2,000, a question 200, a link 2,000 (a web address).
 - **Deleting a project** deletes its career items (its tasks stay, as a project's tasks do).
 - **AI:** nothing of a role, application or interview is sent to AI (ai/reach.ts's never list); the tasks they make
-  ("Prepare for …", "Follow up: …") are ordinary tasks.
+  ("Prepare for <company> interview", "Follow up: <company>") are ordinary tasks, so a company's name in their title
+  goes as tasks do — unless the project is private.
 
 ## 5. Checks
 
