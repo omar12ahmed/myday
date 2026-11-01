@@ -1,5 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.118.0 — Stuck on where to start? Think it through with Ask MyDay:** on a task's "What's getting in the way?",
+choosing "I don't know where to start" now also says "Not sure what the first step is? **Think it through with Ask
+MyDay**" (while AI help is on, and not for a task in a private project). Tapping it opens + about the task with "I
+don't know where to start with this" typed, and waits for you to tap Ask MyDay, which asks which part feels hardest
+and offers one first step as a task (1.115.0's help with thinking). Your answer is kept with the task, as the card's
+others are (once a day: finishing the card the same day doesn't count it twice), and the card stays open as you left
+it, so you can write the first step when you come back. The card's answers and wording are otherwise unchanged. Also:
+closing + now puts focus back on what opened it. No saved-data shape, sync, server or database change; going back to
+1.117.0 is safe (`specs/ask-help-you-think.md` §4).
+
 **1.117.0 — Ask MyDay: a choice tapped straight away is answered:** with 1.115.0's choices you can reply in one tap,
 often within the server's five seconds between requests, which said "Just a moment between requests — try again". Ask
 MyDay now waits those seconds out and sends your reply once more, as a look in your notes or at a day already did. No
