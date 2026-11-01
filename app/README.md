@@ -1,5 +1,19 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.129.0 — Words for every Arabic lesson:** the 47 lessons that had no course words now have them: modules 1–3
+(getting started, the script and the sounds, Pre-A1: 120 words with very short examples) and the six specialist
+branches, modules 25–30 (academic and professional Arabic, literature, classical prose, Qur'anic Arabic as language
+study, translation, technology and cybersecurity: 215 words). Each is fully vowelled, with its meaning, root, an example
+and a note, and voiced in Charon (1,049 new clips). Every lesson now has its words: 1,087 for 152 lessons, and each
+appears in the Dictionary under its own lesson. Each batch was cross-checked by an independent reviewer (no errors; 21
+improvements), then checked by the owner's fluent checker, whose corrections were applied after each was checked (for
+example: ة is written ت only before an attached pronoun; Arabic free verse keeps a metre; قَدْ with a present verb
+doesn't always mean "may"). The owner listened to every clip; where every take of a short word was heard as another
+word, the owner chose by ear from four takes, and four clips are in WaveNet B as a fallback (أَخْطَاء, مَقَامَة, ضَاعَ,
+أَمْن). Behind the scenes, the voice tool can voice one checked batch of a place while the rest waits (`--only`), and
+refuses an option it doesn't know; the build refuses an unknown field on a course word. Nothing saved changes, so going
+back to 1.128.0 is safe (the new words simply aren't there).
+
 **1.128.0 — Ask MyDay connects your work to your ambitions:** level 5 of "How MyDay should think" (linking daily work to
 long-term goals; `specs/ask-ambitions.md`, the owner's choices of 1 Nov 2026).
 - **It knows which ambition your work serves.** On a project or task that's a step towards one of your ambitions, Ask
@@ -1245,7 +1259,7 @@ asks for is in the generated lesson index (`modalities`, from the course's input
 `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
 
 Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
-`../content/teaching/arabic/course-words.json` (modules 4–19 so far: 577 words for 80 lessons), each fully vowelled
+`../content/teaching/arabic/course-words.json` (every lesson since 1.129.0: 1,087 words for 152 lessons), each fully vowelled
 with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter
 like وَ isn't). A lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses),
 folded away with the explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson
