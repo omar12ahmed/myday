@@ -33799,6 +33799,1469 @@
    "spoken": "رَفَعَ الْعَلَمَ.",
    "check": "checked",
    "checked": "2026-11-01"
+  },
+  "اِسْتَمَعْتُ إِلَى": {
+   "file": "16bf66f5007f1ee5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِسْتَمَعْتُ إِلَى.",
+   "check": "to check"
+  },
+  "سَمِعْتُ": {
+   "file": "5dab6e08c127e4a0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سَمِعْتُ.",
+   "check": "to check"
+  },
+  "لَمْ أَسْمَعْ": {
+   "file": "72f286ae86a2058a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "لَمْ أَسْمَعْ.",
+   "check": "to check"
+  },
+  "مَرَّةً ثَانِيَةً": {
+   "file": "7c4b064d5f270efe.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَرَّةً ثَانِيَةً.",
+   "check": "to check"
+  },
+  "النَّصّ": {
+   "file": "0b4b4ea537ffaebb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "النَّصّ.",
+   "check": "to check"
+  },
+  "اِسْتَمَعْتُ إِلَى الْحِوَارِ مَرَّتَيْنِ.": {
+   "file": "9f39bb357987d853.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِسْتَمَعْتُ إِلَى الْحِوَارِ مَرَّتَيْنِ.",
+   "check": "to check"
+  },
+  "لَمْ أَسْمَعْ جَيِّدًا.": {
+   "file": "f6467d81cdc7b54c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "لَمْ أَسْمَعْ جَيِّدًا.",
+   "check": "to check"
+  },
+  "كَاتَبَ": {
+   "file": "a308102b7fe3c59a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَاتَبَ.",
+   "check": "to check"
+  },
+  "كَسَّرَ": {
+   "file": "2ee7e43fafb7d1a1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَسَّرَ.",
+   "check": "to check"
+  },
+  "الْعَالَمُ كَبِيرٌ.": {
+   "file": "64babeb019032446.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْعَالَمُ كَبِيرٌ.",
+   "check": "to check"
+  },
+  "كَسَرَ الْقَلَمَ.": {
+   "file": "83e55a474f1ffe84.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَسَرَ الْقَلَمَ.",
+   "check": "to check"
+  },
+  "كَاتَبَ سَامِي لَيْلَى.": {
+   "file": "45925479260f39ba.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَاتَبَ سَامِي لَيْلَى.",
+   "check": "to check"
+  },
+  "هَوَاء": {
+   "file": "3911a1fa89a483b5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَوَاء.",
+   "check": "to check"
+  },
+  "حُلْو": {
+   "file": "fe3c666367bf88db.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "حُلْو.",
+   "check": "to check"
+  },
+  "خَيْر": {
+   "file": "ee7a54fc9098ca38.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "خَيْر.",
+   "check": "to check"
+  },
+  "عِنْدِي أَلَمٌ.": {
+   "file": "d72409b90b5cdd3c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "عِنْدِي أَلَمٌ.",
+   "check": "to check"
+  },
+  "الشَّايُ حُلْوٌ.": {
+   "file": "bade9d436c3ca80b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الشَّايُ حُلْوٌ.",
+   "check": "to check"
+  },
+  "صَبَاحُ الْخَيْرِ.": {
+   "file": "a7c286d718dd2a83.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "صَبَاحُ الْخَيْرِ.",
+   "check": "to check"
+  },
+  "تِين": {
+   "file": "59d034694967dd4e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تِين.",
+   "check": "to check"
+  },
+  "طِين": {
+   "file": "65e728dd2d7dbe0f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "طِين.",
+   "check": "to check"
+  },
+  "ضُرُوس": {
+   "file": "b860c42e515aa1f2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "ضُرُوس.",
+   "check": "to check"
+  },
+  "ذِرَاع": {
+   "file": "5c7f978f56d87e3d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "ذِرَاع.",
+   "check": "to check"
+  },
+  "ظِلّ": {
+   "file": "f11534856bdc4a89.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "ظِلّ.",
+   "check": "to check"
+  },
+  "الصَّيْفُ حَارٌّ.": {
+   "file": "5612f1766744e870.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الصَّيْفُ حَارٌّ.",
+   "check": "to check"
+  },
+  "أَكَلْتُ التِّينَ.": {
+   "file": "36ce35ffe9be0ff7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَكَلْتُ التِّينَ.",
+   "check": "to check"
+  },
+  "جَلَسْنَا فِي الظِّلِّ.": {
+   "file": "21445e66a09398c3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "جَلَسْنَا فِي الظِّلِّ.",
+   "check": "to check"
+  },
+  "شَكّ": {
+   "file": "72ec57f68c3750ab.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَكّ.",
+   "check": "to check"
+  },
+  "شَقّ": {
+   "file": "1ebacaa82d7719d2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَقّ.",
+   "check": "to check"
+  },
+  "ظُهْر": {
+   "file": "a3ccbe4e55edaf35.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "ظُهْر.",
+   "check": "to check"
+  },
+  "أَشْرَبُ الْقَهْوَةَ.": {
+   "file": "6821bf9e119d06ad.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَشْرَبُ الْقَهْوَةَ.",
+   "check": "to check"
+  },
+  "عِنْدِي ثَلَاثَةُ أَقْلَامٍ.": {
+   "file": "efbb86f3dc4a2d81.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "عِنْدِي ثَلَاثَةُ أَقْلَامٍ.",
+   "check": "to check"
+  },
+  "الشَّاي": {
+   "file": "f445c0eaf4c520f5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الشَّاي.",
+   "check": "to check"
+  },
+  "فِي الدَّرْسِ": {
+   "file": "aa1db80b3b76d485.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فِي الدَّرْسِ.",
+   "check": "to check"
+  },
+  "الشَّايُ سَاخِنٌ.": {
+   "file": "7d11170911b7cc47.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الشَّايُ سَاخِنٌ.",
+   "check": "to check"
+  },
+  "الْكِتَابُ فِي الْبَيْتِ.": {
+   "file": "4554768ef5c3059e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْكِتَابُ فِي الْبَيْتِ.",
+   "check": "to check"
+  },
+  "النُّورُ قَوِيٌّ.": {
+   "file": "9f8b1eedf9af4f0c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "النُّورُ قَوِيٌّ.",
+   "check": "to check"
+  },
+  "مَدِينَةٌ": {
+   "file": "9a492909688bee82.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَدِينَةٌ.",
+   "check": "to check"
+  },
+  "هَلْ هَذَا قَلَمُكَ؟": {
+   "file": "aec9708428ac977b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَلْ هَذَا قَلَمُكَ؟",
+   "check": "to check"
+  },
+  "هَذَا قَلَمٌ جَدِيدٌ.": {
+   "file": "2e1a891f76eb6bd3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَذَا قَلَمٌ جَدِيدٌ.",
+   "check": "to check"
+  },
+  "سُؤَالُ الْبَحْثِ": {
+   "file": "8690769a851550a2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سُؤَالُ الْبَحْثِ.",
+   "check": "to check"
+  },
+  "الْمَنْهَج": {
+   "file": "589b250e5a4b3171.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَنْهَج.",
+   "check": "to check"
+  },
+  "فَرَضِيَّة": {
+   "file": "625eab4680aa621a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فَرَضِيَّة.",
+   "check": "to check"
+  },
+  "اِرْتِبَاط": {
+   "file": "66193c68aa60a56d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِرْتِبَاط.",
+   "check": "to check"
+  },
+  "سَبَبِيَّة": {
+   "file": "bbd07eb269da78f7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سَبَبِيَّة.",
+   "check": "to check"
+  },
+  "حُدُودُ الدِّرَاسَةِ": {
+   "file": "fdc0f53b1bd19665.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "حُدُودُ الدِّرَاسَةِ.",
+   "check": "to check"
+  },
+  "قَدْ يَكُونُ": {
+   "file": "d077ddc3b42722b8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَدْ يَكُونُ.",
+   "check": "to check"
+  },
+  "دَرَسَ الْبَاحِثُونَ عَيِّنَةً مِنْ مِئَتَيْ طَالِبٍ.": {
+   "file": "b6c19713dc38d52e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "دَرَسَ الْبَاحِثُونَ عَيِّنَةً مِنْ مِئَتَيْ طَالِبٍ.",
+   "check": "to check"
+  },
+  "وَجَدَتِ الدِّرَاسَةُ ارْتِبَاطًا بَيْنَ النَّوْمِ وَالتَّحْصِيلِ.": {
+   "file": "e8cf2255d68aef0d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "وَجَدَتِ الدِّرَاسَةُ ارْتِبَاطًا بَيْنَ النَّوْمِ وَالتَّحْصِيلِ.",
+   "check": "to check"
+  },
+  "قَدْ يَكُونُ لِلنَّوْمِ أَثَرٌ، لَكِنَّ ذَلِكَ لَمْ يُثْبَتْ بَعْدُ.": {
+   "file": "3409590028e43900.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَدْ يَكُونُ لِلنَّوْمِ أَثَرٌ، لَكِنَّ ذَلِكَ لَمْ يُثْبَتْ بَعْدُ.",
+   "check": "to check"
+  },
+  "نَنْتَقِلُ إِلَى": {
+   "file": "aa4667440c5ee4c9.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نَنْتَقِلُ إِلَى.",
+   "check": "to check"
+  },
+  "تَعْرِيف": {
+   "file": "552ba8e8cd4dd53d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَعْرِيف.",
+   "check": "to check"
+  },
+  "سَأَتَحَدَّثُ أَوَّلًا عَنِ الْأَسْبَابِ، ثُمَّ عَنِ النَّتَائِجِ.": {
+   "file": "522b1940298ce72d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سَأَتَحَدَّثُ أَوَّلًا عَنِ الْأَسْبَابِ، ثُمَّ عَنِ النَّتَائِجِ.",
+   "check": "to check"
+  },
+  "نَنْتَقِلُ الْآنَ إِلَى النُّقْطَةِ الثَّانِيَةِ.": {
+   "file": "f656a57bb6f5c920.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نَنْتَقِلُ الْآنَ إِلَى النُّقْطَةِ الثَّانِيَةِ.",
+   "check": "to check"
+  },
+  "بِعِبَارَةٍ أُخْرَى، الْمُشْكِلَةُ لَيْسَتْ فِي الْمَالِ.": {
+   "file": "9731c628d7cc7960.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "بِعِبَارَةٍ أُخْرَى، الْمُشْكِلَةُ لَيْسَتْ فِي الْمَالِ.",
+   "check": "to check"
+  },
+  "اِتَّفَقَ عَلَى": {
+   "file": "245742b9ba4a45d5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِتَّفَقَ عَلَى.",
+   "check": "to check"
+  },
+  "اِخْتَلَفَ فِي": {
+   "file": "347676a8595eee66.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِخْتَلَفَ فِي.",
+   "check": "to check"
+  },
+  "وَفْقًا لِلْمَصْدَرِ": {
+   "file": "185ed9d91ca214bc.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "وَفْقًا لِلْمَصْدَرِ.",
+   "check": "to check"
+  },
+  "نَقَلَ عَنْ": {
+   "file": "69ada747b0fa3081.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نَقَلَ عَنْ.",
+   "check": "to check"
+  },
+  "فِي الْمُقَابِلِ": {
+   "file": "a28787bc728918e8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فِي الْمُقَابِلِ.",
+   "check": "to check"
+  },
+  "اِتَّفَقَ الْمَصْدَرَانِ عَلَى التَّارِيخِ.": {
+   "file": "37ccfdc0cd180536.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِتَّفَقَ الْمَصْدَرَانِ عَلَى التَّارِيخِ.",
+   "check": "to check"
+  },
+  "وَفْقًا لِلْكَاتِبِ، بَدَأَتِ الرِّحْلَةُ فِي الرَّبِيعِ.": {
+   "file": "fbb87045f6e093cc.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "وَفْقًا لِلْكَاتِبِ، بَدَأَتِ الرِّحْلَةُ فِي الرَّبِيعِ.",
+   "check": "to check"
+  },
+  "فِي الْمُقَابِلِ، يَرَى بَاحِثٌ آخَرُ أَنَّهَا بَدَأَتْ فِي الصَّيْفِ.": {
+   "file": "43f4cd7961c160b1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فِي الْمُقَابِلِ، يَرَى بَاحِثٌ آخَرُ أَنَّهَا بَدَأَتْ فِي الصَّيْفِ.",
+   "check": "to check"
+  },
+  "التَّوْصِيَة": {
+   "file": "b0977d5bcb27ce8d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "التَّوْصِيَة.",
+   "check": "to check"
+  },
+  "نُوصِي بِتَأْجِيلِ الْقَرَارِ": {
+   "file": "3f42349c35a51462.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نُوصِي بِتَأْجِيلِ الْقَرَارِ.",
+   "check": "to check"
+  },
+  "خِيَار": {
+   "file": "d93a63bb42c10bf2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "خِيَار.",
+   "check": "to check"
+  },
+  "الْمَخَاطِر": {
+   "file": "45e834066e66b31b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَخَاطِر.",
+   "check": "to check"
+  },
+  "التَّكْلِفَة": {
+   "file": "462a0d164aa1cdf0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "التَّكْلِفَة.",
+   "check": "to check"
+  },
+  "مُلَخَّصٌ تَنْفِيذِيٌّ": {
+   "file": "4b36af8bfcbadd6b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مُلَخَّصٌ تَنْفِيذِيٌّ.",
+   "check": "to check"
+  },
+  "نُوصِي بِتَأْجِيلِ الْقَرَارِ شَهْرًا.": {
+   "file": "654251ea01f4604b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نُوصِي بِتَأْجِيلِ الْقَرَارِ شَهْرًا.",
+   "check": "to check"
+  },
+  "الْخِيَارُ الثَّانِي أَقَلُّ تَكْلِفَةً.": {
+   "file": "5457096a7eeaa232.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْخِيَارُ الثَّانِي أَقَلُّ تَكْلِفَةً.",
+   "check": "to check"
+  },
+  "سَلْمَى مَسْؤُولَةٌ عَنِ الْخُطْوَةِ التَّالِيَةِ.": {
+   "file": "a8de5224d29528ef.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سَلْمَى مَسْؤُولَةٌ عَنِ الْخُطْوَةِ التَّالِيَةِ.",
+   "check": "to check"
+  },
+  "قَاعِدَة": {
+   "file": "56debafb4bb880ef.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَاعِدَة.",
+   "check": "to check"
+  },
+  "مُصْطَلَحٌ مُتَدَاوَلٌ": {
+   "file": "fffa833619fee69b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مُصْطَلَحٌ مُتَدَاوَلٌ.",
+   "check": "to check"
+  },
+  "تَفْضِيلٌ شَخْصِيٌّ": {
+   "file": "fa79476c98179ea0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَفْضِيلٌ شَخْصِيٌّ.",
+   "check": "to check"
+  },
+  "أَدَقُّ": {
+   "file": "d87b16373d625d52.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَدَقُّ.",
+   "check": "to check"
+  },
+  "هَذَا الْمُصْطَلَحُ أَدَقُّ فِي هَذَا السِّيَاقِ.": {
+   "file": "e9b7cf47588f06cf.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَذَا الْمُصْطَلَحُ أَدَقُّ فِي هَذَا السِّيَاقِ.",
+   "check": "to check"
+  },
+  "أَقَاعِدَةٌ هَذِهِ أَمْ تَفْضِيلٌ شَخْصِيٌّ؟": {
+   "file": "3e324e1a2a2e6a9e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَقَاعِدَةٌ هَذِهِ أَمْ تَفْضِيلٌ شَخْصِيٌّ؟",
+   "check": "to check"
+  },
+  "جَرَّبْتُ التَّعْدِيلَ فِي جُمْلَةٍ جَدِيدَةٍ.": {
+   "file": "0a24e1a383c9481f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "جَرَّبْتُ التَّعْدِيلَ فِي جُمْلَةٍ جَدِيدَةٍ.",
+   "check": "to check"
+  },
+  "مُؤَلِّف": {
+   "file": "42d876f73484b8d8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مُؤَلِّف.",
+   "check": "to check"
+  },
+  "طَبْعَة": {
+   "file": "955e3a03f01a412a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "طَبْعَة.",
+   "check": "to check"
+  },
+  "عَصْر": {
+   "file": "87b77a4958fe6750.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "عَصْر.",
+   "check": "to check"
+  },
+  "نَوْعٌ أَدَبِيٌّ": {
+   "file": "846ae0d12a652863.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نَوْعٌ أَدَبِيٌّ.",
+   "check": "to check"
+  },
+  "قِصَّةٌ قَصِيرَةٌ": {
+   "file": "9e1a544f83070615.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قِصَّةٌ قَصِيرَةٌ.",
+   "check": "to check"
+  },
+  "مَشْهَد": {
+   "file": "ccb3bb7ac15af528.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَشْهَد.",
+   "check": "to check"
+  },
+  "الْمَكَانُ وَالزَّمَانُ": {
+   "file": "e5bbbdf6235b7183.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَكَانُ وَالزَّمَانُ.",
+   "check": "to check"
+  },
+  "فَتَحَتْ سَلْمَى النَّافِذَةَ، فَدَخَلَ صَوْتُ الْمَطَرِ.": {
+   "file": "1b6fb2437467ff47.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فَتَحَتْ سَلْمَى النَّافِذَةَ، فَدَخَلَ صَوْتُ الْمَطَرِ.",
+   "check": "to check"
+  },
+  "تَدُورُ الْقِصَّةُ فِي قَرْيَةٍ صَغِيرَةٍ.": {
+   "file": "e14cc59f00d9d757.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَدُورُ الْقِصَّةُ فِي قَرْيَةٍ صَغِيرَةٍ.",
+   "check": "to check"
+  },
+  "قَرَأْتُ الرِّوَايَةَ فِي طَبْعَةٍ حَدِيثَةٍ.": {
+   "file": "de3fa3d720f0d7ec.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَرَأْتُ الرِّوَايَةَ فِي طَبْعَةٍ حَدِيثَةٍ.",
+   "check": "to check"
+  },
+  "الرَّاوِي": {
+   "file": "580dc9cbb2553a58.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الرَّاوِي.",
+   "check": "to check"
+  },
+  "شَخْصِيَّة": {
+   "file": "7f5a789d78a63b4a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَخْصِيَّة.",
+   "check": "to check"
+  },
+  "اِسْتِرْجَاع": {
+   "file": "0f52e1b3ec7a2e2c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِسْتِرْجَاع.",
+   "check": "to check"
+  },
+  "فِي تِلْكَ الْأَثْنَاءِ": {
+   "file": "5cbefd5f24bd5b0c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فِي تِلْكَ الْأَثْنَاءِ.",
+   "check": "to check"
+  },
+  "بَعْدَ سَنَوَاتٍ": {
+   "file": "dd848d4bd653168d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "بَعْدَ سَنَوَاتٍ.",
+   "check": "to check"
+  },
+  "كَانَ قَدْ سَافَرَ": {
+   "file": "005fef271f864cfa.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَانَ قَدْ سَافَرَ.",
+   "check": "to check"
+  },
+  "قَالَ يُوسُفُ إِنَّهُ سَيَكْتُبُ لَهَا.": {
+   "file": "5ebb12cc4ee3c8e4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَالَ يُوسُفُ إِنَّهُ سَيَكْتُبُ لَهَا.",
+   "check": "to check"
+  },
+  "كَانَ قَدْ سَافَرَ قَبْلَ وُصُولِ الرِّسَالَةِ.": {
+   "file": "f120dedb8765f90a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَانَ قَدْ سَافَرَ قَبْلَ وُصُولِ الرِّسَالَةِ.",
+   "check": "to check"
+  },
+  "بَعْدَ سَنَوَاتٍ، عَادَ إِلَى الْقَرْيَةِ.": {
+   "file": "2105918ee85c502f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "بَعْدَ سَنَوَاتٍ، عَادَ إِلَى الْقَرْيَةِ.",
+   "check": "to check"
+  },
+  "تَشْبِيه": {
+   "file": "e791eafd2742c659.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَشْبِيه.",
+   "check": "to check"
+  },
+  "مِثْلَ": {
+   "file": "a242e2de87922b83.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مِثْلَ.",
+   "check": "to check"
+  },
+  "اِسْتِعَارَة": {
+   "file": "0e66101c0d8c9d9d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِسْتِعَارَة.",
+   "check": "to check"
+  },
+  "إِيقَاع": {
+   "file": "ff88869714ec34e0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "إِيقَاع.",
+   "check": "to check"
+  },
+  "الْمَعْنَى الْحَرْفِيُّ": {
+   "file": "9b9ca94d65a4b1c2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَعْنَى الْحَرْفِيُّ.",
+   "check": "to check"
+  },
+  "الْمَعْنَى الْمَجَازِيُّ": {
+   "file": "09300f9937abc79a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَعْنَى الْمَجَازِيُّ.",
+   "check": "to check"
+  },
+  "كَانَ صَوْتُهُ كَالرَّعْدِ.": {
+   "file": "bcc8c5e57a7ee695.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَانَ صَوْتُهُ كَالرَّعْدِ.",
+   "check": "to check"
+  },
+  "اِبْتَلَعَ الضَّجِيجُ صَوْتَهَا.": {
+   "file": "23695298c622eb39.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِبْتَلَعَ الضَّجِيجُ صَوْتَهَا.",
+   "check": "to check"
+  },
+  "يَمْشِي الْوَقْتُ بِبُطْءٍ.": {
+   "file": "2205ea8001bd8016.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَمْشِي الْوَقْتُ بِبُطْءٍ.",
+   "check": "to check"
+  },
+  "قَصِيدَة": {
+   "file": "b5f81054a1c3a738.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَصِيدَة.",
+   "check": "to check"
+  },
+  "شَاعِر": {
+   "file": "bd3a51d50e31d434.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَاعِر.",
+   "check": "to check"
+  },
+  "قَافِيَة": {
+   "file": "4c9fec27d2747deb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَافِيَة.",
+   "check": "to check"
+  },
+  "شَطْر": {
+   "file": "1f8c8427fccbcbff.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَطْر.",
+   "check": "to check"
+  },
+  "شِعْرٌ حُرٌّ": {
+   "file": "19c3fd41e636f83f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شِعْرٌ حُرٌّ.",
+   "check": "to check"
+  },
+  "ضَرُورَةٌ شِعْرِيَّةٌ": {
+   "file": "f4b70e21fd02e48a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "ضَرُورَةٌ شِعْرِيَّةٌ.",
+   "check": "to check"
+  },
+  "كَتَبَ الشَّاعِرُ قَصِيدَةً عَنِ الْبَحْرِ.": {
+   "file": "16f0a9b2fbdb8549.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَتَبَ الشَّاعِرُ قَصِيدَةً عَنِ الْبَحْرِ.",
+   "check": "to check"
+  },
+  "لِلْقَصِيدَةِ وَزْنٌ وَاحِدٌ وَقَافِيَةٌ وَاحِدَةٌ.": {
+   "file": "ef05df5d0f60a70e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "لِلْقَصِيدَةِ وَزْنٌ وَاحِدٌ وَقَافِيَةٌ وَاحِدَةٌ.",
+   "check": "to check"
+  },
+  "يَفْتَحُ الصَّبَاحُ نَافِذَةً لِلْأَمَلِ.": {
+   "file": "51bccac766d708ac.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَفْتَحُ الصَّبَاحُ نَافِذَةً لِلْأَمَلِ.",
+   "check": "to check"
+  },
+  "أَرَى أَنَّ": {
+   "file": "fac6a43d10d572c1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَرَى أَنَّ.",
+   "check": "to check"
+  },
+  "يَدُلُّ عَلَى": {
+   "file": "c24e88dcc4d80a33.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَدُلُّ عَلَى.",
+   "check": "to check"
+  },
+  "مِثَالُ ذَلِكَ": {
+   "file": "ab79da58a0a5d09d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مِثَالُ ذَلِكَ.",
+   "check": "to check"
+  },
+  "قِرَاءَةٌ أُخْرَى": {
+   "file": "564a622222891f02.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قِرَاءَةٌ أُخْرَى.",
+   "check": "to check"
+  },
+  "أَرَى أَنَّ الْبَطَلَ يَخَافُ مِنَ الْوَحْدَةِ.": {
+   "file": "390fb7f64231c238.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَرَى أَنَّ الْبَطَلَ يَخَافُ مِنَ الْوَحْدَةِ.",
+   "check": "to check"
+  },
+  "يَدُلُّ صَمْتُهُ الطَّوِيلُ عَلَى حُزْنِهِ.": {
+   "file": "fae8eb66aa526848.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَدُلُّ صَمْتُهُ الطَّوِيلُ عَلَى حُزْنِهِ.",
+   "check": "to check"
+  },
+  "مِثَالُ ذَلِكَ أَنَّهُ يَتْرُكُ الْحَفْلَ مُبَكِّرًا.": {
+   "file": "15aa8dac7ce12343.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مِثَالُ ذَلِكَ أَنَّهُ يَتْرُكُ الْحَفْلَ مُبَكِّرًا.",
+   "check": "to check"
+  },
+  "نَثْر": {
+   "file": "703e10264a9da19c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نَثْر.",
+   "check": "to check"
+  },
+  "قِطَار": {
+   "file": "af1b1a84736bed3b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قِطَار.",
+   "check": "to check"
+  },
+  "جَرِيدَة": {
+   "file": "ceff8d75c0e180c8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "جَرِيدَة.",
+   "check": "to check"
+  },
+  "مَعْنًى قَدِيمٌ": {
+   "file": "8d47821202ec553f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَعْنًى قَدِيمٌ.",
+   "check": "to check"
+  },
+  "مَعْنًى حَدِيثٌ": {
+   "file": "2730682e8ec063a9.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَعْنًى حَدِيثٌ.",
+   "check": "to check"
+  },
+  "سَارَ قِطَارُ الْإِبِلِ فِي الصَّحْرَاءِ.": {
+   "file": "27657c71d0dd2ad6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سَارَ قِطَارُ الْإِبِلِ فِي الصَّحْرَاءِ.",
+   "check": "to check"
+  },
+  "رَكِبْتُ الْقِطَارَ إِلَى الْمَدِينَةِ.": {
+   "file": "308a7db3a9fe651e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "رَكِبْتُ الْقِطَارَ إِلَى الْمَدِينَةِ.",
+   "check": "to check"
+  },
+  "قَرَأْتُ الْخَبَرَ فِي الْجَرِيدَةِ.": {
+   "file": "103f3503e9ce6361.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَرَأْتُ الْخَبَرَ فِي الْجَرِيدَةِ.",
+   "check": "to check"
+  },
+  "الْإِعْرَاب": {
+   "file": "1f6b2ee1d6c29ad3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْإِعْرَاب.",
+   "check": "to check"
+  },
+  "الْعَامِل": {
+   "file": "f50a3b83af873afb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْعَامِل.",
+   "check": "to check"
+  },
+  "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ.": {
+   "file": "71bccdfaa07e617d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ.",
+   "check": "to check"
+  },
+  "كَتَبَ الشَّاعِرُ رِسَالَةً إِلَى صَدِيقِهِ.": {
+   "file": "2859986742c4b626.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَتَبَ الشَّاعِرُ رِسَالَةً إِلَى صَدِيقِهِ.",
+   "check": "to check"
+  },
+  "مَا رَأَيْتُ أَحَدًا.": {
+   "file": "7185f6d22172b6b6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَا رَأَيْتُ أَحَدًا.",
+   "check": "to check"
+  },
+  "مَادَّة": {
+   "file": "62a50d2da61b746c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَادَّة.",
+   "check": "to check"
+  },
+  "شَاهِد": {
+   "file": "ad6f40cf31dad315.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَاهِد.",
+   "check": "to check"
+  },
+  "دَلَالَة": {
+   "file": "450d82ac1338e5b9.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "دَلَالَة.",
+   "check": "to check"
+  },
+  "مَا رَأَيْتُهُ": {
+   "file": "374a4855ccc9b146.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَا رَأَيْتُهُ.",
+   "check": "to check"
+  },
+  "مَا كَتَبْتَ": {
+   "file": "42271430da184a88.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَا كَتَبْتَ.",
+   "check": "to check"
+  },
+  "بَحَثْتُ عَنِ الْكَلِمَةِ فِي الْمُعْجَمِ.": {
+   "file": "daf1807b9b9b371e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "بَحَثْتُ عَنِ الْكَلِمَةِ فِي الْمُعْجَمِ.",
+   "check": "to check"
+  },
+  "أَعْجَبَنِي مَا كَتَبْتَ.": {
+   "file": "c2b344bca33c17f2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَعْجَبَنِي مَا كَتَبْتَ.",
+   "check": "to check"
+  },
+  "مَا رَأَيْتُهُ مُنْذُ سَنَةٍ.": {
+   "file": "2a5f4666951c2683.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَا رَأَيْتُهُ مُنْذُ سَنَةٍ.",
+   "check": "to check"
+  },
+  "تَحْقِيق": {
+   "file": "7f15d31aa87bc00a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَحْقِيق.",
+   "check": "to check"
+  },
+  "مُحَقِّق": {
+   "file": "6d0ed904d52715de.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مُحَقِّق.",
+   "check": "to check"
+  },
+  "هَامِش": {
+   "file": "a836539451ed3b59.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَامِش.",
+   "check": "to check"
+  },
+  "مَخْطُوط": {
+   "file": "a206b946694cf744.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَخْطُوط.",
+   "check": "to check"
+  },
+  "اِخْتِلَافُ النُّسَخِ": {
+   "file": "b8bccf813e1bdef0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِخْتِلَافُ النُّسَخِ.",
+   "check": "to check"
+  },
+  "اِعْتَمَدَ الْمُحَقِّقُ عَلَى ثَلَاثِ نُسَخٍ.": {
+   "file": "38570c697eda676b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِعْتَمَدَ الْمُحَقِّقُ عَلَى ثَلَاثِ نُسَخٍ.",
+   "check": "to check"
+  },
+  "ذَكَرَ الشَّارِحُ رَأْيَيْنِ فِي الْمَعْنَى.": {
+   "file": "dcf0ef030871c724.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "ذَكَرَ الشَّارِحُ رَأْيَيْنِ فِي الْمَعْنَى.",
+   "check": "to check"
+  },
+  "فِي الْهَامِشِ تَصْحِيحٌ مِنَ الْمُحَقِّقِ.": {
+   "file": "8cbca42eb75f2e1e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فِي الْهَامِشِ تَصْحِيحٌ مِنَ الْمُحَقِّقِ.",
+   "check": "to check"
+  },
+  "الضَّمِير": {
+   "file": "fb410f5917f952fa.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الضَّمِير.",
+   "check": "to check"
+  },
+  "يَعُودُ عَلَى": {
+   "file": "0d5c703e6e5017e7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَعُودُ عَلَى.",
+   "check": "to check"
+  },
+  "قِرَاءَةٌ مُرَجَّحَةٌ": {
+   "file": "eee480507b34e299.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قِرَاءَةٌ مُرَجَّحَةٌ.",
+   "check": "to check"
+  },
+  "قِرَاءَةٌ مُؤَكَّدَةٌ": {
+   "file": "d72d5267688e9cc1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قِرَاءَةٌ مُؤَكَّدَةٌ.",
+   "check": "to check"
+  },
+  "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ لَا عَلَى الْأَسَدِ.": {
+   "file": "95c12ee0df85f68a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ لَا عَلَى الْأَسَدِ.",
+   "check": "to check"
+  },
+  "هَذِهِ قِرَاءَةٌ مُرَجَّحَةٌ، وَلَيْسَتْ مُؤَكَّدَةً.": {
+   "file": "710c9e6df7f6709a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَذِهِ قِرَاءَةٌ مُرَجَّحَةٌ، وَلَيْسَتْ مُؤَكَّدَةً.",
+   "check": "to check"
+  },
+  "كَتَبْتُ تَعْلِيقًا قَصِيرًا عَلَى كُلِّ صُعُوبَةٍ.": {
+   "file": "4e0200887f93c5ab.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَتَبْتُ تَعْلِيقًا قَصِيرًا عَلَى كُلِّ صُعُوبَةٍ.",
+   "check": "to check"
+  },
+  "الْجُمْهُورُ الْمُسْتَهْدَفُ": {
+   "file": "a1200bd2ceaffa61.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْجُمْهُورُ الْمُسْتَهْدَفُ.",
+   "check": "to check"
+  },
+  "الْغَرَض": {
+   "file": "d76fca54bf2b8cbf.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْغَرَض.",
+   "check": "to check"
+  },
+  "اللُّغَةُ الْمَصْدَرُ": {
+   "file": "0bb48435756c7d49.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اللُّغَةُ الْمَصْدَرُ.",
+   "check": "to check"
+  },
+  "اللُّغَةُ الْهَدَفُ": {
+   "file": "51228e979d1fd91e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اللُّغَةُ الْهَدَفُ.",
+   "check": "to check"
+  },
+  "تَرْجَمَةٌ حَرْفِيَّةٌ": {
+   "file": "ef618f0b98b2746f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَرْجَمَةٌ حَرْفِيَّةٌ.",
+   "check": "to check"
+  },
+  "الْأَمَانَة": {
+   "file": "a47790b62b35e9eb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْأَمَانَة.",
+   "check": "to check"
+  },
+  "مَنِ الْجُمْهُورُ الْمُسْتَهْدَفُ؟": {
+   "file": "127f7db015eeb47b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مَنِ الْجُمْهُورُ الْمُسْتَهْدَفُ؟",
+   "check": "to check"
+  },
+  "يَجِبُ أَنْ تَبْقَى الْأَرْقَامُ كَمَا هِيَ.": {
+   "file": "791accefd0742e82.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَجِبُ أَنْ تَبْقَى الْأَرْقَامُ كَمَا هِيَ.",
+   "check": "to check"
+  },
+  "هَذِهِ تَرْجَمَةٌ حَرْفِيَّةٌ لِلدِّرَاسَةِ فَقَطْ.": {
+   "file": "ef33822c48f4ab49.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَذِهِ تَرْجَمَةٌ حَرْفِيَّةٌ لِلدِّرَاسَةِ فَقَطْ.",
+   "check": "to check"
+  },
+  "اِتَّخَذَ قَرَارًا": {
+   "file": "b651dac467c01215.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِتَّخَذَ قَرَارًا.",
+   "check": "to check"
+  },
+  "تَعْبِيرٌ اصْطِلَاحِيٌّ": {
+   "file": "f3a05f9ab6d38ca0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَعْبِيرٌ اصْطِلَاحِيٌّ.",
+   "check": "to check"
+  },
+  "عَلَى قَدَمٍ وَسَاقٍ": {
+   "file": "5fcdd658eac9db99.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "عَلَى قَدَمٍ وَسَاقٍ.",
+   "check": "to check"
+  },
+  "يَدًا بِيَدٍ": {
+   "file": "a33ab8708ce89472.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَدًا بِيَدٍ.",
+   "check": "to check"
+  },
+  "اِنْتَبَهَ إِلَى": {
+   "file": "ffdc14a2fb44a93c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِنْتَبَهَ إِلَى.",
+   "check": "to check"
+  },
+  "مُلَاحَظَةُ الْمُتَرْجِمِ": {
+   "file": "fb9113dc855c27e6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مُلَاحَظَةُ الْمُتَرْجِمِ.",
+   "check": "to check"
+  },
+  "اِتَّخَذَتِ اللَّجْنَةُ قَرَارًا مُهِمًّا.": {
+   "file": "462a320af45405e2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِتَّخَذَتِ اللَّجْنَةُ قَرَارًا مُهِمًّا.",
+   "check": "to check"
+  },
+  "الْعَمَلُ عَلَى قَدَمٍ وَسَاقٍ.": {
+   "file": "c8d1d89ecfb2e591.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْعَمَلُ عَلَى قَدَمٍ وَسَاقٍ.",
+   "check": "to check"
+  },
+  "عَمِلْنَا يَدًا بِيَدٍ.": {
+   "file": "aa665321f81a9d7f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "عَمِلْنَا يَدًا بِيَدٍ.",
+   "check": "to check"
+  },
+  "النَّفْي": {
+   "file": "f468fafeab26fed3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "النَّفْي.",
+   "check": "to check"
+  },
+  "سِجِلُّ التَّصْحِيحَاتِ": {
+   "file": "358a1e805af72b54.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سِجِلُّ التَّصْحِيحَاتِ.",
+   "check": "to check"
+  },
+  "مُصْطَلَحٌ مُوَحَّدٌ": {
+   "file": "9b66ae9b6b86cead.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "مُصْطَلَحٌ مُوَحَّدٌ.",
+   "check": "to check"
+  },
+  "قَارَنْتُ التَّرْجَمَةَ بِالْأَصْلِ جُمْلَةً جُمْلَةً.": {
+   "file": "84011c5145223c8d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَارَنْتُ التَّرْجَمَةَ بِالْأَصْلِ جُمْلَةً جُمْلَةً.",
+   "check": "to check"
+  },
+  "فِي التَّرْجَمَةِ حَذْفٌ فِي الْفِقْرَةِ الثَّانِيَةِ.": {
+   "file": "fcbf18b744201635.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "فِي التَّرْجَمَةِ حَذْفٌ فِي الْفِقْرَةِ الثَّانِيَةِ.",
+   "check": "to check"
+  },
+  "سَقَطَ النَّفْيُ مِنَ الْجُمْلَةِ الْأَخِيرَةِ.": {
+   "file": "0085a833052ea4aa.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "سَقَطَ النَّفْيُ مِنَ الْجُمْلَةِ الْأَخِيرَةِ.",
+   "check": "to check"
+  },
+  "الْخُلَاصَة": {
+   "file": "54507d1fead6f307.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْخُلَاصَة.",
+   "check": "to check"
+  },
+  "الْمَوْعِدُ النِّهَائِيُّ": {
+   "file": "ac75b1e5eab8b05f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَوْعِدُ النِّهَائِيُّ.",
+   "check": "to check"
+  },
+  "يَقُولُ إِنَّ": {
+   "file": "0e067d762a0eba5d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَقُولُ إِنَّ.",
+   "check": "to check"
+  },
+  "لَسْتُ مُتَأَكِّدًا": {
+   "file": "79bd2a3ac85fd969.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "لَسْتُ مُتَأَكِّدًا.",
+   "check": "to check"
+  },
+  "يَبْدَأُ التَّسْجِيلُ الْيَوْمَ، وَالْمَوْعِدُ النِّهَائِيُّ بَعْدَ أُسْبُوعَيْنِ.": {
+   "file": "35f07ea271b248ad.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَبْدَأُ التَّسْجِيلُ الْيَوْمَ، وَالْمَوْعِدُ النِّهَائِيُّ بَعْدَ أُسْبُوعَيْنِ.",
+   "check": "to check"
+  },
+  "يَقُولُ الْمُوَظَّفُ إِنَّ الْمَكْتَبَ مُغْلَقٌ غَدًا.": {
+   "file": "f092f9adbe79310f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَقُولُ الْمُوَظَّفُ إِنَّ الْمَكْتَبَ مُغْلَقٌ غَدًا.",
+   "check": "to check"
+  },
+  "لَسْتُ مُتَأَكِّدًا مِنَ الْمَكَانِ، سَأَسْأَلُ.": {
+   "file": "d05a53d17d3c43e6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "لَسْتُ مُتَأَكِّدًا مِنَ الْمَكَانِ، سَأَسْأَلُ.",
+   "check": "to check"
+  },
+  "الْمَصْدَر": {
+   "file": "5711f231818ddeea.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمَصْدَر.",
+   "check": "to check"
+  },
+  "الْمُسَوَّدَة": {
+   "file": "2e8c7231645d17e7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمُسَوَّدَة.",
+   "check": "to check"
+  },
+  "النُّسْخَةُ النِّهَائِيَّةُ": {
+   "file": "eb3eb2ab11781062.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "النُّسْخَةُ النِّهَائِيَّةُ.",
+   "check": "to check"
+  },
+  "الْمُرَاجِع": {
+   "file": "0f1545b91fa443ed.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "الْمُرَاجِع.",
+   "check": "to check"
+  },
+  "إِذْن": {
+   "file": "5913ac1678d6be5b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "إِذْن.",
+   "check": "to check"
+  },
+  "هَذِهِ هِيَ الْمُسَوَّدَةُ الْأُولَى، وَتِلْكَ هِيَ النُّسْخَةُ النِّهَائِيَّةُ.": {
+   "file": "a41dbcacf5f7b397.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَذِهِ هِيَ الْمُسَوَّدَةُ الْأُولَى، وَتِلْكَ هِيَ النُّسْخَةُ النِّهَائِيَّةُ.",
+   "check": "to check"
+  },
+  "رَاجَعَتْ سَلْمَى التَّرْجَمَةَ وَاقْتَرَحَتْ تَعْدِيلَيْنِ.": {
+   "file": "3f6e9fa0f0148b9a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "رَاجَعَتْ سَلْمَى التَّرْجَمَةَ وَاقْتَرَحَتْ تَعْدِيلَيْنِ.",
+   "check": "to check"
+  },
+  "اِسْتَعَنْتُ بِمُعْجَمٍ مُتَخَصِّصٍ.": {
+   "file": "efc52eb8bc6e15d4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِسْتَعَنْتُ بِمُعْجَمٍ مُتَخَصِّصٍ.",
+   "check": "to check"
+  },
+  "هَذَا قَلَمٌ جَدِيدٌ": {
+   "file": "d9604a026e4f5b7c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "هَذَا قَلَمٌ جَدِيدٌ.",
+   "check": "to check"
+  },
+  "تَأْثِيرُ النَّوْمِ فِي التَّحْصِيلِ": {
+   "file": "941166fc5d49d93b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "تَأْثِيرُ النَّوْمِ فِي التَّحْصِيلِ.",
+   "check": "to check"
+  },
+  "وَفْقًا لِلْمَصْدَرِ الْأَوَّلِ": {
+   "file": "af85627d8817b734.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "وَفْقًا لِلْمَصْدَرِ الْأَوَّلِ.",
+   "check": "to check"
+  },
+  "نَقَلَ الْمَقَالُ عَنْ رَحَّالَةٍ": {
+   "file": "5b85f4782f54cacb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نَقَلَ الْمَقَالُ عَنْ رَحَّالَةٍ.",
+   "check": "to check"
+  },
+  "نُوصِي": {
+   "file": "8183fe4981f99b68.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "نُوصِي.",
+   "check": "to check"
+  },
+  "قَالَ يُوسُفُ": {
+   "file": "e7a3991134046388.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "قَالَ يُوسُفُ.",
+   "check": "to check"
+  },
+  "كَانَ قَدْ": {
+   "file": "7a1f5e6ac61caece.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَانَ قَدْ.",
+   "check": "to check"
+  },
+  "كَانَ صَوْتُهُ كَالرَّعْدِ": {
+   "file": "9213e234ff86583a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "كَانَ صَوْتُهُ كَالرَّعْدِ.",
+   "check": "to check"
+  },
+  "اِبْتَلَعَ الضَّجِيجُ صَوْتَهَا": {
+   "file": "aca95f9be110b588.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "اِبْتَلَعَ الضَّجِيجُ صَوْتَهَا.",
+   "check": "to check"
+  },
+  "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ": {
+   "file": "deb6ed041f0a164a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ.",
+   "check": "to check"
+  },
+  "شَوَاهِد": {
+   "file": "bdef613bfd772787.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "شَوَاهِد.",
+   "check": "to check"
+  },
+  "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ": {
+   "file": "e600716cf6475e2d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-11-01",
+   "spoken": "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ.",
+   "check": "to check"
   }
  },
  "removed": [
