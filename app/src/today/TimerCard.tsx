@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { update } from '../data/storage';
+import { touchTask } from '../data/tasks';
 import { fmtClock, timerRemainingMs, timerTask } from '../data/timer';
 import type { MyDayData } from '../data/types';
 
@@ -25,6 +26,9 @@ export function TimerCard({ data, onAction }: { data: MyDayData; onAction: (a: T
           dt.finished = true;
           dt.accumulatedMs = dt.durationSec * 1000;
           dt.startedAt = null;
+          // Run to the end: the task it's for was touched today (Help me start learns from it, specs/help-me-start.md §6).
+          const item = draft.tasks.items.find(x => x.planUid === dt.uid && x.plannedOn === dt.dayKey);
+          if (item) touchTask(item, dt.dayKey);
         });
         try { navigator.vibrate?.(120); } catch { /* not supported */ }
       }

@@ -7,7 +7,8 @@ import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { Choice, Choices, ExternalLink, LinkButton, Note, TextLink } from '../components/parts';
 import { todayKey } from '../data/dates';
-import { answerLabel, type Answer } from '../data/patterns/notice';
+import { answerLabel, startWayFor, type Answer, type LearnedWay } from '../data/patterns/notice';
+import { recordStartSeen } from '../data/patterns/saved';
 import { projectById } from '../data/projects';
 import { update } from '../data/storage';
 import { addToTodaysPlan, noteBlocker, notToday, onTodaysPlan, planRoom, TASK_LIMITS, tickStep, unstick } from '../data/tasks';
@@ -18,6 +19,8 @@ import type { MyDayData, StartKind, TaskItem } from '../data/types';
 // The starting answers it offers: the Stuck card's that are about beginning, and the three newer ones.
 const ANSWERS: Answer[] = ['big', 'start', 'going', 'perfect', 'tired', 'pulled', 'boring'];
 const KINDS: Answer[] = ['going', 'perfect', 'pulled'];
+// What's worked for you before, in words (a way you confirmed in What MyDay has noticed).
+const WAY_WORDS: Record<LearnedWay, string> = { five: 'a five-minute start', ask: 'thinking it through with Ask MyDay', smaller: 'starting with a 10-minute piece' };
 const URL_IN = /https?:\/\/[^\s<>"')]+/;
 const linkIn = (notes: string) => URL_IN.exec(notes)?.[0].replace(/[.,;:!?]+$/, '') ?? null; // (not a full stop after it)
 
@@ -39,6 +42,9 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
   const planned = onTodaysPlan(data, t), room = planRoom(data);
   const canTime = planned || (room.built && !room.rest && room.room > 0);
   const askable = AI_MODE !== 'off' && aiReach(data).task(t);
+  // The way you confirmed works for this kind of work, first (specs/help-me-start.md §6; held back once it fades).
+  const way = startWayFor(data, t.category, k);
+  const shownWay: LearnedWay | null = way === 'five' && !canTime ? null : way === 'ask' && !askable ? null : way;
   // Keeps your answer (if you gave one) with the task, inside the change you're making; true if it was new today.
   const keep = (d: MyDayData) => !!answer && noteBlocker(d, t.id, KINDS.includes(answer) ? 'other' : answer as Exclude<Answer, StartKind>, k, KINDS.includes(answer) ? answer as StartKind : undefined);
   const act = () => { if (answer) onKeep?.(); };
@@ -57,6 +63,7 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
       const running = d.timer && !timerIsStale(d) && !d.timer.finished ? d.timer : null;
       if (running?.uid === task.planUid) { how = 'running'; return keep(d) ? undefined : false; } // its own timer's already going
       keep(d); startTimer(d, task.planUid, 'start', 5); how = running ? 'switched' : 'started';
+      recordStartSeen(d.patterns, { way: 'five', category: task.category, taskId: t.id }, k);
     });
     if (how === 'missing') return;
     if (how === 'full' || how === 'no-plan') { toast(how === 'full' ? 'Today’s plan is full, so there’s no room for the timer today.' : 'The timer needs today’s plan: build your day on Today first.'); return; }
@@ -67,11 +74,11 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
   function tick() {
     if (!next) return;
     act();
-    if (update(d => { keep(d); return tickStep(d.tasks, t.id, next.id, true) ? undefined : false; })) toast(`Ticked: ${next.text}. That’s a start.`);
+    if (update(d => { keep(d); if (!tickStep(d.tasks, t.id, next.id, true)) return false; recordStartSeen(d.patterns, { way: 'step', category: t.category, taskId: t.id }, k); })) toast(`Ticked: ${next.text}. That’s a start.`);
   }
   function think(opener: HTMLElement) {
     act();
-    update(d => (keep(d) ? undefined : false)); // (shown for "I don't know where to start", so that's the answer kept)
+    update(d => { keep(d); recordStartSeen(d.patterns, { way: 'ask', category: t.category, taskId: t.id }, k); });
     openCapture("I don't know where to start with this", undefined, opener);
   }
   function carryOn() { act(); update(d => (keep(d) ? undefined : false)); toast('Good. Keep going as long as it helps.'); onClose(); }
@@ -89,9 +96,15 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
   function smallerPiece() {
     let msg: string | null = null;
     act();
-    update(d => { keep(d); msg = unstick(d, t.id, { reason: 'big', step: piece, quiet: true }, k); if (!msg) return false; });
+    update(d => {
+      const before = new Set(d.tasks.items.map(x => x.id));
+      keep(d); msg = unstick(d, t.id, { reason: 'big', step: piece, quiet: true }, k); if (!msg) return false;
+      const made = d.tasks.items.find(x => !before.has(x.id));
+      recordStartSeen(d.patterns, { way: 'smaller', category: t.category, taskId: t.id, ...(made ? { pieceId: made.id } : {}) }, k);
+    });
     if (msg) { toast(msg); onClose(); }
   }
+  const piecePlease = () => { setSmaller(true); requestAnimationFrame(() => document.getElementById('startPiece')?.focus()); };
 
   return (
     <Card id="startCard" aria-labelledby="start-h">
@@ -114,14 +127,18 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
       </ul>
 
       <h4 className="m-0 mt-4 text-[15px]">One small act</h4>
+      {shownWay && <p className="text-[15px] m-0 mt-1" data-s="start-worked">What’s worked for you before: {WAY_WORDS[shownWay]}.</p>}
       {answer === 'perfect' && <p className="text-[15px] m-0 mt-1" data-s="start-rough">A rough first try still counts as started.</p>}
       <div className="flex flex-wrap gap-2.5 mt-2">
-        {next && (answer === 'start' || answer === 'big') && <Button inline variant="primary" className="max-w-full whitespace-normal break-words text-left" data-action="start-tick" onClick={tick}>Tick off: {next.text}</Button>}
-        {canTime && <Button inline variant={next && (answer === 'start' || answer === 'big') ? 'tonal' : 'primary'} data-action="start-five" onClick={fiveMinutes}>Start for 5 minutes</Button>}
+        {shownWay === 'five' && <Button inline variant="primary" data-action="start-five" onClick={fiveMinutes}>Start for 5 minutes</Button>}
+        {shownWay === 'smaller' && <Button inline variant="primary" data-action="start-piece" onClick={piecePlease}>A 10-minute piece</Button>}
+        {shownWay === 'ask' && <Button inline variant="primary" data-action="start-ask" onClick={e => think(e.currentTarget)}>Think it through with Ask MyDay</Button>}
+        {next && (answer === 'start' || answer === 'big') && <Button inline variant={shownWay ? 'tonal' : 'primary'} className="max-w-full whitespace-normal break-words text-left" data-action="start-tick" onClick={tick}>Tick off: {next.text}</Button>}
+        {canTime && shownWay !== 'five' && <Button inline variant={shownWay || (next && (answer === 'start' || answer === 'big')) ? 'tonal' : 'primary'} data-action="start-five" onClick={fiveMinutes}>Start for 5 minutes</Button>}
         {next && answer !== 'start' && answer !== 'big' && <Button inline variant="tonal" className="max-w-full whitespace-normal break-words text-left" data-action="start-tick" onClick={tick}>Tick off: {next.text}</Button>}
       </div>
       {!canTime && <p className="text-sm text-fg-2 m-0 mt-2" data-s="start-no-timer">{!room.built ? 'The five-minute timer needs today’s plan: build your day on Today first.' : room.rest ? 'Today is a rest day, so there’s no timer — maybe it can wait.' : 'Today’s plan is full, so there’s no room for the timer today.'}</p>}
-      {answer === 'start' && askable && <p className="text-[15px] m-0 mt-2" data-s="start-ask">Not sure what the first step is? <LinkButton data-action="start-ask" onClick={e => think(e.currentTarget)}>Think it through with Ask MyDay</LinkButton></p>}
+      {answer === 'start' && askable && shownWay !== 'ask' && <p className="text-[15px] m-0 mt-2" data-s="start-ask">Not sure what the first step is? <LinkButton data-action="start-ask" onClick={e => think(e.currentTarget)}>Think it through with Ask MyDay</LinkButton></p>}
 
       <h4 className="m-0 mt-4 text-[15px]">Then decide</h4>
       <div className="flex flex-wrap gap-2.5 mt-2">

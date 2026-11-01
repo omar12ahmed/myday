@@ -5,7 +5,7 @@ import { CommitInput, Field, Select } from '../components/Field';
 import { BackLink, Eyebrow, Note } from '../components/parts';
 import { Why } from '../components/Why';
 import { shortDate, todayKey } from '../data/dates';
-import { noticed, type Pattern, type Shown } from '../data/patterns/notice';
+import { noticed, startingEasier, type Pattern, type Shown } from '../data/patterns/notice';
 import { answerAskOffer, answerPattern, ASK_QUESTIONS_MOST, CATEGORIES, forgetAnswer, forgetLearned, MINUTE_CHOICES, NAME_MAX, setAskQuestions, setMaxMinutes, setMaxTasks, setName, setStartOffers } from '../data/patterns/saved';
 import { useState } from 'react';
 import { AI_MODE } from '../ai/request';
@@ -163,6 +163,13 @@ function PrefsCard({ data }: { data: MyDayData }) {
           <option value="off">Off</option>
         </Select>
       </Field>
+      {/* Help that steps back (specs/help-me-start.md §6): kinds of work you've been starting without help. */}
+      {(() => {
+        const easier = CATEGORIES.filter(c => startingEasier(data, c)).map(c => CAT_LABEL[c].toLowerCase());
+        if (!easier.length || prefs.startOffers === false) return null;
+        const kinds = easier.length === 1 ? easier[0] : `${easier.slice(0, -1).join(', ')} and ${easier[easier.length - 1]}`;
+        return <p className="text-sm text-fg-2 m-0 mt-2" data-s="start-easier">Starting {kinds} tasks has been easier lately: your last 5{easier.length > 1 ? ' of each' : ''} were done without moving, so MyDay isn’t offering help with {easier.length > 1 ? 'those' : 'them'} on Today. Help me start is still on every task.</p>;
+      })()}
       <Note className="mb-0 mt-3">Shorter tasks keep how long they were, so the plan shows e.g. "25 min (shortened from 60)". Fewer tasks never means more: your energy's limit still applies.</Note>
     </Card>
   );

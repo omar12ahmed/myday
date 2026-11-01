@@ -78,6 +78,31 @@ The owner's choices (1 Nov 2026, about 03:10 UTC):
   mind" (after "Yes, shrink it") isn't a "Not now"; the day's offer is used up only when it's shown (not in Focus mode or
   while editing lists); "twice" reads as a word everywhere.
 
+## 6. What helps you start, learned and confirmed; help that steps back (step 3)
+
+The owner's choices (1 Nov 2026, ~09:40 UTC, with advance approval to build and publish):
+- **What counts as "you started":** something MyDay can see, **the same day** you used Help me start: the task done, a
+  step ticked, its timer run to the end, its notes edited, or its project's *where I left off* written. Nothing is
+  guessed, and "Later" or "Let it go" never count against you.
+- **A way of starting worked 4 of the last 5 times** for a kind of work (learning, admin, health) → What MyDay has
+  noticed offers it as a pattern to confirm, e.g. "Five-minute starts work for you on learning tasks — 4 of the last 5
+  times you used one, you started that day." Confirmed, Help me start puts that way first for that kind of work. As with
+  every pattern, it's doubted (held back) when the recent evidence fades, and deleted with the rest.
+- **Help steps back:** when your last 5 done tasks of a kind were done without moving, start offers stop for that kind,
+  and What MyDay has noticed says so. Help me start stays on every task.
+- **Ask MyDay:** a confirmed way of starting is one of the "how you work" lines Ask MyDay gets — only while you've let
+  Ask use how you work, as a general statement. Never your tasks or your answers.
+
+**How it's kept** (no new synced kind; older versions keep both, as their loaders keep unknown fields):
+- each use of Help me start's small acts, in your patterns (`startSeen`, synced, like Ask's counts): the day, the way
+  (`five`, `step`, `ask`, `smaller`), the kind of work, the task, and for "smaller" the piece it made. Never words. At
+  most 200, the last 8 weeks; forgotten with "Forget everything it has learned";
+- the days a task was touched (`touched`, its last 10 days): when a step is ticked, its notes are edited, or its timer
+  runs to the end.
+
+**"Ticking off the next step"** is the start itself, so it's kept but not offered as a pattern (it would always "work").
+A use is judged only once its day is over.
+
 ## 4. Not in this step
 
 - Learning which strategies help, "started", and fading (step 3).

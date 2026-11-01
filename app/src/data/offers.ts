@@ -1,5 +1,7 @@
 import { shift } from './dates';
 import { projectById } from './projects';
+import { startingEasier } from './patterns/notice';
+import { CATEGORIES } from './patterns/saved';
 import { isStuck } from './tasks';
 import type { DateKey, MyDayData, TaskItem } from './types';
 
@@ -39,6 +41,7 @@ export function sayNotNow(n: Notes, k: DateKey, taskId?: string): boolean {
 export function startOfferTask(data: MyDayData, k: DateKey): TaskItem | null {
   if (data.patterns.prefs.startOffers === false) return null;
   const quiet = new Set((data.nudge.quiet ?? []).filter(q => q.on > shift(k, -7)).map(q => q.taskId));
-  const stuck = data.tasks.items.filter(t => isStuck(data, t, k) && !quiet.has(t.id) && (!t.projectId || projectById(data, t.projectId)?.status === 'active'));
+  const easier = new Set(CATEGORIES.filter(c => startingEasier(data, c))); // help steps back for these (§6)
+  const stuck = data.tasks.items.filter(t => isStuck(data, t, k) && !quiet.has(t.id) && !easier.has(t.category) && (!t.projectId || projectById(data, t.projectId)?.status === 'active'));
   return stuck.sort((a, b) => b.postponed - a.postponed || (a.due ?? '9999-12-31').localeCompare(b.due ?? '9999-12-31'))[0] ?? null;
 }

@@ -12,7 +12,7 @@
 import { CAT_LABEL } from '../plan';
 import { actualFor } from '../rota';
 import { isDateTime, shift } from '../dates';
-import type { Category, DateKey, MyDayData, PatternAnswer, Blocker, StartKind } from '../types';
+import type { Category, DateKey, MyDayData, PatternAnswer, Blocker, StartKind, StartSeen } from '../types';
 import { CATEGORIES } from './saved';
 
 export const WEEKS = 8;
@@ -233,12 +233,54 @@ function askSkip(data: MyDayData, k: DateKey, type: string, words: string): Patt
 }
 
 // Every pattern there's enough evidence for today, in a fixed order.
+// ---------- What helps you start (Help me start, specs/help-me-start.md §6; the owner's choices of 1 Nov 2026) ----------
+// Did you start the day you used it? Something MyDay can see that day: the task done; a step ticked, its notes edited or
+// its timer run to the end (`touched`); its project's where you left off written; or the 10-minute piece it made done.
+export function startedThatDay(data: MyDayData, s: StartSeen): boolean {
+  const t = data.tasks.items.find(x => x.id === s.taskId), piece = s.pieceId ? data.tasks.items.find(x => x.id === s.pieceId) : undefined;
+  const left = t?.projectId ? data.projects.items.find(x => x.id === t.projectId)?.leftOff?.at : undefined;
+  return (!!t && (t.doneOn === s.on || !!t.touched?.includes(s.on) || (typeof left === 'string' && left.slice(0, 10) === s.on))) || piece?.doneOn === s.on;
+}
+// The ways it learns about. Ticking off the next step is the start itself, so it would always "work": kept, not offered.
+export const LEARNED_WAYS = ['five', 'ask', 'smaller'] as const;
+export type LearnedWay = typeof LEARNED_WAYS[number];
+const WAY_TITLE: Record<LearnedWay, (kind: string) => string> = {
+  five: kind => `Five-minute starts work for you on ${kind} tasks`,
+  ask: kind => `Thinking it through with Ask MyDay helps you start ${kind} tasks`,
+  smaller: kind => `Starting with a 10-minute piece works for you on ${kind} tasks`,
+};
+// For each kind of work, the way that worked at least 4 of the last 5 times you used it (in the last 8 weeks, days that
+// are over), the best first: offered to confirm; confirmed, Help me start puts it first for that kind.
+function startWay(data: MyDayData, k: DateKey, c: Category): Pattern | null {
+  const from = shift(k, -WEEKS * 7), seen = data.patterns.startSeen ?? [];
+  const best = LEARNED_WAYS.map(way => {
+    const last = seen.filter(s => s.category === c && s.way === way && s.on >= from && s.on < k).slice(-5);
+    return { way, last, n: last.filter(s => startedThatDay(data, s)).length };
+  }).filter(x => x.last.length === 5 && x.n >= 4).sort((a, b) => b.n - a.n)[0];
+  if (!best) return null;
+  return make(`start-way:${c}:${best.way}`, WAY_TITLE[best.way](CAT_LABEL[c].toLowerCase()), `${best.n} of the last 5 times you used it, you started that day.`,
+    best.last.map(s => s.on), null, 'Help me start puts it first for these tasks.');
+}
+// The way you confirmed for this kind of work, while it still holds (held back once the recent evidence fades).
+export function startWayFor(data: MyDayData, c: Category, k: DateKey): LearnedWay | null {
+  const now = startWay(data, k, c);
+  if (!now) return null;
+  const a = data.patterns.answers[now.id];
+  return a?.said === 'yes' ? now.id.split(':')[2] as LearnedWay : null;
+}
+// Help that steps back: your last 5 done tasks of this kind were all done without moving, so start offers stop for it.
+export function startingEasier(data: MyDayData, c: Category): boolean {
+  const done = data.tasks.items.filter(t => t.category === c && !!t.doneOn && !t.letGoOn).sort((a, b) => b.doneOn!.localeCompare(a.doneOn!)).slice(0, 5);
+  return done.length === 5 && done.every(t => t.postponed === 0);
+}
+
 export function findPatterns(data: MyDayData, k: DateKey): Pattern[] {
   const days = usedDays(data, k);
   return [
     ...CATEGORIES.map(c => size(data, days, c)), studyLength(data, k), taskCount(data, days), leftForLater(data, days),
     studyTime(data, k), sleepEnergy(data, k), workEnergy(data, k), blockers(data, k),
     ...CATEGORIES.map(c => askSize(data, k, c)), ...ASK_KINDS.map(([t, w]) => askSkip(data, k, t, w)),
+    ...CATEGORIES.map(c => startWay(data, k, c)),
   ].filter((p): p is Pattern => !!p);
 }
 

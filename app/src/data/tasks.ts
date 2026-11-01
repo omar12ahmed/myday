@@ -86,6 +86,9 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
     }
     // The milestone of its project it's toward (specs/projects-evidence-decisions.md): an id, read through milestoneTasks.
     if (typeof t.milestoneId !== 'string' || !t.milestoneId) delete item.milestoneId;
+    // The days you did something MyDay can see on it (specs/help-me-start.md §6): dates, each once, the last 10.
+    const touched = Array.isArray(t.touched) ? [...new Set(t.touched.filter(isDateKey))].sort().slice(-10) : [];
+    if (touched.length) item.touched = touched; else delete item.touched;
     // A deadline's details (specs/projects-deadlines.md): kept when it says what kind it is — a kind from a newer MyDay
     // as it is, with anything that MyDay keeps beside it; a shape this version can't read is counted.
     const dl = t.deadline;
@@ -163,7 +166,7 @@ export function editTask(d: TasksData, id: string, patch: Partial<Pick<TaskItem,
   if (patch.listId !== undefined) t.listId = patch.listId;
   if (patch.category !== undefined) t.category = patch.category;
   if (patch.minutes !== undefined && Number.isFinite(patch.minutes)) t.minutes = Math.max(5, Math.min(600, Math.round(patch.minutes)));
-  if (patch.notes !== undefined) t.notes = patch.notes.slice(0, TASK_LIMITS.notes);
+  if (patch.notes !== undefined) { const notes = patch.notes.slice(0, TASK_LIMITS.notes); if (notes !== t.notes) touchTask(t); t.notes = notes; }
   if (patch.due !== undefined) {
     const was = t.due;
     t.due = patch.due && isDateKey(patch.due) ? patch.due : null;
@@ -402,6 +405,12 @@ export function chaseWaiting(data: MyDayData, id: string, due: DateKey | null = 
 export const stepsText = (t: TaskItem) => (t.steps?.length ? `${t.steps.filter(x => x.done).length} of ${t.steps.length} step${t.steps.length === 1 ? '' : 's'}` : '');
 // Every step ticked: the task's page offers to mark the task done — one tap, never by itself.
 export const allStepsDone = (t: TaskItem) => !!t.steps?.length && t.steps.every(x => x.done);
+// A day you did something MyDay can see on a task (a step ticked, its notes edited, its timer run to the end): kept so
+// Help me start can tell whether you started the day you asked for help (specs/help-me-start.md §6). The last 10 days.
+export function touchTask(t: TaskItem, k: DateKey = todayKey()): void {
+  if (t.touched?.includes(k)) return;
+  t.touched = [...(t.touched ?? []), k].sort().slice(-10);
+}
 const stepOf = (d: TasksData, id: string, stepId: string) => { const t = d.items.find(x => x.id === id); return { t, st: t?.steps?.find(x => x.id === stepId) }; };
 // A new step at the end (words trimmed; up to 30). Returns its id, or null.
 export function addStep(d: TasksData, id: string, text: string): string | null {
@@ -419,9 +428,10 @@ export function editStep(d: TasksData, id: string, stepId: string, text: string)
   return true;
 }
 export function tickStep(d: TasksData, id: string, stepId: string, done: boolean): boolean {
-  const { st } = stepOf(d, id, stepId);
-  if (!st || st.done === done) return false;
+  const { t, st } = stepOf(d, id, stepId);
+  if (!t || !st || st.done === done) return false;
   st.done = done;
+  if (done) touchTask(t);
   return true;
 }
 // One place up (-1) or down (1).

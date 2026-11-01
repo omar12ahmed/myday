@@ -629,6 +629,8 @@ export interface TaskItem {
   after?: string[];           // the tasks of its project it starts after, by id ("Starts after"; absent → none). Read through
                               // startsAfter (data/tasks.ts): one done, let go, deleted or in another project no longer counts
   deadline?: TaskDeadline;    // a dated task's deadline details (specs/projects-deadlines.md; absent → an ordinary date)
+  touched?: DateKey[];        // days you did something MyDay can see on it — a step ticked, its notes edited, its timer
+                              // run to the end — the last 10 (Help me start learns what helps, specs/help-me-start.md §6)
   milestoneId?: string;       // the milestone of its project it's toward (specs/projects-evidence-decisions.md; absent →
                               // none). Read through milestoneTasks (data/projectPlan.ts): one removed no longer counts
 }
@@ -654,6 +656,10 @@ export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: numb
 // What you did with one of Ask MyDay's suggestions (1.108.0, specs/ask-how-you-work.md; counted only while "Let Ask MyDay
 // use how you work" is on): its kind and list, the minutes it suggested and the minutes you added it with, whether you
 // added it and renamed it. Counts and lengths only, never its words.
+// A use of one of Help me start's small acts (specs/help-me-start.md §6): the day, the way, the kind of work, the task
+// (and for "smaller", the 10-minute piece it made). Never words. Judged once its day is over: did you start that day?
+export type StartWay = 'five' | 'step' | 'ask' | 'smaller';
+export interface StartSeen { on: DateKey; way: string; category: Category; taskId: string; pieceId?: string; [other: string]: unknown }
 export interface AskSeen { on: DateKey; type: string; category: Category | null; proposed: number | null; minutes: number | null; added: boolean; renamed: boolean; [other: string]: unknown }
 export interface PatternsData {
   // name: what MyDay calls you (from 1.11.0); aiNotes: you let AI help place notes in projects (1.15.0; absent = off)
@@ -666,6 +672,7 @@ export interface PatternsData {
     startOffers?: false; [other: string]: unknown };
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
   askSeen?: AskSeen[];                    // what you did with Ask MyDay's suggestions, newest last (at most 200, the last 8 weeks)
+  startSeen?: StartSeen[];               // your uses of Help me start's small acts, newest last (at most 200, the last 8 weeks)
   [other: string]: unknown;
 }
 

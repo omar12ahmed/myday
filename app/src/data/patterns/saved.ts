@@ -8,7 +8,7 @@
 // Your preferences always come first: MyDay uses a pattern only once you've said it's right and asked it to (it then
 // becomes a preference, with the evidence it was based on kept as its "Why?").
 import { isDateKey, shift, todayKey } from '../dates';
-import type { AskSeen, Category, PatternsData, Pref } from '../types';
+import type { AskSeen, Category, PatternsData, Pref, StartSeen } from '../types';
 import { intIn, isObj } from '../util';
 
 export const CATEGORIES: Category[] = ['learning', 'admin', 'health'];
@@ -67,6 +67,17 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
     }
     if (seen.length) out.askSeen = seen.slice(-ASK_SEEN_MAX); else delete out.askSeen;
   } else delete out.askSeen;
+  // Your uses of Help me start's small acts (specs/help-me-start.md §6): kept only when there are some; a way from a newer
+  // MyDay is kept as it is (and not counted here); one that can't be read is counted, never dropped silently.
+  if (Array.isArray(raw.startSeen)) {
+    const seen: StartSeen[] = [];
+    for (const x of raw.startSeen) {
+      if (!isObj(x) || !isDateKey(x.on) || typeof x.way !== 'string' || !x.way || x.way.length > 20 || !CATEGORIES.includes(x.category as Category)
+        || typeof x.taskId !== 'string' || !x.taskId || (x.pieceId !== undefined && typeof x.pieceId !== 'string')) { report.dropped++; continue; }
+      seen.push({ ...x, on: x.on, way: x.way, category: x.category as Category, taskId: x.taskId });
+    }
+    if (seen.length) out.startSeen = seen.slice(-ASK_SEEN_MAX); else delete out.startSeen;
+  } else delete out.startSeen;
   // The weekly review (1.37.0): kept only when valid, so a device that never reviewed saves exactly as before.
   if (Number.isInteger(prefs.reviewDay) && (prefs.reviewDay as number) >= 1 && (prefs.reviewDay as number) <= 6) out.prefs.reviewDay = prefs.reviewDay as number; else delete out.prefs.reviewDay;
   for (const key of ['reviewed', 'reviewHidden'] as const) { if (isDateKey(prefs[key])) out.prefs[key] = prefs[key] as string; else delete out.prefs[key]; }
@@ -106,8 +117,16 @@ export function setAskUse(d: PatternsData, on: boolean, today = todayKey()): boo
 export const ASK_SEEN_DAYS = 56;
 export function pruneAskSeen(d: PatternsData, today = todayKey()): boolean {
   const from = shift(today, -ASK_SEEN_DAYS), kept = (d.askSeen ?? []).filter(x => x.on >= from);
-  if (!d.askSeen || kept.length === d.askSeen.length) return false;
-  if (kept.length) d.askSeen = kept; else delete d.askSeen;
+  const keptStart = (d.startSeen ?? []).filter(x => x.on >= from); // Help me start's uses go the same way (§6)
+  const askChanged = !!d.askSeen && kept.length !== d.askSeen.length, startChanged = !!d.startSeen && keptStart.length !== d.startSeen.length;
+  if (askChanged) { if (kept.length) d.askSeen = kept; else delete d.askSeen; }
+  if (startChanged) { if (keptStart.length) d.startSeen = keptStart; else delete d.startSeen; }
+  return askChanged || startChanged;
+}
+// A use of Help me start's small acts (specs/help-me-start.md §6): newest last, the last 8 weeks, at most 200.
+export function recordStartSeen(d: PatternsData, x: Omit<StartSeen, 'on'>, today = todayKey()): boolean {
+  const from = shift(today, -ASK_SEEN_DAYS);
+  d.startSeen = [...(d.startSeen ?? []).filter(s => s.on >= from), { ...x, on: today } as StartSeen].slice(-ASK_SEEN_MAX);
   return true;
 }
 // What you did with Ask MyDay's suggestions this time (only while it's on): newest last, the last 8 weeks, at most 200.
@@ -125,11 +144,11 @@ export function forgetAskSeen(d: PatternsData): boolean {
   return true;
 }
 // Forget everything MyDay has learned about you: every answer you gave about a pattern (so they're all new again, worked
-// out afresh from what you do) and what it counted of Ask MyDay's suggestions. Your own preferences, the switch and
-// your answer about Ask stay: they're choices you made, each changed where it's set.
+// out afresh from what you do), what it counted of Ask MyDay's suggestions, and your uses of Help me start. Your own
+// preferences, the switch and your answer about Ask stay: they're choices you made, each changed where it's set.
 export function forgetLearned(d: PatternsData): boolean {
-  if (!Object.keys(d.answers).length && !d.askSeen) return false;
-  d.answers = {}; delete d.askSeen;
+  if (!Object.keys(d.answers).length && !d.askSeen && !d.startSeen) return false;
+  d.answers = {}; delete d.askSeen; delete d.startSeen;
   return true;
 }
 // How many questions Ask MyDay may ask to help you think before it offers something (1–5); null goes back to the usual 5.
