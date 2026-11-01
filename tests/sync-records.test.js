@@ -78,6 +78,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
       createdAt: '2026-10-21T09:00', updatedAt: '2026-10-22T09:00' },
     { id: 'cvsync00003', projectId: 'pj1', type: 'video', step: 'idea', title: 'Pruning roses', createdAt: '2026-10-20T09:00', updatedAt: '2026-10-20T09:00' },
     { id: 'cvsync00002', projectId: 'pj1', type: 'video', step: 'idea', title: 'Mulching', notes: 'With leaves', createdAt: '2026-10-20T09:00', updatedAt: '2026-10-20T09:00' }] };
+  // …and your ambitions (specs/projects-ambitions.md): one with a why, links, ticked and unticked steps and a newer MyDay's key, two more made at the same moment.
+  raw.ambitions = { items: [
+    { id: 'amsyncB0001', title: 'Read Arabic literature', links: [], steps: [], createdAt: '2026-10-25T09:00', updatedAt: '2026-10-25T09:00' },
+    { id: 'amsync00001', title: 'Work in cybersecurity', why: 'A steadier career', links: [{ id: 'alsync00001', kind: 'project', ref: 'pj1' }, { id: 'alsync00002', kind: 'arabic' }],
+      steps: [{ id: 'assync00001', text: 'Learn networking', done: true, linkId: 'alsync00002' }, { id: 'assync00002', text: 'Home lab' }], futureBit: { keep: [1] }, createdAt: '2026-10-24T09:00', updatedAt: '2026-10-26T09:00' },
+    { id: 'amsyncA0001', title: 'A business in Hargeisa', links: [], steps: [], createdAt: '2026-10-25T09:00', updatedAt: '2026-10-25T09:00' }] };
   raw.notes.items[0].projectId = 'pj1';
   Object.assign(raw.notes.items[0], { linkedBy: 'rules', linkWhy: 'van · budget', notProjects: ['pjOld'], private: true }); // 1.13.0
   // An Arabic lesson session (after 1.15.0): first answers, one revealed, a note to self.
@@ -105,7 +111,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['ambition', 'arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -330,6 +336,25 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const back = R.normalize(nb);
     check('put into a new MyDay, the focus, the reflection\'s week and the review preferences come back the same', back.projects.items.find(p => p.id === 'pj7').focus === '2026-10-19' && back.notes.items.find(n => n.id === 'nt7').reflectionWeek === '2026-10-12'
       && back.patterns.prefs.reviewDay === 5 && back.patterns.prefs.reviewed === '2026-10-16' && back.patterns.prefs.reviewHidden === '2026-10-09', back.patterns.prefs);
+  }
+
+  console.log('\n[1g] Your ambitions (specs/projects-ambitions.md)');
+  {
+    const am1 = recs.get('ambition:amsync00001'), rows = [...recs].filter(([k]) => k.startsWith('ambition:'));
+    check('each ambition is its own "ambition" record, exactly as written, with a newer MyDay\'s key kept', rows.length === 3 && eq(am1, data.ambitions.items.find(x => x.id === 'amsync00001')) && eq(am1.futureBit, { keep: [1] }) && am1.steps[0].done === true, rows.map(([k]) => k));
+    check('an ambition arrives on another device exactly the same (clean), so its fingerprint doesn\'t change', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, clone(c))) === R.fingerprint(c)), rows.map(([k]) => k));
+    check('…and cleaning it twice gives the same again', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, R.cleanRecord(k, clone(c)))) === R.fingerprint(c)));
+    const back = clone(R.freshState());
+    for (const [k, c] of [...rows].reverse()) R.putRecord(back, k, clone(c));
+    check('put into a new MyDay, the ambitions come back with every field, ordered by when they were made and then by id', eq(back.ambitions.items.map(x => x.id), ['amsync00001', 'amsyncA0001', 'amsyncB0001'])
+      && eq(back.ambitions.items.map(x => JSON.stringify(x)).sort(), data.ambitions.items.map(x => JSON.stringify(x)).sort()), back.ambitions.items.map(x => x.id));
+    check('its summary is "Ambition: " and its title, then what it links in words', R.recordSummary('ambition:amsync00001', am1) === 'Ambition: Work in cybersecurity · 1 project · the Arabic route'
+      && R.recordSummary('ambition:amsyncA0001', recs.get('ambition:amsyncA0001')) === 'Ambition: A business in Hargeisa', [R.recordSummary('ambition:amsync00001', am1), R.recordSummary('ambition:amsyncA0001', recs.get('ambition:amsyncA0001'))]);
+    check('its label in words is "Ambition"', R.recordLabel('ambition:amsync00001') === 'Ambition', R.recordLabel('ambition:amsync00001'));
+    check('its lines name the why, the steps count, each step (with "✓ " when done) and the links ("Links: project pj1; arabic")', eq(R.recordLines('ambition:amsync00001', am1),
+      ['Why: A steadier career', '1 of 2 steps', '✓ Learn networking', 'Home lab', 'Links: project pj1; arabic']), R.recordLines('ambition:amsync00001', am1));
+    check('an ambition with no why, steps or links has no lines', eq(R.recordLines('ambition:amsyncA0001', recs.get('ambition:amsyncA0001')), []), R.recordLines('ambition:amsyncA0001', recs.get('ambition:amsyncA0001')));
+    { const gone = clone(data); R.putRecord(gone, 'ambition:amsync00001', null); check('an ambition deleted elsewhere removes it here', gone.ambitions.items.length === 2 && !gone.ambitions.items.some(x => x.id === 'amsync00001')); }
   }
 
   console.log('\n[2] What stays on each device');

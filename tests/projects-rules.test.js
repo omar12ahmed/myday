@@ -32,6 +32,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { setDeadline, deadlineWords, deadlineLabel, setMilestone } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
     `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as EX from ${src('exploring')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`, `export * as CT from ${src('content')};`, `export * as F from ${src('files')};`,
+    `export * as AM from ${src('ambitions')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -2975,6 +2976,156 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a project that isn\'t a business idea has no must-be-true items; with no research, no questions', eq(K.EX.compareView(plain, plain.projects.items[0]).assumptions, []) && eq(K.EX.compareView(plain, plain.projects.items[0]).questions, []));
     check('"Compare side by side" is offered for an open decision with two options or more — not one option, not only decided ones', K.EX.canCompare(cmp.projects.items[0]) && !K.EX.canCompare(plain.projects.items[0])
       && !K.EX.canCompare(base('pF', { decisions: [dec('dcZ', 'Done?', [opt('o1', 'A'), opt('o2', 'B')], { chosen: 'o1', decidedOn: '2026-10-05' })] })) && !K.EX.canCompare(base('pG')));
+  }
+
+  console.log('\n[31] Ambitions (specs/projects-ambitions.md)');
+  {
+    const T0 = '2026-10-01T09:00', T1 = '2026-10-02T09:00';
+    const am = (id, title, x = {}) => ({ id, title, links: [], steps: [], createdAt: T0, updatedAt: T0, ...x });
+    const mk = (...items) => { const d = K.freshState(); d.ambitions.items = items; return d; };
+    const one = d => d.ambitions.items[0];
+    const aged = d => { for (const a of d.ambitions.items) a.updatedAt = T0; };
+    const ids = l => l.map(a => a.id);
+
+    console.log('  reading');
+    const written = [
+      am('amA', 'Work in cybersecurity', { why: 'A steadier career', futureBit: { a: 1 }, links: [{ id: 'alA', kind: 'project', ref: 'pjA', futureBit: 1 }, { id: 'alB', kind: 'book', ref: 'bk1' }],
+        steps: [{ id: 'asA', text: 'Learn networking', done: true, linkId: 'alA' }, { id: 'asB', text: 'From a newer MyDay', kind: 'quiz', extra: { x: 1 } }] }),
+      am('amB', 'Read Arabic literature', { createdAt: T1, updatedAt: T1 }),
+      { id: 'amC', title: 'No lists at all', createdAt: T0, updatedAt: T0 }];
+    const r1 = { dropped: 0 };
+    const read1 = K.AM.normalizeAmbitions({ items: clone(written), futureSection: { z: 1 } }, r1);
+    check('ambitions are read back exactly as written, with a missing list, an unknown link kind (book), extra keys and a newer MyDay\'s step all kept, and nothing counted', eq(read1.items, written) && r1.dropped === 0 && eq(read1.futureSection, { z: 1 }), [read1.items, r1]);
+    const r2 = { dropped: 0 };
+    const read2 = K.AM.normalizeAmbitions(clone(read1), r2);
+    check('…and reading what was read gives exactly the same again, with nothing counted', eq(read2, read1) && r2.dropped === 0, [read2, r2]);
+    const r3 = { dropped: 0 };
+    const bad = K.AM.normalizeAmbitions({ items: [am('amA', 'First'), am('amA', 'Duplicate id'), { title: 'No id', createdAt: T0, updatedAt: T0 }, { id: 'amD', createdAt: T0, updatedAt: T0 }, am('amE', '   '), 'junk', am('amF', 'Kept')] }, r3);
+    check('an ambition with no id, no title or a blank title (and one that isn\'t an object) is counted and left off, and a later duplicate id is counted too', eq(ids(bad.items), ['amA', 'amF']) && bad.items[0].title === 'First' && r3.dropped === 5, [ids(bad.items), r3]);
+    const filled = K.AM.normalizeAmbitions({ items: [{ id: 'amA', title: 'A', updatedAt: T1 }, { id: 'amB', title: 'B' }, { id: 'amC', title: 'C', createdAt: T0 }] }, { dropped: 0 }).items;
+    check('a missing createdAt is filled from updatedAt, else from 2000-01-01T00:00, the same on every device (and a missing updatedAt from createdAt)', filled[0].createdAt === T1 && filled[1].createdAt === '2000-01-01T00:00' && filled[1].updatedAt === '2000-01-01T00:00' && filled[2].updatedAt === T0, filled);
+    check('with no ambitions section, or one that isn\'t an object, it reads as an empty list', eq(K.AM.normalizeAmbitions(undefined, { dropped: 0 }), { items: [] }) && eq(K.AM.normalizeAmbitions('x', { dropped: 0 }), { items: [] }));
+    check('linksOf and stepsOf give an empty list when the list is missing (or isn\'t one), and the lists when there', eq(K.AM.linksOf({ id: 'a' }), []) && eq(K.AM.stepsOf({ id: 'a' }), []) && eq(K.AM.linksOf({ id: 'a', links: 'x' }), []) && eq(K.AM.stepsOf(written[2]), [])
+      && K.AM.linksOf(written[0]).length === 2 && K.AM.stepsOf(written[0]).length === 2);
+
+    console.log('  adding, editing, deleting');
+    const d1 = K.freshState();
+    const id1 = K.AM.addAmbition(d1, '   Work   in cybersecurity  ', '  A steadier career ');
+    check('adding an ambition keeps its trimmed title and why, with no links or steps, and is saved with its dates', typeof id1 === 'string' && id1.startsWith('am') && one(d1).title === 'Work   in cybersecurity' && one(d1).why === 'A steadier career'
+      && eq(one(d1).links, []) && eq(one(d1).steps, []) && one(d1).createdAt === one(d1).updatedAt, one(d1));
+    const id2 = K.AM.addAmbition(d1, 'x'.repeat(200), 'y'.repeat(500));
+    const a2 = d1.ambitions.items.find(a => a.id === id2);
+    check('a title is cut to 120 characters and a why to 400', a2.title.length === 120 && a2.why.length === 400, [a2.title.length, a2.why.length]);
+    const id3 = K.AM.addAmbition(d1, 'No why'), id4 = K.AM.addAmbition(d1, 'Blank why', '   ');
+    check('with no why (or a blank one), no why key is saved', !('why' in d1.ambitions.items.find(a => a.id === id3)) && !('why' in d1.ambitions.items.find(a => a.id === id4)));
+    const n0 = d1.ambitions.items.length;
+    check('an empty or blank title adds nothing and gives null', K.AM.addAmbition(d1, '') === null && K.AM.addAmbition(d1, '   ') === null && d1.ambitions.items.length === n0, d1.ambitions.items.length);
+    const d12 = K.freshState();
+    for (let i = 0; i < 12; i++) K.AM.addAmbition(d12, 'Ambition ' + i);
+    check('a 13th ambition is not added and gives null, with the 12 left as they were', d12.ambitions.items.length === 12 && K.AM.addAmbition(d12, 'One too many') === null && d12.ambitions.items.length === 12, d12.ambitions.items.length);
+    const dOrd = mk(am('amZ', 'Latest', { createdAt: '2026-10-03T09:00' }), am('amB', 'Same moment B', { createdAt: T0 }), am('amA', 'Same moment A', { createdAt: T0 }), am('amM', 'Middle', { createdAt: T1 }));
+    check('ambitions are in the order they were made (createdAt), then by id, without reordering the saved list', eq(ids(K.AM.ambitionsInOrder(dOrd)), ['amA', 'amB', 'amM', 'amZ']) && dOrd.ambitions.items[0].id === 'amZ', ids(K.AM.ambitionsInOrder(dOrd)));
+    check('an ambition is found by its id, or null when there is none', K.AM.ambitionById(dOrd, 'amM').title === 'Middle' && K.AM.ambitionById(dOrd, 'nope') === null);
+
+    const d2 = mk(am('amA', 'Work in cybersecurity', { why: 'A steadier career' }));
+    check('editing the title changes it, moves updatedAt and says so; the same title again changes nothing', K.AM.editAmbition(d2, 'amA', { title: '  Work in security  ' }) && one(d2).title === 'Work in security' && one(d2).updatedAt !== T0
+      && (aged(d2), !K.AM.editAmbition(d2, 'amA', { title: 'Work in security' })) && one(d2).updatedAt === T0, one(d2));
+    check('a title can\'t be emptied: a blank one changes nothing and leaves updatedAt alone', !K.AM.editAmbition(d2, 'amA', { title: '   ' }) && one(d2).title === 'Work in security' && one(d2).updatedAt === T0, one(d2));
+    check('the why can be changed, then cleared (the key is removed, not left blank), each moving updatedAt', K.AM.editAmbition(d2, 'amA', { why: 'More choice' }) && one(d2).why === 'More choice' && one(d2).updatedAt !== T0
+      && (aged(d2), K.AM.editAmbition(d2, 'amA', { why: '  ' })) && !('why' in one(d2)) && one(d2).updatedAt !== T0, one(d2));
+    check('clearing a why that is already clear changes nothing; an ambition that isn\'t there, or an empty patch, gives false', (aged(d2), !K.AM.editAmbition(d2, 'amA', { why: '' })) && one(d2).updatedAt === T0 && !K.AM.editAmbition(d2, 'nope', { title: 'X' }) && !K.AM.editAmbition(d2, 'amA', {}));
+    const d3 = mk(am('amA', 'One'), am('amB', 'Two'));
+    check('deleting an ambition removes only it and says so; one that isn\'t there gives false', K.AM.deleteAmbition(d3, 'amA') && eq(ids(d3.ambitions.items), ['amB']) && !K.AM.deleteAmbition(d3, 'amA'), d3.ambitions.items);
+
+    console.log('  links');
+    const dl = mk(am('amA', 'Work in cybersecurity'));
+    const lp = K.AM.addLink(dl, 'amA', 'project', 'pjA'), lt = K.AM.addLink(dl, 'amA', 'topic', 'tpC'), lc = K.AM.addLink(dl, 'amA', 'course', 'cyber:1:module.x'), lcy = K.AM.addLink(dl, 'amA', 'cyber'), lar = K.AM.addLink(dl, 'amA', 'arabic');
+    check('a project, topic or course link is kept with its ref (a course like "cyber:1:module.x" is fine); the Cybersecurity and Arabic links have none', [lp, lt, lc, lcy, lar].every(x => typeof x === 'string' && x.startsWith('al')) && eq(one(dl).links.map(l => [l.kind, l.ref ?? null]), [['project', 'pjA'], ['topic', 'tpC'], ['course', 'cyber:1:module.x'], ['cyber', null], ['arabic', null]])
+      && !('ref' in one(dl).links[3]) && !('ref' in one(dl).links[4]), one(dl).links);
+    const dn = mk(am('amA', 'X'));
+    check('a project, topic or course link without a ref, or with one that isn\'t letters, digits and _.:- (a space, a slash, over 80 characters), gives null and adds nothing; 80 characters is fine',
+      [['project'], ['topic', ''], ['course', 'has space'], ['project', 'a/b'], ['topic', 'x'.repeat(81)]].every(([k, ref]) => K.AM.addLink(dn, 'amA', k, ref) === null) && one(dn).links.length === 0 && typeof K.AM.addLink(dn, 'amA', 'project', 'x'.repeat(80)) === 'string', one(dn).links);
+    check('the same link twice gives "already" and adds nothing (a project twice, the Arabic route twice); another project is a different link', K.AM.addLink(dl, 'amA', 'project', 'pjA') === 'already' && K.AM.addLink(dl, 'amA', 'arabic') === 'already' && K.AM.addLink(dl, 'amA', 'cyber') === 'already'
+      && one(dl).links.length === 5 && typeof K.AM.addLink(dl, 'amA', 'project', 'pjB') === 'string', one(dl).links.length);
+    check('an unknown kind (book) and an ambition that isn\'t there give null', K.AM.addLink(dl, 'amA', 'book', 'bk1') === null && K.AM.addLink(dl, 'nope', 'arabic') === null && one(dl).links.length === 6);
+    const d20 = mk(am('amA', 'Lots'));
+    for (let i = 0; i < 20; i++) K.AM.addLink(d20, 'amA', 'project', 'pj' + i);
+    check('a 21st link gives null and adds nothing', one(d20).links.length === 20 && K.AM.addLink(d20, 'amA', 'project', 'pjNew') === null && K.AM.addLink(d20, 'amA', 'arabic') === null && one(d20).links.length === 20, one(d20).links.length);
+    const dr = mk(am('amA', 'Work in cybersecurity'));
+    const l1 = K.AM.addLink(dr, 'amA', 'project', 'pjA'), l2 = K.AM.addLink(dr, 'amA', 'arabic');
+    const s1 = K.AM.addStep(dr, 'amA', 'Learn networking', l1), s2 = K.AM.addStep(dr, 'amA', 'Practise Arabic', l2), s3 = K.AM.addStep(dr, 'amA', 'Apply');
+    aged(dr);
+    check('unlinking removes the link and clears the linkId of the step that pointed at it; the step stays, and other steps keep theirs', K.AM.removeLink(dr, 'amA', l1) && eq(one(dr).links.map(l => l.id), [l2]) && one(dr).steps.length === 3
+      && eq(one(dr).steps.find(x => x.id === s1), { id: s1, text: 'Learn networking' }) && one(dr).steps.find(x => x.id === s2).linkId === l2 && !('linkId' in one(dr).steps.find(x => x.id === s3)) && one(dr).updatedAt !== T0, one(dr));
+    check('unlinking a link that isn\'t there, or on an ambition that isn\'t there, gives false', !K.AM.removeLink(dr, 'amA', l1) && !K.AM.removeLink(dr, 'nope', l2) && one(dr).links.length === 1);
+
+    console.log('  steps');
+    const ds = mk(am('amA', 'Work in cybersecurity'));
+    const link = K.AM.addLink(ds, 'amA', 'cyber');
+    const st1 = K.AM.addStep(ds, 'amA', '  Learn networking  ', link), st2 = K.AM.addStep(ds, 'amA', 'Security+', 'alNotOurs'), st3 = K.AM.addStep(ds, 'amA', 'x'.repeat(200));
+    check('a step keeps its trimmed text; its linkId only when it is one of the ambition\'s links (otherwise ignored); text is cut to 160', eq(one(ds).steps.map(x => x.text.length > 100 ? x.text.length : x.text), ['Learn networking', 'Security+', 160])
+      && one(ds).steps[0].linkId === link && !('linkId' in one(ds).steps[1]) && [st1, st2, st3].every(x => typeof x === 'string' && x.startsWith('as')), one(ds).steps);
+    check('an empty step, or one on an ambition that isn\'t there, gives null', K.AM.addStep(ds, 'amA', '  ') === null && K.AM.addStep(ds, 'nope', 'Apply') === null && one(ds).steps.length === 3);
+    const d21 = mk(am('amA', 'Many'));
+    for (let i = 0; i < 20; i++) K.AM.addStep(d21, 'amA', 'Step ' + i);
+    check('a 21st step gives null and adds nothing', one(d21).steps.length === 20 && K.AM.addStep(d21, 'amA', 'One too many') === null && one(d21).steps.length === 20);
+    aged(ds);
+    check('editing a step changes its text and says so; the same text, or a blank one, changes nothing', K.AM.editStep(ds, 'amA', st2, { text: 'Security+ exam' }) && one(ds).steps[1].text === 'Security+ exam' && one(ds).updatedAt !== T0
+      && (aged(ds), !K.AM.editStep(ds, 'amA', st2, { text: 'Security+ exam' }) && !K.AM.editStep(ds, 'amA', st2, { text: '  ' })) && one(ds).updatedAt === T0 && one(ds).steps[1].text === 'Security+ exam', one(ds).steps);
+    check('a step can be pointed at one of the links, then cleared (the key is removed); a link that isn\'t the ambition\'s clears it; the same again changes nothing', K.AM.editStep(ds, 'amA', st2, { linkId: link }) && one(ds).steps[1].linkId === link
+      && !K.AM.editStep(ds, 'amA', st2, { linkId: link }) && K.AM.editStep(ds, 'amA', st2, { linkId: null }) && !('linkId' in one(ds).steps[1]) && !K.AM.editStep(ds, 'amA', st2, { linkId: null })
+      && K.AM.editStep(ds, 'amA', st1, { linkId: 'alNotOurs' }) && !('linkId' in one(ds).steps[0]), one(ds).steps);
+    check('editing a step that isn\'t there gives false', !K.AM.editStep(ds, 'amA', 'nope', { text: 'X' }) && !K.AM.editStep(ds, 'nope', st1, { text: 'X' }));
+    aged(ds);
+    check('ticking a step marks it done and ticking again takes the mark off (the key is removed), each moving updatedAt; a step that isn\'t there gives false', K.AM.tickStep(ds, 'amA', st1) && one(ds).steps[0].done === true && one(ds).updatedAt !== T0 && (aged(ds), K.AM.tickStep(ds, 'amA', st1)) && !('done' in one(ds).steps[0]) && one(ds).updatedAt !== T0
+      && !K.AM.tickStep(ds, 'amA', 'nope'), one(ds).steps[0]);
+    const order = () => one(ds).steps.map(x => x.id);
+    check('a step moves one place up or down; the first can\'t go up and the last can\'t go down (false, unchanged)', !K.AM.moveStep(ds, 'amA', st1, -1) && eq(order(), [st1, st2, st3]) && K.AM.moveStep(ds, 'amA', st1, 1) && eq(order(), [st2, st1, st3])
+      && K.AM.moveStep(ds, 'amA', st1, 1) && eq(order(), [st2, st3, st1]) && !K.AM.moveStep(ds, 'amA', st1, 1) && eq(order(), [st2, st3, st1]) && K.AM.moveStep(ds, 'amA', st1, -1) && eq(order(), [st2, st1, st3]) && !K.AM.moveStep(ds, 'amA', 'nope', 1), order());
+    check('removing a step takes only it away; one that isn\'t there gives false', K.AM.removeStep(ds, 'amA', st1) && eq(order(), [st2, st3]) && !K.AM.removeStep(ds, 'amA', st1) && !K.AM.removeStep(ds, 'nope', st2), order());
+
+    console.log('  what is a step towards what');
+    const cyber = am('amCy', 'Work in cybersecurity', { createdAt: T0, links: [{ id: 'l1', kind: 'project', ref: 'pjA' }, { id: 'l2', kind: 'cyber' }, { id: 'l3', kind: 'topic', ref: 'tpC' }] });
+    const arab = am('amAr', 'Read Arabic literature', { createdAt: T1, links: [{ id: 'l4', kind: 'arabic' }, { id: 'l5', kind: 'project', ref: 'pjA' }, { id: 'l6', kind: 'course', ref: 'coX' }] });
+    const biz = am('amBz', 'A business in Hargeisa', { createdAt: '2026-10-03T09:00', links: [{ id: 'l7', kind: 'project', ref: 'pjB' }] });
+    const dt = mk(biz, arab, cyber);
+    check('the ambitions that link a project, in the order they were made; none for a project nothing links', eq(ids(K.AM.ambitionsOfProject(dt, 'pjA')), ['amCy', 'amAr']) && eq(ids(K.AM.ambitionsOfProject(dt, 'pjB')), ['amBz']) && eq(K.AM.ambitionsOfProject(dt, 'pjZ'), []));
+    const task = (id, x = {}) => ({ id, title: 'Pay council tax', plannedOn: null, planUid: null, ...x });
+    check('a task is towards the ambitions of its project; with no project, nothing (and a null task nothing)', eq(ids(K.AM.ambitionsOfTask(dt, task('tkA', { projectId: 'pjB' }))), ['amBz']) && eq(ids(K.AM.ambitionsOfTask(dt, task('tkB', { projectId: 'pjA' }))), ['amCy', 'amAr'])
+      && eq(K.AM.ambitionsOfTask(dt, task('tkC')), []) && eq(K.AM.ambitionsOfTask(dt, task('tkD', { projectId: null })), []) && eq(K.AM.ambitionsOfTask(dt, null), []) && eq(K.AM.ambitionsOfTask(dt, undefined), []));
+    const dp = mk();
+    dp.tasks.items = [task('tkP1', { plannedOn: '2026-11-03', planUid: 'u1', projectId: 'pjA' }), task('tkP2', { plannedOn: '2026-11-04', planUid: 'u1' }), task('tkP3', { plannedOn: '2026-11-03', planUid: 'u2' })];
+    check('a plan row\'s task is the one planned on that day with that uid; none when the day or uid doesn\'t match', K.AM.taskOfPlanRow(dp, '2026-11-03', 'u1').id === 'tkP1' && K.AM.taskOfPlanRow(dp, '2026-11-04', 'u1').id === 'tkP2' && K.AM.taskOfPlanRow(dp, '2026-11-03', 'u2').id === 'tkP3'
+      && K.AM.taskOfPlanRow(dp, '2026-11-05', 'u1') === null && K.AM.taskOfPlanRow(dp, '2026-11-03', 'u9') === null);
+    check('the ambitions of the Cybersecurity path and of the Arabic route need no ref', eq(ids(K.AM.ambitionsOfStudy(dt, 'cyber')), ['amCy']) && eq(ids(K.AM.ambitionsOfStudy(dt, 'arabic')), ['amAr']) && eq(ids(K.AM.ambitionsOfStudy(mk(biz), 'arabic')), []));
+    check('the ambitions of a topic or a course are found by ref, not by kind alone', eq(ids(K.AM.ambitionsOfStudy(dt, 'topic', 'tpC')), ['amCy']) && eq(K.AM.ambitionsOfStudy(dt, 'topic', 'tpOther'), []) && eq(ids(K.AM.ambitionsOfStudy(dt, 'course', 'coX')), ['amAr'])
+      && eq(K.AM.ambitionsOfStudy(dt, 'course', 'tpC'), []) && eq(K.AM.ambitionsOfStudy(dt, 'topic', 'coX'), []));
+    const dlsn = mk(biz, arab, cyber);
+    dlsn.study.topics = [{ id: 'tpC', title: 'Cybersecurity' }, { id: 'tpA', title: 'Languages' }];
+    dlsn.study.stages = [{ id: 'sgC', title: 'Foundations', topicId: 'tpC', courses: [{ id: 'coC', title: 'Networking basics' }] }, { id: 'sgA', title: 'Start', topicId: 'tpA', courses: [{ id: 'coA', title: 'Spanish' }, { id: 'coX', title: 'Reading' }] }];
+    check('an Arabic lesson is towards the ambitions of the Arabic route, and a Cybersecurity lesson towards those of the Cybersecurity path', eq(ids(K.AM.ambitionsOfLesson(dlsn, 'arabic')), ['amAr']) && eq(ids(K.AM.ambitionsOfLesson(dlsn, 'cybersecurity')), ['amCy']) && eq(ids(K.AM.ambitionsOfLesson(dlsn, 'arabic', 'coC')), ['amAr']), ids(K.AM.ambitionsOfLesson(dlsn, 'arabic')));
+    check('a course is towards the ambitions that link it itself', eq(ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coX')), ['amAr']), ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coX')));
+    check('a course is also towards the ambitions that link its topic (found through the stage that holds it): coC through tpC', eq(ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coC')), ['amCy']), ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coC')));
+    check('a course that nothing links, itself or through its topic, has none; neither has a lesson with no course or a course that isn\'t in any stage', eq(K.AM.ambitionsOfLesson(dlsn, 'study', 'coA'), []) && eq(K.AM.ambitionsOfLesson(dlsn, 'study'), []) && eq(K.AM.ambitionsOfLesson(dlsn, 'study', 'coGone'), []));
+    check('with no ambitions at all, nothing is towards anything', eq(K.AM.ambitionsOfLesson(mk(), 'arabic'), []) && eq(K.AM.ambitionsOfProject(mk(), 'pjA'), []) && K.AM.towardsLine(K.AM.ambitionsOfLesson(mk(), 'cybersecurity')) === '');
+
+    console.log('  in words');
+    const A = am('amA', 'A'), B = am('amB', 'B'), C = am('amC', 'C'), D = am('amD', 'D');
+    check('"A step towards" says nothing for none', K.AM.towardsLine([]) === '', K.AM.towardsLine([]));
+    check('…names one ambition: A step towards “A”', K.AM.towardsLine([A]) === 'A step towards “A”', K.AM.towardsLine([A]));
+    check('…names two: A step towards “A” and “B”', K.AM.towardsLine([A, B]) === 'A step towards “A” and “B”', K.AM.towardsLine([A, B]));
+    check('…and for three or more names the first and counts the rest: “A” and 2 more (3 more for four)', K.AM.towardsLine([A, B, C]) === 'A step towards “A” and 2 more' && K.AM.towardsLine([A, B, C, D]) === 'A step towards “A” and 3 more', [K.AM.towardsLine([A, B, C]), K.AM.towardsLine([A, B, C, D])]);
+    const lk = (...ls) => am('amL', 'L', { links: ls.map((l, i) => ({ id: 'l' + i, ...l })) });
+    const full = lk({ kind: 'project', ref: 'p1' }, { kind: 'project', ref: 'p2' }, { kind: 'topic', ref: 't1' }, { kind: 'cyber' }, { kind: 'arabic' });
+    check('what an ambition links reads "2 projects · 1 in Study · the Cybersecurity path · the Arabic route"', K.AM.linksWords(full) === '2 projects · 1 in Study · the Cybersecurity path · the Arabic route', K.AM.linksWords(full));
+    check('…a topic and a course together are "2 in Study"; one project is "1 project"; the Arabic route alone is "the Arabic route"; no links says nothing; an unknown kind isn\'t counted',
+      K.AM.linksWords(lk({ kind: 'topic', ref: 't1' }, { kind: 'course', ref: 'c1' })) === '2 in Study' && K.AM.linksWords(lk({ kind: 'project', ref: 'p1' })) === '1 project' && K.AM.linksWords(lk({ kind: 'arabic' })) === 'the Arabic route'
+      && K.AM.linksWords(A) === '' && K.AM.linksWords(lk({ kind: 'book', ref: 'b' })) === '' && K.AM.linksWords({ id: 'x', title: 'No list' }) === '');
+    const stp = (...done) => am('amS', 'S', { steps: done.map((x, i) => ({ id: 's' + i, text: 'Step', ...(x ? { done: true } : {}) })) });
+    check('its steps read "1 of 3 steps"; none ticked is "0 of 2 steps"; no steps says nothing', K.AM.stepsWords(stp(true, false, false)) === '1 of 3 steps' && K.AM.stepsWords(stp(false, false)) === '0 of 2 steps' && K.AM.stepsWords(A) === '', K.AM.stepsWords(stp(true, false, false)));
+    const dg = mk(); dg.projects.items = [base('pjA')];
+    check('a project link shows its project, and null when the project is gone (or the link isn\'t a project)', K.AM.linkedProject(dg, { id: 'l1', kind: 'project', ref: 'pjA' })?.id === 'pjA' && K.AM.linkedProject(dg, { id: 'l1', kind: 'project', ref: 'pjGone' }) === null
+      && K.AM.linkedProject(dg, { id: 'l2', kind: 'topic', ref: 'pjA' }) === null && K.AM.linkedProject(dg, { id: 'l3', kind: 'arabic' }) === null);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
