@@ -47,7 +47,8 @@ keeps working: revision's "hasn't clicked yet", Keep a word, and the questions' 
 situation, once they exist; it replaces the separate phrasebook page that was planned.
 
 **An entry** is today's word row:
-- the form, meaning and part of speech, the root, voice, example and note;
+- the form, meaning and part of speech, the root (on a phrase, labelled "root of the main word", since a chunk's root
+  field gives only that), voice, example and note;
 - the explainer link, and revision ("Add to revision", "Also practise writing it", "Take it out");
 - "Taught in <lesson>", linking to the lesson.
 
@@ -89,13 +90,25 @@ Your words are still never sent to AI.
 3. **One entry per form, in one lesson** (the build already refuses a duplicate). The entry goes in the **first
    lesson, in course order, that uses the word**. Words used only in modules 25–30 go there. Later lessons that use
    the word point back to that entry; they never get a copy.
-4. **The entry shape** is a course word's, under myday-5a's conventions:
+4. **Dictionary-only words.** Each new entry carries `"dictionary": true`. A lesson's own new words stay what they
+   are now; dictionary-only words don't swell them or flood revision:
+   - On the lesson page, they sit folded under **"Also in this lesson"**, below the lesson's words.
+   - **Marking a lesson ready doesn't add them to revision.** Today `markReady` adds every id from `lessonWordIds`,
+     its own words and its starter words; dictionary-only words are left out of that list.
+   - They join revision only when you add one ("Add to revision" in the dictionary, or Keep a word).
+   - In the dictionary they look like any other entry. myday-5a's build checks the field.
+5. **The entry shape** is a course word's, under myday-5a's conventions:
    - append-only ids;
    - fully vowelled;
    - root or none;
    - an example that doesn't give away a check;
    - a voiced note.
-5. **Batches** go by module, about ten in all. Each batch is drafted, then:
+6. **Never a check's answer.** A build check, like the explainers' secrets check in validate-explainers.mjs, makes
+   sure a course word's form, example and note don't give away a lesson check's answer, from its own lesson or an
+   earlier one (revision brings earlier checks back). It covers the 800 existing words too. myday-20 builds it, and
+   myday-5a runs it on every batch.
+7. **Batches** of about 100 words (about 300 clips, since the form, the example and the note's Arabic are each
+   voiced), going through the modules in order, so roughly six to nine batches. Each batch is drafted, then:
    - validated;
    - cross-checked by Fable;
    - read by the owner's checker;
@@ -103,8 +116,8 @@ Your words are still never sent to AI.
    - listened to by the owner;
    - released with other work.
 
-   Who drafts which modules is settled between myday-20 and myday-5a. myday-5a merges, validates and voices every
-   batch.
+   myday-20 drafts modules 4–13 (A1–A2) and myday-5a modules 14–30 (agreed 1 Nov). myday-5a merges, validates and
+   voices every batch.
 
 The page doesn't wait for this: it ships first with the 800 words already listed, and grows with each batch.
 
