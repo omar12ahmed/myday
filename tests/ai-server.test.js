@@ -398,7 +398,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('fewer found than sent', { ...base, lookup: { ...goals, found: 1 } });
     const goalsPlain = sysOf({ ...base, can: CANG }), goalsAfter = sysOf({ ...base, can: CANG, lookup: goals });
     check('the instructions offer a goals lookup only when the app says it can', goalsPlain.includes('At their ambitions') && goalsPlain.includes('"tool":"goals","query":"all"') && !offerStudy.includes('"tool":"goals"'));
-    check('…and, with the titles, answer from them only, never judging an ambition, and never look again', goalsAfter.includes('The app looked at their ambitions') && goalsAfter.includes('Answer from those only') && goalsAfter.includes('never judge whether one is realistic or worth having') && goalsAfter.includes('Never reply "lookup" again'));
+    check('…and, with the titles, answer from them only, never judging an ambition, and never look again', goalsAfter.includes('The app looked at their ambitions') && goalsAfter.includes('Answer from those only') && goalsAfter.includes('Never judge whether one is realistic or worth having') && goalsAfter.includes('Never reply "lookup" again'));
     check('a goals lookup reply is read as all of it, whatever words came with it', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'goals', query: 'my aims' } }))?.lookup.query === 'all'
       && A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'goals' } }))?.lookup.query === 'all');
     const mgl1 = JSON.parse(A.mockAsk({ ...base, text: 'What am I working towards?', can: CANG }));

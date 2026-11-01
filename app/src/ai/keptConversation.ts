@@ -28,7 +28,7 @@ function heldNow(data: MyDayData): string[] {
   const reach = aiReach(data);
   return [...data.projects.items.filter(p => !reach.project(p)).map(p => `p:${p.id}`), ...data.notes.items.filter(n => !reach.note(n)).map(n => `n:${n.id}`),
     ...data.tasks.items.filter(t => !reach.task(t)).map(t => `t:${t.id}`), ...data.commitments.filter(c => !reach.appointment(c)).map(c => `c:${c.id}`),
-    ...(data.patterns.prefs.aiNotes ? [] : ['notes-off'])];
+    ...data.ambitions.items.filter(a => !reach.ambition(a)).map(a => `a:${a.id}`), ...(data.patterns.prefs.aiNotes ? [] : ['notes-off'])];
 }
 
 export function keepConversation(data: MyDayData, x: { id: string; at: string; turns: KeptTurn[]; looked?: KeptLooked }) {

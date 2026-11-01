@@ -1020,11 +1020,17 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       check('made private since it was kept: forgotten, never offered (an answer may name it)', K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null);
       K.keepConversation(data(), { id: 'cv4', at: '12:05', turns: TURNS });
       check('…but private already when it was kept: still offered', K.keptConversation(data(), D)?.id === 'cv4');
+      // An ambition linked since to a project that was already private: its title may be in an earlier look at your ambitions.
+      K.updateSaved(d => { d.ambitions.items.push({ id: 'amKC', title: 'Build the shed', links: [], steps: [], createdAt: `${D}T08:00`, updatedAt: `${D}T08:00` }); });
+      K.keepConversation(data(), { id: 'cv4a', at: '12:06', turns: TURNS });
+      check('…an ambition that may be sent doesn\'t change that', K.keptConversation(data(), D)?.id === 'cv4a');
+      K.updateSaved(d => { d.ambitions.items.find(a => a.id === 'amKC').links = [{ id: 'lkKC', kind: 'project', ref: 'pjKC' }]; });
+      check('…but linked since to a project that was already private: forgotten, never offered (an earlier look may name it)', K.keptConversation(data(), D) === null && localStorage.getItem(KC) === null);
       const notesWere = data().patterns.prefs.aiNotes;
       K.updateSaved(d => { d.patterns.prefs.aiNotes = true; }); K.keepConversation(data(), { id: 'cv5', at: '12:10', turns: TURNS });
       K.updateSaved(d => { d.patterns.prefs.aiNotes = false; });
       check('…and AI help with notes switched off since: forgotten too', K.keptConversation(data(), D) === null);
-      K.updateSaved(d => { d.patterns.prefs.aiNotes = notesWere; d.projects.items = d.projects.items.filter(p => p.id !== 'pjKC'); });
+      K.updateSaved(d => { d.patterns.prefs.aiNotes = notesWere; d.projects.items = d.projects.items.filter(p => p.id !== 'pjKC'); d.ambitions.items = d.ambitions.items.filter(a => a.id !== 'amKC'); });
       K.keepConversation(data(), { id: 'cv6', at: '12:15', turns: TURNS }); K.forgetConversation('another');
       check('Start over forgets only its own (another tab may have kept a newer one)', K.keptConversation(data(), D)?.id === 'cv6');
       K.forgetConversation('cv6');
@@ -2229,6 +2235,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('a project with no ambition sends no "towards", and neither does its task', !('towards' in c1n.context.project) && !('towards' in c1t.context.task), [c1n.context.project, c1t.context.task]);
     check('links to a topic, a course, the Cybersecurity path, the Arabic route or a kind this version doesn\'t know don\'t count', !JSON.stringify([c1n.context, c1t.context]).includes('Only other kinds'));
     check('a link to a project that is gone counts for nothing: it is not in any other project\'s titles', !JSON.stringify(c1.context).includes('that is gone'));
+    const g1 = K.goalsLookup(w1);
+    check('…and an ambition that links a project that is gone is held back everywhere (it may have been private): not in the goals look, and counted as left out',
+      K.aiReach(w1).ambition(w1.ambitions.items.find(a => a.id === 'amGone')) === false && !JSON.stringify(g1.lookup).includes('that is gone') && g1.leftOut === 1 && g1.lookup.found === 3, g1);
     const w4 = world([AP('pjFour', 'Big plans')], [1, 2, 3, 4].map(i => AM(`am${i}`, `Ambition ${i}`, `0${i}`, [['project', 'pjFour']])), [AT('tkFour', 'First step', 'pjFour')]);
     check('four ambitions send at most three (the first three made), on the project and on its task', eq(ctxOf(w4, '#projects/p/pjFour').context.project.towards, ['Ambition 1', 'Ambition 2', 'Ambition 3']) && eq(ctxOf(w4, '#today/tasks/tkFour').context.task.towards, ['Ambition 1', 'Ambition 2', 'Ambition 3']));
 
@@ -2283,7 +2292,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions.
     const sLook = sysOf({ ...gok, lookup: K.goalsLookup(w1).lookup }), sNo = sysOf(ctxOf(w1, '#today')), sTow = sysOf(c1), sTowTask = sysOf(tk), sPlain = sysOf(ctxOf(w1, '#projects/p/pjLone'));
-    check('the instructions are version myday-ask-v28 and, after a goals look, say what it holds and what never to do with it', K.ASK_PROMPT_VERSION === 'myday-ask-v28' && /The app looked at their ambitions/.test(sLook) && /never judge whether one is realistic or worth having/.test(sLook) && /haven't set any ambitions yet/.test(sLook) && !/The app looked at their ambitions/.test(sNo));
+    check('the instructions are version myday-ask-v28 and, after a goals look, say what it holds and what never to do with it', K.ASK_PROMPT_VERSION === 'myday-ask-v28' && /The app looked at their ambitions/.test(sLook) && /never judge whether one is realistic or worth having/i.test(sLook) && /haven't set any ambitions yet/.test(sLook) && !/The app looked at their ambitions/.test(sNo));
     check('…the offer to look at their ambitions is there when it can, and not when it can\'t', /- At their ambitions: they ask about their goals/.test(sNo) && !/At their ambitions/.test(sysOf(ctxOf(none, '#today'))), sNo.slice(-700));
     check('…the "towards" instruction is there when a project or task sends it, and not otherwise', /are the titles of their ambitions that this work is a step towards/.test(sTow) && /are the titles of their ambitions that this work is a step towards/.test(sTowTask) && !/are the titles of their ambitions that this work is a step/.test(sPlain) && !/are the titles of their ambitions that this work is a step/.test(sNo));
 
@@ -2293,7 +2302,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const first = mg('what am I working towards?');
     check('practice helper: "what am I working towards?" with ambitions on offer gives a goals look', first?.kind === 'lookup' && first.lookup.tool === 'goals' && first.lookup.query === 'all', first);
     const second = mg('what am I working towards?', K.goalsLookup(w1).lookup);
-    check('…with the look, it answers with the titles', second?.kind === 'answer' && second.message.includes('“Work in cybersecurity”') && second.message.includes('“Read Arabic literature”') && second.message.includes('“Linked to a project that is gone”'), second);
+    check('…with the look, it answers with the titles', second?.kind === 'answer' && second.message.includes('“Work in cybersecurity”') && second.message.includes('“Read Arabic literature”') && !second.message.includes('that is gone'), second);
     const third = mg('what am I working towards?', K.goalsLookup(none).lookup, NS);
     check('…with none found, it says they haven\'t set any ambitions yet', third?.kind === 'answer' && /you haven't set any ambitions yet/.test(third.message), third);
     check('…and with nothing to look at it doesn\'t offer the look', mg('what am I working towards?', undefined, NS)?.kind !== 'lookup');
@@ -2303,8 +2312,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('what the panel says: how many ambitions it looked at', line(3, ['a', 'b', 'c']) === 'Looked at your ambitions: 3.', line(3, ['a', 'b', 'c']));
     check('…one', line(1, ['a']) === 'Looked at your ambitions: one.', line(1, ['a']));
     check('…and none yet', line(0, []) === 'Looked at your ambitions: none yet.', line(0, []));
-    check('…and which were left out, when one is linked to a private project', line(3, ['a', 'b', 'c'], 1) === 'Looked at your ambitions: 3 — one linked to a private project left out.', line(3, ['a', 'b', 'c'], 1));
-    check('…and several left out', line(2, ['a', 'b'], 2) === 'Looked at your ambitions: 2 — 2 linked to private projects left out.', line(2, ['a', 'b'], 2));
+    check('…and which were left out, when one is linked to a private project or one that\'s gone', line(3, ['a', 'b', 'c'], 1) === 'Looked at your ambitions: 3 — one left out (linked to a private project, or one that’s gone).', line(3, ['a', 'b', 'c'], 1));
+    check('…and several left out', line(2, ['a', 'b'], 2) === 'Looked at your ambitions: 2 — 2 left out (linked to a private project, or one that’s gone).', line(2, ['a', 'b'], 2));
+    check('…and none that could be sent, never "none yet", when all were left out', line(0, [], 2) === 'Looked at your ambitions: none that could be sent — 2 left out (linked to a private project, or one that’s gone).', line(0, [], 2));
+    const goalsAsk = JSON.stringify({ kind: 'lookup', message: 'Looking at your ambitions.', items: [], action: null, lookup: { tool: 'goals', query: 'all' } });
+    check('a goals look the app didn\'t offer (no ambition may be sent) is refused, and one it offered is taken', K.checkAskReply(goalsAsk, none, NS, AD) === null && K.checkAskReply(goalsAsk, onlyPriv, K.askSlice(onlyPriv, '#today', AD), AD) === null && K.checkAskReply(goalsAsk, w1, AS, AD)?.tool === 'goals');
     check('…and when more were found than sent, how many went', line(14, Array(12).fill('a')) === 'Looked at your ambitions: 14 (the first 12 sent).', line(14, Array(12).fill('a')));
   }
 

@@ -325,7 +325,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     const p = x.project;
     short.push(`Project: ${clip(p.title, 40)}`, `${n(p.tasks.length, 'task')}, ${n(p.notes.length, 'note title')}${p.notesText ? ' and their text' : ''}`);
     all.push({ label: 'This project', lines: [`Name: ${p.title}`, `Summary: ${p.summary ? clip(p.summary) : '(none)'}`, `Stage: ${p.stage.charAt(0).toUpperCase() + p.stage.slice(1)}`] });
-    if (p.towards?.length) all.push({ label: 'A step towards (your ambitions’ titles)', lines: p.towards });
+    if (p.towards?.length) all.push({ label: 'Your ambitions this is a step towards (titles only)', lines: p.towards });
     if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}${t.steps ? ` (${t.steps.filter(s => s.done).length} of ${t.stepsTotal ?? t.steps.length} steps${t.stepsTotal ? ', some not listed' : ''})` : t.stepsTotal ? ` (${t.stepsTotal} steps)` : ''}${t.after?.length ? ` — starts after ${t.after.join(', ')}` : ''}`) });
     const stepLines = p.tasks.flatMap(t => (t.steps ?? []).map(s => `${t.title}: ${s.done ? '✓ ' : ''}${s.text}`));
     if (stepLines.length) all.push({ label: 'Their steps', lines: stepLines });
@@ -360,7 +360,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     short.push(`Task: ${clip(x.task.title, 40)}`);
     all.push({ label: 'This task', lines: [`Title: ${x.task.title}`, `Due: ${x.task.due ?? 'no date'}`, `About ${x.task.minutes} min`, ...(x.task.notes ? [`Notes: ${clip(x.task.notes)}`] : [])] });
     if (x.task.steps?.length) all.push({ label: 'Its steps', lines: x.task.steps.map(s => `${s.done ? '✓ ' : ''}${s.text}`) });
-    if (x.task.towards?.length) all.push({ label: 'A step towards (your ambitions’ titles)', lines: x.task.towards });
+    if (x.task.towards?.length) all.push({ label: 'Your ambitions this is a step towards (titles only)', lines: x.task.towards });
   }
   if (x.review) {
     const r = x.review;
@@ -384,10 +384,10 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
       'Never anything private — not even whether it matched — nor Finance, Health, who a task waits on, research, case records, your kept words, revision cards, answers or your notebook.'] });
     else all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
     if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });
-    if (projects) all.push({ label: 'If it needs to: one of your projects', lines: ['Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones and note titles (their text only with AI help with notes on).', 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
+    if (projects) all.push({ label: 'If it needs to: one of your projects', lines: [`Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones${c.can.includes('goals') ? ', note titles (their text only with AI help with notes on) and the titles of the ambitions it’s a step towards' : ' and note titles (their text only with AI help with notes on)'}.`, 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
     if (c.can.includes('decisions')) all.push({ label: 'If it needs to: your open decisions', lines: ['Or at your open decisions (across your open projects, or one you name): each one’s question and options, which options have no pros or cons yet (never what any say) and the day it was opened; and what a business idea still has to check.', 'Never a private project’s; never your reasons, earlier choices or what you found.'] });
     if (c.can.includes('waiting')) all.push({ label: 'If it needs to: what you’re waiting on', lines: ['Or at the tasks you’ve marked as waiting (all of them, or one project’s): each one’s title, its project, since when and the day you expect it, and whether its Chase task is there.', 'Never who or what it’s waiting on, and never a private project’s.'] });
-    if (c.can.includes('goals')) all.push({ label: 'If it needs to: your ambitions', lines: ['Or at your ambitions, if you ask about your goals: their titles only (at most 12) — never their why, their steps or their links, and never one linked to a private project.'] });
+    if (c.can.includes('goals')) all.push({ label: 'If it needs to: your ambitions', lines: ['Or at your ambitions, if you ask about your goals: their titles only (at most 12) and how many you have — never their why, their steps or their links, and never one linked to a private project or to one that’s gone.'] });
     if (c.can.includes('study')) all.push({ label: 'If it needs to: what to study next', lines: ['Or at the same next steps as your Today card (your focus first): each subject’s lesson or task, its reason, the suggested minutes and length, and how much is due to revise.', 'No percentages, and nothing else of your Study.'] });
   }
   return { short, all };

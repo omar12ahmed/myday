@@ -1340,12 +1340,12 @@ const SEED = `s => {
     const closeIt = async Dv => { await Dv.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200); };
     await seeded(mock, MOCK); await mock.setData(clearSeed); await mock.until(`document.querySelector('#app')`);
     const none = await openPlus(mock, 'today', 'hello');
-    check('with no ambitions, the "Sent to the AI" preview has no line about looking at your ambitions', !none.includes('If it needs to: your ambitions') && !none.includes('A step towards'), none);
+    check('with no ambitions, the "Sent to the AI" preview has no line about looking at your ambitions', !none.includes('If it needs to: your ambitions') && !none.includes('a step towards'), none);
     await closeIt(mock);
     await mock.setData(goalSeed); await mock.until(`document.querySelector('#app')`);
     const calls0 = aiCalls().length;
     const onProject = await openPlus(mock, 'projects/p/pjGoalLk', 'Break this into smaller steps');
-    check('on a project an ambition links, the expanded preview shows "A step towards (your ambitions’ titles)" with the title', onProject.includes('A step towards (your ambitions’ titles)') && onProject.includes('Work in cybersecurity'), onProject);
+    check('on a project an ambition links, the expanded preview shows "Your ambitions this is a step towards (titles only)" with the title', onProject.includes('Your ambitions this is a step towards (titles only)') && onProject.includes('Work in cybersecurity'), onProject);
     check('…and never the ambition\'s why or steps', !/WHY-NEVER-SENT|STEP-NEVER-SENT/.test(onProject), onProject);
     await closeIt(mock);
     const onToday = await openPlus(mock, 'today', 'hello');

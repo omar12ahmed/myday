@@ -101,6 +101,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (r.lookup.tool === 'project' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
     // Open decisions: all of them, or one of the open projects it was given.
     if ((r.lookup.tool === 'decisions' || r.lookup.tool === 'waiting') && r.lookup.query !== 'all' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
+    // Your ambitions only when it was offered: you have one that may reach AI.
+    if (r.lookup.tool === 'goals' && !slice.goals) return null;
     if (r.lookup.tool === 'day') {
       if (!realDate(r.lookup.query)) return null;
       // A day only from a week ago to two months ahead (what the app will look at): further off, it says so.

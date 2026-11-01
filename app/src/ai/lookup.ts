@@ -190,17 +190,19 @@ export function decisionsLookup(data: MyDayData, query: string): { lookup: AskDe
   };
 }
 
+// "Your ambitions" (v28, specs/ask-ambitions.md; the owner's choices of 1 Nov 2026): their titles only, oldest first,
+// and how many. Never their why, steps or links, and never one that links a private project or a
+// project that's gone (reach.ambition; held back and counted).
+export function goalsLookup(data: MyDayData): { lookup: AskGoalsLookup; leftOut: number } {
+  const reach = aiReach(data), all = ambitionsInOrder(data), shown = all.filter(reach.ambition);
+  return { lookup: { tool: 'goals', query: 'all', found: shown.length, ambitions: shown.slice(0, L.lookupGoals).map(a => cut(a.title, L.titleChars)) }, leftOut: all.length - shown.length };
+}
+
 // "What you're waiting on" (v21): tasks marked as waiting (not done or let go), the oldest wait first, across your tasks
 // ("all") or one open project's (its id) — the title, its project, since when, when you expect it, and whether its
 // "Chase:" task is there and still to do. Never who or what it waits on (`waiting.on`): only the fields named here are
 // picked. Never a private project's task: those are counted here only (`leftOut`). Null for a project that can't be
 // looked at.
-// "Your ambitions" (v28, specs/ask-ambitions.md; the owner's choices of 1 Nov 2026): their titles only, oldest first,
-// and how many. Never their why, steps or links, and never one that links a private project (held back and counted).
-export function goalsLookup(data: MyDayData): { lookup: AskGoalsLookup; leftOut: number } {
-  const reach = aiReach(data), all = ambitionsInOrder(data), shown = all.filter(reach.ambition);
-  return { lookup: { tool: 'goals', query: 'all', found: shown.length, ambitions: shown.slice(0, L.lookupGoals).map(a => cut(a.title, L.titleChars)) }, leftOut: all.length - shown.length };
-}
 export function waitingLookup(data: MyDayData, query: string): { lookup: AskWaitingLookup; leftOut: number } | null {
   const reach = aiReach(data);
   const one = query === 'all' ? null : data.projects.items.find(p => p.id === query && p.status !== 'done' && reach.project(p));
@@ -256,8 +258,8 @@ function sayLookup(l: AskLookup, held: number, projectTitle: string | undefined,
     return `Looked at what to study next: ${first.label} first${rest.length ? `, then ${rest.map(o => o.label).join(' and ')}` : ''}${l.revisionDue ? ` — ${l.revisionDue === 1 ? 'one thing' : `${l.revisionDue} things`} to revise` : ''}.`;
   }
   if (l.tool === 'goals') {
-    const n = l.found ? `${l.found === 1 ? 'one' : l.found}${l.found > l.ambitions.length ? ` (the first ${l.ambitions.length} sent)` : ''}` : 'none yet';
-    return `Looked at your ambitions: ${n}${held ? ` — ${held === 1 ? 'one linked to a private project' : `${held} linked to private projects`} left out` : ''}.`;
+    const n = l.found ? `${l.found === 1 ? 'one' : l.found}${l.found > l.ambitions.length ? ` (the first ${l.ambitions.length} sent)` : ''}` : held ? 'none that could be sent' : 'none yet';
+    return `Looked at your ambitions: ${n}${held ? ` — ${held === 1 ? 'one' : held} left out (linked to a private project, or one that’s gone)` : ''}.`;
   }
   if (l.tool === 'waiting') {
     const where = l.query === 'all' ? 'what you’re waiting on' : `what you’re waiting on in “${l.tasks[0]?.project ?? projectTitle ?? 'that project'}”`;

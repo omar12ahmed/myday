@@ -15,8 +15,8 @@
 //     research (questions, findings, sources, conclusions and experiments, specs/projects-research.md and
 //     projects-business-tools.md); a business idea's money (its numbers, forecast and real months); a project's outcome, what
 //     counts as finished and where you left off; your ambitions' why, steps and links (only their titles go, to Ask
-//     MyDay, when relevant — on linked work and the goals look — and never one that links a private project:
-//     specs/ask-ambitions.md, 1 Nov 2026); a Content project's ideas and videos (their planning, script,
+//     MyDay, when relevant — on linked work and the goals look — and never one that links a private project, or a
+//     project that's gone, since it may have been private: specs/ask-ambitions.md, 1 Nov 2026); a Content project's ideas and videos (their planning, script,
 //     transcript, links, posts and results, specs/projects-content.md; the tasks you make from them — "Post: …",
 //     "Film: …" — are ordinary tasks and go as tasks always have); a Software project's requirements, bugs and release
 //     checklists (their checks, what proved them and which links they point at, specs/projects-software.md; "Fix: …"
@@ -34,7 +34,7 @@ import type { Commitment, DateKey, MyDayData, Note, Project, TaskItem } from '..
 
 export function aiReach(data: MyDayData) {
   const privateProjects = privateProjectIds(data);
-  const ofPrivate = new Set(data.projects.items.filter(p => p.private).flatMap(p => p.commitmentIds));
+  const ofPrivate = new Set(data.projects.items.filter(p => p.private).flatMap(p => p.commitmentIds)), projectIds = new Set(data.projects.items.map(p => p.id));
   const inPrivate = (projectId?: string | null) => !!projectId && privateProjects.has(projectId);
   const note = (n?: Pick<Note, 'private' | 'projectId'> | null) => !!n && !n.private && !inPrivate(n.projectId);
   return {
@@ -47,8 +47,13 @@ export function aiReach(data: MyDayData) {
     /** …and its text too: only with "AI help with notes" on. */
     noteText: (n?: Pick<Note, 'private' | 'projectId'> | null) => note(n) && !!data.patterns.prefs.aiNotes,
     /** An ambition (specs/ask-ambitions.md): its title only, and never one that links a private project — its title can
-     *  be as private as the project (myday-af's point, 1 Nov 2026). */
-    ambition: (a: { links?: unknown }) => !(Array.isArray(a.links) ? a.links : []).some(l => !!l && typeof l === 'object' && (l as { kind?: unknown }).kind === 'project' && privateProjects.has((l as { ref?: unknown }).ref as string)),
+     *  be as private as the project (myday-af's point, 1 Nov 2026) — or a project that's gone (deleted, or not yet synced
+     *  here), since nothing says whether it was private. */
+    ambition: (a: { links?: unknown }) => !(Array.isArray(a.links) ? a.links : []).some(l => {
+      if (!l || typeof l !== 'object' || (l as { kind?: unknown }).kind !== 'project') return false;
+      const ref = (l as { ref?: unknown }).ref;
+      return typeof ref !== 'string' || privateProjects.has(ref) || !projectIds.has(ref);
+    }),
     /** A task from Inbox → Tasks: not one of a private project. */
     task: (t?: Pick<TaskItem, 'projectId'> | null) => !!t && !inPrivate(t.projectId),
     /** The plan copies on day k of a private project's tasks (by their uid on that day's plan). */

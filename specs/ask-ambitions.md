@@ -26,9 +26,14 @@ myday-af's, 1.119.0), which until now were never sent to AI.
 **Never:** an ambition's why, its steps or its links; anything on a private project's page (its slice isn't sent, so
 neither are its ambitions); and **any ambition that links a private project, anywhere** — its title can be as private
 as the project ("Leave my job", say), so it isn't sent through another project, a task or the goals look either
-(myday-af's point, 1 Nov; stricter than the owner's page rule, so it only sends less). Only links to projects count for
-a project or task (`ambitionsOfProject`); links to Study, to a project that's gone, or of a kind this version doesn't
-know are ignored.
+(myday-af's point, 1 Nov; stricter than the owner's page rule, so it only sends less). The same goes for an ambition
+that links **a project that's gone** (deleted, or not yet synced to this device): nothing says whether it was private,
+so it's held back until the link is removed (the review's point, 1 Nov). Only links to projects count for a project or
+task (`ambitionsOfProject`); links to Study, or of a kind this version doesn't know, are ignored.
+
+A conversation kept to carry on is forgotten when an ambition becomes one that can't be sent, as with anything else
+that becomes private (`ai/keptConversation.ts`), so an earlier look never goes again. A goals look the app didn't offer
+is refused.
 
 ## 3. What changes where
 

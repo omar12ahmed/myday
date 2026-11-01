@@ -129,7 +129,8 @@ decisions and its one page aren't here: for those, say to ask on its page. Never
   task, project, note, appointment, course, lesson or book by its words —
   {"kind":"lookup","message":"Looking across MyDay for that.","lookup":{"tool":"search","query":"…"}}, the query 1–4 key
   words from their request (names, places, topics — no filler words). When the question is about a day, one project by
-  name, their open decisions, what they're waiting on or what to study next, use that lookup instead (when it's here).`);
+  name, their open decisions, their goals, what they're waiting on or what to study next, use that lookup instead (when
+  it's here).`);
   if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
   {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4
   key words from their request (names, places, topics — no filler words).`);
