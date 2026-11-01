@@ -1,10 +1,12 @@
 # Proposal: Arabic explainers ("How this works")
 
 **Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Live with their voice: module 14 (1.98.0,
-voiced in 1.102.0), module 15 and modules 4–5 (1.105.0), modules 6–7 (1.108.0). Modules 8–13 (with the A1 portfolio
-card) and 16–23, 71 more, and the "where this leads" lines (§7): cross-checked independently and approved by the
-owner's checker (31 October 2026), to be voiced. Module 24 (five): cross-checked and approved as written by the owner's checker (31 October 2026), to be voiced. Module 14's verb moods and passive (four): cross-checked and approved as written by the owner's checker (31 October 2026), to be voiced. Modules 1 and 2 (eleven): cross-checked and approved by the owner's checker (31 October 2026), to be voiced. Module 3 (seven): cross-checked and approved as written by the owner's checker (31 October 2026), to be voiced. Modules 25 and 26 (ten): cross-checked and approved as written by the owner's checker (31 October 2026), to be voiced. Modules 27 and 29 (ten): cross-checked and approved as written by the owner's checker (1 November 2026), to be voiced. Module 30 (five): cross-checked and approved as written by the owner's checker (1 November 2026), to be voiced. Each batch: drafted, validated, cross-checked independently (fixes
-re-checked), checked by the owner's checker, voiced and listened to, then released.
+voiced in 1.102.0), module 15 and modules 4–5 (1.105.0), modules 6–7 (1.108.0), and modules 8–13 (with the A1 portfolio
+card), 16–24 and module 14's verb moods and passive, with the "where this leads" lines and a second go (§7) (1.121.0):
+123 explainers. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
+checker, voiced and listened to, then released.
+Approved by the owner's checker and waiting for their voice and a release: modules 1–3 (eighteen), and modules 25–27, 29
+and 30 (twenty-five). Module 28 waits for its quotes (§6).
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 
