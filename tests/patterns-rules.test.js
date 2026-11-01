@@ -257,6 +257,64 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…the plan\'s other tasks are untouched', p2.days[k].tasks.length === 1 && p2.days[k].tasks[0].done);
   }
 
+  console.log('\n[10c] Help me start: its answers, kept with the task');
+  {
+    const h = fresh();
+    const hid = K.addTask(h.tasks, { title: 'Pay council tax', due: today, listId: 'tl1', category: 'admin' });
+    const H = () => h.tasks.items.find(x => x.id === hid);
+    check('noting "perfect" returns true and keeps { reason: "other", on, kind: "perfect" }', K.noteBlocker(h, hid, 'other', today, 'perfect') === true && eq(H().blockers, [{ reason: 'other', on: today, kind: 'perfect' }]), H().blockers);
+    check('passing a kind always keeps the reason "other", even if another reason was given', K.noteBlocker(h, hid, 'tired', today, 'going') === true && eq(H().blockers[1], { reason: 'other', on: today, kind: 'going' }), H().blockers);
+    check('the same kind again the same day returns false and adds nothing', K.noteBlocker(h, hid, 'other', today, 'perfect') === false && H().blockers.length === 2, H().blockers);
+    check('a different kind the same day is added', K.noteBlocker(h, hid, 'other', today, 'pulled') === true && H().blockers.length === 3, H().blockers);
+    check('plain "start" the same day is added too', K.noteBlocker(h, hid, 'start', today) === true && eq(H().blockers[3], { reason: 'start', on: today }), H().blockers);
+    const h2 = fresh(), h2id = K.addTask(h2.tasks, { title: 'Book the dentist', due: today });
+    K.noteBlocker(h2, h2id, 'other', today, 'perfect');
+    check('a plain reason the same day is still added by unstick when only a kind entry exists that day', K.unstick(h2, h2id, { reason: 'boring' }, today) !== null && eq(h2.tasks.items[0].blockers, [{ reason: 'other', on: today, kind: 'perfect' }, { reason: 'boring', on: today }]), h2.tasks.items[0].blockers);
+    const h3 = fresh(), h3id = K.addTask(h3.tasks, { title: 'Clear the desk', due: today });
+    const qMsg = K.unstick(h3, h3id, { reason: 'big', step: 'clear one drawer', quiet: true }, today);
+    check('unstick with quiet changes the task (the first piece is added) but keeps no answer', !!qMsg && h3.tasks.items.some(x => x.title === 'clear one drawer' && x.due === today) && eq(h3.tasks.items.find(x => x.id === h3id).blockers, []), h3.tasks.items.find(x => x.id === h3id).blockers);
+    check('…and "let it go" with quiet lets it go, keeping no answer', !!K.unstick(h3, h3id, { reason: 'notneeded', quiet: true }, today) && h3.tasks.items.find(x => x.id === h3id).letGoOn === today && eq(h3.tasks.items.find(x => x.id === h3id).blockers, []));
+    const raw = JSON.parse(JSON.stringify(fresh()));
+    raw.tasks = { lists: [], items: [{ id: 'tkL', title: 'Loader', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-04T10:00', blockers: [
+      { reason: 'other', on: today, kind: 'perfect' }, { reason: 'other', on: today, kind: 'later-kind' }, { reason: 'other', on: today, kind: 7 }, { reason: 'other', on: today, kind: '' }, { reason: 'mystery', on: today, kind: 'perfect' }] }] };
+    const loaded = K.normalize(raw).tasks.items[0].blockers;
+    check('the loader keeps a known kind and an unknown kind string as they are', eq(loaded[0], { reason: 'other', on: today, kind: 'perfect' }) && eq(loaded[1], { reason: 'other', on: today, kind: 'later-kind' }), loaded);
+    check('…drops a kind that isn\'t a non-empty string (a number, or empty) but keeps the entry, and drops an unknown reason', eq(loaded[2], { reason: 'other', on: today }) && eq(loaded[3], { reason: 'other', on: today }) && loaded.length === 4, loaded);
+    check('a known kind under "other" is that answer', K.answerOf({ reason: 'other', kind: 'perfect' }) === 'perfect' && K.answerOf({ reason: 'other', kind: 'going' }) === 'going' && K.answerOf({ reason: 'other', kind: 'pulled' }) === 'pulled');
+    check('an unknown kind, or plain "other", is "other"', K.answerOf({ reason: 'other', kind: 'later-kind' }) === 'other' && K.answerOf({ reason: 'other' }) === 'other');
+    check('another reason is itself, whatever its kind', K.answerOf({ reason: 'big' }) === 'big' && K.answerOf({ reason: 'tired', kind: 'perfect' }) === 'tired');
+    check('"perfect" is labelled "I want it perfect" and "big" "It\'s too big"', K.answerLabel('perfect') === 'I want it perfect' && K.answerLabel('big') === "It's too big", [K.answerLabel('perfect'), K.answerLabel('big')]);
+  }
+
+  console.log('\n[10d] "Later" in Help me start: tomorrow, not counted as a move');
+  {
+    const n2 = fresh(), built = { energy: 4, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [] };
+    n2.days[k] = built;
+    const a = K.addTask(n2.tasks, { title: 'Post the form', due: k }), b = K.addTask(n2.tasks, { title: 'Ring the bank', due: k });
+    K.addToTodaysPlan(n2, a, k); K.addToTodaysPlan(n2, b, k);
+    const T3 = id => n2.tasks.items.find(x => x.id === id);
+    T3(a).postponed = 2;
+    const said = K.notToday(n2, a, k);
+    check('"Later" on a task due today sets the date to tomorrow, leaves the moves as they were, and says so', said === 'It’s on tomorrow, and off today’s plan. Trying counts.' && T3(a).due === K.shift(k, 1) && T3(a).postponed === 2, [said, T3(a)]);
+    check('…and takes it off today\'s plan (link cleared, its copy gone), leaving the plan\'s other task', T3(a).plannedOn === null && T3(a).planUid === null && n2.days[k].tasks.length === 1 && n2.days[k].tasks[0].uid === T3(b).planUid, n2.days[k]);
+    const c = K.addTask(n2.tasks, { title: 'Sort the post', due: k });
+    K.moveToTomorrow(n2.tasks, c);
+    check('(for comparison, "Tomorrow" counts as a move)', T3(c).postponed === 1);
+    check('a task that isn\'t there returns null', K.notToday(n2, 'tkNone', k) === null);
+    const lat = K.addTask(n2.tasks, { title: 'Renew the passport', due: K.shift(k, 5) }), und = K.addTask(n2.tasks, { title: 'Sort the loft' });
+    K.addToTodaysPlan(n2, lat, k);
+    const m1 = K.notToday(n2, lat, k), m2 = K.notToday(n2, und, k);
+    check('a task with a later date keeps its date, and comes off today\'s plan if planned today', T3(lat).due === K.shift(k, 5) && T3(lat).plannedOn === null && T3(lat).planUid === null && m1 === 'It’s off today’s plan. Trying counts.', [m1, T3(lat)]);
+    check('a task with no date stays undated, and says it waits under Any time', T3(und).due === null && m2 === 'It waits under Any time. Trying counts.', [m2, T3(und)]);
+    const dp = K.addTask(n2.tasks, { title: 'Ticked on the plan', due: k }); K.addToTodaysPlan(n2, dp, k);
+    n2.days[k].tasks.find(x => x.uid === T3(dp).planUid).done = true;
+    check('a task whose plan copy is already ticked stays on the plan, and still goes to tomorrow', K.notToday(n2, dp, k) === 'It’s on tomorrow. Trying counts.' && T3(dp).plannedOn === k && T3(dp).due === K.shift(k, 1), T3(dp));
+    const dn = K.addTask(n2.tasks, { title: 'Already done', due: k }); K.setTaskDone(n2, dn, true);
+    check('a done task returns null and stays as it was', K.notToday(n2, dn, k) === null && T3(dn).due === k, T3(dn));
+    const lg = K.addTask(n2.tasks, { title: 'Let go of this', due: k }); T3(lg).letGoOn = k;
+    check('a let-go task returns null and stays as it was', K.notToday(n2, lg, k) === null && T3(lg).due === k, T3(lg));
+  }
+
   console.log('\n[11] What usually gets in the way');
   d = fresh();
   for (const [i, r] of [[1, 'start'], [2, 'start'], [3, 'big'], [4, 'start']]) {
@@ -265,6 +323,18 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   }
   p = find(d, 'blocker');
   check('"I don\'t know where to start" 3 of 4 times → a pattern, with what MyDay does about it', p && p.title === 'What usually gets in the way: “I don\'t know where to start”' && p.why === 'You chose that 3 of the 4 times you said what was in the way of a task.' && /first step/.test(p.tip), p);
+
+  console.log('\n[11b] What usually gets in the way: Help me start\'s answers');
+  d = fresh();
+  for (let i = 1; i <= 3; i++) {
+    const t = K.addTask(d.tasks, { title: 'Perfect ' + i });
+    K.noteBlocker(d, t, 'other', before(i), 'perfect');
+  }
+  p = find(d, 'blocker');
+  check('"I want it perfect" 3 times → a pattern with its own tip', p && p.title === 'What usually gets in the way: “I want it perfect”' && p.why === 'You chose that 3 of the 3 times you said what was in the way of a task.' && /rough first try still counts as started/.test(p.tip), p);
+  d = fresh();
+  for (let i = 1; i <= 3; i++) K.noteBlocker(d, K.addTask(d.tasks, { title: 'Newer ' + i }), 'other', before(i), 'later-kind');
+  check('an answer with an unknown kind counts as "Something else", which isn\'t counted → no pattern', !find(d, 'blocker'));
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

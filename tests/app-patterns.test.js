@@ -158,6 +158,158 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[8] Help me start (AI help off in this build)');
+  {
+    const TODAY = '2026-10-16', TOMORROW = '2026-10-17';
+    const base = { listId: '', category: 'admin', minutes: 30, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-01T10:00', due: null, postponed: 0, blockers: [], letGoOn: null };
+    const proj = { id: 'pjHs', title: 'Paint the hall', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00', leftOff: { text: 'Bought the paint and a roller', at: '2026-10-14T18:00' } };
+    const tk = (id, title, extra = {}) => ({ ...base, id, title, ...extra });
+    // Starts the scenario afresh: these tasks (and project), today's plan built or not, no timer.
+    const scene = async (items, { built = false, projects = [] } = {}) => {
+      await editStorage(`s => { s.tasks = { lists: [], items: ${JSON.stringify(items)} }; s.projects.items = ${JSON.stringify(projects)}; delete s.timer;
+        s.days = ${built ? JSON.stringify({ [TODAY]: { energy: 4, rest: false, builtAt: TODAY + 'T08:00', checkedIn: false, tasks: [] } }) : '{}'}; }`);
+    };
+    const open = async id => { await go('today/tasks/' + id, 2026, 10, 16, 9, 30); await click('[data-action=task-help-start]'); await sleep(200); };
+    const pick = async a => { await click(`[data-s=start-answer][data-id=${a}]`); await sleep(120); };
+    const chosen = () => ev(`[...document.querySelectorAll('[data-s=start-answer]')].filter(b => b.getAttribute('aria-pressed') === 'true' || b.getAttribute('aria-checked') === 'true' || b.classList.contains('on') || b.dataset.on === 'true').map(b => b.dataset.id)`);
+    const item = async id => (await data()).tasks.items.find(x => x.id === id);
+
+    const notes = 'Quote is at https://example.com/hall-paint?ref=1. Colours are in the folder.';
+    const steps = [{ id: 'st1', text: 'Buy masking tape', done: true }, { id: 'st2', text: 'Move the shoe rack', done: false }, { id: 'st3', text: 'Sand the doors', done: false }];
+    await scene([tk('tkHs', 'Start the hall', { projectId: 'pjHs', notes, steps, due: TODAY })], { projects: [proj] });
+    await go('today/tasks/tkHs', 2026, 10, 16, 9, 30);
+    check('an open task\'s page has a "Help me start" button, and no card until you tap it', (await text('[data-action=task-help-start]')) === 'Help me start' && !(await exists('#startCard')));
+    await click('[data-action=task-help-start]'); await sleep(200);
+    check('tapping it opens the card, "Let’s get started"', (await exists('#startCard')) && (await text('#startCard h3')) === 'Let’s get started', await text('#startCard h3'));
+    check('…with seven answers in order: too big, don\'t know where to start, can\'t get going, want it perfect, too tired, pulled away, boring',
+      eq(await ev(`[...document.querySelectorAll('[data-s=start-answer]')].map(b => b.dataset.id)`), ['big', 'start', 'going', 'perfect', 'tired', 'pulled', 'boring']), await ev(`[...document.querySelectorAll('[data-s=start-answer]')].map(b => b.textContent)`));
+    check('…and none of them chosen', eq(await chosen(), []), await chosen());
+    check('Open it: a link to its project, "Open “Paint the hall”"', (await ev(`(() => { const a = [...document.querySelectorAll('[data-s=start-open] a')].find(x => x.textContent === 'Open “Paint the hall”'); return a && a.getAttribute('href'); })()`)) === '#projects/p/pjHs');
+    check('…where you left off: "Last time you wrote: “Bought the paint and a roller”"', (await text('[data-s=start-open]')).includes('Last time you wrote: “Bought the paint and a roller”'), await text('[data-s=start-open]'));
+    check('…the link in its notes (without the full stop after it), opening in a new tab, and saying so', eq(await ev(`(() => { const a = [...document.querySelectorAll('[data-s=start-open] a')].find(x => x.textContent.startsWith('Open the link in its notes')); return a && [a.getAttribute('href'), a.target, a.textContent.includes('(opens in a new tab)')]; })()`), ['https://example.com/hall-paint?ref=1', '_blank', true]), await text('[data-s=start-open]'));
+    check('…its notes, and the next step that isn\'t ticked: "Next step: Move the shoe rack"', (await text('[data-s=start-notes]')) === notes && (await text('[data-s=start-next]')) === 'Next step: Move the shoe rack', [await text('[data-s=start-notes]'), await text('[data-s=start-next]')]);
+
+    await scene([tk('tkBare', 'Tidy the drawer', { due: TODAY })]);
+    await open('tkBare');
+    check('a task with no project, link, notes or steps says "Get out what you need for it — nothing more yet."', (await text('[data-s=start-open]')).includes('Get out what you need for it — nothing more yet.') && !(await exists('[data-s=start-next]')), await text('[data-s=start-open]'));
+
+    // Answers.
+    await scene([tk('tkPf', 'Write the report', { due: TODAY })], { built: true });
+    await open('tkPf');
+    await pick('perfect');
+    check('choosing "I want it perfect" shows "A rough first try still counts as started."', (await text('[data-s=start-rough]')) === 'A rough first try still counts as started.' && eq(await chosen(), ['perfect']), await chosen());
+    await pick('perfect');
+    check('tapping the same choice again un-chooses it, and the line goes', eq(await chosen(), []) && !(await exists('[data-s=start-rough]')), await chosen());
+    await pick('going'); await pick('tired');
+    check('choosing one and then another leaves only the last chosen', eq(await chosen(), ['tired']), await chosen());
+    check('nothing is kept until you act', eq((await item('tkPf')).blockers, []), (await item('tkPf')).blockers);
+    await click('[data-action=start-carry-on]'); await sleep(250);
+    check('"Carry on" keeps only the last answer, and closes the card', eq((await item('tkPf')).blockers, [{ reason: 'tired', on: TODAY }]) && !(await exists('#startCard')), (await item('tkPf')).blockers);
+
+    // Tick off.
+    await scene([tk('tkTk', 'Clear the hall', { due: TODAY, steps })], { built: true });
+    await open('tkTk');
+    check('with no answer chosen, "Start for 5 minutes" comes before "Tick off: Move the shoe rack"', (await ev(`document.querySelector('#startCard [data-action=start-five]').compareDocumentPosition(document.querySelector('#startCard [data-action=start-tick]')) & Node.DOCUMENT_POSITION_FOLLOWING`)) > 0);
+    await pick('start');
+    check('with "I don\'t know where to start" chosen, "Tick off: Move the shoe rack" is offered', (await text('[data-action=start-tick]')) === 'Tick off: Move the shoe rack', await text('[data-action=start-tick]'));
+    check('…as the first of the two buttons (the main one)', (await ev(`document.querySelector('#startCard [data-action=start-tick]').compareDocumentPosition(document.querySelector('#startCard [data-action=start-five]')) & Node.DOCUMENT_POSITION_FOLLOWING`)) > 0);
+    await click('[data-action=start-tick]'); await sleep(250);
+    const tkd = await item('tkTk');
+    check('tapping it ticks that step, leaves the others, and keeps the answer', eq(tkd.steps.map(s => s.done), [true, true, false]) && eq(tkd.blockers, [{ reason: 'start', on: TODAY }]), tkd);
+    check('…and the next step is now the one after it', (await text('[data-s=start-next]')) === 'Next step: Sand the doors', await text('[data-s=start-next]'));
+
+    // Start for 5 minutes.
+    await scene([tk('tkFive', 'Sort the post', { due: TODAY })], { built: true });
+    await open('tkFive');
+    await pick('pulled');
+    await click('[data-action=start-five]'); await sleep(400);
+    let dd = await data(), f5 = dd.tasks.items.find(x => x.id === 'tkFive');
+    check('"Start for 5 minutes" puts the task on today\'s plan', f5.plannedOn === TODAY && !!f5.planUid && dd.days[TODAY].tasks.some(x => x.uid === f5.planUid), f5);
+    check('…and starts the timer for it: kind "start", 5 minutes (300 seconds)', dd.timer && dd.timer.kind === 'start' && dd.timer.durationSec === 300 && dd.timer.uid === f5.planUid, dd.timer);
+    check('…keeping the answer as { reason: "other", kind: "pulled" }', eq(f5.blockers, [{ reason: 'other', on: TODAY, kind: 'pulled' }]), f5.blockers);
+    check('…and goes to Today, where the timer card shows', (await hash()) === '#today' && (await exists('#timerCard')), await hash());
+    check('the timer card says "Just five minutes. You can stop after — starting is the hard part."', (await text('#timerCard')).includes('Just five minutes. You can stop after — starting is the hard part.'), await text('#timerCard'));
+    await editStorage(`s => { s.timer.finished = true; s.timer.startedAt = null; s.timer.accumulatedMs = 300000; }`);
+    await go('today', 2026, 10, 16, 9, 40);
+    check('when the five minutes are done it says "Five minutes done — you started, and that\'s the hardest part."', (await text('#timerCard')).includes('Five minutes done — you started, and that\'s the hardest part.'), await text('#timerCard'));
+    check('…and offers "Keep going · 25 min" (the task\'s 30 minutes less the five)', (await text('[data-action=timer-keep]')) === 'Keep going · 25 min', await text('[data-action=timer-keep]'));
+    await click('[data-action=timer-keep]'); await sleep(300);
+    check('…and keeping going starts a focus timer of 25 minutes', (await data()).timer.kind === 'focus' && (await data()).timer.durationSec === 1500, (await data()).timer);
+    await editStorage(`s => { s.timer = { uid: s.tasks.items.find(x => x.id === 'tkFive').planUid, dayKey: '${TODAY}', kind: 'start', durationSec: 120, startedAt: null, accumulatedMs: 120000, finished: true }; }`);
+    await go('today', 2026, 10, 16, 9, 45);
+    check('Today\'s own two-minute start reads as before: "Two minutes done — …" and "Keep going · 28 min"', (await text('#timerCard')).includes('Two minutes done — you started, and that\'s the hardest part.') && (await text('[data-action=timer-keep]')) === 'Keep going · 28 min', [await text('#timerCard'), await text('[data-action=timer-keep]')]);
+
+    // The timer's already going, or belongs to another task.
+    const planned = (uid, id) => ({ ...task(uid, 'admin', 30, false), taskId: id });
+    const running = (uid, dur = 1500) => `s => { s.timer = { uid: '${uid}', dayKey: '${TODAY}', kind: 'focus', durationSec: ${dur}, startedAt: new Date(2026, 9, 16, 9, 29, 50).getTime(), accumulatedMs: 0, finished: false }; }`;
+    await scene([tk('tkOwn', 'Mend the fence', { due: TODAY, plannedOn: TODAY, planUid: 'puOwn' })], { built: true });
+    await editStorage(`s => { s.days['${TODAY}'].tasks.push(${JSON.stringify(planned('puOwn', 'tkOwn'))}); }`); await editStorage(running('puOwn'));
+    await open('tkOwn');
+    const before = (await data()).timer;
+    await click('[data-action=start-five]'); await sleep(400);
+    check('when this task\'s own timer is already going, it isn\'t restarted, and says so', eq((await data()).timer, before) && (await text('#toast')).includes('Its timer is already going'), [(await data()).timer, await text('#toast')]);
+    await scene([tk('tkSw', 'Post the parcel', { due: TODAY, plannedOn: TODAY, planUid: 'puSw' }), tk('tkOther', 'Mow the lawn', { due: TODAY, plannedOn: TODAY, planUid: 'puOther' })], { built: true });
+    await editStorage(`s => { s.days['${TODAY}'].tasks.push(${JSON.stringify(planned('puSw', 'tkSw'))}, ${JSON.stringify(planned('puOther', 'tkOther'))}); }`); await editStorage(running('puOther'));
+    await open('tkSw');
+    await click('[data-action=start-five]'); await sleep(400);
+    const sw = (await data()).timer;
+    check('when another task\'s timer is running, it switches to this task for five minutes, and says so', sw.uid === 'puSw' && sw.kind === 'start' && sw.durationSec === 300 && (await text('#toast')).includes('Switched the timer to this task: five minutes'), [sw, await text('#toast')]);
+
+    await scene([tk('tkNoPlan', 'Fold the washing', { due: TODAY })]);
+    await open('tkNoPlan');
+    check('with no plan built, there is no "Start for 5 minutes", and it says to build the day first', !(await exists('[data-action=start-five]')) && (await text('[data-s=start-no-timer]')).includes('build your day'), await text('[data-s=start-no-timer]'));
+
+    // Later, make it smaller, let it go.
+    await scene([tk('tkLater', 'Book the plumber', { due: TODAY, postponed: 1 })], { built: true });
+    await open('tkLater');
+    await click('[data-action=start-later]'); await sleep(250);
+    const lt = await item('tkLater');
+    check('"Later": due tomorrow, its moves unchanged, and the card closes', lt.due === TOMORROW && lt.postponed === 1 && !(await exists('#startCard')), lt);
+    check('…and focus goes back to "Help me start"', (await ev(`document.activeElement?.dataset?.action || ''`)) === 'task-help-start', await ev(`document.activeElement?.outerHTML.slice(0, 100)`));
+
+    await scene([tk('tkSm', 'Clear the garage', { due: TODAY, postponed: 2 })], { built: true });
+    await open('tkSm');
+    await click('[data-action=start-smaller]'); await sleep(200);
+    check('"Make it smaller" asks for a first 10-minute piece', await exists('#startPiece'));
+    check('…and "Add it for today" waits for something to be written', await ev(`document.querySelector('[data-action=start-smaller-go]').disabled`));
+    await type('#startPiece', 'clear just the workbench'); await click('[data-action=start-smaller-go]'); await sleep(300);
+    dd = await data();
+    const piece = dd.tasks.items.find(x => x.title === 'clear just the workbench'), orig = dd.tasks.items.find(x => x.id === 'tkSm');
+    check('writing it adds a 10-minute task for today', piece && piece.minutes === 10 && piece.due === TODAY, piece);
+    check('…the original waits under Any time with its moves started again, and no answer is kept (none was chosen)', orig.due === null && orig.postponed === 0 && eq(orig.blockers, []) && !(await exists('#startCard')), orig);
+
+    await scene([tk('tkSm2', 'Clear the shed', { due: TODAY })], { built: true });
+    await open('tkSm2'); await pick('perfect');
+    await click('[data-action=start-smaller]'); await sleep(150); await type('#startPiece', 'clear the top shelf'); await click('[data-action=start-smaller-go]'); await sleep(300);
+    check('"Make it smaller" with "I want it perfect" chosen keeps exactly that answer, not "too big"', eq((await item('tkSm2')).blockers, [{ reason: 'other', on: TODAY, kind: 'perfect' }]), (await item('tkSm2')).blockers);
+
+    await scene([tk('tkLg', 'Renew the old licence', { due: TODAY })], { built: true });
+    await open('tkLg');
+    await click('[data-action=start-let-go]'); await sleep(250);
+    const lg = await item('tkLg');
+    check('"Let it go" with no answer chosen: the task is let go today, no answer is kept, and the card closes', lg.letGoOn === TODAY && eq(lg.blockers, []) && !(await exists('#startCard')), lg);
+    await scene([tk('tkLg2', 'Cancel the old magazine', { due: TODAY })], { built: true });
+    await open('tkLg2'); await pick('perfect');
+    await click('[data-action=start-let-go]'); await sleep(250);
+    check('"Let it go" with "I want it perfect" chosen keeps exactly that answer, not "doesn\'t matter any more"', eq((await item('tkLg2')).blockers, [{ reason: 'other', on: TODAY, kind: 'perfect' }]) && (await item('tkLg2')).letGoOn === TODAY, (await item('tkLg2')).blockers);
+
+    await scene([tk('tkCo', 'Water the plants', { due: TODAY })], { built: true });
+    await open('tkCo');
+    await click('[data-action=start-carry-on]'); await sleep(200);
+    check('"Carry on" with no answer closes the card and changes nothing on the task', !(await exists('#startCard')) && eq((await item('tkCo')).blockers, []) && (await item('tkCo')).due === TODAY, await item('tkCo'));
+
+    await scene([tk('tkStuck2', 'Sort out the bills', { due: TODAY, postponed: 3 })], { built: true });
+    await go('today/tasks/tkStuck2', 2026, 10, 16, 9, 30);
+    check('a stuck task still shows its Stuck card', await exists('#stuckCard'));
+    await click('[data-action=task-help-start]'); await sleep(200); await pick('perfect'); await click('[data-action=start-carry-on]'); await sleep(300);
+    check('keeping an answer from Help me start doesn\'t hide the Stuck card during the visit', (await exists('#stuckCard')) && eq((await item('tkStuck2')).blockers, [{ reason: 'other', on: TODAY, kind: 'perfect' }]), (await item('tkStuck2')).blockers);
+
+    await scene([tk('tkNoAsk', 'Plan the trip', { due: TODAY })]);
+    await open('tkNoAsk');
+    await pick('start');
+    check('with AI help off in this build, "I don\'t know where to start" has no "Think it through with Ask MyDay"', !(await exists('[data-action=start-ask]')) && !(await exists('[data-s=start-ask]')));
+  }
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

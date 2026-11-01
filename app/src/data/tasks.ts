@@ -15,7 +15,7 @@ import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, shortDate, 
 import { isWorkDay } from './patterns/notice';
 import { taskLimit } from './patterns/adapt';
 import { makeTask } from './plan';
-import type { Blocker, Category, DateKey, MyDayData, TaskDeadline, TaskItem, TasksData, TaskStep, Waiting } from './types';
+import type { Blocker, Category, DateKey, MyDayData, StartKind, TaskDeadline, TaskItem, TasksData, TaskStep, Waiting } from './types';
 import { intIn, isObj, listOf, uid } from './util';
 
 export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20, waitingOn: 120, steps: 30, step: 120, after: 10, deadlineFrom: 200, checkedBy: 80 };
@@ -51,8 +51,8 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
       planUid: isDateKey(t.plannedOn) && typeof t.planUid === 'string' ? t.planUid : null,
       createdAt: isDateTime(t.createdAt) ? t.createdAt : now,
       postponed: intIn(t.postponed, 0, 999, 0),
-      blockers: listOf(t.blockers).filter((b): b is { reason: Blocker; on: DateKey } => isObj(b) && BLOCKERS.includes(b.reason as Blocker) && isDateKey(b.on))
-        .map(b => ({ ...b, reason: b.reason, on: b.on })).slice(-TASK_LIMITS.blockers),
+      blockers: listOf(t.blockers).filter((b): b is { reason: Blocker; on: DateKey; kind?: unknown } => isObj(b) && BLOCKERS.includes(b.reason as Blocker) && isDateKey(b.on))
+        .map(({ kind, ...b }) => ({ ...b, reason: b.reason, on: b.on, ...(typeof kind === 'string' && kind ? { kind } : {}) })).slice(-TASK_LIMITS.blockers),
       letGoOn: isDateKey(t.letGoOn) ? t.letGoOn : null,
     };
     if (typeof item.projectId !== 'string' || !item.projectId) delete item.projectId; // a project link (1.12.0), or none
@@ -201,6 +201,20 @@ export function removeTask(d: TasksData, id: string): boolean {
   return true;
 }
 export function moveToTomorrow(d: TasksData, id: string): boolean { return editTask(d, id, { due: shift(todayKey(), 1) }); }
+// "Later" in Help me start (specs/help-me-start.md): not today, kindly. A task due today or before goes to tomorrow; a
+// later date stays, and a task under Any time stays undated. Off today's plan either way (unless it's ticked or rolled
+// there). Trying and stopping isn't a move, so it doesn't count towards the Stuck card. Returns what it says, or null.
+export function notToday(data: MyDayData, id: string, k: DateKey = todayKey()): string | null {
+  const t = data.tasks.items.find(x => x.id === id);
+  if (!t || t.done || t.letGoOn) return null;
+  const moved = !!t.due && t.due <= k;
+  if (moved) t.due = shift(k, 1);
+  const copy = planCopy(data, t), day = data.days[k];
+  const off = t.plannedOn === k && !!copy && !copy.done && !copy.rolledQid;
+  if (off) { if (day) day.tasks = day.tasks.filter(x => x !== copy); t.plannedOn = null; t.planUid = null; }
+  const said = moved && off ? 'It’s on tomorrow, and off today’s plan' : moved ? 'It’s on tomorrow' : off ? 'It’s off today’s plan' : t.due ? 'It keeps its date' : 'It waits under Any time';
+  return `${said}. Trying counts.`;
+}
 // Moved to a later day while it's on today's plan: it comes off today's plan too, so the plan and the task agree —
 // unless it's already ticked there or rolled to the queue. Earlier days' plans are history and stay as they were.
 // Returns true when it came off.
@@ -254,16 +268,19 @@ export function nextDayOff(data: MyDayData, k: DateKey = todayKey()): { date: Da
   }
   return { date: shift(k, 1), label: 'tomorrow' };
 }
-export type Unstuck = { reason: Blocker; step?: string; need?: string };
+// `quiet`: change the task without keeping this as your answer (Help me start keeps only the answer you gave).
+export type Unstuck = { reason: Blocker; step?: string; need?: string; quiet?: boolean };
 // An answer to "What's getting in the way?" kept with the task without changing it, for when you take it elsewhere:
 // "I don't know where to start", handed over to Ask MyDay to think it through (specs/ask-help-you-think.md §4). Once a
 // day per answer (and unstick won't add the same answer again that day). Like any answer it quiets the card for a week
 // (isStuck; the task's page keeps it open for that visit, and "Something in the way?" brings it back at any time);
 // unlike unstick, the count of moves stays, so the card offers itself again a week later if nothing has changed.
-export function noteBlocker(data: MyDayData, id: string, reason: Blocker, k: DateKey = todayKey()): boolean {
+// `kind`: one of Help me start's newer answers, kept under 'other' (specs/help-me-start.md §3).
+export function noteBlocker(data: MyDayData, id: string, reason: Blocker, k: DateKey = todayKey(), kind?: StartKind): boolean {
   const t = data.tasks.items.find(x => x.id === id);
-  if (!t || t.blockers.some(b => b.reason === reason && b.on === k)) return false;
-  t.blockers = [...t.blockers, { reason, on: k }].slice(-TASK_LIMITS.blockers);
+  if (kind) reason = 'other';
+  if (!t || t.blockers.some(b => b.reason === reason && b.on === k && (b.kind ?? null) === (kind ?? null))) return false;
+  t.blockers = [...t.blockers, { reason, on: k, ...(kind ? { kind } : {}) }].slice(-TASK_LIMITS.blockers);
   return true;
 }
 
@@ -279,7 +296,7 @@ export function unstick(data: MyDayData, id: string, u: Unstuck, k: DateKey = to
   const step = (u.step ?? '').trim(), need = (u.need ?? '').trim();
   if ((u.reason === 'big' || u.reason === 'start') && !step) return null;
   // (Already kept today — handed over to Ask MyDay first, say — it isn't counted twice for What MyDay has noticed.)
-  if (!t.blockers.some(b => b.reason === u.reason && b.on === k)) t.blockers = [...t.blockers, { reason: u.reason, on: k }].slice(-TASK_LIMITS.blockers);
+  if (!u.quiet && !t.blockers.some(b => b.reason === u.reason && b.on === k && !b.kind)) t.blockers = [...t.blockers, { reason: u.reason, on: k }].slice(-TASK_LIMITS.blockers);
   t.postponed = 0;
   switch (u.reason) {
     case 'big': case 'start': {

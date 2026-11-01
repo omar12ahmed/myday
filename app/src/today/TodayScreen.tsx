@@ -215,7 +215,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
       if (a === 'pause') { if (!t.startedAt || t.finished) return false; t.accumulatedMs += Date.now() - t.startedAt; t.startedAt = null; }
       if (a === 'resume') { if (t.startedAt || t.finished) return false; t.startedAt = Date.now(); }
       if (a === 'plus5') { t.accumulatedMs = Math.min(t.accumulatedMs, t.durationSec * 1000); t.durationSec += 300; t.finished = false; t.startedAt = Date.now(); }
-      if (a === 'keep') { if (!task) return false; Object.assign(t, { kind: 'focus', durationSec: Math.max(5, task.minutes - 2) * 60, accumulatedMs: 0, startedAt: Date.now(), finished: false }); }
+      if (a === 'keep') { if (!task) return false; Object.assign(t, { kind: 'focus', durationSec: Math.max(5, task.minutes - Math.round(t.durationSec / 60)) * 60, accumulatedMs: 0, startedAt: Date.now(), finished: false }); }
     });
   }
 

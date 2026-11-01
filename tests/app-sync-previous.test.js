@@ -746,6 +746,22 @@ async function signIn(d, url) {
     await now.open(NOW + '#projects/a/amBack1');
     check('back on this release: the ambition reads exactly as sent, its project link says it\'s gone, and this release is in step', await now.until(`!!document.querySelector('[data-s=ambition-link][data-kind=project]') && /No longer in your projects/.test(document.querySelector('[data-s=ambition-link][data-kind=project]').textContent)`, 30000)
       && same((await now.data()).ambitions.items.find(a => a.id === 'amBack1'), amb) && await synced(now) && (await now.status()) === 'synced', await now.text('[data-s=ambition-page]'));
+
+    console.log('\n[27] The answers kept by Help me start pass through the previous release unchanged (specs/help-me-start.md)');
+    const TSB = 'tkStartBack';
+    const startAnswers = [{ reason: 'other', on: today, kind: 'perfect' }, { reason: 'start', on: today }];
+    await now.returnToApp();
+    await now.setData(`s => { s.tasks.items.push({ id: '${TSB}', title: 'Pay council tax', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${stamp}', postponed: 0, blockers: ${JSON.stringify(startAnswers)}, letGoOn: null }); }`);
+    check('this release saves the task, and its record carries both answers exactly, the kind included', await eventually(async () => eq((await record('task', TSB))?.data?.blockers, startAnswers)) && await synced(now), (await record('task', TSB))?.data?.blockers);
+    await before.returnToApp();
+    const heldAnswers = () => before.data().then(d => d.tasks.items.find(t => t.id === TSB)?.blockers);
+    check('the previous release syncs and holds both answers exactly, the kind included', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.some(t => t.id === '${TSB}')`, 20000) && eq(await heldAnswers(), startAnswers), await heldAnswers());
+    await before.setData(`s => { const t = s.tasks.items.find(x => x.id === '${TSB}'); t.title = 'Pay council tax (renamed)'; }`);
+    check('a rename on the previous release reaches the account with both answers still exact', await eventually(async () => { const r = (await record('task', TSB))?.data; return r?.title === 'Pay council tax (renamed)' && eq(r?.blockers, startAnswers); }) && await synced(before), (await record('task', TSB))?.data);
+    await now.open(NOW + `#today/tasks/${TSB}`); await now.returnToApp();
+    check('back on this release: the new title arrives and both answers are still exact in its saved data', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TSB}')?.title === 'Pay council tax (renamed)'`, 20000)
+      && eq((await now.data()).tasks.items.find(t => t.id === TSB)?.blockers, startAnswers), (await now.data()).tasks.items.find(t => t.id === TSB)?.blockers);
+
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

@@ -12,7 +12,7 @@
 import { CAT_LABEL } from '../plan';
 import { actualFor } from '../rota';
 import { isDateTime, shift } from '../dates';
-import type { Category, DateKey, MyDayData, PatternAnswer, Blocker } from '../types';
+import type { Category, DateKey, MyDayData, PatternAnswer, Blocker, StartKind } from '../types';
 import { CATEGORIES } from './saved';
 
 export const WEEKS = 8;
@@ -38,7 +38,18 @@ export const BLOCKER_LABEL: Record<Blocker, string> = {
   big: "It's too big", start: "I don't know where to start", boring: "It's boring", tired: "I'm too tired for it",
   info: "I'm missing something I need", notneeded: "It doesn't matter any more", other: 'Something else',
 };
-const BLOCKER_TIP: Partial<Record<Blocker, string>> = {
+// Help me start's newer answers, kept as 'other' with a `kind`, so older versions keep them (specs/help-me-start.md §3).
+export const START_KINDS: StartKind[] = ['going', 'perfect', 'pulled'];
+export const START_KIND_LABEL: Record<StartKind, string> = { going: "I just can't get going", perfect: 'I want it perfect', pulled: 'I keep getting pulled away' };
+// An answer as you gave it: one of the newer ones (a known `kind` under 'other'), or the answer itself. An unknown kind
+// (from a newer MyDay) counts as "Something else".
+export type Answer = Blocker | StartKind;
+export const answerOf = (b: { reason: Blocker; kind?: string }): Answer => (b.reason === 'other' && START_KINDS.includes(b.kind as StartKind) ? b.kind as StartKind : b.reason);
+export const answerLabel = (a: Answer): string => (a in START_KIND_LABEL ? START_KIND_LABEL[a as StartKind] : BLOCKER_LABEL[a as Blocker]);
+const BLOCKER_TIP: Partial<Record<Answer, string>> = {
+  going: 'When that happens, Help me start offers a five-minute start: stopping after five minutes is fine.',
+  perfect: 'When that happens, Help me start reminds you that a rough first try still counts as started.',
+  pulled: 'When that happens, Help me start offers the focus timer, so one thing has your attention.',
   big: 'When that happens, MyDay offers to turn the first 10-minute piece into its own task.',
   start: 'When that happens, MyDay asks for just the first step and makes that the task for today.',
   boring: 'When that happens, MyDay offers a 10-minute version — stopping after 10 minutes is fine.',
@@ -189,11 +200,11 @@ function blockers(data: MyDayData, k: DateKey): Pattern | null {
   const from = shift(k, -WEEKS * 7);
   const bs = data.tasks.items.flatMap(t => t.blockers.filter(b => b.on >= from && b.on <= k));
   if (bs.length < 3) return null;
-  const counts = new Map<Blocker, number>();
-  for (const b of bs) if (b.reason !== 'other') counts.set(b.reason, (counts.get(b.reason) ?? 0) + 1);
+  const counts = new Map<Answer, number>();
+  for (const b of bs) { const a = answerOf(b); if (a !== 'other') counts.set(a, (counts.get(a) ?? 0) + 1); }
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
   if (!top || top[1] < 3 || top[1] < bs.length / 2) return null;
-  return make('blocker', `What usually gets in the way: “${BLOCKER_LABEL[top[0]]}”`,
+  return make('blocker', `What usually gets in the way: “${answerLabel(top[0])}”`,
     `You chose that ${top[1]} of the ${bs.length} times you said what was in the way of a task.`, bs.map(b => b.on), null, BLOCKER_TIP[top[0]] ?? null);
 }
 

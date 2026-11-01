@@ -36,6 +36,8 @@ export function TimerCard({ data, onAction }: { data: MyDayData; onAction: (a: T
   const rem = timerRemainingMs(t), total = t.durationSec * 1000;
   const paused = !t.startedAt && !t.finished;
   const isStart = t.kind === 'start';
+  // A start's length: two minutes from Today, five from Help me start (specs/help-me-start.md).
+  const startMin = Math.max(1, Math.round(t.durationSec / 60)), startWords = startMin === 2 ? 'two' : startMin === 5 ? 'five' : String(startMin);
   const btn = (a: TimerAction, label: string, variant: 'primary' | 'tonal' | 'ghost' = 'tonal') =>
     <Button variant={variant} data-action={`timer-${a}`} onClick={() => onAction(a)}>{label}</Button>;
 
@@ -54,12 +56,12 @@ export function TimerCard({ data, onAction }: { data: MyDayData; onAction: (a: T
         </div>
       </div>
       <p className="title m-0 font-semibold">{task.title}</p>
-      <p className="text-[15px] text-fg-2 mt-1 mb-3.5">{isStart ? 'Just two minutes. You can stop after — starting is the hard part.' : 'One thing at a time. Stopping early is completely fine.'}</p>
+      <p className="text-[15px] text-fg-2 mt-1 mb-3.5">{isStart ? `Just ${startWords} minutes. You can stop after — starting is the hard part.` : 'One thing at a time. Stopping early is completely fine.'}</p>
       {t.finished && isStart ? (
         <>
-          <p className="timer-msg bg-primary-container text-on-primary-container rounded-tile px-3.5 py-3 text-left">Two minutes done — you started, and that's the hardest part.</p>
+          <p className="timer-msg bg-primary-container text-on-primary-container rounded-tile px-3.5 py-3 text-left">{startWords.charAt(0).toUpperCase() + startWords.slice(1)} minutes done — you started, and that's the hardest part.</p>
           <div className="grid gap-2.5 mt-3">
-            {btn('keep', `Keep going · ${Math.max(5, task.minutes - 2)} min`, 'primary')}
+            {btn('keep', `Keep going · ${Math.max(5, task.minutes - startMin)} min`, 'primary')}
             <div className="grid grid-cols-2 gap-2.5">{btn('done', 'Tick it off')}{btn('stop', 'Stop here', 'ghost')}</div>
           </div>
         </>

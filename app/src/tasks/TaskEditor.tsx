@@ -17,6 +17,7 @@ import type { Category, MyDayData } from '../data/types';
 import { DeadlineCard } from './DeadlineCard';
 import { MilestoneCard } from './MilestoneCard';
 import { StepsCard } from './StepsCard';
+import { HelpMeStart } from './HelpMeStart';
 import { StuckCard } from './StuckCard';
 import { WaitingCard } from './WaitingCard';
 import { StartsAfterCard } from './StartsAfterCard';
@@ -29,6 +30,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   // Handed over to Ask MyDay from the stuck card: your answer quiets the card for a week, but it stays open for this visit,
   // as you left it, so you can write the first step when you come back from +.
   const [kept, setKept] = useState(false);
+  const [helping, setHelping] = useState(false); // Help me start (specs/help-me-start.md), open on your tap
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return <><BackLink to="today/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
   // A new, later date takes it off today's plan too (data/tasks.ts), and says so.
@@ -80,6 +82,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
           <Button inline variant={done ? 'selected' : 'primary'} aria-pressed={done} data-action="task-toggle" onClick={() => { const v = !done; if (update(d => (setTaskDone(d, id, v) ? undefined : false))) toast(v ? 'Done — nice.' : t.letGoOn ? 'Back on your list.' : 'Not done after all.'); }}>{t.letGoOn ? 'Let go — bring it back' : done ? 'Done ✓' : 'Mark done'}</Button>
           {!done && !planned && <Button inline data-action="task-plan" disabled={!room.built || room.room <= 0} onClick={plan}>Add to today's plan</Button>}
           {!done && <Button inline variant="ghost" data-action="task-tomorrow" onClick={tomorrow}>Tomorrow</Button>}
+          {!done && !t.waiting && <Button inline variant="ghost" aria-expanded={helping} data-action="task-help-start" onClick={() => setHelping(!helping)}>Help me start</Button>}
           {!done && !stuck && !kept && !t.waiting && <Button inline variant="ghost" aria-expanded={ask} data-action="task-stuck" onClick={() => setAsk(!ask)}>Something in the way?</Button>}
           {!done && !t.waiting && <Button inline variant="ghost" aria-expanded={waitAsk} data-action="task-wait" onClick={() => setWaitAsk(!waitAsk)}>Waiting on someone?</Button>}
           <Button inline variant="ghost" data-action="task-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete</Button>
@@ -91,6 +94,8 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
           <Sparkles size={18} aria-hidden="true" /> Break into smaller steps</Button>}
       </Card>
       {!done && !t.waiting && waitAsk && <WaitingCard key="asking" data={data} t={t} asking onClose={() => setWaitAsk(false)} />}
+      {helping && !done && !t.waiting && <HelpMeStart data={data} t={t} onKeep={() => { if (stuck) setKept(true); }}
+        onClose={() => { setHelping(false); setTimeout(() => document.querySelector<HTMLElement>('[data-action="task-help-start"]')?.focus(), 0); }} />}
       {ask && !done && !stuck && !kept && !t.waiting && <StuckCard data={data} t={t} stuck={false} />}
       <DeadlineCard data={data} t={t} />
       <StepsCard data={data} t={t} />

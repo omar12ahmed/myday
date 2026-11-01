@@ -605,7 +605,8 @@ export interface TaskItem {
   createdAt: DateTime;
   // Added in 1.6.0 (absent before → 0, none, null):
   postponed: number;          // times you moved its date later ("Tomorrow", or a later date)
-  blockers: { reason: Blocker; on: DateKey }[]; // your answers to "What's getting in the way?"
+  blockers: { reason: Blocker; on: DateKey; kind?: string }[]; // your answers to "What's getting in the way?"; `kind`: a
+                              // newer answer (StartKind, Help me start, 1.119.0+) kept under 'other', so older versions keep it
   letGoOn: DateKey | null;    // you decided it doesn't matter any more ("Let it go")
   projectId?: string;         // the project it belongs to (1.12.0; absent → none)
   waiting?: Waiting;          // waiting on someone or something (1.50.0; absent → not waiting); who it waits on (`on`) is
@@ -628,6 +629,8 @@ export interface TaskStep { id: string; text: string; done: boolean; [other: str
 // follow-up "Chase it" added, so it's added once per wait.
 export interface Waiting { on: string; since: DateKey; until: DateKey | null; chaseTaskId?: string; [other: string]: unknown }
 export type Blocker = 'big' | 'start' | 'boring' | 'tired' | 'info' | 'notneeded' | 'other';
+// Help me start's newer answers (specs/help-me-start.md §3): can't get going, want it perfect, keep getting pulled away.
+export type StartKind = 'going' | 'perfect' | 'pulled';
 export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: string]: unknown }
 
 // ---------- What MyDay has noticed (see data/patterns/) ----------

@@ -938,6 +938,36 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8k3] "I don\'t know where to start" in Help me start hands over to Ask MyDay (practice mode)');
+  {
+    const at = `${TODAY}T08:00`;
+    const TKH = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    const PJQ = { id: 'pjHq', title: 'Quiet plans two', summary: '', stage: 'explore', status: 'active', private: true, nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at };
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.projects.items.push(${JSON.stringify(PJQ)}); s.tasks.items.push(${JSON.stringify(TKH('tkHm', 'Sort out the shed'))}, ${JSON.stringify(TKH('tkHn', 'Draft the quiet letter', { projectId: 'pjHq' }))}); }`);
+    await mock.until(`document.querySelector('#app')`);
+    const savedH = async () => (await mock.data()).tasks.items.find(t => t.id === 'tkHm');
+    const link = '[data-action=start-ask]';
+    await mock.ev(`location.hash = 'today/tasks/tkHm'`); await mock.until(`document.querySelector('[data-action=task-help-start]')`, 5000);
+    await mock.click('[data-action=task-help-start]'); await mock.until(`document.getElementById('startCard')`, 5000);
+    await mock.click('[data-s=start-answer][data-id=perfect]'); await sleep(150);
+    check('in Help me start, choosing "I want it perfect" shows no link to Ask MyDay', !(await mock.exists(link)) && !(await mock.exists('[data-s=start-ask]')));
+    await mock.click('[data-s=start-answer][data-id=start]'); await sleep(150);
+    check('choosing "I don\'t know where to start" shows "Not sure what the first step is? Think it through with Ask MyDay"', (await mock.text('[data-s=start-ask]')) === 'Not sure what the first step is? Think it through with Ask MyDay' && (await mock.text(link)) === 'Think it through with Ask MyDay', await mock.text('[data-s=start-ask]'));
+    await mock.click(link); await mock.until(`document.getElementById('captureText')`, 5000); await sleep(200);
+    const phaseH = () => mock.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`);
+    check('tapping it opens + with "I don\'t know where to start with this" typed in', (await mock.ev(`document.getElementById('captureText').value`)) === "I don't know where to start with this");
+    check('…Ask MyDay hasn\'t been asked: it is idle and nothing is sent until you tap it', (await phaseH()) === 'idle' && !(await mock.exists('[data-s=ask-thread]')) && !(await mock.exists('[data-s=ask-message]')), await phaseH());
+    check('…and the answer "I don\'t know where to start" is kept on the task, today, once', eq((await savedH()).blockers, [{ reason: 'start', on: TODAY }]), (await savedH()).blockers);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(250);
+    await mock.ev(`location.hash = 'today/tasks/tkHn'`); await mock.until(`document.querySelector('[data-action=task-help-start]')`, 5000);
+    await mock.click('[data-action=task-help-start]'); await mock.until(`document.getElementById('startCard')`, 5000);
+    await mock.click('[data-s=start-answer][data-id=start]'); await sleep(150);
+    check('a task in a private project: Help me start shows the answers but no link to Ask MyDay', (await mock.exists('[data-s=start-answer][data-id=start]')) && !(await mock.exists(link)) && !(await mock.exists('[data-s=start-ask]')));
+    await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => !['tkHm', 'tkHn'].includes(t.id)); s.projects.items = s.projects.items.filter(p => p.id !== 'pjHq'); }`);
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[8l] Milestones and decisions with Ask MyDay; private projects');
   {
     const at = `${TODAY}T08:00`;
