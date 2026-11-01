@@ -34,6 +34,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as EX from ${src('exploring')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`, `export * as CT from ${src('content')};`, `export * as F from ${src('files')};`,
     `export * as AM from ${src('ambitions')};`,
     `export * as SW from ${src('software')};`, `export * as TPL from ${src('templates')};`,
+    `export * as CR from ${src('career')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -3447,6 +3448,299 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const dsw = world(kp0()); dsw.software.items = [req('srA', { projectId: 'pjK', checks: [{ id: 'scA', text: 'A', done: true, on: DAY }] }), bug('sbA', { projectId: 'pjK' }), rel('slA', 'msA', { projectId: 'pjK' })];
     const swBefore = clone(dsw.software);
     check('changing a project to software and back to general leaves its software items exactly as they were', K.setTemplate(dsw, 'pjK', 'software') && dsw.projects.items[0].template === 'software' && eq(dsw.software, swBefore) && K.setTemplate(dsw, 'pjK', 'general') && !('template' in dsw.projects.items[0]) && eq(dsw.software, swBefore), dsw.software);
+  }
+
+  console.log('\n[33] Career projects (specs/projects-career.md)');
+  {
+    const T0 = '2026-10-01T09:00', T1 = '2026-10-02T09:00', k = '2026-11-10';
+    const C = K.CR, TPL = K.TPL;
+    const role = (id, x = {}) => ({ id, type: 'role', projectId: 'pjA', title: 'SOC analyst', createdAt: T0, updatedAt: T0, ...x });
+    const appl = (id, x = {}) => ({ id, type: 'application', projectId: 'pjA', company: 'Acme', stage: 'interested', createdAt: T0, updatedAt: T0, ...x });
+    const pjA = () => base('pjA', { template: 'career' }), pjB = () => base('pjB', { template: 'career' });
+    const mk = (...items) => { const d = world(pjA(), pjB()); d.career.items = items; return d; };
+    const aged = d => { for (const x of d.career.items) x.updatedAt = T0; };
+    const ids = l => l.map(x => x.id);
+    const item = (d, id) => d.career.items.find(x => x.id === id);
+    const tk = (d, id) => d.tasks.items.find(t => t.id === id);
+    const days = n => K.shift(k, n);
+
+    console.log('  reading');
+    const written = [
+      role('crA', { notes: 'Shift work is fine', futureBit: { a: 1 } }),
+      { id: 'cxA', type: 'newer', projectId: 'pjA', createdAt: T0, updatedAt: T0, whatever: { a: 1 } },
+      appl('caA', { stage: 'newstage', createdAt: T1, updatedAt: T1, futureBit: 2, interviews: [{ id: 'ciA', on: '2026-11-12', extra: 1 }, 'junk', { id: 'ciB' }, { weird: true }] }),
+      appl('caB', { stage: 'applied' })];
+    const r1 = { dropped: 0 };
+    const read1 = C.normalizeCareer({ items: clone(written), futureSection: { z: 1 } }, r1);
+    check('career items are read back exactly as written, with an unknown type, extra keys, an unknown stage, an interview of an unknown shape and a missing interviews list all kept, and nothing counted', eq(read1.items, written) && r1.dropped === 0 && eq(read1.futureSection, { z: 1 }), [read1, r1]);
+    const r2 = { dropped: 0 };
+    const read2 = C.normalizeCareer(clone(read1), r2);
+    check('…and reading what was read gives exactly the same again, with nothing counted', eq(read2, read1) && r2.dropped === 0, [read2, r2]);
+    const r3 = { dropped: 0 };
+    const okItem = (id, x = {}) => ({ id, type: 'application', projectId: 'pjA', createdAt: T0, updatedAt: T0, ...x });
+    const bad = C.normalizeCareer({ items: [okItem('caA'), okItem('caA', { company: 'Duplicate' }), { type: 'application', projectId: 'pjA' }, okItem('has space'), okItem('x'.repeat(65)), okItem('caB', { projectId: undefined }), okItem('caC', { type: undefined }), 'junk', okItem('y'.repeat(64))] }, r3);
+    check('an item with no id, a bad id (a space, or over 64 characters), no projectId or no type, one that is not an object, and a later duplicate id are each counted and left off (64 characters is fine)', eq(ids(bad.items), ['caA', 'y'.repeat(64)]) && r3.dropped === 7, [ids(bad.items), r3.dropped]);
+    const filled = C.normalizeCareer({ items: [{ id: 'caA', type: 'application', projectId: 'pjA', updatedAt: T1 }, { id: 'caB', type: 'application', projectId: 'pjA' }, { id: 'caC', type: 'application', projectId: 'pjA', createdAt: T0 }] }, { dropped: 0 }).items;
+    check('a missing createdAt is filled from updatedAt, else from 2000-01-01T00:00, and a missing updatedAt from createdAt', filled[0].createdAt === T1 && filled[1].createdAt === '2000-01-01T00:00' && filled[1].updatedAt === '2000-01-01T00:00' && filled[2].updatedAt === T0, filled);
+    check('a career section that is not an object reads as an empty list', eq(C.normalizeCareer(undefined, { dropped: 0 }), { items: [] }) && eq(C.normalizeCareer('x', { dropped: 0 }), { items: [] }) && eq(C.normalizeCareer(['a'], { dropped: 0 }), { items: [] }));
+
+    console.log('  lists');
+    const dl = mk(role('crZ', { createdAt: '2026-10-03T09:00' }), role('crB'), role('crA'), appl('caA'), role('crO', { projectId: 'pjB' }), role('crM', { createdAt: T1 }));
+    check('rolesOf gives only that project\'s roles, by createdAt then id', eq(ids(C.rolesOf(dl, 'pjA')), ['crA', 'crB', 'crM', 'crZ']) && eq(ids(C.rolesOf(dl, 'pjB')), ['crO']), ids(C.rolesOf(dl, 'pjA')));
+    const dla = mk(appl('caZ', { createdAt: T1 }), appl('caB'), appl('caA'), role('crA'), appl('caO', { projectId: 'pjB' }));
+    check('applicationsOf gives only that project\'s applications, by createdAt then id', eq(ids(C.applicationsOf(dla, 'pjA')), ['caA', 'caB', 'caZ']) && eq(ids(C.applicationsOf(dla, 'pjB')), ['caO']), ids(C.applicationsOf(dla, 'pjA')));
+    check('stageOf defaults to interested, and isOpen is false only for closed', C.stageOf({}) === 'interested' && C.stageOf({ stage: 'offer' }) === 'offer' && C.isOpen({}) && C.isOpen({ stage: 'interested' }) && C.isOpen({ stage: 'applied' }) && C.isOpen({ stage: 'interviewing' }) && C.isOpen({ stage: 'offer' }) && C.isOpen({ stage: 'newstage' }) && !C.isOpen({ stage: 'closed' }));
+    const ivs = C.interviewsOf({ interviews: [{ id: 'z', on: '2026-11-12', at: '09:00' }, { id: 'b', on: '2026-11-12' }, { id: 'a', on: '2026-11-12' }, { id: 'y', on: '2026-11-11', at: '15:00' }, { id: 'x', on: '2026-11-12', at: '08:00' }, { id: 'nodate' }, { id: 'badday', on: '2026-13-45' }, { on: '2026-11-01' }, 'junk', null] });
+    check('interviewsOf keeps only objects with an id and a valid day, by day, then time, then id, with an interview without a time before one with a time on the same day', eq(ids(ivs), ['y', 'a', 'b', 'x', 'z']) && eq(C.interviewsOf({}), []), ids(ivs));
+    check('questionsOf keeps only objects with an id and text', eq(ids(C.questionsOf({ questions: [{ id: 'a', text: 'x' }, { id: 'b' }, { text: 'c' }, 'junk', { id: 1, text: 'd' }, null, { id: 'e', text: 'f', done: true }] })), ['a', 'e']) && eq(C.questionsOf({ id: 'z' }), []));
+
+    console.log('  roles');
+    const da = mk();
+    const ra = C.addRole(da, 'pjA', '  SOC analyst  ', '  Shift work is fine  ');
+    check('adding a role trims the title, keeps the notes, with an id starting cr', typeof ra === 'string' && ra.startsWith('cr') && item(da, ra).title === 'SOC analyst' && item(da, ra).notes === 'Shift work is fine' && item(da, ra).type === 'role' && item(da, ra).projectId === 'pjA' && !('aside' in item(da, ra)), item(da, ra));
+    const rb = C.addRole(da, 'pjA', 'x'.repeat(200), 'y'.repeat(3000)), rc = C.addRole(da, 'pjA', 'No notes', '   '), rd = C.addRole(da, 'pjA', 'Left out');
+    check('a role\'s title is cut to 160 and its notes to 2000; blank or missing notes leave the key out', item(da, rb).title.length === 160 && item(da, rb).notes.length === 2000 && !('notes' in item(da, rc)) && !('notes' in item(da, rd)), [item(da, rb).title.length, item(da, rb).notes.length]);
+    const n0 = da.career.items.length;
+    check('a blank title or a project that is not there adds no role (null)', C.addRole(da, 'pjA', '   ') === null && C.addRole(da, 'pjNope', 'X') === null && da.career.items.length === n0);
+    const d20 = mk();
+    for (let i = 0; i < 20; i++) C.addRole(d20, 'pjA', 'Role ' + i);
+    check('a 21st role is not added (null) and the 20 stay; another project can still add its own', d20.career.items.length === 20 && C.addRole(d20, 'pjA', 'One too many') === null && d20.career.items.length === 20 && typeof C.addRole(d20, 'pjB', 'Other project') === 'string', d20.career.items.length);
+    const de = mk(role('crA', { title: 'SOC analyst', notes: 'Old notes' }));
+    aged(de);
+    check('editing a role\'s title changes it and moves updatedAt; a blank title is refused and the old one stays', C.editRole(de, 'crA', { title: '  Threat hunter  ' }) && item(de, 'crA').title === 'Threat hunter' && item(de, 'crA').updatedAt !== T0
+      && (aged(de), !C.editRole(de, 'crA', { title: '   ' })) && item(de, 'crA').title === 'Threat hunter' && item(de, 'crA').updatedAt === T0, item(de, 'crA'));
+    check('the notes can be set and then cleared (the key is removed)', C.editRole(de, 'crA', { notes: 'New notes' }) && item(de, 'crA').notes === 'New notes' && C.editRole(de, 'crA', { notes: '  ' }) && !('notes' in item(de, 'crA')), item(de, 'crA'));
+    check('aside true sets the key and false removes it', C.editRole(de, 'crA', { aside: true }) && item(de, 'crA').aside === true && C.editRole(de, 'crA', { aside: false }) && !('aside' in item(de, 'crA')), item(de, 'crA'));
+    aged(de);
+    check('the same values again return false and leave updatedAt alone; an unknown id, or an application\'s id, gives false', !C.editRole(de, 'crA', { title: 'Threat hunter', aside: false }) && item(de, 'crA').updatedAt === T0 && !C.editRole(de, 'nope', { title: 'X' }) && !C.editRole(mk(appl('caA')), 'caA', { title: 'X' }), item(de, 'crA'));
+
+    const pf = n => Array.from({ length: n }, (_, i) => ({ id: 'pf' + (i + 1), title: 'x', evidence: '', note: '', reviewedOn: '2026-10-14' }));
+    const dp = mk(role('crA'), appl('caA'));
+    dp.cybersecurity.portfolio = pf(3);
+    aged(dp);
+    check('togglePortfolio adds an entry of the portfolio to a role, then takes it off again; updatedAt moves', C.togglePortfolio(dp, 'crA', 'pf1') && eq(item(dp, 'crA').portfolioIds, ['pf1']) && item(dp, 'crA').updatedAt !== T0 && C.togglePortfolio(dp, 'crA', 'pf2') && eq(item(dp, 'crA').portfolioIds, ['pf1', 'pf2']) && C.togglePortfolio(dp, 'crA', 'pf1') && eq(item(dp, 'crA').portfolioIds, ['pf2']), item(dp, 'crA'));
+    check('removing the last entry deletes the portfolioIds key', C.togglePortfolio(dp, 'crA', 'pf2') && !('portfolioIds' in item(dp, 'crA')), item(dp, 'crA'));
+    check('an entry that is not in the portfolio, an unknown role and an application all give false', !C.togglePortfolio(dp, 'crA', 'pfNope') && !C.togglePortfolio(dp, 'crNope', 'pf1') && !C.togglePortfolio(dp, 'caA', 'pf1') && !('portfolioIds' in item(dp, 'crA')) && !('portfolioIds' in item(dp, 'caA')));
+    const dpn = mk(role('crN', { portfolioIds: [{ newer: 'entry' }, 'pf1'] }));
+    dpn.cybersecurity.portfolio = pf(3);
+    check('pointing and unpointing keep a newer MyDay\'s entries in the list, where they were', C.togglePortfolio(dpn, 'crN', 'pf2') && eq(item(dpn, 'crN').portfolioIds, [{ newer: 'entry' }, 'pf1', 'pf2'])
+      && C.togglePortfolio(dpn, 'crN', 'pf1') && C.togglePortfolio(dpn, 'crN', 'pf2') && eq(item(dpn, 'crN').portfolioIds, [{ newer: 'entry' }]), item(dpn, 'crN').portfolioIds);
+    const dp21 = mk(role('crA'));
+    dp21.cybersecurity.portfolio = pf(21);
+    const t20 = Array.from({ length: 20 }, (_, i) => C.togglePortfolio(dp21, 'crA', 'pf' + (i + 1)));
+    check('a 21st portfolio entry gives false and the 20 stay', t20.every(Boolean) && !C.togglePortfolio(dp21, 'crA', 'pf21') && item(dp21, 'crA').portfolioIds.length === 20, item(dp21, 'crA').portfolioIds);
+    const dpo = mk(role('crA', { portfolioIds: ['pf3', 'pfGone', 7, 'pf1'] }));
+    dpo.cybersecurity.portfolio = pf(3);
+    check('portfolioOfRole returns only entries still in the portfolio, in the portfolio\'s order', eq(ids(C.portfolioOfRole(dpo, item(dpo, 'crA'))), ['pf1', 'pf3']) && eq(C.portfolioOfRole(dpo, role('crZ')), []), ids(C.portfolioOfRole(dpo, item(dpo, 'crA'))));
+
+    console.log('  applications');
+    const dap = mk(role('crA'), role('crO', { projectId: 'pjB' }));
+    const aa = C.addApplication(dap, 'pjA', { company: '  Acme  ' });
+    check('an application added with no day starts at interested, with an id starting ca, and no appliedOn', typeof aa === 'string' && aa.startsWith('ca') && item(dap, aa).company === 'Acme' && item(dap, aa).stage === 'interested' && !('appliedOn' in item(dap, aa)) && item(dap, aa).type === 'application' && item(dap, aa).projectId === 'pjA', item(dap, aa));
+    const ab = C.addApplication(dap, 'pjA', { company: 'Beta' }, '2026-11-03');
+    check('an application added with a day starts at applied with that day', item(dap, ab).stage === 'applied' && item(dap, ab).appliedOn === '2026-11-03', item(dap, ab));
+    const ac = C.addApplication(dap, 'pjA', { company: 'Gamma' }, 'not a day');
+    check('a day that is not a date leaves it at interested', item(dap, ac).stage === 'interested' && !('appliedOn' in item(dap, ac)), item(dap, ac));
+    const ad = C.addApplication(dap, 'pjA', { company: 'c'.repeat(200), title: 't'.repeat(200), contact: 'p'.repeat(300), notes: 'n'.repeat(3000) });
+    const ae = C.addApplication(dap, 'pjA', { company: 'Blank parts', title: ' ', contact: '', notes: '  ', url: '' }), af = C.addApplication(dap, 'pjA', { company: 'Bare' });
+    check('company is cut to 120, title to 160, contact to 200 and notes to 2000; blank or missing parts leave their keys out', item(dap, ad).company.length === 120 && item(dap, ad).title.length === 160 && item(dap, ad).contact.length === 200 && item(dap, ad).notes.length === 2000
+      && ['title', 'contact', 'notes', 'url', 'roleId'].every(x => !(x in item(dap, ae)) && !(x in item(dap, af))), [item(dap, ad).company.length, item(dap, ad).title.length, item(dap, ad).contact.length, item(dap, ad).notes.length]);
+    const au = C.addApplication(dap, 'pjA', { company: 'U1', url: ' example.com/jobs/1 ' }), ax = C.addApplication(dap, 'pjA', { company: 'U2', url: 'not a link' }), ay = C.addApplication(dap, 'pjA', { company: 'U3', url: 'javascript:alert(1)' });
+    const longUrl = 'https://example.com/' + 'a'.repeat(1970), az = C.addApplication(dap, 'pjA', { company: 'U4', url: longUrl });
+    check('the link is kept only as a web address (https added when missing); one that is not, is left out; a long one is kept within 2000', item(dap, au).url === 'https://example.com/jobs/1' && !('url' in item(dap, ax)) && !('url' in item(dap, ay)) && item(dap, az).url === longUrl && item(dap, az).url.length <= 2000, [item(dap, au).url, item(dap, ax).url, item(dap, ay).url]);
+    const ar = C.addApplication(dap, 'pjA', { company: 'R1', roleId: 'crA' }), as = C.addApplication(dap, 'pjA', { company: 'R2', roleId: 'crO' }), at = C.addApplication(dap, 'pjA', { company: 'R3', roleId: 'crNope' });
+    check('the role is kept only when it is a role of the same project', item(dap, ar).roleId === 'crA' && !('roleId' in item(dap, as)) && !('roleId' in item(dap, at)), [item(dap, ar), item(dap, as)]);
+    const nA = dap.career.items.length;
+    check('a blank company or a project that is not there adds nothing (null)', C.addApplication(dap, 'pjA', { company: '   ' }) === null && C.addApplication(dap, 'pjNope', { company: 'X' }) === null && dap.career.items.length === nA);
+    const d300 = mk();
+    for (let i = 0; i < 300; i++) C.addApplication(d300, 'pjA', { company: 'Company ' + i });
+    check('a 301st application is not added (null) and the 300 stay; another project can still add its own', d300.career.items.length === 300 && C.addApplication(d300, 'pjA', { company: 'One too many' }) === null && d300.career.items.length === 300 && typeof C.addApplication(d300, 'pjB', { company: 'Other project' }) === 'string', d300.career.items.length);
+
+    const dea = mk(role('crA'), role('crO', { projectId: 'pjB' }), appl('caA', { company: 'Acme', title: 'Old title', contact: 'Priya', notes: 'Old notes', url: 'https://example.com/old', roleId: 'crA', stage: 'applied', appliedOn: '2026-11-01' }));
+    aged(dea);
+    check('editing the company changes it and moves updatedAt; a blank company is refused and the old one stays', C.editApplication(dea, 'caA', { company: '  Acme Security  ' }) && item(dea, 'caA').company === 'Acme Security' && item(dea, 'caA').updatedAt !== T0
+      && (aged(dea), !C.editApplication(dea, 'caA', { company: '   ' })) && item(dea, 'caA').company === 'Acme Security' && item(dea, 'caA').updatedAt === T0, item(dea, 'caA'));
+    check('the title, contact and notes can each be set and then cleared (the key is removed)', C.editApplication(dea, 'caA', { title: 'SOC analyst', contact: 'Sam', notes: 'New notes' }) && item(dea, 'caA').title === 'SOC analyst' && item(dea, 'caA').contact === 'Sam' && item(dea, 'caA').notes === 'New notes'
+      && C.editApplication(dea, 'caA', { title: ' ', contact: '', notes: '  ' }) && ['title', 'contact', 'notes'].every(x => !(x in item(dea, 'caA'))), item(dea, 'caA'));
+    check('a valid link is set; an empty one clears it', C.editApplication(dea, 'caA', { url: 'example.org/new' }) && item(dea, 'caA').url === 'https://example.org/new' && C.editApplication(dea, 'caA', { url: '' }) && !('url' in item(dea, 'caA')) && !C.editApplication(dea, 'caA', { url: '  ' }), item(dea, 'caA'));
+    C.editApplication(dea, 'caA', { url: 'https://example.com/keep' }); aged(dea);
+    const snap = clone(item(dea, 'caA'));
+    check('a link that is not a web address refuses the whole edit: false, and nothing changes, even the other fields in the same patch', !C.editApplication(dea, 'caA', { company: 'Changed Co', notes: 'Changed', title: 'Changed', url: 'not a link' }) && eq(item(dea, 'caA'), snap), item(dea, 'caA'));
+    check('the role is set to a role of the project, cleared with null, and cleared by another project\'s role', C.editApplication(dea, 'caA', { roleId: null }) && !('roleId' in item(dea, 'caA')) && C.editApplication(dea, 'caA', { roleId: 'crA' }) && item(dea, 'caA').roleId === 'crA'
+      && C.editApplication(dea, 'caA', { roleId: 'crO' }) && !('roleId' in item(dea, 'caA')) && !C.editApplication(dea, 'caA', { roleId: 'crO' }), item(dea, 'caA'));
+    check('the day applied is set to a valid date; one that is not a date is ignored', C.editApplication(dea, 'caA', { appliedOn: '2026-11-05' }) && item(dea, 'caA').appliedOn === '2026-11-05' && !C.editApplication(dea, 'caA', { appliedOn: 'soon' }) && item(dea, 'caA').appliedOn === '2026-11-05', item(dea, 'caA'));
+    aged(dea);
+    check('the same values again return false and leave updatedAt alone; an unknown id, or a role\'s id, gives false', !C.editApplication(dea, 'caA', { company: 'Acme Security', appliedOn: '2026-11-05', url: 'https://example.com/keep', roleId: null }) && item(dea, 'caA').updatedAt === T0 && !C.editApplication(dea, 'nope', { company: 'X' }) && !C.editApplication(dap, 'crA', { company: 'X' }), item(dea, 'caA'));
+
+    const ds = mk(appl('caA'), appl('caB', { stage: 'interviewing', appliedOn: '2026-11-01' }), appl('caC', { stage: 'closed', closedOn: '2026-11-02', closedWhy: 'No reply', appliedOn: '2026-10-25' }), appl('caD', { stage: 'applied', appliedOn: '2026-11-01' }));
+    aged(ds);
+    check('setStage to applied sets appliedOn to the day only when it has none, and moves updatedAt', C.setStage(ds, 'caA', 'applied', k) && item(ds, 'caA').stage === 'applied' && item(ds, 'caA').appliedOn === k && item(ds, 'caA').updatedAt !== T0, item(ds, 'caA'));
+    check('…and an existing day is kept', C.setStage(ds, 'caB', 'applied', k) && item(ds, 'caB').stage === 'applied' && item(ds, 'caB').appliedOn === '2026-11-01', item(ds, 'caB'));
+    check('moving away from closed clears closedOn and closedWhy', C.setStage(ds, 'caC', 'interviewing', k) && item(ds, 'caC').stage === 'interviewing' && !('closedOn' in item(ds, 'caC')) && !('closedWhy' in item(ds, 'caC')) && item(ds, 'caC').appliedOn === '2026-10-25', item(ds, 'caC'));
+    check('setStage to closed closes it with the day and no why', C.setStage(ds, 'caD', 'closed', k) && item(ds, 'caD').stage === 'closed' && item(ds, 'caD').closedOn === k && !('closedWhy' in item(ds, 'caD')), item(ds, 'caD'));
+    aged(ds);
+    check('the same stage, an unknown stage or an unknown id gives false and changes nothing', !C.setStage(ds, 'caD', 'closed', k) && !C.setStage(ds, 'caB', 'applied', k) && !C.setStage(ds, 'caB', 'nonsense', k) && !C.setStage(ds, 'nope', 'offer', k) && item(ds, 'caB').stage === 'applied' && item(ds, 'caB').updatedAt === T0);
+    check('a role\'s id is not an application: setStage gives false', !C.setStage(mk(role('crA')), 'crA', 'applied', k));
+
+    const dc = mk(appl('caA'), appl('caB'), appl('caC', { stage: 'closed', closedOn: '2026-11-01', closedWhy: 'No reply' }), appl('caD'));
+    aged(dc);
+    check('closeApplication sets stage closed, the day and why; updatedAt moves', C.closeApplication(dc, 'caA', '  Not this time  ', k) && item(dc, 'caA').stage === 'closed' && item(dc, 'caA').closedOn === k && item(dc, 'caA').closedWhy === 'Not this time' && item(dc, 'caA').updatedAt !== T0, item(dc, 'caA'));
+    check('why is cut to 200 and the key is absent when blank', C.closeApplication(dc, 'caB', 'w'.repeat(300), k) && item(dc, 'caB').closedWhy.length === 200 && C.closeApplication(dc, 'caD', '   ', k) && !('closedWhy' in item(dc, 'caD')), [item(dc, 'caB').closedWhy.length, item(dc, 'caD')]);
+    aged(dc);
+    check('closing one that is already closed gives false and changes nothing; an unknown id gives false', !C.closeApplication(dc, 'caC', 'Different', days(1)) && item(dc, 'caC').closedOn === '2026-11-01' && item(dc, 'caC').closedWhy === 'No reply' && item(dc, 'caC').updatedAt === T0 && !C.closeApplication(dc, 'nope', 'x', k));
+    aged(dc);
+    check('setClosedWhy changes why on a closed application and moves updatedAt; the same words give false', C.setClosedWhy(dc, 'caC', ' I withdrew ') && item(dc, 'caC').closedWhy === 'I withdrew' && item(dc, 'caC').updatedAt !== T0 && !C.setClosedWhy(dc, 'caC', 'I withdrew'), item(dc, 'caC'));
+    check('emptying it removes the key', C.setClosedWhy(dc, 'caC', '  ') && !('closedWhy' in item(dc, 'caC')) && !C.setClosedWhy(dc, 'caC', ''), item(dc, 'caC'));
+    const dco = mk(appl('caA'));
+    check('setClosedWhy only works on a closed application (an open one gives false and gets no why)', !C.setClosedWhy(dco, 'caA', 'Because') && !('closedWhy' in item(dco, 'caA')) && !C.setClosedWhy(dco, 'nope', 'x'));
+
+    console.log('  following up');
+    const dfu = mk(appl('caA', { company: 'Acme', stage: 'applied', appliedOn: '2026-10-25' }), appl('caL', { company: 'c'.repeat(120), stage: 'applied', appliedOn: '2026-10-25' }));
+    aged(dfu);
+    const ft = C.followUp(dfu, 'caA', k);
+    check('followUp makes one task "Follow up: <company>", due the day, 10 minutes, in the project, and notes followedOn and the task on the application', typeof ft === 'string' && dfu.tasks.items.length === 1 && tk(dfu, ft).title === 'Follow up: Acme' && tk(dfu, ft).due === k && tk(dfu, ft).minutes === 10 && tk(dfu, ft).projectId === 'pjA'
+      && item(dfu, 'caA').followedOn === k && item(dfu, 'caA').followTaskId === ft && item(dfu, 'caA').updatedAt !== T0, [dfu.tasks.items, item(dfu, 'caA')]);
+    check('a second call returns null and makes no second task; an unknown id returns null', C.followUp(dfu, 'caA', k) === null && dfu.tasks.items.length === 1 && C.followUp(dfu, 'nope', k) === null && dfu.tasks.items.length === 1);
+    const fl = C.followUp(dfu, 'caL', k);
+    check('the task\'s title is cut to 120', tk(dfu, fl).title.length === 120 && tk(dfu, fl).title.startsWith('Follow up: cccc'), tk(dfu, fl).title);
+
+    console.log('  the nudge\'s rule');
+    const nf = (x) => C.needsFollowUp(appl('caN', { stage: 'applied', appliedOn: days(-10), ...x }), k);
+    check('needsFollowUp is true at applied for exactly 10 days, and for longer', nf({}) && nf({ appliedOn: days(-11) }) && nf({ appliedOn: days(-60) }));
+    check('…and false at 9 days, or if applied is today or later', !nf({ appliedOn: days(-9) }) && !nf({ appliedOn: k }) && !nf({ appliedOn: days(3) }));
+    check('…false for interested, interviewing, offer and closed, however long ago', ['interested', 'interviewing', 'offer', 'closed'].every(s => !nf({ stage: s, appliedOn: days(-30) })));
+    check('…false with no appliedOn (or one that is not a date), and once followedOn is set', !nf({ appliedOn: undefined }) && !nf({ appliedOn: 'soon' }) && !nf({ followedOn: days(-1) }));
+    const dnf = mk(appl('caA', { stage: 'applied', appliedOn: days(-12) }));
+    check('…and false after followUp is done', C.needsFollowUp(item(dnf, 'caA'), k) && !!C.followUp(dnf, 'caA', k) && !C.needsFollowUp(item(dnf, 'caA'), k));
+
+    console.log('  interviews');
+    check('prepareDay is the day before for a later day, the day itself for today, and null for a day that has passed', C.prepareDay('2026-11-12', k) === '2026-11-11' && C.prepareDay(k, k) === k && C.prepareDay('2026-11-09', k) === null && C.prepareDay('2026-11-11', k) === k);
+    const di = mk(appl('caA', { company: 'Acme', stage: 'applied', appliedOn: '2026-11-01' }), appl('caB', { stage: 'interested' }), appl('caC', { stage: 'offer' }), appl('caD', { stage: 'closed', closedOn: '2026-11-02' }), appl('caE', { stage: 'interviewing' }), appl('caF', { company: 'Past Co' }), appl('caG', { company: 'Today Co' }));
+    aged(di);
+    const iA = C.addInterview(di, 'caA', '2026-11-14', { at: '10:30', kind: 'phone' }, k);
+    check('an interview gets an id starting ci, and keeps its day, time and kind', typeof iA === 'string' && iA.startsWith('ci') && eq(item(di, 'caA').interviews.map(({ taskId, ...v }) => v), [{ id: iA, on: '2026-11-14', at: '10:30', kind: 'phone' }]) && item(di, 'caA').updatedAt !== T0, item(di, 'caA').interviews);
+    const tA = tk(di, item(di, 'caA').interviews[0].taskId);
+    check('it makes a "Prepare for <company> interview" task: 30 minutes, in the project, due the day before', !!tA && tA.title === 'Prepare for Acme interview' && tA.minutes === 30 && tA.projectId === 'pjA' && tA.due === '2026-11-13' && di.tasks.items.length === 1, di.tasks.items);
+    const iG = C.addInterview(di, 'caG', k, {}, k), iF = C.addInterview(di, 'caF', '2026-11-05', {}, k);
+    check('an interview today makes its task due today, and one on a day that has passed makes no task and has no taskId', tk(di, item(di, 'caG').interviews[0].taskId).due === k && !('taskId' in item(di, 'caF').interviews[0]) && di.tasks.items.length === 2 && typeof iF === 'string' && typeof iG === 'string', [di.tasks.items.map(t => t.due), item(di, 'caF').interviews]);
+    const dtm = mk(appl('caZ'));
+    for (const at of ['25:00', '9:00', '10:60', 'ten', '', '00:00', '23:59']) C.addInterview(dtm, 'caZ', '2026-11-14', { at }, k);
+    check('a time is kept only as HH:MM (25:00, 9:00, 10:60, words and blank are dropped; 00:00 and 23:59 are fine)', item(dtm, 'caZ').interviews.map(v => v.at ?? '-').join(',') === '-,-,-,-,-,00:00,23:59', item(dtm, 'caZ').interviews);
+    const dkd = mk(appl('caZ'));
+    for (const kind of ['phone', 'video', 'in-person', 'other', 'newer', 'Phone', '']) C.addInterview(dkd, 'caZ', '2026-11-14', { kind }, k);
+    check('a kind is kept only if it is phone, video, in-person or other', item(dkd, 'caZ').interviews.map(v => v.kind ?? '-').join(',') === 'phone,video,in-person,other,-,-,-', item(dkd, 'caZ').interviews);
+    check('adding an interview moves interested and applied to interviewing, and leaves offer, closed and interviewing as they are', (C.addInterview(di, 'caB', '2026-11-14', {}, k), item(di, 'caB').stage === 'interviewing') && item(di, 'caA').stage === 'interviewing' && (C.addInterview(di, 'caC', '2026-11-14', {}, k), item(di, 'caC').stage === 'offer') && (C.addInterview(di, 'caD', '2026-11-14', {}, k), item(di, 'caD').stage === 'closed') && (C.addInterview(di, 'caE', '2026-11-14', {}, k), item(di, 'caE').stage === 'interviewing'), di.career.items.map(x => [x.id, x.stage]));
+    const dbad = mk(appl('caA'));
+    check('an invalid date, an unknown id or a role\'s id returns null and adds nothing', C.addInterview(dbad, 'caA', 'soon', {}, k) === null && C.addInterview(dbad, 'caA', '2026-13-45', {}, k) === null && C.addInterview(dbad, 'nope', '2026-11-14', {}, k) === null && !('interviews' in item(dbad, 'caA')) && dbad.tasks.items.length === 0 && item(dbad, 'caA').stage === 'interested');
+    const d10 = mk(appl('caA'));
+    const i10 = Array.from({ length: 10 }, (_, i) => C.addInterview(d10, 'caA', days(i + 1), {}, k));
+    check('an 11th interview returns null and the 10 stay (with no 11th task)', i10.every(x => typeof x === 'string') && C.addInterview(d10, 'caA', '2026-12-30', {}, k) === null && item(d10, 'caA').interviews.length === 10 && d10.tasks.items.length === 10, item(d10, 'caA').interviews.length);
+
+    const dei = mk(appl('caA', { company: 'Acme' }), appl('caB', { company: 'Beta' }));
+    const e1 = C.addInterview(dei, 'caA', '2026-11-14', { at: '10:00', kind: 'video' }, k), e1t = item(dei, 'caA').interviews[0].taskId;
+    check('changing the day moves a task that is not done to the day before the new day', C.editInterview(dei, 'caA', e1, { on: '2026-11-20' }, k) && item(dei, 'caA').interviews[0].on === '2026-11-20' && tk(dei, e1t).due === '2026-11-19' && dei.tasks.items.length === 1, [item(dei, 'caA').interviews[0], tk(dei, e1t)]);
+    K.setTaskDone(dei, e1t, true);
+    check('a task that is done is not moved', C.editInterview(dei, 'caA', e1, { on: '2026-11-25' }, k) && tk(dei, e1t).due === '2026-11-19' && item(dei, 'caA').interviews[0].on === '2026-11-25', tk(dei, e1t));
+    const e2 = C.addInterview(dei, 'caB', '2026-11-05', {}, k);
+    check('an interview with no task gets one when its new day has not passed (and none when it still has)', !('taskId' in item(dei, 'caB').interviews[0]) && C.editInterview(dei, 'caB', e2, { on: '2026-11-08' }, k) && !('taskId' in item(dei, 'caB').interviews[0]) && dei.tasks.items.length === 1
+      && C.editInterview(dei, 'caB', e2, { on: '2026-11-18' }, k) && tk(dei, item(dei, 'caB').interviews[0].taskId).due === '2026-11-17' && tk(dei, item(dei, 'caB').interviews[0].taskId).title === 'Prepare for Beta interview' && tk(dei, item(dei, 'caB').interviews[0].taskId).projectId === 'pjA' && dei.tasks.items.length === 2, dei.tasks.items);
+    aged(dei);
+    check('time and kind are changed, and cleared with null; updatedAt moves', C.editInterview(dei, 'caA', e1, { at: '14:00', kind: 'phone' }, k) && item(dei, 'caA').interviews[0].at === '14:00' && item(dei, 'caA').interviews[0].kind === 'phone' && item(dei, 'caA').updatedAt !== T0
+      && C.editInterview(dei, 'caA', e1, { at: null, kind: null }, k) && !('at' in item(dei, 'caA').interviews[0]) && !('kind' in item(dei, 'caA').interviews[0]), item(dei, 'caA').interviews[0]);
+    check('an invalid time or kind clears it', C.editInterview(dei, 'caA', e1, { at: '10:00', kind: 'video' }, k) && C.editInterview(dei, 'caA', e1, { at: '25:00' }, k) && !('at' in item(dei, 'caA').interviews[0]) && item(dei, 'caA').interviews[0].kind === 'video' && C.editInterview(dei, 'caA', e1, { kind: 'newer' }, k) && !('kind' in item(dei, 'caA').interviews[0]), item(dei, 'caA').interviews[0]);
+    check('prep (cut to 4000) and how it went (cut to 2000) are set, and cleared (the key is removed)', C.editInterview(dei, 'caA', e1, { prep: 'p'.repeat(5000), went: 'w'.repeat(3000) }, k) && item(dei, 'caA').interviews[0].prep.length === 4000 && item(dei, 'caA').interviews[0].went.length === 2000
+      && C.editInterview(dei, 'caA', e1, { prep: '  ', went: '' }, k) && !('prep' in item(dei, 'caA').interviews[0]) && !('went' in item(dei, 'caA').interviews[0]), item(dei, 'caA').interviews[0]);
+    aged(dei);
+    check('the same values again return false and leave updatedAt alone; an unknown interview, application or an invalid day gives false', !C.editInterview(dei, 'caA', e1, { on: '2026-11-25', at: null, kind: 'newer', prep: '' }, k) && item(dei, 'caA').updatedAt === T0 && !C.editInterview(dei, 'caA', 'ciNope', { prep: 'x' }, k) && !C.editInterview(dei, 'nope', e1, { prep: 'x' }, k) && !C.editInterview(dei, 'caA', e1, { on: 'soon' }, k) && item(dei, 'caA').interviews[0].on === '2026-11-25');
+
+    const drv = mk(appl('caA', { interviews: [{ id: 'ciA', on: '2026-11-14', taskId: 'tkP' }, { id: 'ciB', on: '2026-11-15' }, 'junk', { newer: true }] }), appl('caB', { interviews: [{ id: 'ciC', on: '2026-11-14' }] }));
+    drv.tasks.items.push({ id: 'tkP', title: 'Prepare for Acme interview', due: '2026-11-13' });
+    check('removeInterview removes that interview and leaves its task in the list, and keeps entries it cannot read', C.removeInterview(drv, 'caA', 'ciA') && eq(item(drv, 'caA').interviews, [{ id: 'ciB', on: '2026-11-15' }, 'junk', { newer: true }]) && !!tk(drv, 'tkP'), item(drv, 'caA').interviews);
+    check('removing the last interview deletes the interviews key; an unknown interview or application gives false', C.removeInterview(drv, 'caB', 'ciC') && !('interviews' in item(drv, 'caB')) && !C.removeInterview(drv, 'caB', 'ciC') && !C.removeInterview(drv, 'nope', 'ciB') && !C.removeInterview(drv, 'caA', 'ciNope'), item(drv, 'caB'));
+
+    const dq = mk(appl('caA', { interviews: [{ id: 'ciA', on: '2026-11-14' }] }));
+    const q1 = C.addQuestion(dq, 'caA', 'ciA', '  What does a first week look like?  '), iq = () => item(dq, 'caA').interviews[0];
+    check('a question is added with an id starting cq and its words trimmed', typeof q1 === 'string' && q1.startsWith('cq') && eq(iq().questions, [{ id: q1, text: 'What does a first week look like?' }]), iq().questions);
+    const q2 = C.addQuestion(dq, 'caA', 'ciA', 'q'.repeat(300));
+    check('a question is cut to 200; a blank one, an unknown interview and an unknown application give null', iq().questions[1].text.length === 200 && C.addQuestion(dq, 'caA', 'ciA', '   ') === null && C.addQuestion(dq, 'caA', 'ciNope', 'x') === null && C.addQuestion(dq, 'nope', 'ciA', 'x') === null && iq().questions.length === 2 && typeof q2 === 'string');
+    for (let i = 0; i < 18; i++) C.addQuestion(dq, 'caA', 'ciA', 'Question ' + i);
+    check('a 21st question returns null and the 20 stay', iq().questions.length === 20 && C.addQuestion(dq, 'caA', 'ciA', 'One too many') === null && iq().questions.length === 20, iq().questions.length);
+    check('tickQuestion ticks a question as asked, and the key is removed when it is unticked', C.tickQuestion(dq, 'caA', 'ciA', q1) && iq().questions[0].done === true && C.tickQuestion(dq, 'caA', 'ciA', q1) && !('done' in iq().questions[0]) && !C.tickQuestion(dq, 'caA', 'ciA', 'cqNope') && !C.tickQuestion(dq, 'caA', 'ciNope', q1), iq().questions[0]);
+    const dqr = mk(appl('caA', { interviews: [{ id: 'ciA', on: '2026-11-14', questions: [{ id: 'cqA', text: 'One' }, 'junk', { id: 'cqB', text: 'Two' }] }, { id: 'ciB', on: '2026-11-15', questions: [{ id: 'cqC', text: 'Three' }] }] }));
+    check('removeQuestion removes that question and keeps entries it cannot read', C.removeQuestion(dqr, 'caA', 'ciA', 'cqA') && eq(item(dqr, 'caA').interviews[0].questions, ['junk', { id: 'cqB', text: 'Two' }]), item(dqr, 'caA').interviews[0].questions);
+    check('removing the last question deletes the questions key; an unknown question gives false', C.removeQuestion(dqr, 'caA', 'ciB', 'cqC') && !('questions' in item(dqr, 'caA').interviews[1]) && !C.removeQuestion(dqr, 'caA', 'ciB', 'cqC') && !C.removeQuestion(dqr, 'caA', 'ciNope', 'cqB'));
+    const dit = mk(appl('caA', { stage: 'applied', interviews: [{ id: 'ciA', on: '2026-11-14', taskId: 'tkP' }, { id: 'ciB', on: '2026-11-15', taskId: 'tkGone' }, { id: 'ciC', on: '2026-11-16' }] }));
+    dit.tasks.items.push({ id: 'tkP', title: 'Prepare for Acme interview', due: '2026-11-13', done: false });
+    const ivsA = item(dit, 'caA').interviews, it1 = C.interviewTask(dit, ivsA[0]);
+    check('interviewTask gives the task and whether it is done, and null when there is none or it is gone', it1.task.id === 'tkP' && it1.done === false && (dit.tasks.items[0].done = true, C.interviewTask(dit, ivsA[0]).done === true) && C.interviewTask(dit, ivsA[1]) === null && C.interviewTask(dit, ivsA[2]) === null);
+
+    console.log('  in words');
+    const kd = K.shortDate;
+    const w = x => C.applicationWhen(appl('caW', x), k);
+    check('applicationWhen says "interview <day> at <time>" for the next interview from the day, without " at" when it has no time', w({ stage: 'interviewing', interviews: [{ id: 'ciA', on: '2026-11-12', at: '10:00' }] }) === `interview ${kd('2026-11-12')} at 10:00` && w({ stage: 'interviewing', interviews: [{ id: 'ciA', on: '2026-11-12' }] }) === `interview ${kd('2026-11-12')}`, w({ stage: 'interviewing', interviews: [{ id: 'ciA', on: '2026-11-12', at: '10:00' }] }));
+    check('…the next one, not a past one, and today\'s counts', w({ stage: 'interviewing', interviews: [{ id: 'ciA', on: '2026-11-05', at: '09:00' }, { id: 'ciB', on: '2026-11-13', at: '11:00' }, { id: 'ciC', on: '2026-11-20' }] }) === `interview ${kd('2026-11-13')} at 11:00` && w({ stage: 'interviewing', interviews: [{ id: 'ciA', on: k, at: '15:00' }] }) === `interview ${kd(k)} at 15:00`);
+    check('with no upcoming interview it says "applied <day>", or "interested", or "an offer"', w({ stage: 'interviewing', appliedOn: '2026-11-01', interviews: [{ id: 'ciA', on: '2026-11-05' }] }) === `applied ${kd('2026-11-01')}` && w({ stage: 'applied', appliedOn: '2026-11-01' }) === `applied ${kd('2026-11-01')}` && w({}) === 'interested' && w({ stage: 'offer' }) === 'an offer' && w({ stage: 'offer', interviews: [{ id: 'ciA', on: '2026-11-05' }] }) === 'an offer');
+    check('a closed one says "closed <day> · <why>", and still says closed with an interview coming up', w({ stage: 'closed', closedOn: '2026-11-02', closedWhy: 'Not this time' }) === `closed ${kd('2026-11-02')} · Not this time` && w({ stage: 'closed', closedOn: '2026-11-02', closedWhy: 'Not this time', interviews: [{ id: 'ciA', on: '2026-11-12', at: '10:00' }] }) === `closed ${kd('2026-11-02')} · Not this time`
+      && w({ stage: 'closed', closedOn: '2026-11-02' }) === `closed ${kd('2026-11-02')}`, w({ stage: 'closed', closedOn: '2026-11-02', closedWhy: 'Not this time' }));
+
+    const dg = mk(role('crA'), role('crB', { aside: true }), role('crC'), role('crO', { projectId: 'pjB' }),
+      appl('caI'), appl('caP', { stage: 'applied', appliedOn: '2026-11-01' }),
+      appl('caV', { company: 'Later', stage: 'interviewing', interviews: [{ id: 'ciV', on: '2026-11-14', at: '09:00' }, { id: 'ciV2', on: '2026-11-05', at: '08:00' }] }),
+      appl('caW', { company: 'Sooner', stage: 'interviewing', interviews: [{ id: 'ciW', on: '2026-11-12', at: '14:00' }, { id: 'ciW2', on: '2026-11-12' }] }),
+      appl('caO', { stage: 'offer' }), appl('caX', { company: 'Closed Co', stage: 'closed', closedOn: '2026-11-02', interviews: [{ id: 'ciX', on: '2026-11-11', at: '08:00' }] }),
+      appl('caY', { projectId: 'pjB', stage: 'interviewing', interviews: [{ id: 'ciY', on: '2026-11-11' }] }));
+    const gl = C.careerGlance(dg, dg.projects.items[0], k);
+    check('careerGlance counts what is open (everything not closed), the interviewing, the offers, and the roles not set aside', gl.open === 5 && gl.interviewing === 2 && gl.offers === 1 && gl.roles === 2, [gl.open, gl.interviewing, gl.offers, gl.roles]);
+    check('…and the next interview is the earliest from the day across open applications, by day then time (the one without a time first), ignoring closed applications, past interviews and other projects', gl.next && gl.next.application.id === 'caW' && gl.next.interview.id === 'ciW2', gl.next);
+    const gl2 = C.careerGlance(dg, dg.projects.items[0], '2026-11-13');
+    check('…later in the month it moves on to the next one that has not passed', gl2.next && gl2.next.application.id === 'caV' && gl2.next.interview.id === 'ciV', gl2.next);
+    const dg0 = mk(role('crA'), appl('caX', { stage: 'closed', closedOn: '2026-11-02', interviews: [{ id: 'ciX', on: '2026-11-11' }] }), appl('caP', { stage: 'interviewing', interviews: [{ id: 'ciP', on: '2026-11-05' }] }));
+    const glz = C.careerGlance(dg0, dg0.projects.items[0], k);
+    check('with no interview coming up next is null, and a closed application is never counted in anything', glz.next === null && glz.open === 1 && glz.interviewing === 1 && glz.offers === 0 && glz.roles === 1 && C.careerGlance(mk(), mk().projects.items[0], k).open === 0, glz);
+
+    console.log('  removing');
+    const drm = mk(role('crA'), role('crB'), appl('caA', { roleId: 'crA', company: 'Acme', notes: 'Keep me', stage: 'applied', appliedOn: '2026-11-01', followTaskId: 'tkF', interviews: [{ id: 'ciA', on: '2026-11-14', taskId: 'tkP' }] }), appl('caB', { roleId: 'crB' }), appl('caC', { roleId: 'crA', projectId: 'pjB' }), role('crO', { projectId: 'pjB' }));
+    drm.tasks.items.push({ id: 'tkP', title: 'Prepare for Acme interview' }, { id: 'tkF', title: 'Follow up: Acme' });
+    aged(drm);
+    check('removing a role clears roleId on that project\'s applications for it, keeps everything else on them, and leaves other applications and other projects as they were', C.removeItem(drm, 'crA') && !item(drm, 'crA') && !('roleId' in item(drm, 'caA')) && item(drm, 'caA').company === 'Acme' && item(drm, 'caA').notes === 'Keep me' && item(drm, 'caA').stage === 'applied' && item(drm, 'caA').interviews.length === 1 && item(drm, 'caA').updatedAt !== T0
+      && item(drm, 'caB').roleId === 'crB' && item(drm, 'caB').updatedAt === T0 && item(drm, 'caC').roleId === 'crA' && item(drm, 'caC').updatedAt === T0, drm.career.items);
+    check('removing an application removes it and leaves its tasks', C.removeItem(drm, 'caA') && !item(drm, 'caA') && !!tk(drm, 'tkP') && !!tk(drm, 'tkF') && drm.career.items.length === 4, ids(drm.career.items));
+    check('an unknown id gives false and removes nothing', !C.removeItem(drm, 'nope') && drm.career.items.length === 4);
+    const ddp = mk(role('crA'), appl('caA'), role('crO', { projectId: 'pjB' }), appl('caO', { projectId: 'pjB' }));
+    check('deleteProjectCareer removes only that project\'s items (true), and false when it has none', C.deleteProjectCareer(ddp, 'pjA') && eq(ids(ddp.career.items), ['crO', 'caO']) && !C.deleteProjectCareer(ddp, 'pjA'), ids(ddp.career.items));
+    const ddq = mk(role('crA'), appl('caA'), role('crO', { projectId: 'pjB' }));
+    check('deleting a project removes its career items too, and no other project\'s', K.deleteProject(ddq, 'pjA') && eq(ids(ddq.career.items), ['crO']) && ddq.projects.items.length === 1, ids(ddq.career.items));
+
+    console.log('  needs you');
+    const dn = () => mk(appl('caA', { company: 'Acme Security', stage: 'applied', appliedOn: days(-10) }));
+    const follows = d => K.needsYou(d, k).filter(n => n.key.startsWith('follow:'));
+    const f1 = follows(dn());
+    check('an application at applied for 10 days gives one line: "Heard back from <company>?", why "applied <day>", waiting, to the Applications tab, with Follow up for that application', f1.length === 1 && f1[0].key === 'follow:caA' && f1[0].reason === 'waiting' && f1[0].title === 'Heard back from Acme Security?' && f1[0].why === `applied ${kd(days(-10))}` && f1[0].href === '#projects/p/pjA/applications' && eq(f1[0].followUp, { applicationId: 'caA' }), f1);
+    const dn9 = dn(); item(dn9, 'caA').appliedOn = days(-9);
+    check('no line appears at 9 days', follows(dn9).length === 0, follows(dn9));
+    const dnu = dn(); C.followUp(dnu, 'caA', k);
+    check('…nor after Follow up', follows(dnu).length === 0, follows(dnu));
+    const dnv = dn(); C.setStage(dnv, 'caA', 'interviewing', k);
+    check('…nor once interviewing', follows(dnv).length === 0, follows(dnv));
+    const dng = dn(); K.setTemplate(dng, 'pjA', 'general');
+    check('…nor when the project is not a Career project (switched to general)', follows(dng).length === 0 && dng.career.items.length === 1, follows(dng));
+    const dnp = dn(); dnp.projects.items[0].status = 'paused';
+    check('…nor when the project is paused', follows(dnp).length === 0, follows(dnp));
+    const dnc = dn(); C.closeApplication(dnc, 'caA', 'No reply', k);
+    check('…nor once it is closed', follows(dnc).length === 0 && follows(dn()).length === 1);
+
+    console.log('  kinds of project');
+    const kp0 = t => base('pjK', t === undefined ? {} : { template: t });
+    check('a career project has the tabs overview, applications, milestones, decisions', eq(TPL.tabsOf(kp0('career')), ['overview', 'applications', 'milestones', 'decisions']), TPL.tabsOf(kp0('career')));
+    check('tabFor gives applications on a career project, and overview on others', TPL.tabFor(kp0('career'), 'applications') === 'applications' && TPL.tabFor(kp0(), 'applications') === 'overview' && TPL.tabFor(kp0('software'), 'applications') === 'overview' && TPL.tabFor(kp0('career'), 'bugs') === 'overview' && TPL.tabFor(kp0('career'), 'milestones') === 'milestones');
+    check('changing general to career says only the new kind', TPL.kindChangeWords(world(kp0()), kp0(), 'career') === 'Now a Career project — the roles you’re aiming for and your applications are on the Applications tab.', TPL.kindChangeWords(world(kp0()), kp0(), 'career'));
+    const dkc = world(kp0('career')); dkc.career.items = [role('crA', { projectId: 'pjK' })];
+    check('changing career with items to general says its roles and applications are kept', TPL.kindChangeWords(dkc, kp0('career'), 'general') === 'Now a general project. Its roles and applications are kept, out of sight — switch back any time.', TPL.kindChangeWords(dkc, kp0('career'), 'general'));
+    const dko = world(kp0('career')); dko.career.items = [role('crA', { projectId: 'pjOther' })];
+    check('…career with no items of its own says no kept sentence', TPL.kindChangeWords(world(kp0('career')), kp0('career'), 'general') === 'Now a general project.' && TPL.kindChangeWords(dko, kp0('career'), 'general') === 'Now a general project.');
+    const dsc = world(kp0()); dsc.career.items = [role('crA', { projectId: 'pjK' }), appl('caA', { projectId: 'pjK', interviews: [{ id: 'ciA', on: '2026-11-14' }] })];
+    const crBefore = clone(dsc.career);
+    check('changing a project to career and back to general leaves its career items exactly as they were', K.setTemplate(dsc, 'pjK', 'career') && dsc.projects.items[0].template === 'career' && eq(dsc.career, crBefore) && K.setTemplate(dsc, 'pjK', 'general') && !('template' in dsc.projects.items[0]) && eq(dsc.career, crBefore), dsc.career);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

@@ -91,6 +91,14 @@ const clone = o => JSON.parse(JSON.stringify(o));
       checks: [{ id: 'scsync00001', text: 'A good password signs in', done: true, on: '2026-10-28', proof: 'Test run 12' }, { id: 'scsync00002', text: 'A wrong password is refused' }], futureBit: { keep: [1] }, createdAt: '2026-10-27T09:00', updatedAt: '2026-10-28T09:00' },
     { id: 'slsync00001', type: 'release', projectId: 'pj1', milestoneId: 'msGone', off: true, checks: [], createdAt: '2026-10-27T08:00', updatedAt: '2026-10-29T09:00' },
     { id: 'sbsync00001', type: 'bug', projectId: 'pj1', title: 'Crash on save', state: 'fixed', happens: 'It closes', expected: 'It saves', steps: 'Open, save', closedOn: '2026-10-29', taskId: 'tk1', createdAt: '2026-10-27T09:00', updatedAt: '2026-10-29T09:00' }] };
+  // …and a Career project's items (specs/projects-career.md), made in a scrambled order: a role with notes, a portfolio entry and a newer MyDay's key; a second role, set aside, made at the same moment; and an application closed with why, for the first role, with an interview (a time, a kind, prep, two questions with one asked, how it went) and its follow-up day.
+  raw.career = { items: [
+    { id: 'casync00001', type: 'application', projectId: 'pj1', company: 'Acme Security', title: 'SOC analyst', roleId: 'crsync00001', url: 'https://example.com/jobs/1', contact: 'Priya in hiring', notes: 'Found on a job board',
+      stage: 'closed', appliedOn: '2026-10-20', closedOn: '2026-11-02', closedWhy: 'Not this time', followedOn: '2026-11-01', followTaskId: 'tk1',
+      interviews: [{ id: 'cisync00001', on: '2026-11-04', at: '10:00', kind: 'video', prep: 'Read their blog', questions: [{ id: 'cqsync00001', text: 'What does a first week look like?', done: true }, { id: 'cqsync00002', text: 'Who would I work with?' }], went: 'Friendly, asked about labs', taskId: 'tk1' }],
+      createdAt: '2026-11-01T10:00', updatedAt: '2026-11-02T09:00' },
+    { id: 'crsync00002', type: 'role', projectId: 'pj1', title: 'Pentester', aside: true, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' },
+    { id: 'crsync00001', type: 'role', projectId: 'pj1', title: 'SOC analyst', notes: 'Shift work is fine', portfolioIds: ['pfsync00001'], futureBit: { keep: [1] }, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:30' }] };
   raw.notes.items[0].projectId = 'pj1';
   Object.assign(raw.notes.items[0], { linkedBy: 'rules', linkWhy: 'van · budget', notProjects: ['pjOld'], private: true }); // 1.13.0
   // An Arabic lesson session (after 1.15.0): first answers, one revealed, a note to self.
@@ -118,7 +126,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['ambition', 'arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'software', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['ambition', 'arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'career', 'commitment', 'content', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'software', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -385,6 +393,26 @@ const clone = o => JSON.parse(JSON.stringify(o));
     { const gone = clone(data); R.putRecord(gone, 'software:srsync00001', null); check('an item deleted elsewhere removes it here', gone.software.items.length === 2 && !gone.software.items.some(x => x.id === 'srsync00001')); }
     const marked = project(recs, 'pj1', true), keptMarked = data.projects.items.find(p => p.id === 'pj1');
     check('the project\'s marked link survives clean exactly, with its kind kept', !!marked && eq(marked.resources, keptMarked.resources) && marked.resources[0].kind === 'repo' && R.fingerprint(marked) === R.fingerprint(project(recs, 'pj1')), marked && marked.resources);
+  }
+
+  console.log('\n[1i] A Career project\'s roles, applications and interviews (specs/projects-career.md)');
+  {
+    const rows = [...recs].filter(([k]) => k.startsWith('career:')), ca = recs.get('career:casync00001'), cr1 = recs.get('career:crsync00001'), cr2 = recs.get('career:crsync00002');
+    check('each item is its own "career" record, exactly as written, with a newer MyDay\'s key, the interview, its questions and the closing words kept', rows.length === 3 && eq(cr1, raw.career.items[2]) && eq(cr2, raw.career.items[1]) && eq(ca, raw.career.items[0]) && eq(cr1.futureBit, { keep: [1] }) && ca.interviews[0].questions.length === 2 && ca.closedWhy === 'Not this time', rows.map(([k]) => k));
+    check('an item arrives on another device exactly the same (clean), so its fingerprint doesn\'t change', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, clone(c))) === R.fingerprint(c)), rows.map(([k]) => k));
+    check('…and cleaning it twice gives the same again', rows.every(([k, c]) => R.fingerprint(R.cleanRecord(k, R.cleanRecord(k, clone(c)))) === R.fingerprint(c)));
+    const back = clone(R.freshState());
+    for (const [k, c] of [...rows].reverse()) R.putRecord(back, k, clone(c));
+    check('put into a new MyDay in reverse, the items come back with every field, ordered by when they were made and then by id', eq(back.career.items.map(x => x.id), ['crsync00001', 'crsync00002', 'casync00001'])
+      && eq(back.career.items.map(x => JSON.stringify(x)).sort(), data.career.items.map(x => JSON.stringify(x)).sort()), back.career.items.map(x => x.id));
+    const sums = [R.recordSummary('career:crsync00001', cr1), R.recordSummary('career:crsync00002', cr2), R.recordSummary('career:casync00001', ca)];
+    check('summaries are "Role: <title>", "Role: <title> · set aside" and "Application: <company> · Closed"', eq(sums, ['Role: SOC analyst', 'Role: Pentester · set aside', 'Application: Acme Security · Closed']), sums);
+    check('its label in words is "Career item"', R.recordLabel('career:casync00001') === 'Career item', R.recordLabel('career:casync00001'));
+    check('a role\'s lines are its notes and how many portfolio entries it points at', eq(R.recordLines('career:crsync00001', cr1), ['Notes: Shift work is fine', '1 portfolio entry']) && eq(R.recordLines('career:crsync00002', cr2), []), R.recordLines('career:crsync00001', cr1));
+    check('an application\'s lines are its role, contact, link, notes, the day applied, closed with why, the follow-up, and each interview with its time, kind, prep, questions asked and how it went', eq(R.recordLines('career:casync00001', ca),
+      ['Role: SOC analyst', 'Contact: Priya in hiring', 'Link: https://example.com/jobs/1', 'Notes: Found on a job board', 'Applied 2026-10-20', 'Closed 2026-11-02 · Not this time', 'Followed up 2026-11-01',
+        'Interview 2026-11-04 at 10:00 (Video) · prep · 1 of 2 questions asked · how it went']), R.recordLines('career:casync00001', ca));
+    { const gone = clone(data); R.putRecord(gone, 'career:casync00001', null); check('an item deleted elsewhere removes it here', gone.career.items.length === 2 && !gone.career.items.some(x => x.id === 'casync00001')); }
   }
 
   console.log('\n[2] What stays on each device');
