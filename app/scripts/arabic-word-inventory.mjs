@@ -74,7 +74,7 @@ const seen = new Set(), report = [];
 for (const l of lessonsInOrder) {
   const found = new Map();
   for (const [where, text] of shown(l)) for (const t of tokens(text)) {
-    if (seen.has(t) || listed.has(t) || NAMES.has(t) || [...stems(t)].some(s => listedStems.has(s) || NAMES.has(s) || s in placed.forms || s in placed.not_words)) continue;
+    if (seen.has(t) || listed.has(t) || NAMES.has(t) || [...stems(t)].some(s => listedStems.has(s) || NAMES.has(s) || s in (placed.forms ?? {}) || s in (placed.not_words ?? {}))) continue;
     if (!found.has(t)) found.set(t, { form: t, count: 0, where, context: text.length > 140 ? text.slice(0, 140) + '…' : text });
     found.get(t).count++;
   }

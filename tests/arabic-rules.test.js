@@ -524,6 +524,17 @@ check('vowelled and unvowelled versions are both kept where the package has them
     check('…the same as one of the lesson\'s own words passes, reported by id for the owner\'s checker', ro.code === 0 && /Course words: \d+ of the lessons' own words show a phrase/.test(ro.out) && ro.out.includes(own.id), ro.out.slice(-300));
     const real = runExp(null);
     check('the real course words pass; any of the lessons\' own words that show their check\'s phrase are listed, not failed', real.code === 0);
+    // The dictionary's word forms (word-forms.json): each must point to a real word, not repeat a listed one (its article
+    // aside), and not meet another form pointing elsewhere; --words or --forms without a file is refused.
+    const forms = JSON.parse(read(path.join(ROOT, 'content/teaching/arabic/word-forms.json')));
+    const badForms = (name, mutate) => { const c = JSON.parse(JSON.stringify(forms)); mutate(c); const file = path.join(expTemp, `forms-${name}.json`); fs.writeFileSync(file, JSON.stringify(c)); return runExp(null, ['--forms', file]); };
+    const unknown = badForms('unknown', c => { c.forms['الاطفال'] = 'lexeme.arabic-nowhere-1'; }), listedAgain = badForms('listed', c => { c.forms['الكتاب'] = 'lexeme.arabic-seed-009'; });
+    const clash = badForms('clash', c => { const [k, id] = Object.entries(c.forms).find(([, v]) => v !== 'lexeme.arabic-seed-009'); c.forms['ال' + k] = 'lexeme.arabic-seed-009'; });
+    check('a word form pointing to no word fails the build', unknown.code === 1 && unknown.out.includes("isn't a course word or starter word"), unknown.out.slice(-200));
+    check('…a form that is a listed word with its article fails too (الكتاب, for كِتَاب)', listedAgain.code === 1 && listedAgain.out.includes('is a listed word itself'), listedAgain.out.slice(-200));
+    check('…and so do two forms that meet, their article aside, pointing to different words', clash.code === 1 && clash.out.includes('meets another form'), clash.out.slice(-200));
+    const noFile = runExp(null, ['--words']);
+    check('--words without a file is refused, not run on the real file', noFile.code === 2 && noFile.out.includes('--words wants a file'), noFile.out.slice(-200));
   }
   check('the real explainers file reports how many cards lead on to a later explainer: 80', realExp.out.includes('; 80 lead on to a later explainer.'), realExp.out);
   fs.rmSync(expTemp, { recursive: true, force: true }); fs.rmSync(expSplit, { recursive: true, force: true });

@@ -15,9 +15,11 @@ import { arabicRuns } from '../src/study/arabic/arabic-runs.mjs';
 const root = new URL('../../', import.meta.url);
 const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));
 const args = process.argv.slice(2), withReadings = args.includes('--readings');
-// --words <file>: another course-words file (a test's copy), checked with the explainers' file.
-const wordsAt = args.indexOf('--words'), wordsFile = wordsAt >= 0 ? args[wordsAt + 1] : null;
-const given = args.find((a, i) => !a.startsWith('--') && (wordsAt < 0 || i !== wordsAt + 1));
+// --words <file>, --forms <file>: another course-words or word-forms file (a test's copy), checked with the explainers.
+const option = name => { const at = args.indexOf(name); if (at < 0) return [null, -1]; const f = args[at + 1];
+  if (!f || f.startsWith('--')) { console.error(`${name} wants a file`); process.exit(2); } return [f, at + 1]; };
+const [wordsFile, wordsArg] = option('--words'), [formsFile, formsArg] = option('--forms');
+const given = args.find((a, i) => !a.startsWith('--') && i !== wordsArg && i !== formsArg);
 // Usually the authored file; a test can pass another one (a path) to check that a broken file fails.
 const file = given ? JSON.parse(readFileSync(given, 'utf8')) : read('content/teaching/arabic/explainers.json');
 const course = read('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json');
@@ -307,6 +309,27 @@ for (const lessonId of courseOrder) {
       }
   }
 }
+// The dictionary's word forms (content/teaching/arabic/word-forms.json): each form keyed as search keys it, pointing to a
+// course word or starter word, and not itself a listed form (that one is found anyway).
+const wordForms = formsFile ? JSON.parse(readFileSync(formsFile, 'utf8')) : read('content/teaching/arabic/word-forms.json');
+const knownIds = new Set([...Object.values(courseWords).flatMap(l => l.words.map(w => w.id)), ...course.lexicon_seed.map(w => w.id)]);
+const formKey = s => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/\u0640/g, '').replace(/\u0671/g, '\u0627').replace(/\u0649/g, '\u064A').replace(/\u0629/g, '\u0647').replace(/[^\u0621-\u064A\s]/g, ' ').replace(/\s+/g, ' ').trim();
+// Search matches a form with its article left off (dictionary.ts), so compare them that way too.
+const noArticleKey = k => k.replace(/^(?:وال|فال|بال|كال|لل|ال)(?=..)/, '');
+const listedKeys = new Set([...Object.values(courseWords).flatMap(l => l.words.map(w => noArticleKey(formKey(w.form_ar)))), ...course.lexicon_seed.map(w => noArticleKey(formKey(w.form_ar)))]);
+const formsMet = new Map();
+for (const [form, id] of Object.entries(wordForms.forms ?? {})) {
+  if (form !== formKey(form)) fail(`word-forms ${form}`, `key it as search does: ${formKey(form)}`);
+  if (!knownIds.has(id)) fail(`word-forms ${form}`, `points to ${id}, which isn't a course word or starter word`);
+  if (listedKeys.has(noArticleKey(form))) fail(`word-forms ${form}`, 'is a listed word itself');
+  const met = formsMet.get(noArticleKey(form));
+  if (met && met !== id) fail(`word-forms ${form}`, `meets another form, with its article aside, that points to ${met}`);
+  formsMet.set(noArticleKey(form), id);
+}
+for (const [form, why] of Object.entries(wordForms.not_words ?? {})) {
+  if (form !== formKey(form)) fail(`word-forms ${form}`, `key it as search does: ${formKey(form)}`);
+  if (!text(why)) fail(`word-forms ${form}`, 'say why it isn\'t a dictionary word');
+}
 if (withReadings && !problems.length) {
   const { bundle } = await import(new URL('../../ai-eval/build.mjs', import.meta.url).href);
   const dir = mkdtempSync(path.join(tmpdir(), 'myday-explainers-'));
@@ -323,21 +346,6 @@ if (withReadings && !problems.length) {
 if (problems.length) {
   console.error(`Arabic explainers: ${problems.length} problem${problems.length === 1 ? '' : 's'}\n- ${problems.join('\n- ')}`);
   process.exit(1);
-}
-// The dictionary's word forms (content/teaching/arabic/word-forms.json): each form keyed as search keys it, pointing to a
-// course word or starter word, and not itself a listed form (that one is found anyway).
-const wordForms = read('content/teaching/arabic/word-forms.json');
-const knownIds = new Set([...Object.values(courseWords).flatMap(l => l.words.map(w => w.id)), ...course.lexicon_seed.map(w => w.id)]);
-const formKey = s => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/\u0640/g, '').replace(/\u0671/g, '\u0627').replace(/\u0649/g, '\u064A').replace(/\u0629/g, '\u0647').replace(/[^\u0621-\u064A\s]/g, ' ').replace(/\s+/g, ' ').trim();
-const listedKeys = new Set([...Object.values(courseWords).flatMap(l => l.words.map(w => formKey(w.form_ar))), ...course.lexicon_seed.map(w => formKey(w.form_ar))]);
-for (const [form, id] of Object.entries(wordForms.forms ?? {})) {
-  if (form !== formKey(form)) fail(`word-forms ${form}`, `key it as search does: ${formKey(form)}`);
-  if (!knownIds.has(id)) fail(`word-forms ${form}`, `points to ${id}, which isn't a course word or starter word`);
-  if (listedKeys.has(form)) fail(`word-forms ${form}`, 'is a listed word itself');
-}
-for (const [form, why] of Object.entries(wordForms.not_words ?? {})) {
-  if (form !== formKey(form)) fail(`word-forms ${form}`, `key it as search does: ${formKey(form)}`);
-  if (!text(why)) fail(`word-forms ${form}`, 'say why it isn\'t a dictionary word');
 }
 if (reported.size) console.log(`Course words: ${reported.size} of the lessons' own words show a phrase from their lesson check's answer (approved before this check; for the owner's checker): ${[...reported].join(', ')}`);
 console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away${leads.length ? `; ${new Set(leads.map(l => l.self)).size} ${new Set(leads.map(l => l.self)).size === 1 ? 'leads' : 'lead'} on to a later explainer` : ''}.`);

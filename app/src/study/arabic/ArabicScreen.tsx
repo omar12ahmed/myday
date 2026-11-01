@@ -967,7 +967,7 @@ function WordRow({ data, w, takeOut, explainer = null, taught }: { data: MyDayDa
       {ask && <Button inline variant="ghost" data-action="ar-word-check" onClick={check}>Read it aloud, then check</Button>}
       {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}
       {course?.root_ar && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-root={course.root_ar}>{course.part_of_speech === 'chunk' ? 'Root of the main word' : 'Root'}: <Root f={{ root_ar: course.root_ar, root_reading: course.root_reading ?? '' }} /></p>}
-      {taught && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-taught={taught.lessonId ?? ''}>{taught.lessonId ? <>Taught in <InlineLink href={'#study/arabic/' + taught.lessonId}>{lessonIndex[taught.lessonId]?.title}</InlineLink></>
+      {taught && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-taught={taught.lessonId ?? ''}>{taught.lessonId ? <>{course?.dictionary ? 'Used in' : 'Taught in'} <InlineLink href={'#study/arabic/' + taught.lessonId}>{lessonIndex[taught.lessonId]?.title}</InlineLink></>
         : <>A starter word{taught.firstIn && <>, first in <InlineLink href={'#study/arabic/' + taught.firstIn}>{lessonIndex[taught.firstIn]?.title}</InlineLink></>}</>}</p>}</div>
       {!ask && <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} />}</div>
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>

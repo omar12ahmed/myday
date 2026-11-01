@@ -124,10 +124,13 @@ Your words are still never sent to AI.
    - root or none;
    - an example that doesn't give away a check;
    - a voiced note.
-6. **Never a check's answer.** A build check, like the explainers' secrets check in validate-explainers.mjs, makes
-   sure a course word's form, example and note don't give away a lesson check's answer, from its own lesson or an
-   earlier one (revision brings earlier checks back). It covers the 800 existing words too. myday-20 builds it, and
-   myday-5a runs it on every batch.
+6. **Never a check's answer.** `validate-explainers.mjs` checks every course word's form, example and note against its
+   own lesson check (the lesson's course words not counting as shown): a phrase of two or more words from the
+   answer, found there, fails the build for a dictionary word and is reported by id for the lessons' own words, which
+   were approved before this check (4 on 1 November; myday-5a took them to the owner's checker). Single words and
+   earlier lessons' phrases are left out on purpose: measured on 1 November, they flagged 793 and 15 places, all a
+   word list teaching the words a check asks for (فِي, إِلَى) or a common phrase coming back later (عَلَى الْمَكْتَبِ).
+   The same script checks `word-forms.json`.
 7. **Batches** of about 100 words (about 300 clips, since the form, the example and the note's Arabic are each
    voiced), going through the modules in order, so roughly six to nine batches. Each batch is drafted, then:
    - validated;
