@@ -853,7 +853,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   console.log('\n[29] Starting a case');
   await go('projects', 2026, 10, 15, 8); await reset(); await go('projects', 2026, 10, 15, 8);
   const kinds = await ev(`[...document.querySelectorAll('[data-s=project-kind] [data-action=project-kind]')].map(i => i.value)`);
-  check('the Start a project kind choice has General, Business idea, Case, Research, Content and Software', eq(kinds, ['general', 'business', 'case', 'research', 'content', 'software']), kinds);
+  check('the Start a project kind choice has General, Business idea, Case, Research, Content, Software and Career', eq(kinds, ['general', 'business', 'case', 'research', 'content', 'software', 'career']), kinds);
   await click('[data-action=project-kind][value=case]'); await sleep(150);
   check('choosing Case selects it', (await kindNow()) === 'case', await kindNow());
   await type('#projectNew', 'Dispute about my unpaid overtime'); await click('[data-action=project-add]'); await sleep(400);
