@@ -15,7 +15,7 @@
      "root_reading": "ʿ-r-b",
      "example_ar": "صَدِيقِي عَرَبِيٌّ.",
      "example_meaning_en": "My friend is Arab.",
-     "note": "For a woman or a feminine noun: عَرَبِيَّة, as in اللُّغَةُ الْعَرَبِيَّةُ, “the Arabic language”. Plural عَرَب."
+     "note": "For a woman or a feminine noun: عَرَبِيَّة, as in اللُّغَةُ الْعَرَبِيَّةُ, “the Arabic language”. عَرَب means “Arabs”."
     },
     {
      "id": "lexeme.arabic-fusha-register-2",
@@ -37,7 +37,7 @@
      "root_reading": "sh-h-d",
      "example_ar": "شَاهَدْتُ الْأَخْبَارَ.",
      "example_meaning_en": "I watched the news.",
-     "note": "Present يُشَاهِدُ. The news on television is read in Fuṣḥā."
+     "note": "Present يُشَاهِدُ. TV news bulletins are usually presented in Fuṣḥā."
     },
     {
      "id": "lexeme.arabic-fusha-register-4",
@@ -141,7 +141,7 @@
      "root_reading": "b-ʿ-ḍ",
      "example_ar": "أَفْهَمُ بَعْضَ الْكَلِمَاتِ.",
      "example_meaning_en": "I understand some words.",
-     "note": "Usually before a plural with the article: بَعْضُ الطُّلَّابِ, “some students”."
+     "note": "Often before a definite noun: بَعْضُ الطُّلَّابِ, “some students”."
     },
     {
      "id": "lexeme.arabic-goal-baseline-6",
@@ -152,7 +152,7 @@
      "root_reading": "t-m-m",
      "example_ar": "لَا أَفْهَمُ تَمَامًا.",
      "example_meaning_en": "I don't fully understand.",
-     "note": "Comes after the verb. On its own, as a reply, it means “exactly”."
+     "note": "Here it follows the verb. On its own, as a reply, it means “exactly”."
     },
     {
      "id": "lexeme.arabic-goal-baseline-7",
@@ -365,7 +365,7 @@
      "root_reading": "n-sh-ṭ",
      "example_ar": "أَنَا نَشِيطٌ صَبَاحًا.",
      "example_meaning_en": "I'm full of energy in the mornings.",
-     "note": "A woman says أَنَا نَشِيطَةٌ. When tired: أَنَا مُتْعَبٌ."
+     "note": "A woman says أَنَا نَشِيطَةٌ. For “I’m tired”: a man says أَنَا مُتْعَبٌ; a woman says أَنَا مُتْعَبَةٌ."
     },
     {
      "id": "lexeme.arabic-practice-contract-4",
@@ -447,7 +447,7 @@
      "root_reading": "f-w-q",
      "example_ar": "فَوْقَ النُّونِ نُقْطَةٌ.",
      "example_meaning_en": "There is a dot above nūn.",
-     "note": "The noun after it ends in -i: النُّونِ. The opposite is تَحْتَ, “under”."
+     "note": "Here the noun after it ends in -i: النُّونِ. The opposite is تَحْتَ, “under”."
     },
     {
      "id": "lexeme.arabic-letter-families-4",
@@ -458,7 +458,7 @@
      "root_reading": "t-ḥ-t",
      "example_ar": "تَحْتَ الْيَاءِ نُقْطَتَانِ.",
      "example_meaning_en": "There are two dots under yāʾ.",
-     "note": "The noun after it ends in -i: الْيَاءِ."
+     "note": "Here the noun after it ends in -i: الْيَاءِ."
     },
     {
      "id": "lexeme.arabic-letter-families-5",
@@ -480,7 +480,7 @@
      "root_reading": "n-b-t",
      "example_ar": "هَذَا نَبَاتٌ صَغِيرٌ.",
      "example_meaning_en": "This is a small plant.",
-     "note": "Plural نَبَاتَات. Three of its letters, ن, ب and ت, share one basic shape."
+     "note": "Plural نَبَاتَات. At the start or in the middle of a word, ن, ب and ت share one basic shape, told apart by their dots."
     },
     {
      "id": "lexeme.arabic-letter-families-7",
@@ -539,7 +539,7 @@
      "root_ar": "و-ر-ق",
      "root_reading": "w-r-q",
      "example_ar": "هَذِهِ وَرَقَةٌ بَيْضَاءُ.",
-     "example_meaning_en": "This is a blank sheet of paper.",
+     "example_meaning_en": "This is a white sheet of paper.",
      "note": "Plural أَوْرَاق. و and ر don't join to the letter after them."
     },
     {
@@ -764,7 +764,7 @@
      "root_reading": "j-w-b",
      "example_ar": "إِجَابَتُكَ صَحِيحَةٌ.",
      "example_meaning_en": "Your answer is correct.",
-     "note": "Plural إِجَابَات. Its ة becomes ت before an ending: إِجَابَتُكَ."
+     "note": "Plural إِجَابَات. Before an attached pronoun, ة is written ت: إِجَابَتُكَ, “your answer”."
     },
     {
      "id": "lexeme.arabic-special-spellings-3",
@@ -879,7 +879,7 @@
      "root_reading": "ṭ-ʿ-m",
      "example_ar": "الْمَطْعَمُ مَفْتُوحٌ.",
      "example_meaning_en": "The restaurant is open.",
-     "note": "Plural مَطَاعِم. From طَعَام, “food”: a place for food."
+     "note": "Plural مَطَاعِم. It shares its root with طَعَام, “food”: a place to eat."
     },
     {
      "id": "lexeme.arabic-script-meaning-6",
@@ -983,7 +983,7 @@
      "root_reading": "ṣ-w-t",
      "example_ar": "اِقْرَأْ بِصَوْتٍ عَالٍ.",
      "example_meaning_en": "Read aloud.",
-     "note": "Literally “with a high voice”."
+     "note": "Literally “with a high voice”: here high means loud, not high-pitched."
     }
    ]
   },
@@ -1043,7 +1043,7 @@
      "root_reading": "q-b-l",
      "example_ar": "قَابَلْتُ صَدِيقِي.",
      "example_meaning_en": "I met my friend.",
-     "note": "Present يُقَابِلُ. Without the long ā, قَبِلَ means “accepted”."
+     "note": "Present يُقَابِلُ. Compare قَبِلَ, “accepted”: its first vowel is short, and its second vowel is i."
     },
     {
      "id": "lexeme.arabic-length-contrast-6",
@@ -1136,7 +1136,7 @@
      "root_reading": "gh-d-w",
      "example_ar": "الْغَدَاءُ جَاهِزٌ.",
      "example_meaning_en": "Lunch is ready.",
-     "note": "غ is like خ with the voice switched on: say خ and let your throat buzz."
+     "note": "غ is like خ with the voice switched on: keep your tongue in the same place and add voice."
     },
     {
      "id": "lexeme.arabic-throat-sounds-7",
@@ -1371,7 +1371,7 @@
      "root_reading": null,
      "example_ar": "أَتُرِيدُ قَهْوَةً أَمْ شَايًا؟",
      "example_meaning_en": "Would you like coffee or tea?",
-     "note": "Only in a question that offers a choice; elsewhere “or” is أَوْ. The voice usually rises on the first choice and falls on the last."
+     "note": "In a question like this, أَمْ links the choices. In ordinary statements, “or” is أَوْ. The voice usually rises on the first choice and falls on the last."
     },
     {
      "id": "lexeme.arabic-pause-prosody-5",
@@ -1393,7 +1393,7 @@
      "root_reading": "ṣ-b-ḥ",
      "example_ar": "تُصْبِحُ عَلَى خَيْرٍ يَا أَبِي.",
      "example_meaning_en": "Good night, Dad.",
-     "note": "To a woman: تُصْبِحِينَ عَلَى خَيْرٍ. The reply: وَأَنْتَ مِنْ أَهْلِهِ."
+     "note": "To a woman: تُصْبِحِينَ عَلَى خَيْرٍ. The reply, to a man: وَأَنْتَ مِنْ أَهْلِهِ; to a woman: وَأَنْتِ مِنْ أَهْلِهِ."
     },
     {
      "id": "lexeme.arabic-pause-prosody-7",
