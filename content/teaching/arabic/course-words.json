@@ -610,7 +610,7 @@
      "root_reading": "ḥ-b-b",
      "example_ar": "الْحُبُّ جَمِيلٌ.",
      "example_meaning_en": "Love is beautiful.",
-     "note": "The verb is أُحِبُّ, “I love, I like”. حَبِيب is “darling, beloved”.",
+     "note": "The verb is أَحَبَّ: أُحِبُّ is “I love, I like”. حَبِيب is “darling, beloved”.",
      "dictionary": true
     },
     {
@@ -1056,9 +1056,9 @@
      "part_of_speech": "adjective",
      "root_ar": "ز-ر-ق",
      "root_reading": "z-r-q",
-     "example_ar": "السَّمَاءُ زَرْقَاءُ.",
-     "example_meaning_en": "The sky is blue.",
-     "note": "Feminine زَرْقَاء, as here, because سَمَاء is feminine. Like أَبْيَض, it never takes -un.",
+     "example_ar": "الْبَحْرُ أَزْرَقُ.",
+     "example_meaning_en": "The sea is blue.",
+     "note": "Feminine زَرْقَاء: السَّمَاءُ زَرْقَاءُ, the sky is blue. Like أَبْيَض, it never takes -un.",
      "dictionary": true
     }
    ]
@@ -1516,8 +1516,8 @@
      "part_of_speech": "noun",
      "root_ar": "ر-أ-س",
      "root_reading": "r-ʾ-s",
-     "example_ar": "عِنْدِي أَلَمٌ فِي رَأْسِي.",
-     "example_meaning_en": "I have a pain in my head.",
+     "example_ar": "رَأْسُ الطِّفْلِ صَغِيرٌ.",
+     "example_meaning_en": "The child's head is small.",
      "note": "Plural رُؤُوس. رَئِيس, “head, chief”, is from the same root.",
      "dictionary": true
     }
@@ -1670,8 +1670,8 @@
      "root_ar": "ض-ر-س",
      "root_reading": "ḍ-r-s",
      "example_ar": "أَلَمُ الضِّرْسِ شَدِيدٌ.",
-     "example_meaning_en": "Toothache is severe.",
-     "note": "Plural ضُرُوس or أَضْرَاس. A front tooth is سِنّ.",
+     "example_meaning_en": "The toothache is severe.",
+     "note": "Plural ضُرُوس or أَضْرَاس. The general word for a tooth is سِنّ.",
      "dictionary": true
     },
     {
@@ -1777,8 +1777,8 @@
      "part_of_speech": "adjective",
      "root_ar": "ط-ي-ب",
      "root_reading": "ṭ-y-b",
-     "example_ar": "عِنْدَهُ قَلْبٌ طَيِّبٌ.",
-     "example_meaning_en": "He has a kind heart.",
+     "example_ar": "هَذَا الطَّعَامُ طَيِّبٌ.",
+     "example_meaning_en": "This food is tasty.",
      "note": "Feminine طَيِّبَة. Of food it means “tasty”: طَعَامٌ طَيِّبٌ.",
      "dictionary": true
     }
@@ -2536,8 +2536,8 @@
      "part_of_speech": "name",
      "root_ar": null,
      "root_reading": null,
-     "example_ar": "بَغْدَادُ فِي الْعِرَاقِ.",
-     "example_meaning_en": "Baghdad is in Iraq.",
+     "example_ar": "أَسْكُنُ فِي بَغْدَادَ.",
+     "example_meaning_en": "I live in Baghdad.",
      "note": "The capital of الْعِرَاق. Like many place names, it never takes -un.",
      "dictionary": true
     }
@@ -4083,7 +4083,7 @@
      "root_reading": "s-d-s",
      "example_ar": "أَصِلُ فِي السَّاعَةِ السَّادِسَةِ وَالنِّصْفِ.",
      "example_meaning_en": "I arrive at half past six.",
-     "note": "Feminine سَادِسَة. From سِتَّة, “six”, with d in place of the t.",
+     "note": "Feminine سَادِسَة. From the same root as سِتَّة, “six”: the root’s د shows here, but not in سِتَّة.",
      "dictionary": true
     },
     {
