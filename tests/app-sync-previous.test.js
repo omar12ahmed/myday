@@ -834,6 +834,32 @@ async function signIn(d, url) {
     await now.returnToApp();
     check('back on this release: the new title and preference arrive, with the touched days and the uses of Help me start exactly as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TTB}')?.title === 'Sort the post (renamed)' && JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 20`, 20000)
       && eq((await now.data()).tasks.items.find(t => t.id === TTB)?.touched, touchedDays) && same((await now.data()).patterns.startSeen, startSeenBack) && await synced(now), [(await now.data()).tasks.items.find(t => t.id === TTB)?.touched, (await now.data()).patterns.startSeen]);
+    console.log('\n[31] A Career project passes through the previous release unchanged (specs/projects-career.md)');
+    const knowsCareer = builtText.includes('Career project started');
+    console.log(`The previous release ${knowsCareer ? 'knows' : 'doesn’t know'} Career projects.`);
+    const PCR = 'pjCareerBack';
+    const crRole = { id: 'crBack1', type: 'role', projectId: PCR, title: 'SOC analyst (made up)', notes: 'Blue team first', futureBit: { keep: ['career', 1] }, createdAt: stamp, updatedAt: stamp };
+    const crApp = { id: 'caBack1', type: 'application', projectId: PCR, company: 'Acme Security (made up)', title: 'Junior SOC analyst', roleId: 'crBack1', stage: 'interviewing', appliedOn: today,
+      interviews: [{ id: 'ciBack1', on: today, at: '10:00', kind: 'video', prep: 'Their SIEM', questions: [{ id: 'cqBack1', text: 'What does a good first month look like?' }] }], createdAt: stamp, updatedAt: stamp };
+    const crOf = async id => (await record('career', id))?.data, crProject = async () => (await record('project', PCR))?.data?.value;
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PCR}', title: 'Job search (made up)', summary: '', stage: 'act', status: 'active', template: 'career', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' });
+      s.career = s.career || { items: [] }; s.career.items.push(${JSON.stringify(crRole)}, ${JSON.stringify(crApp)}); }`);
+    check('this release sends the project (its kind) and each item as its own record, exactly', await eventually(async () => (await crProject())?.template === 'career' && same(await crOf('crBack1'), crRole) && same(await crOf('caBack1'), crApp)) && await synced(now), [await crProject(), await crOf('caBack1')]);
+    const roleV = (await record('career', 'crBack1'))?.version, appV = (await record('career', 'caBack1'))?.version;
+    await before.returnToApp();
+    check('the previous release syncs normally and receives the project', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PCR}')`, 20000));
+    await before.open(BEFORE + `#projects/p/${PCR}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    if (!knowsCareer) check('…showing it as a general project: its milestones and decisions, no Applications tab', await before.until(`!!document.querySelector('[data-tab=milestones]')`, 5000) && !(await before.ev(`!!document.querySelector('[data-tab=applications]')`)));
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Job search (renamed)');
+    check('a rename on the previous release reaches the account with the kind kept, and the items untouched (same versions)', await eventually(async () => (await crProject())?.title === 'Job search (renamed)') && await synced(before)
+      && (await crProject())?.template === 'career' && (await record('career', 'crBack1'))?.version === roleV && (await record('career', 'caBack1'))?.version === appV && same(await crOf('caBack1'), crApp), await crProject());
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PCR}/applications`);
+    check('back on this release: still a Career project with its role and application exactly, and in step', await now.until(`!!document.querySelector('[data-s=application][data-id=caBack1]') && !!document.querySelector('[data-s=role][data-id=crBack1]')`, 20000)
+      && await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(x => x.id === '${PCR}')?.template === 'career'`, 20000)
+      && same((await now.data()).career.items.find(x => x.id === 'crBack1'), crRole) && same((await now.data()).career.items.find(x => x.id === 'caBack1'), crApp) && await synced(now) && (await now.status()) === 'synced', await now.text('#projectApplications'));
 
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
