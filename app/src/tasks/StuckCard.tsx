@@ -61,7 +61,7 @@ export function StuckCard({ data, t, stuck, onHandOver }: { data: MyDayData; t: 
   // task and waits for you to tap Ask MyDay; your answer is kept with the task, as the others are. Only while AI help is
   // on and the task may reach it.
   const askable = AI_MODE !== 'off' && aiReach(data).task(t);
-  const thinkItThrough = () => { onHandOver?.(); update(d => (noteBlocker(d, t.id, 'start', k) ? undefined : false)); openCapture("I don't know where to start with this"); };
+  const thinkItThrough = (opener: HTMLElement) => { onHandOver?.(); update(d => (noteBlocker(d, t.id, 'start', k) ? undefined : false)); openCapture("I don't know where to start with this", undefined, opener); };
   return (
     <Card id="stuckCard" aria-labelledby="stuck-h" tone={stuck ? 'accent' : 'plain'}>
       <h3 id="stuck-h" className="m-0">What's getting in the way?</h3>
@@ -73,7 +73,7 @@ export function StuckCard({ data, t, stuck, onHandOver }: { data: MyDayData; t: 
         <form onSubmit={e => { e.preventDefault(); go(); }}>
           {a.body}
           <Button inline type="submit" variant="primary" className="mt-3" data-action="unstick" disabled={a.needsText && !text.trim()}>{a.label}</Button>
-          {reason === 'start' && askable && <p className="text-[15px] m-0 mt-3" data-s="stuck-ask">Not sure what the first step is? <LinkButton data-action="stuck-ask" onClick={thinkItThrough}>Think it through with Ask MyDay</LinkButton></p>}
+          {reason === 'start' && askable && <p className="text-[15px] m-0 mt-3" data-s="stuck-ask">Not sure what the first step is? <LinkButton data-action="stuck-ask" onClick={e => thinkItThrough(e.currentTarget)}>Think it through with Ask MyDay</LinkButton></p>}
         </form>
       )}
       {reason !== 'waiting' && <Note className="mb-0 mt-3 text-sm">Your answer is kept with the task, so MyDay can notice what usually gets in the way.</Note>}

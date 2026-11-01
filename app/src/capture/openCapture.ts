@@ -3,4 +3,5 @@
 export const CAPTURE_EVENT = 'myday:capture';
 // `focus` names the one thing the request is about when the page holds several (e.g. a decision, for "What am I missing?").
 export interface AskFocus { decisionId?: string }
-export function openCapture(text: string, focus?: AskFocus) { window.dispatchEvent(new CustomEvent(CAPTURE_EVENT, { detail: { text, focus } })); }
+// `opener`: what to put focus back on when the sheet closes (a tap doesn't always focus what was tapped: Safari, say).
+export function openCapture(text: string, focus?: AskFocus, opener?: HTMLElement | null) { window.dispatchEvent(new CustomEvent(CAPTURE_EVENT, { detail: { text, focus, opener } })); }

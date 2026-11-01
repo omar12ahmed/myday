@@ -25,18 +25,27 @@ export function CaptureButton({ data }: { data: MyDayData }) {
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState('');
   const [focus, setFocus] = useState<AskFocus | undefined>(undefined);
+  // Where focus was when the sheet opened (+, or a page's shortcut such as "Think it through with Ask MyDay"), so closing
+  // it puts focus back there, as a dialog should: the sheet is removed rather than closed, so the browser can't. Only if
+  // you're still on that page and nothing else has taken focus (Help me adjust today, say, or another page opened).
+  const opener = useRef<{ el: HTMLElement; hash: string } | null>(null);
+  const remember = (given?: HTMLElement | null) => { const el = given ?? document.activeElement; opener.current = el instanceof HTMLElement && el !== document.body ? { el, hash: location.hash } : null; };
   // A page's shortcut can open the sheet with words already in it (openCapture.ts).
   useEffect(() => {
-    const onOpen = (e: Event) => { const d = (e as CustomEvent<{ text: string; focus?: AskFocus }>).detail; setPreset(String(d?.text ?? '')); setFocus(d?.focus); setOpen(true); };
+    const onOpen = (e: Event) => { const d = (e as CustomEvent<{ text: string; focus?: AskFocus; opener?: HTMLElement | null }>).detail; remember(d?.opener); setPreset(String(d?.text ?? '')); setFocus(d?.focus); setOpen(true); };
     window.addEventListener(CAPTURE_EVENT, onOpen);
     return () => window.removeEventListener(CAPTURE_EVENT, onOpen);
   }, []);
   return (
     <>
-      <button type="button" className="capture-btn" data-action="capture-open" aria-label="Capture: a note, task or appointment" onClick={() => { setPreset(''); setFocus(undefined); setOpen(true); }}>
+      <button type="button" className="capture-btn" data-action="capture-open" aria-label="Capture: a note, task or appointment" onClick={e => { remember(e.currentTarget); setPreset(''); setFocus(undefined); setOpen(true); }}>
         <Plus size={24} aria-hidden="true" /><span className="capture-label">Capture</span>
       </button>
-      {open && <CaptureSheet data={data} initialText={preset} focus={focus} onClose={() => { setOpen(false); setPreset(''); setFocus(undefined); }} />}
+      {open && <CaptureSheet data={data} initialText={preset} focus={focus} onClose={() => {
+        setOpen(false); setPreset(''); setFocus(undefined);
+        const back = opener.current; opener.current = null;
+        requestAnimationFrame(() => { if (back && back.el.isConnected && location.hash === back.hash && (!document.activeElement || document.activeElement === document.body)) back.el.focus(); });
+      }} />}
     </>
   );
 }
