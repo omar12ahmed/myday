@@ -61,7 +61,7 @@ function nextFrom(list: ListItem[], afterId: string | null, exclude: Set<string>
 // Learning follows the roadmap: the session after the last *completed* one (cycling after the last).
 // Admin and health rotate: the one after the last *planned* one.
 function freshPick(data: MyDayData, cat: Category, k: DateKey, exclude: Set<string>): ListItem | null {
-  const after = cat === 'learning' ? lastTaskId(data, 'learning', t => t.done && !t.study, k) : lastTaskId(data, cat, () => true, k);
+  const after = cat === 'learning' ? lastTaskId(data, 'learning', t => t.done && !planStudy(t), k) : lastTaskId(data, cat, () => true, k);
   return nextFrom(data.lists[cat], after, exclude);
 }
 
@@ -70,8 +70,18 @@ function freshPick(data: MyDayData, cat: Category, k: DateKey, exclude: Set<stri
 // Cybersecurity catalogues load on demand, so they never come in here). Your own Learning list is used only when there
 // isn't one. Its title names the subject; Today shows the lesson it is now, and it keeps the lesson's name once done.
 export interface StudyPick { subject: PlanStudy['subject']; courseId?: string; title: string; minutes: number }
+// A Study entry is marked by its `taskId` — 'study:arabic', 'study:cybersecurity' or 'study:roadmap:<courseId>' — an
+// existing field every version keeps (on the device, in backups and through sync), so it isn't a new saved field. An
+// older version shows it as a plain learning task, and carries it over as one; this version still knows it.
+export const studyTaskId = (s: PlanStudy) => (s.subject === 'roadmap' ? `study:roadmap:${s.courseId ?? ''}` : `study:${s.subject}`);
+export function planStudy(t: Pick<Task, 'taskId' | 'category'>): PlanStudy | null {
+  if (t.category !== 'learning' || !t.taskId?.startsWith('study:')) return null;
+  const [, subject, ...rest] = t.taskId.split(':'), courseId = rest.join(':');
+  if (subject === 'arabic' || subject === 'cybersecurity') return { subject };
+  return subject === 'roadmap' ? { subject, ...(courseId ? { courseId } : {}) } : null;
+}
 function makeStudyTask(s: StudyPick): Task {
-  return { ...makeTask({ id: null, title: s.title, minutes: s.minutes }, 'learning', null), study: { subject: s.subject, ...(s.courseId ? { courseId: s.courseId } : {}) } };
+  return makeTask({ id: studyTaskId(s), title: s.title, minutes: s.minutes }, 'learning', null);
 }
 // The name a ticked Study entry keeps ("Arabic Fuṣḥā: The Fuṣḥā register"), the same as Today's row shows it.
 export const studiedTitle = (subject: 'arabic' | 'cybersecurity', lesson: string) => `${subject === 'arabic' ? 'Arabic Fuṣḥā' : 'Cybersecurity'}: ${lesson}`;
@@ -79,12 +89,11 @@ export const studiedTitle = (subject: 'arabic' | 'cybersecurity', lesson: string
 // finished, or one of your own course's tasks ticked): today's Study entry for it is ticked, by that action, with the
 // lesson's name when it's known. Marking a lesson ready doesn't tick it: the entry moves on to the next lesson instead.
 // Nothing else ticks it but you.
-export function tickStudyOnPlan(data: MyDayData, k: DateKey, subject: PlanStudy['subject'], o: { courseId?: string; title?: string; lessonId?: string } = {}): boolean {
-  const t = data.days[k]?.tasks.find(x => !x.done && x.study?.subject === subject && (subject !== 'roadmap' || !o.courseId || x.study.courseId === o.courseId));
+export function tickStudyOnPlan(data: MyDayData, k: DateKey, subject: PlanStudy['subject'], o: { courseId?: string; title?: string } = {}): boolean {
+  const t = data.days[k]?.tasks.find(x => { const s = !x.done && planStudy(x); return !!s && s.subject === subject && (subject !== 'roadmap' || !o.courseId || s.courseId === o.courseId); });
   if (!t) return false;
   setDone(data, t, true);
   if (o.title?.trim()) t.title = o.title.trim().slice(0, 200);
-  if (o.lessonId) t.study = { ...t.study!, lessonId: o.lessonId };
   return true;
 }
 
@@ -180,7 +189,7 @@ export function chooseTasks(data: MyDayData, k: DateKey, energy: number, study: 
 // Extra tasks for a review when energy went up: one per category not already in the plan.
 export function chooseAdditional(data: MyDayData, k: DateKey, existing: Task[], count: number, study: StudyPick | null = null): Task[] {
   const P = picker(data, k, study);
-  existing.forEach(t => { if (t.taskId) P.chosen.add(t.taskId); if (t.fromQueue) P.usedQ.add(t.fromQueue.qid); if (t.study) P.useStudy(); });
+  existing.forEach(t => { if (t.taskId) P.chosen.add(t.taskId); if (t.fromQueue) P.usedQ.add(t.fromQueue.qid); if (planStudy(t)) P.useStudy(); });
   const out: Task[] = [];
   for (const cat of CATS) {
     if (out.length >= count) break;
@@ -197,7 +206,7 @@ export function learningForToday(data: MyDayData, k: DateKey, d: Day, study: Stu
   const inPlan = new Set(d.tasks.map(t => t.taskId as string));
   const q = data.queue.find(x => x.category === 'learning' && !doneY.has(x.taskId as string) && !inPlan.has(x.taskId as string));
   if (q) { data.queue = data.queue.filter(x => x.qid !== q.qid); return taskFromQueue(q); }
-  if (study && !d.tasks.some(t => t.study)) return makeStudyTask(study);
+  if (study && !d.tasks.some(t => planStudy(t))) return makeStudyTask(study);
   const f = freshPick(data, 'learning', k, new Set([...doneY, ...inPlan]));
   return f ? makeTask(f, 'learning', null) : null;
 }
@@ -234,7 +243,7 @@ export function followQueued(data: MyDayData, k: DateKey) {
 
 // Put a task in the queue for a later day (never twice).
 export function queueTask(data: MyDayData, t: Task, k: DateKey) {
-  if (t.study) return; // Study's next step never waits in the queue: it's still there in Study
+  if (planStudy(t)) return; // Study's next step never waits in the queue: it's still there in Study
   if (t.taskId && data.queue.some(q => q.taskId === t.taskId)) return;
   data.queue.push({ qid: uid(), taskId: t.taskId, category: t.category, title: t.title, minutes: t.baseMinutes, queuedOn: k, sourceUid: null });
   sortQueue(data.queue);
@@ -273,7 +282,7 @@ export function makeRestDay(data: MyDayData, k: DateKey, energy: Energy | null) 
 
 // Evening check-in: mark (or unmark) an open task to roll to tomorrow via the queue.
 export function toggleRoll(data: MyDayData, dayKey: DateKey, t: Task) {
-  if (t.done || t.study) return; // Study's next step isn't carried over: tomorrow's plan picks up where you are in Study
+  if (t.done || planStudy(t)) return; // Study's next step isn't carried over: tomorrow's plan picks up where you are in Study
   if (t.rolledQid) {
     data.queue = data.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
     t.rolledQid = null;

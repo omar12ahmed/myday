@@ -55,7 +55,7 @@ import { setStartOffers } from '../data/patterns/saved';
 import { StartOfferCard } from './StartOfferCard';
 import { studyDoneAs, studyNow, studyPick } from '../study/todayStudy';
 import { loadNextLearning, nextLearningNow } from '../study/useNextLearning';
-import type { StudyPick } from '../data/plan';
+import { planStudy, type StudyPick } from '../data/plan';
 
 // Study's next step for the learning task, once the Study catalogues are in (specs/today-learning-and-tidy.md §2).
 function studyOf(now: MyDayData): StudyPick | null {
@@ -194,13 +194,13 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   function toggle(dayKey: string, t: Task, done: boolean) {
     let celebrateNow = false;
     // A Study entry ticked by hand keeps the lesson it was ("Arabic Fuṣḥā: The Fuṣḥā register"), for your history.
-    const m = nextLearningNow(), now = done && t.study && m ? studyNow(m.learningOptions(getSnapshot().data), t) : null;
+    const m = nextLearningNow(), now = done && planStudy(t) && m ? studyNow(m.learningOptions(getSnapshot().data), t) : null;
     const ok = update(dr => {
       const task = findTask(dr, dayKey, t.uid);
       if (!task) return false;
       setDone(dr, task, done);
       if (!done) return;
-      if (now && task.study) { const as = studyDoneAs(now); task.title = as.title; if (as.lessonId) task.study = { ...task.study, lessonId: as.lessonId }; }
+      if (now && planStudy(task)) task.title = studyDoneAs(now);
       if (dr.timer && dr.timer.uid === task.uid) dr.timer = null;
       const day = dr.days[dayKey];
       if (dayKey === k && day && !day.rest && day.tasks.length && day.tasks.every(x => x.done) && dr.celebratedOn !== dayKey) {

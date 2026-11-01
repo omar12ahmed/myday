@@ -44,12 +44,11 @@ export interface Task {
   rolledQid: string | null; // set while it's marked to roll to tomorrow
   scheduledStart: DateTime | null;
   scheduledEnd: DateTime | null;
-  study?: PlanStudy;        // Today's learning task from Study's next step (specs/today-learning-and-tidy.md §2)
 }
 
-// A plan entry that is Study's next step: which subject (and which of your courses); `lessonId` once it's done, for
-// your history. Older versions drop it when they read the plan, leaving a plain learning task.
-export interface PlanStudy { subject: 'arabic' | 'cybersecurity' | 'roadmap'; courseId?: string; lessonId?: string }
+// A plan entry that is Study's next step (specs/today-learning-and-tidy.md §2): which subject, and which of your courses.
+// Not a saved field: it's read from the entry's `taskId` (data/plan.ts planStudy), which every version keeps.
+export interface PlanStudy { subject: 'arabic' | 'cybersecurity' | 'roadmap'; courseId?: string }
 
 export interface Day {
   energy: Energy | null;

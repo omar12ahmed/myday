@@ -497,7 +497,7 @@ function SessionFinish({ data, lesson: l, session: open, steps, onFinished }: { 
   function finish() {
     let notYet: Finished['notYet'] = [], practice: string | null = null;
     const k = todayKey();
-    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); practice = bringBackPractice(d, open.id, l.id, k); tickStudyOnPlan(d, k, 'arabic', { title: studiedTitle('arabic', l.title), lessonId: l.id }); }))
+    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); practice = bringBackPractice(d, open.id, l.id, k); tickStudyOnPlan(d, k, 'arabic', { title: studiedTitle('arabic', l.title) }); }))
       onFinished({ attemptId: open.id, notYet, variant: open.variant, practice });
   }
   const did = ticksIn(data, open.id, l.id);

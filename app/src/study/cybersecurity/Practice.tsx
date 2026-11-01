@@ -62,7 +62,7 @@ export function PracticeView({ data, activity }: { data: MyDayData; activity: Ac
   function submit() {
     if (!draft) return;
     let error: string | null = null;
-    const saved = updateSaved(d => { error = submitAttempt(d, draft.id); if (error) return false; tickStudyOnPlan(d, todayKey(), 'cybersecurity'); }) === 'saved';
+    const saved = updateSaved(d => { error = submitAttempt(d, draft.id); if (error) return false; tickStudyOnPlan(d, todayKey(), 'cybersecurity', { title: 'Cybersecurity: practice' }); }) === 'saved';
     setProblem(error ?? (saved ? '' : 'Could not save. Check the saving message and try again.'));
     if (saved) toast('Saved in your lab notebook.');
   }

@@ -18,7 +18,7 @@ import { aiReach } from '../ai/reach';
 import type { ExplainContext } from '../../../supabase/functions/_shared/ai/explain-shape.ts';
 import { BackLink, Choice, Choices, Eyebrow, InlineLink, LinkButton, Note, NoteLink, Summary, TextLink } from './parts';
 import { changeRound, nextQuestion, setTyped, useRound, type Round } from './round';
-import { tickStudyOnPlan } from '../data/plan';
+import { studiedTitle, tickStudyOnPlan } from '../data/plan';
 
 // A course's cards load their questions only when a round reaches one.
 const ArabicQuestion = lazy(() => import('./arabic/ArabicQuestion'));
@@ -174,7 +174,7 @@ export function Question({ data, r, q, at }: { data: MyDayData; r: Round; q: Ask
       if (!q.save(d, k, { outcome: r.outcome, chosen: r.chosen, support: r.support }, rating)) return false;
       // The last answer of a "Revise Arabic" or "Revise Cybersecurity" round: you studied that subject today, so its
       // entry on today's plan is ticked (specs/today-learning-and-tidy.md §2).
-      if (at === r.ids.length - 1 && (r.scope === 'arabic' || r.scope === 'cybersecurity')) tickStudyOnPlan(d, k, r.scope);
+      if (at === r.ids.length - 1 && (r.scope === 'arabic' || r.scope === 'cybersecurity')) tickStudyOnPlan(d, k, r.scope, { title: studiedTitle(r.scope, 'revision') });
     });
     if (!saved) return;
     nextQuestion({ id: q.id, outcome: r.outcome, support: r.support, rating }, at);

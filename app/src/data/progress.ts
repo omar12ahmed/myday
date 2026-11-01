@@ -13,9 +13,9 @@ export function windowDays(data: MyDayData, k = todayKey()): boolean[] {
 }
 
 // The nudge appears when there's been no learning for a few days (never on a rest day, and only
-// once there are three full days of history).
+// once there are three full days of history). Learning comes from Study's next step now, so an empty Learning list no
+// longer rules it out (specs/today-learning-and-tidy.md §2); if there's nothing to swap in, the swap says so.
 export function nudgeEligible(data: MyDayData, k: DateKey): boolean {
-  if (!data.lists.learning.length) return false;
   if (data.createdOn > shift(k, -3)) return false;
   const d = data.days[k];
   if (d && d.rest) return false;

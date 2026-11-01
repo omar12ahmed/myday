@@ -19,7 +19,7 @@
 // Stays on each device: the theme and animations, a running focus timer or rest countdown, the bank holidays
 // downloaded from gov.uk, and MyDay's own notes (nudges, celebrations, save signatures).
 import { isDateKey, prettyDate, shortDate } from '../data/dates';
-import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/normalize';
+import { CATS, freshState, normalize, OLD_LEARNING_STARTERS, SCHEMA_VERSION, SEED } from '../data/normalize';
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
 import { deadlineLabel, stepsText } from '../data/tasks';
@@ -564,7 +564,8 @@ export function recordLines(key: string, content: Content | null): string[] {
 export function isStarter(key: string, content: Content | null): boolean {
   if (!content) return true;
   const { kind, id } = splitKey(key);
-  if (kind === 'list') return fingerprint(content) === fingerprint({ items: SEED[id as Category] });
+  // (A Learning list of the old starters, as every MyDay had before 1.130.0, is a starter list too.)
+  if (kind === 'list') return fingerprint(content) === fingerprint({ items: SEED[id as Category] }) || (id === 'learning' && fingerprint(content) === fingerprint({ items: OLD_LEARNING_STARTERS }));
   if (kind === 'queue') return (content.items as QueueItem[]).length === 0;
   const one = oneOf(kind, id);
   try { return one ? one.starter(content) : false; } catch { return false; }

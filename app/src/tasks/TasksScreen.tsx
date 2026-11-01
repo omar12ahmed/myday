@@ -92,7 +92,7 @@ function TasksHome({ data, listId }: { data: MyDayData; listId: string | null })
       {list ? <BackLink to="today/tasks" label="All tasks" /> : <BackLink to="today" label="Today" />}
       {!list && <TidyCard data={data} />}
       <Card aria-labelledby="tasks-h">
-        <h2 id="tasks-h" className="m-0">{list ? list.name : 'Tasks'}</h2>
+        <h2 id="tasks-h" tabIndex={-1} className="m-0">{list ? list.name : 'Tasks'}</h2>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-3" onSubmit={e => { e.preventDefault(); add(); }}>
           <Field label="Add a task" htmlFor="taskNew">
             <TextInput id="taskNew" value={text} maxLength={200} onChange={e => setText(e.target.value)} placeholder="e.g. pay rent by Friday" />

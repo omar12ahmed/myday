@@ -41,7 +41,7 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
     const saved = updateSaved(d => {
       error = submitAttempt(d, draft.id); if (error) return false;
       // Handed in today: today's Cybersecurity entry is ticked (specs/today-learning-and-tidy.md §2).
-      tickStudyOnPlan(d, todayKey(), 'cybersecurity', lesson ? { title: studiedTitle('cybersecurity', lesson.title), lessonId: lesson.id } : {});
+      tickStudyOnPlan(d, todayKey(), 'cybersecurity', lesson ? { title: studiedTitle('cybersecurity', lesson.title) } : {});
     }) === 'saved';
     setProblem(error ?? (saved ? '' : 'Could not save this attempt. Check the saving message and try again.'));
     if (saved) toast('Attempt saved. Your evidence stays in the notebook.');

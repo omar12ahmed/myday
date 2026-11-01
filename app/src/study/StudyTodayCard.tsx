@@ -25,7 +25,7 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   if (!cur && !due && !options.length) return null;
   return (
     <Card aria-labelledby="study-card-h">
-      <h2 id="study-card-h">Study</h2>
+      <h2 id="study-card-h" tabIndex={-1}>Study</h2>
       {cur && (
         <Row>
           <div className="min-w-0"><strong>Study session {cur.runningSince ? 'in progress' : 'paused'}</strong><div><Meta>{cur.title} · {sessionMinutes(cur)} min so far</Meta></div></div>
@@ -61,12 +61,16 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   );
 }
 
+// After Ready or Let it go, what had focus has gone: to the card's heading.
+const focusCard = () => requestAnimationFrame(() => document.getElementById('study-card-h')?.focus());
+
 // "Ready — next lesson": the lesson page's Ready to move on, from Today, for a lesson you've practised; the card (and
 // today's Study entry) then show the next step (specs/today-learning-and-tidy.md §3).
 function ReadyNext({ subject, lessonId }: { subject: 'arabic' | 'cybersecurity'; lessonId: string }) {
   const ready = () => void import('./todayCardActions').then(m => {
     const added = m.readyFromToday(subject, lessonId);
     if (added) toast(added.length ? `Ready to move on. Its checks come back in your revision from ${shortDate(added.map(a => a.due).sort()[0])}.` : 'Ready to move on.');
+    if (added) focusCard(); // the button goes with the step it was on
   }, () => toast('That didn’t load — try again, or mark it ready on the lesson’s page.'));
   return <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="today-ready">
     <Button inline variant="ghost" data-action="today-ready" onClick={ready}>Ready — next lesson</Button>
@@ -80,7 +84,7 @@ function LeftOpen({ subject, left }: { subject: 'arabic' | 'cybersecurity'; left
   const confirm = useConfirm();
   async function letGo() {
     if (!left.attemptId || !await confirm({ title: 'Let this session go?', body: 'Its answers, marks and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Let it go', cancelLabel: 'Keep it' })) return;
-    import('./todayCardActions').then(m => { if (m.letGoOfSession(left.attemptId!, left.lessonId)) toast('Session let go.'); }, () => toast('That didn’t load — try again from the lesson.'));
+    import('./todayCardActions').then(m => { if (m.letGoOfSession(left.attemptId!, left.lessonId)) { toast('Session let go.'); focusCard(); } }, () => toast('That didn’t load — try again from the lesson.'));
   }
   return <div className="rounded-tile bg-surface-2 px-3 py-2" data-s="today-left-open">
     <p className="m-0 text-sm">{subject === 'arabic' ? `You left “${left.title}” open on ${shortDate(left.on)}.` : `You have a notebook draft on “${left.title}” from ${shortDate(left.on)}. It stays in your notebook.`}</p>

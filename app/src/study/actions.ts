@@ -28,7 +28,7 @@ export const pauseLearning = () => update(d => { const s = activeStudy(d.study);
 export const resumeLearning = () => update(d => { const s = activeStudy(d.study); if (!s || !resumeStudy(s)) return false; });
 export function finishLearning() {
   let id = null as string | null;
-  update(d => { const s = activeStudy(d.study); if (!s) return false; finishStudy(d.study, s); id = s.id; studiedOnPlan(d, s.courseId, s.title); });
+  update(d => { const s = activeStudy(d.study); if (!s) return false; finishStudy(d.study, s); id = s.id; studiedOnPlan(d, s.courseId, s.taskId); });
   if (id) go('study/checkin/' + id);
 }
 // Discarding removes the session completely (it isn't saved or counted). Asked first by the screen.
@@ -97,12 +97,12 @@ export const focusOn = (option: { subject: string; courseId?: string }) => {
   update(d => { if (!chooseFocus(d, option.courseId ? 'course:' + option.courseId : option.subject)) return false; });
 };
 // A study session finished, or a course's task ticked: today's Study entry for that course is ticked — Cybersecurity's
-// for an imported Cybersecurity course (specs/today-learning-and-tidy.md §2). `title`: "<course> · <task>".
-function studiedOnPlan(d: MyDayData, courseId: string | null | undefined, title: string) {
+// for an imported Cybersecurity course (specs/today-learning-and-tidy.md §2), named for the course and its task.
+function studiedOnPlan(d: MyDayData, courseId: string | null | undefined, taskId: string | null | undefined) {
   if (!courseId) return;
-  const [course, task] = title.split(' · ');
+  const ix = stIndex(d.study), course = ix.course.get(courseId)?.node.title ?? '', task = taskId ? ix.task.get(taskId)?.node.title : undefined;
   if (courseId.startsWith('cyber:1:')) tickStudyOnPlan(d, todayKey(), 'cybersecurity', task ? { title: studiedTitle('cybersecurity', task) } : {});
-  else tickStudyOnPlan(d, todayKey(), 'roadmap', { courseId, title: task ? `${course}: ${task}` : course });
+  else tickStudyOnPlan(d, todayKey(), 'roadmap', { courseId, ...(course ? { title: task ? `${course}: ${task}` : course } : {}) });
 }
 // The course becomes your one focus, for Today and Study home too (data/study/yourFocus.ts).
 export function setFocus(courseId: string) {
@@ -111,7 +111,7 @@ export function setFocus(courseId: string) {
 }
 export const setDoneFor = (id: string, done: boolean) => {
   // Ticking one of your own course's tasks is studying it (a Cybersecurity lesson's tick is Ready, which moves on instead).
-  const ok = update(d => { const t = stIndex(d.study).task.get(id); if (!t) return false; setTaskDone(t.node, done); if (done && !t.course.id.startsWith('cyber:1:')) studiedOnPlan(d, t.course.id, `${t.course.title} · ${t.node.title}`); });
+  const ok = update(d => { const t = stIndex(d.study).task.get(id); if (!t) return false; setTaskDone(t.node, done); if (done && !t.course.id.startsWith('cyber:1:')) studiedOnPlan(d, t.course.id, id); });
   if (ok && done) afterCyberTick(id);
   return ok;
 };
