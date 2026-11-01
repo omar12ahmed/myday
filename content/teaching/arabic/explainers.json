@@ -5676,7 +5676,7 @@
      "هَذَا and هَذِهِ point to something near: هَذَا for a masculine noun, هَذِهِ for a feminine one.",
      "ذَلِكَ and تِلْكَ point to something further away, in the same way.",
      "For people in the plural, use هَؤُلَاءِ (near) and أُولَئِكَ (far). Things in the plural take هَذِهِ and تِلْكَ, as they take \"she\" words.",
-     "هَذَا بَيْتٌ is a sentence: this is a house. With الْـ, هَذَا الْبَيْتُ is just \"this house\", and needs more to be a sentence: هَذَا الْبَيْتُ كَبِيرٌ.",
+     "هَذَا قَلَمٌ is a sentence: this is a pen. With الْـ, هَذَا الْقَلَمُ is just \"this pen\", and needs more to be a sentence: هَذَا الْقَلَمُ جَدِيدٌ.",
      "هَذَا, هَذِهِ, ذَلِكَ and هَؤُلَاءِ are said with a long ā after the first letter, which isn't written as a letter of its own. أُولَئِكَ has one too, after its ل, and its و is silent."
     ],
     "examples": [
@@ -5768,9 +5768,9 @@
      }
     ],
     "phrases_ar": [
-     "هَذَا بَيْتٌ",
-     "هَذَا الْبَيْتُ",
-     "هَذَا الْبَيْتُ كَبِيرٌ",
+     "هَذَا قَلَمٌ",
+     "هَذَا الْقَلَمُ",
+     "هَذَا الْقَلَمُ جَدِيدٌ",
      "هَذِهِ كُتُبٌ",
      "هَذِهِ الصُّورَةُ"
     ]
