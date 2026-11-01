@@ -40,10 +40,13 @@
 ## 3. Moving on from Today's Study card
 
 - **Ready — next lesson.** When the step is a Practised lesson (Arabic or Cybersecurity), Today's card offers
-  **Ready — next lesson**, the same as the lesson page's Ready to move on, and the card moves to the next step.
+  **Ready — next lesson**, the same as the lesson page's Ready to move on, and the card moves to the next step. It
+  doesn't tick today's Study entry (§2): the entry moves to the next lesson, still to do.
 - **A session left open more than 7 days** (an Arabic session, or a Cybersecurity notebook draft) no longer holds the
   card. The card shows the next step, with a line: "You left <lesson> open on <day>", with **Resume** and **Let it go**.
-  Let it go discards the open session or draft, as the lesson's own discard does. The Arabic route's "you are here"
+  Let it go discards an Arabic session, as the lesson's own Discard does (asked first). A Cybersecurity draft holds
+  your notebook work and has no discard, so it's offered as **Open it** only, and stays in your notebook. The Arabic
+  route's "you are here"
   stays the same as the card's step: `arabicRoute` reads `arabicPlan`'s step, so the rule flows through, and
   `specs/arabic-route.md` §1.1 and §1.3 say so (myday-5a's point).
 
@@ -69,7 +72,8 @@
 - Each has **Let go** (as everywhere: it's kept, marked let go, and leaves Today), and the card has **Let go of all
   these** (one Undo). Nothing is deleted, so a project's links still resolve and the history stays. **Keep** stops one
   being listed again, on this device; **Not now** hides the card for 7 days, on this device.
-- Due today says how many older tasks there are, with a link to Tidy up.
+- Due today says how many of its tasks look old or unrelated (the same as the card, without the ones in active
+  projects), with a link to Tidy up, unless you said Not now.
 
 ## 5. The owner's decisions (1 Nov 2026)
 
