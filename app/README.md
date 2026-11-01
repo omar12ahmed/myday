@@ -1,6 +1,6 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-**1.127.0 — Ask MyDay connects your work to your ambitions:** level 5 of "How MyDay should think" (linking daily work to
+**1.128.0 — Ask MyDay connects your work to your ambitions:** level 5 of "How MyDay should think" (linking daily work to
 long-term goals; `specs/ask-ambitions.md`, the owner's choices of 1 Nov 2026).
 - **It knows which ambition your work serves.** On a project or task that's a step towards one of your ambitions, Ask
   MyDay knows which, by title, and can say how what you're doing fits ("a step towards “Work in cybersecurity”").
@@ -18,7 +18,7 @@ out"). Nothing on a private project's page is sent, as before. The "Sent to the 
 knows says what may go. A conversation kept to carry on is forgotten if an ambition becomes one that can't be sent.
 Ask's model stays GLM-5.3-Flash: 80 replies on ten scenarios, read
 (`ai-eval/reviews/2026-11-01-ask-ambitions-quality.md`). The server's instructions (ai-plan, `myday-ask-v28`) go live
-first; older apps keep working. Nothing new is saved, so going back to 1.126.0 is safe: Ask simply stops knowing your
+first; older apps keep working. Nothing new is saved, so going back to 1.127.0 is safe: Ask simply stops knowing your
 ambitions.
 
 **1.127.0 — An Arabic dictionary, and module 22's crowded lessons split:** Study → Arabic's **Vocabulary** is now the
@@ -1506,7 +1506,7 @@ not a course it points at). Never a percentage; no "start" action (the link open
 may offer the revision round. Evaluated with `ai-eval/ask-scenarios.ts` (n01–n07) and
 `ai-eval/reviews/2026-10-25-ask-study-quality.md`.
 
-**Ask MyDay and your ambitions (1.127.0; `specs/ask-ambitions.md`):** `towards` on a project's or task's slice is
+**Ask MyDay and your ambitions (1.128.0; `specs/ask-ambitions.md`):** `towards` on a project's or task's slice is
 `towardsOf` in `src/ai/askContext.ts`: at most 3 titles, from `ambitionsOfProject` (only links to projects count),
 filtered by `aiReach(data).ambition` in `src/ai/reach.ts`. The goals look is `goalsLookup` in `src/ai/lookup.ts`: the
 titles of the ambitions that may be sent, in the order made, at most 12, and `found`; the held ones are counted as
@@ -1750,7 +1750,7 @@ Cybersecurity; Link and Unlink; a link whose item is gone says so), Delete (noth
 towards “…”" under a linked project's tasks on Today (the plan, Due today, From your projects), under Today's Study
 card lessons from a linked path, course or topic (a Cybersecurity lesson in Study through its module's course and the
 Cybersecurity topic), and under a linked project's title (each named ambition opens its page). Only titles go to AI, to
-Ask MyDay when relevant, and never one that links a private project or a project that's gone (1.127.0,
+Ask MyDay when relevant, and never one that links a private project or a project that's gone (1.128.0,
 `specs/ask-ambitions.md`); otherwise display only.
 
 **Software projects (1.122.0; `specs/projects-software.md`):** the kind `software`; `data/templates.ts` now holds each

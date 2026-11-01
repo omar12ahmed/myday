@@ -1,4 +1,4 @@
-// Live check of Ask MyDay and your ambitions (1.127.0, instructions v28) on the site (tests/live/run.py), on a disposable
+// Live check of Ask MyDay and your ambitions (1.128.0, instructions v28) on the site (tests/live/run.py), on a disposable
 // account and one throwaway Mac-width device. Made up: two projects, each with an ambition linked to it, and the second
 // project then made private. On the first project's page, + lists its ambition's title in what's sent. On Today, "What am
 // I working towards?" goes to Ask MyDay (a real AI request, offering the look at your ambitions); it asks to look, the app
