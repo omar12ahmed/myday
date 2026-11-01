@@ -488,7 +488,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   const GA = 'lesson.arabic-greetings-address', gaHash = 'study/arabic/' + GA, gaIds = n => `lexeme.arabic-greetings-address-${n}`;
   const fresh = async hash => { await go(hash); await ev('localStorage.clear()'); await go(hash); };
   const shortOf = (y, m, dd) => ev(`new Date(${y}, ${m - 1}, ${dd}).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
-  const rowIds = () => ev(`[...document.querySelectorAll('[data-ar-lesson-words] li[data-ar-word]')].map(e => e.dataset.arWord)`);
+  const rowIds = () => ev(`[...document.querySelectorAll('[data-ar-lesson-words] li[data-ar-word]:not([data-ar-lesson-also] *)')].map(e => e.dataset.arWord)`);
   await fresh(gaHash); await wait('[data-ar-lesson-words]', 5000);
   check('the lesson\'s Understand step has a closed list of its 9 words, saying how many starter words it uses', await ev(`(() => { const e = document.querySelector('#ar-step-understand details[data-ar-lesson-words="9"]'); return !!e && !e.open && e.querySelector('summary').textContent.trim() === 'Words in this lesson: 9, and 4 starter words it uses'; })()`),
     await ev(`document.querySelector('[data-ar-lesson-words] summary')?.textContent`));
@@ -1043,6 +1043,54 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
     const w320 = await ev(`({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth })`);
     check('at 320 px with a search shown the page doesn\'t scroll sideways', w320.sw <= w320.cw && await count(ROWS) > 0, w320);
     await send('Emulation.clearDeviceMetricsOverride');
+  }
+
+  console.log('\n[19] Dictionary-only words: Also in this lesson, never brought in by Ready');
+  {
+    const until = async (predicate, label, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return true; await sleep(100); } throw new Error('Timed out waiting for ' + label); };
+    const cw19 = JSON.parse(require('fs').readFileSync(require('path').join(process.env.MYDAY_ROOT || require('path').resolve(__dirname, '..'), 'content/teaching/arabic/course-words.json'), 'utf8')).lessons;
+    const LJ = 'lesson.arabic-letter-joining', ljHash = 'study/arabic/' + LJ;
+    const ljOwn = cw19[LJ].words.filter(w => !w.dictionary).map(w => w.id), ljAlso = cw19[LJ].words.filter(w => w.dictionary).map(w => w.id);
+    const ljStarter = cw19[LJ].seed || [];
+    const ALSO = '[data-ar-lesson-also]', EXPL = 'Other words the lesson uses, from the dictionary. They join your revision only if you add them.';
+    const rowsIn = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel + ' li[data-ar-word]')})].map(e => e.dataset.arWord)`);
+    await fresh(ljHash); await wait('[data-ar-lesson-words]', 5000);
+    await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(200);
+    const listRows = await ev(`[...document.querySelectorAll('[data-ar-lesson-words] > ul > li[data-ar-word]')].map(e => e.dataset.arWord)`);
+    check(`the letter-joining lesson's word list shows its ${ljOwn.length} own words only, and its summary counts just those`, listRows.join() === ljOwn.join() && ljAlso.length === 4
+      && await exists(`details[data-ar-lesson-words="${ljOwn.length}"]`) && (await T.text('[data-ar-lesson-words] summary')).startsWith(`Words in this lesson: ${ljOwn.length}`), [listRows, await T.text('[data-ar-lesson-words] summary')]);
+    const alsoInfo = await ev(`(() => { const d = document.querySelector('[data-ar-lesson-words] [data-ar-lesson-also]'); return !d ? null : { n: d.dataset.arLessonAlso, open: d.open, summary: d.querySelector('summary').textContent.trim(), expl: d.querySelector('summary + p')?.textContent }; })()`);
+    const alsoRows = await rowsIn('[data-ar-lesson-words] [data-ar-lesson-also]');
+    check(`under it, a folded "Also in this lesson: ${ljAlso.length} words" holds exactly its ${ljAlso.length} dictionary-only words, with the explanation`, !!alsoInfo && !alsoInfo.open && alsoInfo.n === String(ljAlso.length) && alsoInfo.summary === `Also in this lesson: ${ljAlso.length} words`
+      && alsoInfo.expl === EXPL && alsoRows.join() === ljAlso.join() && (await count('[data-ar-lesson-words] [data-ar-lesson-also]')) === 1, [alsoInfo, alsoRows]);
+
+    await go(ljHash); await wait('[data-ar-place]');
+    await click('[data-action="ar-place-ready"]'); await sleep(300);
+    let c19 = (await AR()).cards.map(c => c.id);
+    const wantCards = ljOwn.concat(ljStarter.map(w => w.id || w)).map(i => i + ':recognise');
+    check('marking the letter-joining lesson ready brings its own and starter words into revision as recognise cards', wantCards.length >= ljOwn.length && wantCards.every(i => c19.includes(i)), [wantCards, c19]);
+    check('…and no card for any of its dictionary-only words', ljAlso.every(i => !c19.some(c => c.startsWith(i + ':'))) && c19.filter(c => c.startsWith('lexeme.')).length === wantCards.length, c19);
+
+    await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(100);
+    await ev(`document.querySelector('[data-ar-lesson-words] [data-ar-lesson-also]').open = true`); await sleep(100);
+    const one = ljAlso[0];
+    await click(`[data-ar-lesson-also] [data-ar-word="${one}"] [data-action="ar-word-add"]`); await sleep(250);
+    c19 = (await AR()).cards.map(c => c.id);
+    check('adding one dictionary-only word from its row adds its recognise card, as for any word, and no other', c19.includes(one + ':recognise') && ljAlso.slice(1).every(i => !c19.some(c => c.startsWith(i + ':'))) && (await T.text(`[data-ar-lesson-also] [data-ar-word="${one}"]`)).includes('Recognising it:'), c19);
+
+    await go('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
+    const secInfo = await ev(`(() => { const s = document.querySelector('[data-ar-course-lesson="${LJ}"]'); const d = s?.querySelector('[data-ar-lesson-also]'); return !s || !d ? null : { own: [...s.querySelectorAll(':scope > ul > li[data-ar-word]')].map(e => e.dataset.arWord), open: d.open, summary: d.querySelector('summary').textContent.trim(), expl: d.querySelector('summary + p')?.textContent, also: [...d.querySelectorAll('li[data-ar-word]')].map(e => e.dataset.arWord) }; })()`);
+    check('"Words from the lessons" lists that lesson\'s own words, then the same folded "Also in this lesson" with its dictionary-only words', !!secInfo && secInfo.own.join() === ljOwn.join() && !secInfo.open && secInfo.summary === `Also in this lesson: ${ljAlso.length} words` && secInfo.expl === EXPL && secInfo.also.join() === ljAlso.join(), secInfo);
+
+    const typed = async q => { await typeIn('[data-s="ar-dict-q"]', q); await until(() => ev(`document.querySelector('[data-ar-dict-found]')?.dataset.arDictFor === ${JSON.stringify(q)}`), 'the results for ' + q); await sleep(50); };
+    const dictRows = () => ev(`[...document.querySelectorAll('[data-ar-dictionary] [data-ar-dict-list] > li')].map(e => e.dataset.arWord)`);
+    const TIFL = 'lexeme.arabic-present-group-9';
+    await typed('child'); let dr = await dictRows();
+    check('typing "child" in the dictionary finds the dictionary-only word طِفْل', dr.includes(TIFL), dr);
+    await typed('tifl'); dr = await dictRows();
+    check('typing "tifl" finds طِفْل first', dr[0] === TIFL, dr);
+    await typed('أطفال'); dr = await dictRows();
+    check('typing the plural أطفال lists طِفْل first, through the word forms', dr[0] === TIFL, dr);
   }
 
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
