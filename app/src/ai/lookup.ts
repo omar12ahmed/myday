@@ -4,7 +4,7 @@
 // apostrophe don't matter). A note's text is searched, and a short snippet of it sent, only with "AI help with notes" on;
 // otherwise only titles. Private notes, and notes in a private project, are never sent — not even how many matched: that
 // count (`leftOut`) stays on this device, for the panel's "1 private note left out".
-import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskSearchLookup, type AskStudyLookup, type AskWaitingLookup, type SEARCH_KINDS, type SEARCH_STATES } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskGoalsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskSearchLookup, type AskStudyLookup, type AskWaitingLookup, type SEARCH_KINDS, type SEARCH_STATES } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, shortDate, timeToMin, todayKey } from '../data/dates';
 import { lessonHref } from '../data/cybersecurity/types';
 import type { CourseIndex } from '../data/searchAll';
@@ -14,6 +14,7 @@ import { isDone, onTodaysPlan } from '../data/tasks';
 import { projectNotes, projectTasks } from '../data/projects';
 import type { DateKey, MyDayData, Note } from '../data/types';
 import { isBusiness } from '../data/businessModel';
+import { ambitionsInOrder } from '../data/ambitions';
 import { dueIds } from '../data/study/queue';
 import { learningOptions } from '../study/nextLearning';
 import { projectSlice } from './askContext';
@@ -194,6 +195,12 @@ export function decisionsLookup(data: MyDayData, query: string): { lookup: AskDe
 // "Chase:" task is there and still to do. Never who or what it waits on (`waiting.on`): only the fields named here are
 // picked. Never a private project's task: those are counted here only (`leftOut`). Null for a project that can't be
 // looked at.
+// "Your ambitions" (v28, specs/ask-ambitions.md; the owner's choices of 1 Nov 2026): their titles only, oldest first,
+// and how many. Never their why, steps or links, and never one that links a private project (held back and counted).
+export function goalsLookup(data: MyDayData): { lookup: AskGoalsLookup; leftOut: number } {
+  const reach = aiReach(data), all = ambitionsInOrder(data), shown = all.filter(reach.ambition);
+  return { lookup: { tool: 'goals', query: 'all', found: shown.length, ambitions: shown.slice(0, L.lookupGoals).map(a => cut(a.title, L.titleChars)) }, leftOut: all.length - shown.length };
+}
 export function waitingLookup(data: MyDayData, query: string): { lookup: AskWaitingLookup; leftOut: number } | null {
   const reach = aiReach(data);
   const one = query === 'all' ? null : data.projects.items.find(p => p.id === query && p.status !== 'done' && reach.project(p));
@@ -247,6 +254,10 @@ function sayLookup(l: AskLookup, held: number, projectTitle: string | undefined,
     const [first, ...rest] = l.options;
     if (!first) return 'Looked at what to study next: nothing set up yet.';
     return `Looked at what to study next: ${first.label} first${rest.length ? `, then ${rest.map(o => o.label).join(' and ')}` : ''}${l.revisionDue ? ` — ${l.revisionDue === 1 ? 'one thing' : `${l.revisionDue} things`} to revise` : ''}.`;
+  }
+  if (l.tool === 'goals') {
+    const n = l.found ? `${l.found === 1 ? 'one' : l.found}${l.found > l.ambitions.length ? ` (the first ${l.ambitions.length} sent)` : ''}` : 'none yet';
+    return `Looked at your ambitions: ${n}${held ? ` — ${held === 1 ? 'one linked to a private project' : `${held} linked to private projects`} left out` : ''}.`;
   }
   if (l.tool === 'waiting') {
     const where = l.query === 'all' ? 'what you’re waiting on' : `what you’re waiting on in “${l.tasks[0]?.project ?? projectTitle ?? 'that project'}”`;

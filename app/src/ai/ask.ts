@@ -61,7 +61,7 @@ export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[]; choices?: string[] } // choices: a question's short replies to tap (v27)
   | { kind: 'cannot'; message: string; changed: string[] }
-  | { kind: 'lookup'; tool: 'day' | 'project' | 'decisions' | 'waiting' | 'study' | 'search'; query: string } // query: the words to search, the day, a project's id, or "all"
+  | { kind: 'lookup'; tool: 'day' | 'project' | 'decisions' | 'waiting' | 'study' | 'search' | 'goals'; query: string } // query: the words to search, the day, a project's id, or "all"
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
 // After a lookup, the notes an answer used (only ones the lookup found), shown as links.
 export interface AskSource { id: string; title: string; href?: string } // href: where it opens (a note's own page otherwise)

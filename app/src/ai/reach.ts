@@ -14,8 +14,9 @@
 //   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's
 //     research (questions, findings, sources, conclusions and experiments, specs/projects-research.md and
 //     projects-business-tools.md); a business idea's money (its numbers, forecast and real months); a project's outcome, what
-//     counts as finished and where you left off; your ambitions (their titles, why, steps and links,
-//     specs/projects-ambitions.md; Today's "A step towards …" lines are display only); a Content project's ideas and videos (their planning, script,
+//     counts as finished and where you left off; your ambitions' why, steps and links (only their titles go, to Ask
+//     MyDay, when relevant — on linked work and the goals look — and never one that links a private project:
+//     specs/ask-ambitions.md, 1 Nov 2026); a Content project's ideas and videos (their planning, script,
 //     transcript, links, posts and results, specs/projects-content.md; the tasks you make from them — "Post: …",
 //     "Film: …" — are ordinary tasks and go as tasks always have); a Software project's requirements, bugs and release
 //     checklists (their checks, what proved them and which links they point at, specs/projects-software.md; "Fix: …"
@@ -45,6 +46,9 @@ export function aiReach(data: MyDayData) {
     note,
     /** …and its text too: only with "AI help with notes" on. */
     noteText: (n?: Pick<Note, 'private' | 'projectId'> | null) => note(n) && !!data.patterns.prefs.aiNotes,
+    /** An ambition (specs/ask-ambitions.md): its title only, and never one that links a private project — its title can
+     *  be as private as the project (myday-af's point, 1 Nov 2026). */
+    ambition: (a: { links?: unknown }) => !(Array.isArray(a.links) ? a.links : []).some(l => !!l && typeof l === 'object' && (l as { kind?: unknown }).kind === 'project' && privateProjects.has((l as { ref?: unknown }).ref as string)),
     /** A task from Inbox → Tasks: not one of a private project. */
     task: (t?: Pick<TaskItem, 'projectId'> | null) => !!t && !inPrivate(t.projectId),
     /** The plan copies on day k of a private project's tasks (by their uid on that day's plan). */

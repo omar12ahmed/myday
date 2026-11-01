@@ -4,7 +4,7 @@ import { rememberAsk, undoNow } from '../ai/lastAsk';
 import { forgetConversation, keepConversation, keptConversation, type KeptLooked } from '../ai/keptConversation';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, keepToLimit, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice, conversationOf, latestOnly } from '../ai/askContext';
-import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup, type LookupMore } from '../ai/lookup';
+import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup, type LookupMore, goalsLookup } from '../ai/lookup';
 import { ASK_LIMITS, type AskContext, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import type { AskFocus } from './openCapture';
@@ -59,7 +59,7 @@ const pause = (ms: number, signal: AbortSignal) => new Promise<void>(done => {
 type Phase =
   | { at: 'idle' }
   | { at: 'asking' }
-  | { at: 'looking'; tool: 'day' | 'project' | 'decisions' | 'waiting' | 'study' | 'search'; query: string }
+  | { at: 'looking'; tool: 'day' | 'project' | 'decisions' | 'waiting' | 'study' | 'search' | 'goals'; query: string }
   | { at: 'shown'; r: Shown; model: string; looked?: Looked; left?: number; leftOut: number } // leftOut: earlier exchanges not sent with it
   | { at: 'added'; undo: AskUndo; words: string; id: string; after: After } // id: how it's kept for Undo from + later (ai/lastAsk.ts)
   | { at: 'applied'; undo: AskChangeUndo; words: string; id: string; after: After }
@@ -190,7 +190,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
       if (AI_MODE === 'edge') await pause(PACE_MS - (clock() - started), ctrl.signal);
       if (ctrl.signal.aborted || !previewIsCurrent()) return;
       const now = getSnapshot().data;
-      const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : r.tool === 'waiting' ? waitingLookup(now, r.query) : r.tool === 'study' ? studyLookup(now, k)
+      const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : r.tool === 'waiting' ? waitingLookup(now, r.query) : r.tool === 'goals' ? goalsLookup(now) : r.tool === 'study' ? studyLookup(now, k)
         : searchLookup(now, r.query, courses, k);
       if (!found) { fail(r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.', prior, again); return; }
       looked = { ...found, at: new Date(clock()) };
@@ -320,7 +320,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
         <LinkButton data-action="ask-dismiss" onClick={startOver}>Start over</LinkButton>
       </div>}
       {phase.at === 'asking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> Asking MyDay…</p>}
-      {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : phase.tool === 'project' ? `Looking at your project “${phase.query}”…` : phase.tool === 'decisions' ? (phase.query === 'all' ? 'Looking at your open decisions…' : `Looking at the open decisions in “${phase.query}”…`) : phase.tool === 'waiting' ? (phase.query === 'all' ? 'Looking at what you’re waiting on…' : `Looking at what you’re waiting on in “${phase.query}”…`) : phase.tool === 'study' ? 'Looking at what to study next…' : `Looking across MyDay for “${phase.query}”…`}</p>}
+      {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'goals' ? 'Looking at your ambitions…' : phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : phase.tool === 'project' ? `Looking at your project “${phase.query}”…` : phase.tool === 'decisions' ? (phase.query === 'all' ? 'Looking at your open decisions…' : `Looking at the open decisions in “${phase.query}”…`) : phase.tool === 'waiting' ? (phase.query === 'all' ? 'Looking at what you’re waiting on…' : `Looking at what you’re waiting on in “${phase.query}”…`) : phase.tool === 'study' ? 'Looking at what to study next…' : `Looking across MyDay for “${phase.query}”…`}</p>}
       {phase.at === 'added' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-added">
         <p className="text-[15px] m-0">Added {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => { const r = undoNow({ kind: 'added', undo: phase.undo, id: phase.id }); toast(r.message); if (r.done) { startOver(); backToField(); } }}>Undo</LinkButton>

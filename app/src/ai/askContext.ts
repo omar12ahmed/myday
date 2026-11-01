@@ -20,6 +20,15 @@ import { CAT_LABEL } from '../data/plan';
 import { findPatterns } from '../data/patterns/notice';
 import { buildContext } from './context';
 import { aiReach } from './reach';
+import { ambitionsOfProject } from '../data/ambitions';
+
+// The ambitions a project (or a task's project) is a step towards (v28, specs/ask-ambitions.md; the owner's choices of
+// 1 Nov 2026): their titles only, at most 3 — never one that links a private project (reach.ambition).
+function towardsOf(data: MyDayData, projectId?: string | null): { towards?: string[] } {
+  if (!projectId) return {};
+  const reach = aiReach(data), titles = ambitionsOfProject(data, projectId).filter(reach.ambition).slice(0, L.towards).map(a => cut(a.title, L.titleChars));
+  return titles.length ? { towards: titles } : {};
+}
 
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 const ref = (id: string, title: string) => ({ id, title: cut(title.trim() || 'Untitled', L.titleChars) });
@@ -49,7 +58,8 @@ export function askPage(hash: string): { page: AskPage; id: string | null } {
 // `privateNote`: the page's own note is private (or in a private project), so it isn't sent. `held`: what else was left out
 // because you made it private — the page's own project or task (`here`), and how many items of private projects
 // (`count`: open projects' names, tasks on today's plan or due today, appointments).
-export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean; held: { here: 'project' | 'task' | 'note' | null; count: number }; how?: string[] }
+// goals: you have an ambition that may reach AI, so Ask MyDay may look at your ambitions (v28).
+export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean; held: { here: 'project' | 'task' | 'note' | null; count: number }; how?: string[]; goals?: boolean }
 
 // How you work, for Ask MyDay — only when you've let it use that (1.108.0, specs/ask-how-you-work.md), and only what you've
 // confirmed: your preferences as limits, and the patterns you said are right, as plain statements (never their evidence,
@@ -182,7 +192,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     if (t && !reach.task(t)) here = 'task';
     // Its checklist goes too (v23, the owner's choice), even an empty one: so a breakdown can be steps inside it.
     else if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars),
-      steps: (t.steps ?? []).slice(0, L.taskSteps).map(st => ({ text: cut(st.text, L.stepChars), done: st.done })) }; parts.push(SENDS.task); }
+      steps: (t.steps ?? []).slice(0, L.taskSteps).map(st => ({ text: cut(st.text, L.stepChars), done: st.done })), ...towardsOf(data, t.projectId) }; parts.push(SENDS.task); }
   } else if (page === 'review') {
     // The weekly review (1.37.0): counts and names only, and nothing of a project you've made private.
     const w = whatMoved(data, k), wait = whatsWaiting(data, k);
@@ -201,7 +211,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
     parts.push(SENDS.calendar);
   }
-  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count }, how: howYouWork(data, k) };
+  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count }, how: howYouWork(data, k), goals: data.ambitions.items.some(aiReach(data).ambition) };
 }
 
 // A project as its page sends it — and as Ask MyDay's look at a project sends it (v19): its name, summary, stage, tasks,
@@ -214,7 +224,7 @@ export function projectSlice(data: MyDayData, p: Project): { project: NonNullabl
   let budget = L.projectSteps;
   let text = '', textNotes = 0;
   if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; textNotes++; }
-  return { heldNotes: all.length - notes.length, textNotes, project: { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
+  return { heldNotes: all.length - notes.length, textNotes, project: { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage, ...towardsOf(data, p.id),
     // Each task's checklist (its steps' words, in order: at most 10 a task and 40 in all, with stepsTotal when more) and
     // the project's open tasks it starts after, by title (v23, the owner's choice).
     tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => {
@@ -266,7 +276,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     // What to study next: not on Study or a course, which send their own.
     // Across MyDay (v24) stands in for "in your notes": it finds notes too, with the same rules.
     can: [...ASK_TOOLS].filter(t => t === 'notes' ? false : t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health'
-      : t === 'study' ? !slice.context.study && !slice.context.course : true), ...(lookup ? { lookup } : {}),
+      : t === 'study' ? !slice.context.study && !slice.context.course : t === 'goals' ? !!slice.goals : true), ...(lookup ? { lookup } : {}),
     ...(conversation ? { conversation } : {}),
     ...(slice.how?.length ? { howYouWork: slice.how } : {}),
     ...(thinking ? { thinking } : {}),
@@ -315,6 +325,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     const p = x.project;
     short.push(`Project: ${clip(p.title, 40)}`, `${n(p.tasks.length, 'task')}, ${n(p.notes.length, 'note title')}${p.notesText ? ' and their text' : ''}`);
     all.push({ label: 'This project', lines: [`Name: ${p.title}`, `Summary: ${p.summary ? clip(p.summary) : '(none)'}`, `Stage: ${p.stage.charAt(0).toUpperCase() + p.stage.slice(1)}`] });
+    if (p.towards?.length) all.push({ label: 'A step towards (your ambitions’ titles)', lines: p.towards });
     if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}${t.steps ? ` (${t.steps.filter(s => s.done).length} of ${t.stepsTotal ?? t.steps.length} steps${t.stepsTotal ? ', some not listed' : ''})` : t.stepsTotal ? ` (${t.stepsTotal} steps)` : ''}${t.after?.length ? ` — starts after ${t.after.join(', ')}` : ''}`) });
     const stepLines = p.tasks.flatMap(t => (t.steps ?? []).map(s => `${t.title}: ${s.done ? '✓ ' : ''}${s.text}`));
     if (stepLines.length) all.push({ label: 'Their steps', lines: stepLines });
@@ -349,6 +360,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     short.push(`Task: ${clip(x.task.title, 40)}`);
     all.push({ label: 'This task', lines: [`Title: ${x.task.title}`, `Due: ${x.task.due ?? 'no date'}`, `About ${x.task.minutes} min`, ...(x.task.notes ? [`Notes: ${clip(x.task.notes)}`] : [])] });
     if (x.task.steps?.length) all.push({ label: 'Its steps', lines: x.task.steps.map(s => `${s.done ? '✓ ' : ''}${s.text}`) });
+    if (x.task.towards?.length) all.push({ label: 'A step towards (your ambitions’ titles)', lines: x.task.towards });
   }
   if (x.review) {
     const r = x.review;
@@ -366,7 +378,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (!short.length) short.push('What you typed and the date');
   if (c.can?.includes('search') || c.can?.includes('notes')) {
     const projects = c.can.includes('project'), across = c.can.includes('search');
-    const looks = [across ? 'across MyDay' : 'in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : []), ...(c.can.includes('waiting') ? ['at what you’re waiting on'] : []), ...(c.can.includes('study') ? ['at what to study next'] : [])];
+    const looks = [across ? 'across MyDay' : 'in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : []), ...(c.can.includes('goals') ? ['at your ambitions'] : []), ...(c.can.includes('waiting') ? ['at what you’re waiting on'] : []), ...(c.can.includes('study') ? ['at what to study next'] : [])];
     short.push(`If needed, a look ${looks.length > 1 ? `${looks.slice(0, -1).join(', ')} or ${looks[looks.length - 1]}` : looks[0]}`);
     if (across) all.push({ label: 'If it needs to: across MyDay', lines: ['Ask MyDay may look across MyDay for words from your question, on this device — your tasks (titles, notes and steps), projects (names, summaries, milestones and decisions), note titles (their text only with AI help with notes on), the calendar and your study (your courses, topics, books, and the course lessons and words) — and send up to 12 that match: what each is, its name and where it is. Never what one says; its link stays here.',
       'Never anything private — not even whether it matched — nor Finance, Health, who a task waits on, research, case records, your kept words, revision cards, answers or your notebook.'] });
@@ -375,6 +387,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     if (projects) all.push({ label: 'If it needs to: one of your projects', lines: ['Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones and note titles (their text only with AI help with notes on).', 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
     if (c.can.includes('decisions')) all.push({ label: 'If it needs to: your open decisions', lines: ['Or at your open decisions (across your open projects, or one you name): each one’s question and options, which options have no pros or cons yet (never what any say) and the day it was opened; and what a business idea still has to check.', 'Never a private project’s; never your reasons, earlier choices or what you found.'] });
     if (c.can.includes('waiting')) all.push({ label: 'If it needs to: what you’re waiting on', lines: ['Or at the tasks you’ve marked as waiting (all of them, or one project’s): each one’s title, its project, since when and the day you expect it, and whether its Chase task is there.', 'Never who or what it’s waiting on, and never a private project’s.'] });
+    if (c.can.includes('goals')) all.push({ label: 'If it needs to: your ambitions', lines: ['Or at your ambitions, if you ask about your goals: their titles only (at most 12) — never their why, their steps or their links, and never one linked to a private project.'] });
     if (c.can.includes('study')) all.push({ label: 'If it needs to: what to study next', lines: ['Or at the same next steps as your Today card (your focus first): each subject’s lesson or task, its reason, the suggested minutes and length, and how much is due to revise.', 'No percentages, and nothing else of your Study.'] });
   }
   return { short, all };

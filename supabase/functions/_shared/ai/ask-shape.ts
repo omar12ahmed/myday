@@ -30,7 +30,7 @@ export const ASK_LIMITS = {
   // The weekly review (1.37.0): what moved per project, what's waiting, next week's focus.
   reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
   // A lookup (specs/ai-tools.md §3): the words to search, up to 8 notes found, each with a short snippet at most.
-  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8, lookupDecisions: 8, lookupBeliefs: 8, lookupWaiting: 8, lookupStudy: 3, studyWhyChars: 400, studyDetailChars: 200,
+  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8, lookupDecisions: 8, lookupBeliefs: 8, lookupWaiting: 8, lookupStudy: 3, lookupGoals: 12, towards: 3, studyWhyChars: 400, studyDetailChars: 200,
   taskSteps: 30, stepChars: 120, projectTaskSteps: 10, projectSteps: 40, taskAfter: 5, // a task's checklist and what it starts after (v23)
   lookupSearch: 12, searchWhereChars: 120, // "Look across MyDay" (v24): up to 12 things found, each with where it is
   // "Your day" (v18): one day's plan, what's due, busy and free times — capped like the rest of a page's slice.
@@ -42,7 +42,7 @@ export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'
 // What a lookup can look in: your notes (v17), one day (v18), a project (v19), open decisions (v20), what you're
 // waiting on (v21), what to study next (v22), or across MyDay (v24; it stands in for "notes" in the app from then).
 // The app says what it can look in with `can`.
-export const ASK_TOOLS = ['notes', 'day', 'project', 'decisions', 'waiting', 'study', 'search'] as const;
+export const ASK_TOOLS = ['notes', 'day', 'project', 'decisions', 'waiting', 'study', 'search', 'goals'] as const;
 export const DAY_KINDS = ['work', 'appointment', 'workout', 'sleep', 'prep'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true', 'step'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
@@ -66,9 +66,11 @@ export interface AskPageContext {
     // A business idea's one page, only from its Model tab (1.34.0): what problem, for whom, how it works and pays, and
     // what must be true so far with how each is turning out (not what you found).
     onePage?: { problem: string; who: string; how: string; mustBeTrue: { text: string; state: typeof BELIEF_STATES[number] }[] };
+    // The ambitions this project is a step towards (v28, specs/ask-ambitions.md): their titles only, at most 3.
+    towards?: string[];
   };
   note?: { id: string; title: string; text: string };
-  task?: { id: string; title: string; due: string | null; minutes: number; notes: string; steps?: { text: string; done: boolean }[] }; // steps: its checklist (v23; an older app sends none)
+  task?: { id: string; title: string; due: string | null; minutes: number; notes: string; steps?: { text: string; done: boolean }[]; towards?: string[] }; // steps: its checklist (v23; an older app sends none); towards: the ambitions its project serves, titles only (v28)
   calendar?: { day: string; appointments: { id?: string; title: string; time: string }[] }; // id: so a change can name one
   // A course on your Study roadmap, as an outline (titles, lengths, kinds, done or not — no links, notes or concepts).
   // The weekly review (#review, 1.37.0): the last seven days in counts, what's waiting and the focus — never anything of
@@ -159,7 +161,10 @@ export interface AskSearchLookup {
   found: { ref: string; kind: typeof SEARCH_KINDS[number]; title: string; where: string | null; state: typeof SEARCH_STATES[number] | null }[];
   total: number; titlesOnly: boolean;
 }
-export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup | AskDecisionsLookup | AskWaitingLookup | AskStudyLookup | AskSearchLookup;
+// "Your ambitions" (v28, specs/ask-ambitions.md): their titles only, oldest first, and how many — never their why,
+// steps or links, and never one that links a private project.
+export interface AskGoalsLookup { tool: 'goals'; query: 'all'; ambitions: string[]; found: number }
+export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup | AskDecisionsLookup | AskWaitingLookup | AskStudyLookup | AskSearchLookup | AskGoalsLookup;
 
 // What the model returns (JSON only). The app checks it all again.
 export interface AskItem {
@@ -209,9 +214,12 @@ const stepsOk = (v: unknown, max: number) => Array.isArray(v) && v.length <= max
 
 // A project as its page sends it (the page's own, or one looked up); `focus`: the decision asked about and the one page
 // may come too (only from its own page).
+// The ambitions a project or task is a step towards (v28): 1 to 3 titles.
+const towardsOk = (v: unknown) => Array.isArray(v) && v.length >= 1 && v.length <= ASK_LIMITS.towards && v.every(t => str(t, ASK_LIMITS.titleChars, false));
 function checkProject(p: unknown, focus: boolean): boolean {
   const L = ASK_LIMITS;
-  if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', ...(focus ? ['decision', 'onePage'] : [])])) return false;
+  if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', 'towards', ...(focus ? ['decision', 'onePage'] : [])])) return false;
+  if (p.towards !== undefined && !towardsOk(p.towards)) return false;
   if (!str(p.id, 64, false) || !str(p.title, L.titleChars, false) || !str(p.summary, L.summaryChars) || !ASK_STAGES.includes(p.stage as typeof ASK_STAGES[number])) return false;
   if (!refs(p.tasks, t => typeof t.done === 'boolean' && only(t, ['id', 'title', 'done', 'steps', 'stepsTotal', 'after']) && (t.steps === undefined || stepsOk(t.steps, L.projectTaskSteps))
     && (t.stepsTotal === undefined || (Number.isInteger(t.stepsTotal) && (t.stepsTotal as number) >= 0 && (t.stepsTotal as number) <= L.taskSteps))
@@ -264,6 +272,9 @@ export function checkAskContext(raw: unknown): raw is AskContext {
           && STUDY_SUBJECTS.includes(o.subject as typeof STUDY_SUBJECTS[number]) && str(o.label, L.titleChars, false) && str(o.title, L.titleChars, false) && str(o.detail, L.studyDetailChars)
           && str(o.why, L.studyWhyChars) && Number.isInteger(o.minutes) && (o.minutes as number) >= 0 && (o.minutes as number) <= 600 && (o.mode === null || str(o.mode, 20, false))
           && typeof o.started === 'boolean' && typeof o.resume === 'boolean' && typeof o.reviseFirst === 'boolean' && typeof o.allComplete === 'boolean'))) return false;
+    } else if (lk.tool === 'goals') {
+      if (!(only(lk, ['tool', 'query', 'ambitions', 'found']) && lk.query === 'all' && n(lk.found) && Array.isArray(lk.ambitions) && lk.ambitions.length <= L.lookupGoals
+        && (lk.found as number) >= lk.ambitions.length && lk.ambitions.every(a => str(a, L.titleChars, false)))) return false;
     } else if (lk.tool === 'waiting') {
       if (!(only(lk, ['tool', 'query', 'tasks', 'found']) && str(lk.query, 64, false) && n(lk.found) && Array.isArray(lk.tasks) && lk.tasks.length <= L.lookupWaiting && (lk.found as number) >= lk.tasks.length
         && lk.tasks.every(t => obj(t) && only(t, ['id', 'title', 'projectId', 'project', 'since', 'until', 'chased']) && str(t.id, 64, false) && str(t.title, L.titleChars, false)
@@ -350,7 +361,8 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   }
   if (x.project !== undefined && !checkProject(x.project, true)) return false;
   if (x.note !== undefined && !(obj(x.note) && only(x.note, ['id', 'title', 'text']) && str(x.note.id, 64, false) && str(x.note.title, L.titleChars) && str(x.note.text, L.noteTextChars))) return false;
-  if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes', 'steps']) && (x.task.steps === undefined || stepsOk(x.task.steps, L.taskSteps)) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
+  if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes', 'steps', 'towards']) && (x.task.steps === undefined || stepsOk(x.task.steps, L.taskSteps))
+    && (x.task.towards === undefined || towardsOk(x.task.towards)) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
     && (x.task.due === null || isDate(x.task.due)) && Number.isInteger(x.task.minutes) && str(x.task.notes, L.taskNotesChars))) return false;
   if (x.calendar !== undefined && !(obj(x.calendar) && only(x.calendar, ['day', 'appointments']) && isDate(x.calendar.day) && Array.isArray(x.calendar.appointments)
     && x.calendar.appointments.length <= L.list && x.calendar.appointments.every(a => obj(a) && only(a, ['id', 'title', 'time']) && (a.id === undefined || str(a.id, 64, false)) && str(a.title, L.titleChars) && isTime(a.time)))) return false;
@@ -369,7 +381,7 @@ export function readAsk(textIn: string): AskReply | null {
     const tool = lk.tool === undefined ? 'notes' : ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : null; // nothing else can be looked in
     if (tool === 'day' && !isDate(query)) return null; // a day is a date the model worked out
     if ((tool === 'project' || tool === 'decisions' || tool === 'waiting') && !/^[\w-]{1,64}$/.test(query ?? '')) return null; // a project by its id, from "projects" (or "all")
-    if (tool === 'study') return { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query: 'all' } }; // what to study next: always all of it
+    if (tool === 'study' || tool === 'goals') return { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query: 'all' } }; // what to study next, your ambitions: always all of it
     return query && tool ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
   }
   const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];

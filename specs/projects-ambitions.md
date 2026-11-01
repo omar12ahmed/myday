@@ -62,8 +62,10 @@ says what a task on Today moves forward, so the day can feel like a list rather 
 - **Rules** in `data/ambitions.ts` (adding, editing, linking, steps, what a task or project is a step towards); the
   Study, Cybersecurity and Arabic progress come from their own read-only functions, loaded lazily (never into Today's
   first paint).
-- **AI:** nothing of an ambition is sent to AI (ai/reach.ts's never list); "Help me adjust today" sends tasks as
-  before, without the line.
+- **AI:** only an ambition's title, and only to Ask MyDay when it's relevant — on a linked project or task, and when you
+  ask about your goals — and never one that links a private project (the owner's choices of 1 Nov 2026,
+  `specs/ask-ambitions.md`); never its why, steps or links. "Help me adjust today" sends tasks as before, without the
+  line.
 - `specs/arabic-route.md` option 3 is updated: Today's line now comes from Ambitions.
 
 ## 5. Checks
