@@ -154,7 +154,7 @@ function PrefsCard({ data }: { data: MyDayData }) {
           <option value={ASK_QUESTIONS_MOST}>Up to {ASK_QUESTIONS_MOST} (the usual)</option>
         </Select>
       </Field>}
-      {/* Offers to help you start (1.121.0): on Today, one task that keeps moving; Today shows one unprompted offer a day at most. */}
+      {/* Offers to help you start (1.123.0): on Today, one task that keeps moving; Today shows one unprompted offer a day at most. */}
       <Field label="Offers to help you start a task" htmlFor="prefStartOffers" className="mt-4">
         <Select id="prefStartOffers" value={prefs.startOffers === false ? 'off' : 'on'} onChange={e => {
           if (update(d => (setStartOffers(d.patterns, e.target.value === 'on') ? undefined : false))) toast('Saved.');

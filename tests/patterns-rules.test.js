@@ -184,7 +184,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   K.editTask(d.tasks, id, { due: K.shift(today, 2) });
   K.editTask(d.tasks, id, { due: null });
   check('a later date counts; an earlier one, or clearing it, doesn\'t', T().postponed === 2);
-  check('moved twice is stuck (the threshold is 2 since 1.122.0)', K.STUCK_MOVES === 2 && K.isStuck(d, T(), today), [K.STUCK_MOVES, T().postponed]);
+  check('moved twice is stuck (the threshold is 2 since 1.123.0)', K.STUCK_MOVES === 2 && K.isStuck(d, T(), today), [K.STUCK_MOVES, T().postponed]);
   K.editTask(d.tasks, id, { due: today }); K.editTask(d.tasks, id, { due: K.shift(today, 1) });
   check('3 moves → "stuck"', T().postponed === 3 && K.isStuck(d, T(), today));
   const old = K.addTask(d.tasks, { title: 'Return the parcel', due: K.shift(today, -7) });

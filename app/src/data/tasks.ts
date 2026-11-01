@@ -8,7 +8,7 @@
 // Saved as a top-level `tasks` section (added by the new app in 1.5.0, like Notes; the classic MyDay keeps it unread).
 // In "Export my data", and synced with your account (one record per task; see sync/records.ts).
 //
-// A task that keeps moving (its date moved later twice, STUCK_MOVES — 3 before 1.122.0 — or a week overdue) is "stuck": MyDay asks what's getting in
+// A task that keeps moving (its date moved later twice, STUCK_MOVES — 3 before 1.123.0 — or a week overdue) is "stuck": MyDay asks what's getting in
 // the way — not to push harder, but to change the task so it's easier to start (see unstick). Your answers are kept
 // on the task (`blockers`), and What MyDay has noticed looks for a pattern in them.
 import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, shortDate, todayKey } from './dates';
@@ -253,7 +253,7 @@ export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayK
 }
 
 // ---------- A task that keeps moving ----------
-// Stuck: moved later twice or more (STUCK_MOVES; 3 before 1.121.0, the owner's choice of 1 Nov 2026), or a week past its
+// Stuck: moved later twice or more (STUCK_MOVES; 3 before 1.123.0, the owner's choice of 1 Nov 2026), or a week past its
 // date — unless you said what's in the way in the last week.
 export const STUCK_MOVES = 2;
 // How many times it has moved, in words ("twice", not "2 times").

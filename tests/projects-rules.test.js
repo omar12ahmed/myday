@@ -985,7 +985,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const wa = K.whatsWaiting(wt, k, 10);
     check('a task that has moved 3 times says so', wa[0].kind === 'stuck' && wa[0].text === '“Pay council tax” has moved 3 times', wa[0]);
     check('a task a week past due says when it was planned for', wa[1].kind === 'stuck' && wa[1].text === `“Renew passport” was planned for ${K.shortDate('2026-10-10')}`, wa[1]);
-    check('a task moved once (stuck from twice since 1.121.0), one only 6 days past due, one let go of and one ticked are not stuck', wa.filter(w => w.kind === 'stuck').length === 2, wa.map(w => w.text));
+    check('a task moved once (stuck from twice since 1.123.0), one only 6 days past due, one let go of and one ticked are not stuck', wa.filter(w => w.kind === 'stuck').length === 2, wa.map(w => w.text));
     const wt2 = clone(wt); wt2.tasks.items.push(TK('s7', null, { title: 'Book the boiler', postponed: 2 }));
     check('a task that has moved twice is stuck, and says "twice" (not "2 times")', K.whatsWaiting(wt2, k, 10).some(w => w.kind === 'stuck' && w.text === '“Book the boiler” has moved twice'), K.whatsWaiting(wt2, k, 10).map(w => w.text));
     check('an active project quiet for 4 weeks says so (and a paused one is not mentioned)', wa[2].kind === 'quiet' && wa[2].text === '“Allotment plan” has been quiet for 4 weeks' && !wa.some(w => w.text.includes('Paused thing')), wa.map(w => w.text));
