@@ -2,7 +2,8 @@
 // (a Mac, then a 320 px phone width): the weak-verbs lesson's Understand step has How it works with its five cards; a
 // card opens with its table, and its questions answer when you choose (one wrong, one right); module 15's إِنَّ and
 // كَانَ lesson has its two (1.105.0), module 7's time and days lesson its two, module 2's joining lesson its card, and module 28's 1:2 quote shows exactly
-// with no transliteration (1.124.0); Vocabulary has the 651
+// with no transliteration (1.124.0); module 22's negation lesson has its three cards, and the Dictionary finds كِتَاب for
+// "kitab" (1.127.0); Vocabulary has the 651
 // links, and one opens the irregular-families lesson with the Take card open and its title clear of the step bar; at
 // 320 px a card doesn't scroll sideways. Nothing is saved: the device's learning data and the account's Arabic and
 // Study records are as before. Never prints account details. Reads the live database (no writes of its own beyond
@@ -84,8 +85,21 @@ const WV = 'study/arabic/lesson.arabic-weak-verbs', SAY = 'details[data-ar-expla
   await mac.ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]').open = true`); await D.sleep(300);
   check('module 28: the 1:2 quote shows exactly as written in the muṣḥaf, with "(Qur\'an 1:2)" and no transliteration', await mac.ev(`(() => { const f = document.querySelector('figure[data-ar-explainer-quote="1:2"]'); return !!f && f.querySelector('[lang="ar"]')?.textContent === ${JSON.stringify(q12.ar)} && f.textContent.includes("(Qur'an 1:2)") && !f.querySelector(':scope > [lang="ar"] + [data-ar-transliteration]'); })()`));
 
-  // Vocabulary's links, and following one.
+  // Module 22 (1.127.0): the negation lesson has its three cards, one per topic.
+  await mac.open(BASE + '#study/arabic/lesson.arabic-negation-exception');
+  check('module 22: the negation lesson has its three explainers: only, except, and no … at all', await mac.until(`[...document.querySelectorAll('#ar-step-understand [data-ar-explainers] details[data-ar-explainer]')].map(d => d.dataset.arExplainer).join() === 'explainer.arabic-only-and-except,explainer.arabic-except,explainer.arabic-no-at-all'`, 60000));
+
+  // The Dictionary (1.127.0): a search, read-only (it saves nothing), then the box emptied again.
+  const kitabId = require(path.join(__dirname, '..', '..', 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json')).lexicon_seed.find(w => w.form_ar === 'كِتَاب').id;
+  const typeQ = v => mac.ev(`(() => { const i = document.querySelector('[data-s="ar-dict-q"]'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(i, ${JSON.stringify(v)}); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
   await mac.open(BASE + '#study/arabic/vocabulary');
+  await mac.until(`!!document.querySelector('[data-s="ar-dict-q"]')`, 60000);
+  await typeQ('kitab');
+  check('the Dictionary tab: searching "kitab" finds 5 words, the starter word كِتَاب first', await mac.until(`document.querySelector('[data-ar-dict-found]')?.textContent === '5 words found.' && document.querySelector('[data-ar-dictionary] [data-ar-dict-list] > li')?.dataset.arWord === ${JSON.stringify(kitabId)}`, 20000)
+    && await mac.ev(`[...document.querySelectorAll('.workspace-tabs a')].some(a => a.textContent === 'Dictionary' && a.getAttribute('href') === '#study/arabic/vocabulary')`));
+  await typeQ(''); await D.sleep(300);
+
+  // Vocabulary's links, and following one.
   check('Vocabulary has 651 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 57 in modules 8–9, 71 in modules 10–11, 58 in modules 12–13, 24 in module 14, 27 in module 15, 68 in modules 16–17, 65 in modules 18–19, 70 in modules 20–21, 69 in modules 22–23, 35 in module 24)', await mac.until(`document.querySelectorAll('[data-ar-explainer-link]').length === 651`, 60000), await mac.ev(`document.querySelectorAll('[data-ar-explainer-link]').length`));
   await mac.click('[data-ar-word="lexeme.arabic-irregular-families-5"] [data-ar-explainer-link]');
   const opened = await mac.until(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-take"]'), s = d?.querySelector('summary'), bar = document.querySelector('nav.journey-steps'); return location.hash === '#study/arabic/lesson.arabic-irregular-families' && !!d?.open && !!s && !!bar && s.getBoundingClientRect().top >= bar.getBoundingClientRect().bottom && s.getBoundingClientRect().top < innerHeight; })()`, 60000);

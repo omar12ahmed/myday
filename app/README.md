@@ -1,5 +1,24 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.127.0 — An Arabic dictionary, and module 22's crowded lessons split:** Study → Arabic's **Vocabulary** is now the
+**Dictionary** (same address), headed by **Look up a word**. Search the course's 800 words and your own by Arabic, with
+vowel marks, hamza seats, ة or ه and the article making no difference (كتاب, الكتاب and بالكتاب all find كِتَاب; a
+match found by taking your article or a joined letter off comes a little lower); by English, from the start of a word
+("door" finds بَاب, "indoor" doesn't; "home" finds بَيْت, "house/home"); or by Latin letters, the app's own reading
+("kitab", "mudaris"). Best match first, 50 at a time with Show more, the count said to screen readers. With the box
+empty, browse **by first letter** or **by root**; each lesson's words stay listed below. Every entry says where it's
+taught ("Taught in …", or "A starter word, first in …"), and a phrase's root now reads **Root of the main word**. Your
+kept words show in results marked **Yours**. **Add your own word** looks in the dictionary first: the course's entry
+with its lesson, Use the course's meaning, and **Add it to revision instead** (no copy kept; nothing is announced
+unless it's saved). The search runs on the device and nothing is sent; no saved-data change. Module 22's three crowded
+lessons now have one card per topic: numbers past ten and **words that never take tanween**; the **ḥāl** and the
+**tamyīz**; **only**, **except** (إِلَّا, غَيْر and سِوَى, and the ending after each) and **no … at all**, with how far a
+negative reaches. That's four new cards and three narrowed (175 in all), cross-checked independently and reviewed
+twice by the owner's checker. Voice, round twenty-four (myday-5a): 59 clips in Chirp 3 HD Charon, all listened to by
+the owner (وَصَلْنَا's sentence remade slower), and one retired (فِي مَدَارِسَ); 4,500 clips. Also
+`scripts/arabic-word-inventory.mjs`, listing each lesson's words that no entry covers yet, for the dictionary words to
+come (`specs/arabic-dictionary.md` §4). Going back to 1.126.0 is safe.
+
 **1.126.0 — Career projects: roles, applications and interviews:** a new kind of project, **Career** (Start a project,
 or Edit → Kind of project), for looking for work. Its **Applications** tab holds the **roles you're aiming for** (each
 with a note, and the work that shows you can do it — entries from your Cybersecurity portfolio, by reference; they stay
@@ -1222,7 +1241,7 @@ Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Underst
 works**, under its teaching: one closed card per family of forms or grammar topic (so far ten for module 14's weak,
 irregular and derived verbs, 1.98.0; and, in 1.105.0, eight for module 15's relative words, إِنَّ and كَانَ and their
 sisters, reporting, conditions, reasons and contrast, and thirteen for modules 4–5's first patterns, from "you" to a
-man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages; in 1.121.0, eighty for modules 8–24 and module 14's moods and passive; in 1.124.0, forty-eight for modules 1–3 and 25–30, so every lesson has them). Module 28's cards may also quote short Qur'anic phrases under **Quoted**: in the muṣḥaf's exact spelling, with sūra and verse and a meaning, never voiced and with no transliteration. Each has a table (form, Arabic, meaning; on a phone the form
+man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages; in 1.121.0, eighty for modules 8–24 and module 14's moods and passive; in 1.124.0, forty-eight for modules 1–3 and 25–30, so every lesson has them; in 1.127.0, four more where module 22 packed several grammar topics into one lesson). Module 28's cards may also quote short Qur'anic phrases under **Quoted**: in the muṣḥaf's exact spelling, with sūra and verse and a meaning, never voiced and with no transliteration. Each has a table (form, Arabic, meaning; on a phone the form
 sits under the meaning; a form label or a word's gloss may name Arabic, shown as Arabic and never voiced),
 short steps, two or three sentences broken down word by word, a "why" question, and three questions: a first wrong choice
 says "Not quite." and asks again (a question with two choices shows the answer at once), then the answer shows with its
@@ -2357,6 +2376,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
+| `src/study/arabic/dictionary.ts`, `src/study/arabic/ArabicScreen.tsx` (`Dictionary`, `YoursRow`), `scripts/arabic-word-inventory.mjs` | The Arabic dictionary (1.127.0; `specs/arabic-dictionary.md`): search keys for Arabic (vowels, hamza seats, ٱ ى ة, tatweel, the article) and Latin, ranking, browsing by first letter or root, the course's words a typed word matches (Add your own word); the page; the inventory of each lesson's words no entry covers yet. |
 | `src/study/arabic/Explainers.tsx`, `src/study/arabic/explainerData.ts`, `../content/teaching/arabic/explainers.json`, `scripts/validate-explainers.mjs`, `scripts/prepare-explainers.mjs` | Explainers (1.98.0): How it works in a lesson's Understand step, its questions and the link under a course word; loading a lesson's module and the index, the explainer for a word and the link's open request; the authored explainers (by lesson id); the build check (`--readings` for the app's transliteration); the build's split into `src/study/arabic/explainer-data/` (one file per module and the index; not edited by hand). |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
 | `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs`, `../content/teaching/arabic/voice-scripts.json` | Reading-text voice (round three (a), 1.41.0; round ten, 1.94.0: the six unmarked texts from MyDay's vowelled scripts, pause forms, a whole clip per text): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |

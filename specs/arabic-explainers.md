@@ -3,7 +3,8 @@
 **Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Every lesson has explainers, live with their
 voice: module 14 (1.98.0, voiced in 1.102.0), module 15 and modules 4–5 (1.105.0), modules 6–7 (1.108.0), modules 8–24
 and module 14's verb moods and passive, with the "where this leads" lines and a second go (§7) (1.121.0), and modules 1–3
-and 25–30, with module 28's quotes (§6) (1.124.0): 171 explainers in 152 lessons. Each batch: drafted, validated,
+and 25–30, with module 28's quotes (§6) (1.124.0), and module 22's three crowded lessons split into one card per topic
+(1.127.0): 175 explainers in 152 lessons. Each batch: drafted, validated,
 cross-checked independently (fixes re-checked), checked by the owner's checker, voiced and listened to, then released.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
