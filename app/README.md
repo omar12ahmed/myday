@@ -1876,7 +1876,7 @@ and your account; backups list your files, the files stay in R2.
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
 other tasks done, Study sessions and minutes, and workouts as counts and names, never scores; a quiet week is called
-fine. **2 What's waiting** (since 1.50.0, **What needs you**): at most five things from real data: a task moved three or more times or long past its
+fine. **2 What's waiting** (since 1.50.0, **What needs you**): at most five things from real data: a task moved twice or more (three or more before 1.122.0) or long past its
 date, a project quiet for two weeks, a decision open for two weeks, a done Find out not yet marked, and evidence still
 to get. Each has "Pick a next step", "What's in the way?" or "Open it", "Pause it" for a quiet project, "Let it go"
 for a stuck task, and "Leave it for now". **3 Next week's focus:** up to three active projects, from tomorrow for
@@ -2674,7 +2674,7 @@ sound right?".
   as you chose (your energy allows 3)." — and nothing is saved until you apply the plan, as before. "Review my plan"
   and "Due today" keep to the same most. Without preferences, plans are exactly as before (`src/data/patterns/adapt.ts`).
   Your energy rating is never changed by a pattern.
-- **Tasks that keep moving** (Inbox → Tasks): a task moved later 3 times, or a week past its date, asks **What's
+- **Tasks that keep moving** (Inbox → Tasks): a task moved later twice (3 times before 1.122.0), or a week past its date, asks **What's
   getting in the way?** (also on any task, from "Something in the way?"). Each answer changes the task so it's easier
   to start, rather than "try again": too big / don't know where to start → you write the first step, which becomes a
   10-minute task for today (the whole task waits under Any time); boring → a 10-minute version today; too tired → your

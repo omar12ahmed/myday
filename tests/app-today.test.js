@@ -858,6 +858,122 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await T.send('Emulation.clearDeviceMetricsOverride');
   await ev(`localStorage.removeItem('myday.sayings')`);
 
+  console.log('\n[25] Start offers on Today, under one attention budget');
+  {
+    // One unprompted offer a day at most: a task that keeps moving, then the learning nudge, then what MyDay noticed.
+    const key = (add = 0) => { const dt = new Date(Date.UTC(2027, 2, 10 + add)); return dt.toISOString().slice(0, 10); };
+    const D0 = key(0), D1 = key(1), D2 = key(2), D7 = key(7);
+    const OT = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2027-02-20T09:00', postponed: 0, blockers: [], letGoOn: null, ...x });
+    // 16 checked-in days, one learning task each (nothing learned in the last 3 days): 9 of 25 min (7 ticked off), 7 of 60 min (2 ticked off).
+    const history = { days: {} };
+    for (let i = 4; i <= 19; i++) {
+      const short = i <= 12;
+      history.days[key(-i)] = { energy: 3, rest: false, builtAt: key(-i) + 'T08:00', checkedIn: true, tasks: [{ uid: 'h' + i, taskId: null, category: 'learning', title: `Study ${short ? 25 : 60}`, minutes: short ? 25 : 60, baseMinutes: short ? 25 : 60, done: short ? i <= 10 : i <= 14, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+    }
+    // A fresh MyDay with these tasks, and optionally the history (fresh patterns) and an old enough start (the nudge applies).
+    const scene = async (tasks, { patterns = false, nudge = false, projects = [] } = {}, at = [2027, 3, 10]) => {
+      await openAt(...at, 9); await reset(); await openAt(...at, 9);
+      await editStorage(`s => { s.tasks.items.push(...${JSON.stringify(tasks)}); s.projects.items.push(...${JSON.stringify(projects)});
+        ${patterns ? `Object.assign(s.days, ${JSON.stringify(history.days)});` : ''} ${nudge ? `s.createdOn = '2027-02-01';` : ''} }`);
+      await openAt(...at, 9, 5);
+    };
+    const offerCard = () => exists('#startOffer');
+    const noticedLine = () => exists('#noticedLink');
+    const notes = async () => (await data()).nudge;
+    const none = async () => !(await offerCard()) && !(await nudgeShown()) && !(await noticedLine());
+    const STUCK = [OT('tkPass', 'Renew passport', { postponed: 2 })];
+    const APPLY = { patterns: true, nudge: true };
+
+    await scene(STUCK);
+    check('a task moved twice shows the start offer: "You’ve moved “Renew passport” twice. Want an easier way in?"', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Renew passport” twice. Want an easier way in?', await text('#startOffer'));
+    check('…it is at the top of Today', await ev(`(() => { const top = e => e.getBoundingClientRect().top; const c = document.querySelector('#startOffer'); return !!c && [...document.querySelectorAll('.today-main [id]')].every(e => top(c) <= top(e)); })()`));
+    check('…with Help me start, Not now and Don’t suggest this again', (await text('#startOffer [data-action=offer-help-start]')) === 'Help me start' && (await text('#startOffer [data-action=offer-not-now]')) === 'Not now' && (await text('#startOffer [data-action=offer-never]')) === 'Don’t suggest this again');
+    check('…it is today\'s offer, noted on this device (not with the synced preferences)', JSON.stringify((await notes()).offerOn) === JSON.stringify({ on: D0, kind: 'start' }) && !('offerOn' in (await prefs())), [await notes(), await prefs()]);
+    await scene([OT('tkDue', 'Book the boiler service', { postponed: 2, due: key(3) })]);
+    check('a dated task moved twice gets the same offer', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Book the boiler service” twice. Want an easier way in?', await text('#startOffer'));
+    await scene([OT('tkThree', 'Clear the loft', { postponed: 3 })]);
+    check('a task moved 3 times reads "3 times"', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Clear the loft” 3 times. Want an easier way in?', await text('#startOffer'));
+    await scene([OT('tkOnce', 'Call the plumber', { postponed: 1 })]);
+    check('a task moved once gets no offer', !(await offerCard()));
+
+    await scene(STUCK);
+    await click('[data-action=offer-help-start]'); await sleep(400);
+    check('Help me start opens that task\'s page with the Help me start card open', (await ev('location.hash')) === '#today/tasks/tkPass' && (await exists('#startCard')), [await ev('location.hash'), await exists('#startCard')]);
+
+    // The budget.
+    await scene(STUCK, APPLY);
+    check('with a stuck task, an eligible learning nudge and fresh patterns, only the start offer shows', (await offerCard()) && !(await nudgeShown()) && !(await noticedLine()), [await offerCard(), await nudgeShown(), await noticedLine()]);
+    check('…today\'s offer is "start", and the nudge is not counted as shown', JSON.stringify((await notes()).offerOn) === JSON.stringify({ on: D0, kind: 'start' }) && (await notes()).lastShownOn === null, await notes());
+    await openAt(2027, 3, 10, 12);
+    check('…after a reload it is still only the start offer', (await offerCard()) && !(await nudgeShown()) && !(await noticedLine()));
+
+    await scene([], APPLY);
+    check('with no stuck task, the nudge shows alone (not the line about what MyDay noticed)', (await nudgeShown()) && !(await offerCard()) && !(await noticedLine()), [await nudgeShown(), await offerCard(), await noticedLine()]);
+    check('…today\'s offer is "nudge", and the nudge is counted as shown today', JSON.stringify((await notes()).offerOn) === JSON.stringify({ on: D0, kind: 'nudge' }) && (await notes()).lastShownOn === D0, await notes());
+    await click('[data-action=dismiss-nudge]'); await sleep(300);
+    check('the nudge\'s "Not today" counts as "Not now": today is marked', !(await nudgeShown()) && (await notes()).notNowOn === D0, await notes());
+    await openAt(2027, 3, 10, 13);
+    check('…and after a reload nothing is offered', await none());
+    await openAt(2027, 3, 11, 9);
+    check('…nor the next day', await none());
+
+    await scene([], { patterns: true });
+    check('with only fresh patterns, the line about what MyDay noticed shows', (await noticedLine()) && !(await offerCard()) && !(await nudgeShown()), [await noticedLine(), await offerCard(), await nudgeShown()]);
+    check('…today\'s offer is "noticed"', JSON.stringify((await notes()).offerOn) === JSON.stringify({ on: D0, kind: 'noticed' }), await notes());
+    await editStorage(`s => { s.tasks.items.push(${JSON.stringify(STUCK[0])}); }`);
+    await openAt(2027, 3, 10, 12);
+    check('once today\'s offer is "noticed", a task that becomes stuck later that day adds no start offer', !(await offerCard()) && (await noticedLine()), [await offerCard(), await noticedLine()]);
+    await openAt(2027, 3, 11, 9);
+    check('…the next day the start offer comes first, ahead of what MyDay noticed', (await offerCard()) && !(await noticedLine()), [await offerCard(), await noticedLine()]);
+
+    // Editing your lists, nothing is offered, so the day's one isn't used up unseen.
+    await scene(STUCK);
+    await reset(); await openAt(2027, 3, 10, 9);
+    await editStorage(`s => { s.tasks.items.push(...${JSON.stringify(STUCK)}); }`);
+    await ev(`location.hash = 'today/edit'`); await sleep(400);
+    check('while editing your lists the offer isn\'t shown, and today\'s isn\'t used up', !(await offerCard()) && !(await notes()).offerOn, await notes());
+
+    // "Not now": nothing more today or tomorrow, and not that task for a week.
+    const TWO = [OT('tkPass', 'Renew passport', { postponed: 3 }), OT('tkBoiler', 'Book the boiler service', { postponed: 2 })];
+    await scene(TWO, APPLY);
+    check('before "Not now" the offer is about the most moved task', (await text('#startOffer [data-s=start-offer]')).includes('“Renew passport” 3 times'), await text('#startOffer'));
+    await click('[data-action=offer-not-now]'); await sleep(300);
+    check('"Not now" takes the card away, marks today, and says so kindly', !(await offerCard()) && (await notes()).notNowOn === D0 && (await toast()) === 'Not now, then. No suggestions today or tomorrow.', [await notes(), await toast()]);
+    check('…and keeps that task quiet for a week', JSON.stringify((await notes()).quiet) === JSON.stringify([{ taskId: 'tkPass', on: D0 }]), (await notes()).quiet);
+    check('…and focus goes to the page, not nowhere', (await ev(`document.activeElement?.id || ''`)) === 'app', await ev(`document.activeElement?.outerHTML.slice(0, 80)`));
+    check('…and does not touch the synced preferences', !('notNowOn' in (await prefs())) && !('startOffers' in (await prefs())), await prefs());
+    await openAt(2027, 3, 10, 12);
+    check('after a reload, no start offer, no nudge and no line about what MyDay noticed today, though they would apply', await none());
+    await openAt(2027, 3, 11, 9);
+    check('the next day, none either', await none());
+    await openAt(2027, 3, 12, 9);
+    check('the day after that, the start offer is back, for the other task (the first stays quiet for a week)', (await offerCard()) && (await text('#startOffer [data-s=start-offer]')).includes('“Book the boiler service” twice'), await text('#startOffer'));
+    await openAt(2027, 3, 17, 9);
+    check('a week later the first task can be offered again', (await offerCard()) && (await text('#startOffer [data-s=start-offer]')).includes('“Renew passport” 3 times'), await text('#startOffer'));
+
+    // "Don't suggest this again".
+    await scene(STUCK, APPLY);
+    await click('[data-action=offer-never]'); await sleep(300);
+    check('"Don’t suggest this again" takes the card away, saves start offers off, and says where to switch them back on', !(await offerCard()) && (await prefs()).startOffers === false && (await toast()).includes('What MyDay has noticed'), [await prefs(), await toast()]);
+    await openAt(2027, 3, 10, 12);
+    check('…and nothing else is offered for the rest of today, though the nudge and the line would apply', await none());
+    await ev(`location.hash = '#noticed'`); await sleep(400);
+    check('in What MyDay has noticed, "Offers to help you start a task" shows Off', (await text('label[for=prefStartOffers]')) === 'Offers to help you start a task' && (await ev(`document.getElementById('prefStartOffers').selectedOptions[0].textContent`)) === 'Off', await ev(`document.getElementById('prefStartOffers').value`));
+    await setVal('#prefStartOffers', 'on'); await sleep(300);
+    check('choosing "On" removes the field from the preferences', !('startOffers' in (await prefs())), await prefs());
+    await openAt(2027, 3, 11, 9);
+    check('…and on a later day the start offer can show again', await offerCard());
+
+    // The preference.
+    await scene([]);
+    await ev(`location.hash = '#noticed'`); await sleep(400);
+    check('"Offers to help you start a task" is a choice between On Today, when a task keeps moving (the usual), and Off',
+      eq(await ev(`[...document.querySelectorAll('#prefStartOffers option')].map(o => [o.value, o.textContent])`), [['on', 'On Today, when a task keeps moving (the usual)'], ['off', 'Off']]) && (await ev(`document.getElementById('prefStartOffers').value`)) === 'on', await ev(`document.getElementById('prefStartOffers').outerHTML`));
+    await setVal('#prefStartOffers', 'off'); await sleep(300);
+    check('choosing Off saves startOffers: false', (await prefs()).startOffers === false, await prefs());
+  }
+
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

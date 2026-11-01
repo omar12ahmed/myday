@@ -61,7 +61,8 @@ tip for what MyDay does then.
 The owner's choices (1 Nov 2026, about 03:10 UTC):
 - **When:** a task that keeps moving — **moved twice** (the Stuck card's threshold changes from 3 to 2 as well:
   `STUCK_MOVES`, used by the Stuck card, Needs you and Your week), or a week past its date — with nothing said about it in
-  the last week (`isStuck`). The most moved first.
+  the last week (`isStuck`), in an active project or none, and not one you said "Not now" to in the last week. The most
+  moved first.
 - **How:** a card at the top of Today: "You've moved 'Renew passport' twice. Want an easier way in?" — **Help me start**
   (its page, the card open) · **Not now** · **Don't suggest this again** (switched back on in Your preferences: "Offers to
   help you start a task").
@@ -69,8 +70,13 @@ The owner's choices (1 Nov 2026, about 03:10 UTC):
   "newly noticed" line share **at most one a day**. In that order when more than one applies; once one has shown today
   it's the only one, and **"Not now"** (the nudge's "Not today" too) means none for the rest of that day or the next.
   Projects' Needs you and Worth a look are pages you open, so they aren't part of it.
-- **Kept with your preferences** (synced; older versions keep them, as the loader keeps unknown preferences): today's
-  offer (`offerOn`), the last "Not now" (`notNowOn`) and start offers off (`startOffers: false`). Never sent to AI.
+- **Where it's kept:** today's offer (`offerOn`), the last "Not now" (`notNowOn`) and the tasks it was said to (`quiet`,
+  for a week) are MyDay's own notes on this device (`nudge`, not synced, like the learning nudge's), so Today never writes
+  your synced data by itself — each device keeps its own one a day. "Don't suggest this again" is your choice, so it's
+  kept with your preferences (`startOffers: false`, synced; older versions keep it). Never sent to AI.
+- **After the review:** "Not now" says so and leaves that task alone for a week (MyDay withdraws); the nudge's "Never
+  mind" (after "Yes, shrink it") isn't a "Not now"; the day's offer is used up only when it's shown (not in Focus mode or
+  while editing lists); "twice" reads as a word everywhere.
 
 ## 4. Not in this step
 

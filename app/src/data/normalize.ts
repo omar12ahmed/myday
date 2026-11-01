@@ -26,7 +26,7 @@ import { emptySoftware, normalizeSoftware } from './software';
 import { emptyContent, normalizeContent } from './content';
 import { emptyResearch, normalizeResearch } from './research';
 import { emptyTasks, normalizeTasks } from './tasks';
-import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
+import type { Category, Commitment, DateKey, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
 import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
 
 // The small helpers live in util.ts; they're re-exported here for the files that already use them.
@@ -218,6 +218,13 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   if (isObj(raw.nudge)) {
     if (isDateKey(raw.nudge.lastShownOn)) s.nudge.lastShownOn = raw.nudge.lastShownOn;
     if (isDateKey(raw.nudge.shrinkOn)) s.nudge.shrinkOn = raw.nudge.shrinkOn;
+    // Today's one unprompted offer (1.122.0, data/offers.ts): today's (any kind, as a newer MyDay may add one), the last
+    // "Not now", and the tasks you said it to (quiet for a week).
+    const o = raw.nudge.offerOn;
+    if (isObj(o) && isDateKey(o.on) && typeof o.kind === 'string' && o.kind && o.kind.length <= 20) s.nudge.offerOn = { ...o, on: o.on, kind: o.kind };
+    if (isDateKey(raw.nudge.notNowOn)) s.nudge.notNowOn = raw.nudge.notNowOn;
+    const quiet = Array.isArray(raw.nudge.quiet) ? raw.nudge.quiet.filter((q): q is { taskId: string; on: DateKey } => isObj(q) && typeof q.taskId === 'string' && isDateKey(q.on)).slice(-20) : [];
+    if (quiet.length) s.nudge.quiet = quiet;
   }
 
   // ---- Added in version 3 (absent in version 2, so defaults apply) ----

@@ -276,15 +276,21 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   // One unprompted offer today, at most (data/offers.ts; the owner's choices of 1 Nov 2026): a task that keeps moving, the
   // learning nudge, or what MyDay noticed — and none the rest of a day you said "Not now", or the day after.
   const startTask = canSave ? startOfferTask(data, k) : null;
-  const offer = todaysOffer(data.patterns.prefs, k, { start: !!startTask, nudge: showNudge, noticed: noticed(data, k).fresh.length > 0 });
-  // What's shown is remembered: today's offer (so nothing else comes today), and the nudge's own once a day.
+  const offer = todaysOffer(data.nudge, k, { start: !!startTask, nudge: showNudge, noticed: noticed(data, k).fresh.length > 0 });
+  // Noted once it's actually shown (not in Focus mode, or while editing lists): today's offer, so nothing else comes today,
+  // and the nudge's own once a day. MyDay's own notes on this device, so this never writes your synced data.
+  const focusMode = useFocusMode();
+  const shown = view === 'edit' || (focusMode && view === 'auto') ? null : offer;
   useEffect(() => {
-    if (!offer || !canSave) return;
-    update(dr => { let changed = markOffer(dr.patterns.prefs, k, offer); if (offer === 'nudge' && dr.nudge.lastShownOn !== k) { dr.nudge.lastShownOn = k; changed = true; } return changed ? undefined : false; });
-  }, [offer, k, canSave]);
-  const notNow = () => update(dr => (sayNotNow(dr.patterns.prefs, k) ? undefined : false));
+    if (!shown || !canSave) return;
+    update(dr => { let changed = markOffer(dr.nudge, k, shown); if (shown === 'nudge' && dr.nudge.lastShownOn !== k) { dr.nudge.lastShownOn = k; changed = true; } return changed ? undefined : false; });
+  }, [shown, k, canSave]);
+  // The card goes, so focus goes to the page rather than nowhere.
+  const toPage = () => requestAnimationFrame(() => document.getElementById('app')?.focus({ preventScroll: true }));
+  const notNow = (taskId?: string) => update(dr => (sayNotNow(dr.nudge, k, taskId) ? undefined : false));
+  function notNowStart() { if (notNow(startTask?.id)) { toast('Not now, then. No suggestions today or tomorrow.'); toPage(); } }
   function noMoreStartOffers() {
-    if (update(dr => (setStartOffers(dr.patterns, false) ? undefined : false))) toast('No more offers to help you start. Switch them back on in What MyDay has noticed.');
+    if (update(dr => (setStartOffers(dr.patterns, false) ? undefined : false))) { toast('No more offers to help you start. Switch them back on in What MyDay has noticed.'); toPage(); }
   }
   const proposalCard = proposal && <ProposalCard p={proposal} data={data} animate={animateProposal} act={act} />;
   const context = (
@@ -406,7 +412,6 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   }
 
   // Focus mode (the switch in the top bar): only what's next — the task to do now and the focus timer.
-  const focusMode = useFocusMode();
   if (focusMode && view === 'auto') {
     return (
       <FocusView data={data} k={k} onToggle={(t, done) => toggle(k, t, done)} onTimer={(t, kind) => timer(t, kind)} onShowAll={() => setFocusMode(false)}
@@ -428,9 +433,9 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         </div>
       )}
       <div className="today-main contents lg:block lg:min-w-0">
-        {slot('order-0', offer === 'start' && startTask && view !== 'edit' && <StartOfferCard t={startTask} onNotNow={notNow} onNever={noMoreStartOffers} />)}
+        {slot('order-0', offer === 'start' && startTask && view !== 'edit' && <StartOfferCard t={startTask} onNotNow={notNowStart} onNever={noMoreStartOffers} />)}
         {slot('order-0', showNudge && offer === 'nudge' && view !== 'edit' && (
-          <NudgeCard day={d} choosing={nudge.choosing} onShrink={shrink} onSwap={uid => swapLearning(uid)} onAdd={() => swapLearning(null)} onDismiss={() => { hideNudge(); notNow(); }} />
+          <NudgeCard day={d} choosing={nudge.choosing} onShrink={shrink} onSwap={uid => swapLearning(uid)} onAdd={() => swapLearning(null)} onDismiss={() => { if (!nudge.choosing) notNow(); hideNudge(); }} />
         ))}
         {main}
       </div>

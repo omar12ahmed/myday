@@ -9,7 +9,7 @@ import { keyOf, localStamp, parseKey, shift, shortDate, todayKey } from './dates
 import { NOTE_LIMITS } from './notes';
 import { lastActivity, projectsInOrder } from './projects';
 import { isProjectWaiting } from './projectWaiting';
-import { isStuck, STUCK_MOVES } from './tasks';
+import { isStuck, movedTimes, STUCK_MOVES } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 import { uid } from './util';
 
@@ -64,7 +64,7 @@ export function whatsWaiting(data: MyDayData, k: DateKey = todayKey(), max = REV
   for (const t of data.tasks.items) {
     if (!isStuck(data, t, k)) continue;
     out.push({ key: `stuck:${t.id}`, kind: 'stuck', taskId: t.id, href: `#today/tasks/${encodeURIComponent(t.id)}`,
-      text: t.postponed >= STUCK_MOVES ? `“${t.title}” has moved ${t.postponed} times` : `“${t.title}” was planned for ${shortDate(t.due!)}` });
+      text: t.postponed >= STUCK_MOVES ? `“${t.title}” has moved ${movedTimes(t.postponed)}` : `“${t.title}” was planned for ${shortDate(t.due!)}` });
   }
   for (const p of active) {
     const quiet = days(lastActivity(data, p).slice(0, 10), k); // (a project waiting on someone or something isn't quiet: specs/projects-project-waiting.md)

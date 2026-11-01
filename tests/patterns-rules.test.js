@@ -18,7 +18,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('patterns/notice')};`, `export * from ${src('patterns/saved')};`, `export * from ${src('patterns/adapt')};`,
-    `export * from ${src('tasks')};`, `export { proposeBuild, proposeReview } from ${src('proposal')};`, `export { freshState, normalize } from ${src('normalize')};`,
+    `export * from ${src('tasks')};`, `export * from ${src('offers')};`, `export { proposeBuild, proposeReview } from ${src('proposal')};`, `export { freshState, normalize } from ${src('normalize')};`,
     `export { makeTask, minutesLabel, limitFor } from ${src('plan')};`, `export { shift, todayKey, parseKey } from ${src('dates')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -179,10 +179,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const T = () => d.tasks.items.find(x => x.id === id);
   K.moveToTomorrow(d.tasks, id);
   check('"Tomorrow" counts as a move', T().postponed === 1);
+  check('moved once is not stuck', T().postponed === 1 && !K.isStuck(d, T(), today));
   K.editTask(d.tasks, id, { due: K.shift(today, 5) });
   K.editTask(d.tasks, id, { due: K.shift(today, 2) });
   K.editTask(d.tasks, id, { due: null });
   check('a later date counts; an earlier one, or clearing it, doesn\'t', T().postponed === 2);
+  check('moved twice is stuck (the threshold is 2 since 1.122.0)', K.STUCK_MOVES === 2 && K.isStuck(d, T(), today), [K.STUCK_MOVES, T().postponed]);
   K.editTask(d.tasks, id, { due: today }); K.editTask(d.tasks, id, { due: K.shift(today, 1) });
   check('3 moves → "stuck"', T().postponed === 3 && K.isStuck(d, T(), today));
   const old = K.addTask(d.tasks, { title: 'Return the parcel', due: K.shift(today, -7) });
@@ -313,6 +315,113 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('a done task returns null and stays as it was', K.notToday(n2, dn, k) === null && T3(dn).due === k, T3(dn));
     const lg = K.addTask(n2.tasks, { title: 'Let go of this', due: k }); T3(lg).letGoOn = k;
     check('a let-go task returns null and stays as it was', K.notToday(n2, lg, k) === null && T3(lg).due === k, T3(lg));
+  }
+
+  console.log('\n[10e] Start offers on Today, under one attention budget');
+  {
+    const all = { start: true, nudge: true, noticed: true }, nn = x => ({ lastShownOn: null, shrinkOn: null, ...x });
+    const j = (a) => JSON.stringify(a);
+    check('with all three applying, the start offer comes first', K.todaysOffer(nn({}), k, all) === 'start', K.todaysOffer(nn({}), k, all));
+    check('without a start offer, the nudge comes next', K.todaysOffer(nn({}), k, { nudge: true, noticed: true }) === 'nudge');
+    check('with only what MyDay noticed, that is the offer', K.todaysOffer(nn({}), k, { noticed: true }) === 'noticed');
+    check('with none applying, there is no offer', K.todaysOffer(nn({}), k, {}) === null && K.todaysOffer(nn({}), k, { start: false, nudge: false, noticed: false }) === null);
+    check('once today\'s offer is the nudge, it stays the nudge while it applies, even with a start offer applying', K.todaysOffer(nn({ offerOn: { on: k, kind: 'nudge' } }), k, all) === 'nudge');
+    check('…and when that one no longer applies there is no offer at all, even with others applying', K.todaysOffer(nn({ offerOn: { on: k, kind: 'nudge' } }), k, { start: true, noticed: true }) === null);
+    check('an offer from yesterday is ignored: today the usual order applies', K.todaysOffer(nn({ offerOn: { on: K.shift(k, -1), kind: 'noticed' } }), k, all) === 'start');
+    check('a saved kind this MyDay does not know gives no offer, and neither does "toString"', K.todaysOffer(nn({ offerOn: { on: k, kind: 'newthing' } }), k, all) === null && K.todaysOffer(nn({ offerOn: { on: k, kind: 'toString' } }), k, all) === null);
+    check('"Not now" today means no offer', K.todaysOffer(nn({ notNowOn: k }), k, all) === null);
+    check('"Not now" yesterday means no offer today either', K.todaysOffer(nn({ notNowOn: K.shift(k, -1) }), k, all) === null);
+    check('"Not now" two days ago does not stop today\'s offer', K.todaysOffer(nn({ notNowOn: K.shift(k, -2) }), k, all) === 'start');
+    check('"Not now" beats an offer already made today', K.todaysOffer(nn({ notNowOn: k, offerOn: { on: k, kind: 'start' } }), k, all) === null);
+
+    const nm = nn({});
+    check('noting today\'s offer sets { on, kind } and returns true', K.markOffer(nm, k, 'start') === true && j(nm.offerOn) === j({ on: k, kind: 'start' }), nm);
+    check('noting another the same day returns false and keeps the first', K.markOffer(nm, k, 'nudge') === false && j(nm.offerOn) === j({ on: k, kind: 'start' }), nm);
+    check('noting on the next day replaces yesterday\'s', K.markOffer(nm, K.shift(k, 1), 'noticed') === true && j(nm.offerOn) === j({ on: K.shift(k, 1), kind: 'noticed' }), nm);
+
+    const sn = nn({});
+    check('"Not now" sets the day and returns true', K.sayNotNow(sn, k) === true && sn.notNowOn === k && sn.quiet === undefined, sn);
+    check('…a second time the same day returns false', K.sayNotNow(sn, k) === false && sn.notNowOn === k);
+    check('…on another day it sets that day', K.sayNotNow(sn, K.shift(k, 3)) === true && sn.notNowOn === K.shift(k, 3));
+    const sq = nn({});
+    check('"Not now" to a task also keeps it quiet for a week: { taskId, on }', K.sayNotNow(sq, k, 'tkA') === true && j(sq.quiet) === j([{ taskId: 'tkA', on: k }]), sq);
+    check('…the same task again the same day returns false, and a second task adds one more', K.sayNotNow(sq, k, 'tkA') === false && K.sayNotNow(sq, k, 'tkB') === true && sq.quiet.map(q => q.taskId).join() === 'tkA,tkB', sq.quiet);
+    const later = K.shift(k, 8);
+    K.sayNotNow(sq, later, 'tkA');
+    check('…saying it again to a task keeps one entry for it, and entries older than a week are dropped', sq.quiet.length === 1 && j(sq.quiet[0]) === j({ taskId: 'tkA', on: later }), sq.quiet);
+    const cap = nn({});
+    for (let i = 0; i < 25; i++) K.sayNotNow(cap, k, 'tk' + i);
+    check('at most 20 tasks are kept quiet, the newest', cap.quiet.length === 20 && cap.quiet[0].taskId === 'tk5' && cap.quiet[19].taskId === 'tk24', cap.quiet.map(q => q.taskId));
+
+    // Which task a start offer is about.
+    const so = () => { const x = fresh(); x.projects.items = [
+      { id: 'pjOn', title: 'Paint the hall', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00' },
+      { id: 'pjPa', title: 'Old idea', summary: '', stage: 'explore', status: 'paused', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00' },
+      { id: 'pjDn', title: 'Finished idea', summary: '', stage: 'explore', status: 'done', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00' }]; return x; };
+    const add = (x, title, over = {}) => { const id = K.addTask(x.tasks, { title }); Object.assign(x.tasks.items.find(t => t.id === id), over); return id; };
+    const titleOf = x => K.startOfferTask(x, k)?.title ?? null;
+    let x = so();
+    add(x, 'Moved once', { postponed: 1 });
+    check('a task moved once is not offered', titleOf(x) === null);
+    add(x, 'Moved twice', { postponed: 2 });
+    check('a task moved twice is offered', titleOf(x) === 'Moved twice');
+    add(x, 'Moved four times', { postponed: 4, due: K.shift(k, 3) });
+    check('the most moved comes first', titleOf(x) === 'Moved four times');
+    add(x, 'Four times, earlier date', { postponed: 4, due: K.shift(k, 1) });
+    add(x, 'Four times, no date', { postponed: 4 });
+    check('with equal moves, the earliest date comes first (undated last)', titleOf(x) === 'Four times, earlier date');
+    x = so(); add(x, 'Four times, no date', { postponed: 4 }); add(x, 'Four times, dated', { postponed: 4, due: K.shift(k, 30) });
+    check('…an undated one comes after any dated one', titleOf(x) === 'Four times, dated');
+    x = so(); add(x, 'Undated alone', { postponed: 2 });
+    check('an undated task moved twice is offered', titleOf(x) === 'Undated alone');
+    x = so(); add(x, 'A week past its date', { due: K.shift(k, -7) });
+    check('a task a week past its date is offered even with no moves', titleOf(x) === 'A week past its date');
+    x = so(); add(x, 'Ticked', { postponed: 5, done: true, doneOn: k }); add(x, 'Let go', { postponed: 5, letGoOn: k });
+    add(x, 'Waiting', { postponed: 5, waiting: { on: 'Priya', since: K.shift(k, -3), until: null } });
+    check('a done task, a let-go task and a waiting task are not offered', titleOf(x) === null, K.startOfferTask(x, k));
+    x = so(); add(x, 'Answered lately', { postponed: 5, blockers: [{ reason: 'tired', on: K.shift(k, -3) }] });
+    check('a task you answered "What\'s getting in the way?" for in the last week is not offered', titleOf(x) === null);
+    x = so(); add(x, 'Answered long ago', { postponed: 5, blockers: [{ reason: 'tired', on: K.shift(k, -8) }] });
+    check('…but one answered over a week ago is', titleOf(x) === 'Answered long ago');
+    x = so(); add(x, 'Paused project task', { postponed: 5, projectId: 'pjPa' }); add(x, 'Finished project task', { postponed: 5, projectId: 'pjDn' });
+    check('a task in a paused or finished project is not offered', titleOf(x) === null);
+    add(x, 'Active project task', { postponed: 2, projectId: 'pjOn' }); add(x, 'No project task', { postponed: 2 });
+    check('…but one in an active project, or in no project, is', K.startOfferTask(x, k) && ['Active project task', 'No project task'].includes(titleOf(x)));
+    x = so(); const qa = add(x, 'Said not now to', { postponed: 5 }); add(x, 'Another', { postponed: 2 });
+    x.nudge.quiet = [{ taskId: qa, on: K.shift(k, -3) }];
+    check('a task you said "Not now" to in the last week is left alone: the next one is offered', titleOf(x) === 'Another');
+    x.nudge.quiet = [{ taskId: qa, on: K.shift(k, -7) }];
+    check('…and seven days later it can be offered again', titleOf(x) === 'Said not now to');
+    x = so(); add(x, 'Moved a lot', { postponed: 5 }); x.patterns.prefs.startOffers = false;
+    check('with start offers off there is no task', K.startOfferTask(x, k) === null);
+
+    // The preference.
+    const pr = fresh().patterns;
+    check('switching start offers off saves startOffers: false and returns true', K.setStartOffers(pr, false) === true && pr.prefs.startOffers === false, pr.prefs);
+    check('…off again changes nothing and returns false', K.setStartOffers(pr, false) === false && pr.prefs.startOffers === false);
+    check('switching them on removes the field and returns true', K.setStartOffers(pr, true) === true && !('startOffers' in pr.prefs), pr.prefs);
+    check('…on again changes nothing and returns false', K.setStartOffers(pr, true) === false && !('startOffers' in pr.prefs));
+  }
+
+  console.log('\n[10f] Reading Today\'s offer notes and the start offers preference');
+  {
+    const rd = nudge => K.normalize({ ...JSON.parse(JSON.stringify(fresh())), nudge }).nudge;
+    const j = a => JSON.stringify(a);
+    check('a good offerOn, notNowOn and quiet are kept', j(rd({ lastShownOn: null, shrinkOn: null, offerOn: { on: '2026-10-15', kind: 'start' }, notNowOn: '2026-10-14', quiet: [{ taskId: 'tkA', on: '2026-10-13' }] }))
+      === j({ lastShownOn: null, shrinkOn: null, offerOn: { on: '2026-10-15', kind: 'start' }, notNowOn: '2026-10-14', quiet: [{ taskId: 'tkA', on: '2026-10-13' }] }));
+    check('an offerOn with a kind this MyDay does not know is kept, with its other fields', j(rd({ offerOn: { on: '2026-10-15', kind: 'newthing', extra: 1 } }).offerOn) === j({ on: '2026-10-15', kind: 'newthing', extra: 1 }), rd({ offerOn: { on: '2026-10-15', kind: 'newthing', extra: 1 } }).offerOn);
+    check('an offerOn with a bad date, an empty kind, a kind over 20 characters, or not an object is dropped', [{ on: '2026-13-45', kind: 'start' }, { on: '2026-10-15', kind: '' }, { on: '2026-10-15', kind: 'x'.repeat(21) }, { on: '2026-10-15', kind: 7 }, 'start', null].every(o => rd({ offerOn: o }).offerOn === undefined));
+    check('a kind of 20 characters is kept', rd({ offerOn: { on: '2026-10-15', kind: 'x'.repeat(20) } }).offerOn?.kind === 'x'.repeat(20));
+    check('a notNowOn that is not a date is dropped', rd({ notNowOn: 'yesterday' }).notNowOn === undefined && rd({ notNowOn: 5 }).notNowOn === undefined);
+    const q = rd({ quiet: [{ taskId: 'tkA', on: '2026-10-13' }, { taskId: 7, on: '2026-10-13' }, { taskId: 'tkB', on: 'nope' }, 'x', { taskId: 'tkC', on: '2026-10-12' }] }).quiet;
+    check('quiet keeps only entries with a task id and a date', j(q) === j([{ taskId: 'tkA', on: '2026-10-13' }, { taskId: 'tkC', on: '2026-10-12' }]), q);
+    const many = rd({ quiet: Array.from({ length: 30 }, (_, i) => ({ taskId: 'tk' + i, on: '2026-10-13' })) }).quiet;
+    check('quiet keeps the last 20', many.length === 20 && many[0].taskId === 'tk10' && many[19].taskId === 'tk29', many.map(x => x.taskId));
+    check('with nothing said, none of the three is saved', j(rd({ lastShownOn: null, shrinkOn: null })) === j({ lastShownOn: null, shrinkOn: null }));
+    const pf = prefs => K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, ...prefs }, answers: {} }, { dropped: 0 }).prefs;
+    check('startOffers: false is kept', pf({ startOffers: false }).startOffers === false);
+    check('startOffers: true, "no" or anything else is dropped', [true, 'no', 0, null].every(v => !('startOffers' in pf({ startOffers: v }))));
+    check('moved once, twice and 3 times are said as "once", "twice" and "3 times"', K.movedTimes(1) === 'once' && K.movedTimes(2) === 'twice' && K.movedTimes(3) === '3 times' && K.movedTimes(12) === '12 times');
   }
 
   console.log('\n[11] What usually gets in the way');

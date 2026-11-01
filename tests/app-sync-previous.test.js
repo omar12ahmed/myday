@@ -797,6 +797,23 @@ async function signIn(d, url) {
       && await now.until(`(() => { const p = JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(x => x.id === '${PSW}'); return p?.template === 'software' && p.resources?.[0]?.kind === 'repo' && p.resources[0].note === 'The main repository'; })()`, 20000)
       && same((await now.data()).software.items.find(x => x.id === 'srBack1'), swReq) && same((await now.data()).software.items.find(x => x.id === 'sbBack1'), swBug) && await synced(now) && (await now.status()) === 'synced', await now.text('#projectRequirements'));
 
+    console.log('\n[29] Start offers switched off pass through the previous release unchanged (specs/help-me-start.md §5; the day\'s offer and "Not now" stay on each device)');
+    await now.returnToApp();
+    await now.setData(`s => { s.patterns.prefs.startOffers = false; }`);
+    check('this release sends start offers off in the patterns record', await eventually(async () => (await patOf())?.prefs?.startOffers === false) && await synced(now), await patOf());
+    await before.returnToApp();
+    check('the previous release syncs normally and holds start offers off in its saved data', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.startOffers === false`, 20000)
+      && (await before.data()).patterns.prefs.startOffers === false, (await before.data()).patterns.prefs);
+    await before.open(BEFORE + '#noticed');
+    if (!(await before.until(`!!document.getElementById('prefMin-admin')`, 30000))) console.log('  (the previous release is at', await before.ev('location.hash'), ')');
+    await before.ev(`(() => { const el = document.getElementById('prefMin-admin'); if (!el) return false; Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, '30'); el.dispatchEvent(new Event('change', { bubbles: true })); return true; })()`);
+    check('a preference changed on the previous release reaches the account with start offers still off', await eventually(async () => { const r = await patOf(); return r?.prefs?.maxMinutes?.admin?.value === 30 && r?.prefs?.startOffers === false; }) && await synced(before), await patOf());
+    await now.returnToApp();
+    check('back on this release: the preference arrived, and start offers are still off', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 30`, 20000)
+      && (await now.data()).patterns.prefs.startOffers === false && await synced(now), (await now.data()).patterns.prefs);
+    await now.open(NOW + '#noticed');
+    check('…and What MyDay has noticed shows the choice as Off', await now.until(`document.getElementById('prefStartOffers')?.value === 'off'`, 15000), await now.ev(`document.getElementById('prefStartOffers')?.value`));
+
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
