@@ -7,7 +7,7 @@ import { isApplication, interviewsOf, stageOf } from './career';
 import { shift, shortDate } from './dates';
 import { bugState, isBug } from './software';
 import { inQueue, isDone, onTodaysPlan, taskOrder } from './tasks';
-import type { DateKey, MyDayData, TaskItem } from './types';
+import type { DateKey, MyDayData } from './types';
 
 export const OLD_AFTER_DAYS = 14;
 export type TidyGroup = 'gone' | 'finished' | 'old' | 'old-in-project';
@@ -16,35 +16,34 @@ export const TIDY_GROUP_LABEL: Record<TidyGroup, string> = {
 };
 export interface TidyItem { id: string; title: string; why: string; group: TidyGroup }
 
-// Why a task MyDay made for you no longer has a reason, from what points at it; null if it still has one (or nothing
-// points at it, so this can't be told).
-function reasonGone(data: MyDayData, t: TaskItem, k: DateKey): string | null {
+// Why each task MyDay made for you no longer has a reason, read once from what points at it: task id → why, or null when
+// its record still gives it one. A task nothing points at isn't in the map (so this can't be told, except for Chase).
+function reasonsGone(data: MyDayData, k: DateKey): Map<string, string | null> {
+  const out = new Map<string, string | null>();
   for (const b of (data.software?.items ?? []).filter(isBug)) {
-    if (b.taskId !== t.id) continue;
+    if (!b.taskId || out.has(b.taskId)) continue;
     const st = bugState(b);
-    return st === 'fixed' ? 'its bug is fixed' : st === 'wontfix' ? 'its bug is marked won’t fix' : null;
+    out.set(b.taskId, st === 'fixed' ? 'its bug is fixed' : st === 'wontfix' ? 'its bug is marked won’t fix' : null);
   }
   for (const a of (data.career?.items ?? []).filter(isApplication)) {
     const stage = stageOf(a);
-    if (a.followTaskId === t.id) return stage === 'closed' ? 'the application is closed' : stage !== 'applied' ? 'the application has moved on' : null;
-    const iv = interviewsOf(a).find(x => x.taskId === t.id);
-    if (iv) return stage === 'closed' ? 'the application is closed' : iv.on < k ? `the interview was on ${shortDate(iv.on)}` : null;
+    if (a.followTaskId && !out.has(a.followTaskId)) out.set(a.followTaskId, stage === 'closed' ? 'the application is closed' : stage !== 'applied' ? 'the application has moved on' : null);
+    for (const iv of interviewsOf(a)) {
+      if (iv.taskId && !out.has(iv.taskId)) out.set(iv.taskId, stage === 'closed' ? 'the application is closed' : iv.on < k ? `the interview was on ${shortDate(iv.on)}` : null);
+    }
   }
-  // "Chase it" makes "Chase: …" and the wait points at it; when the wait ends ("Got it"), nothing does.
-  if (t.title.startsWith('Chase: ')) {
-    const chased = data.tasks.items.some(x => x.waiting?.chaseTaskId === t.id) || data.projects.items.some(p => p.waiting?.chaseTaskId === t.id);
-    if (!chased) return 'no wait points at it any more';
-  }
-  return null;
+  return out;
 }
+// "Chase it" makes "Chase: …" and the wait points at it; when the wait ends ("Got it"), nothing does.
+const chasedIds = (data: MyDayData) => new Set([...data.tasks.items.map(x => x.waiting?.chaseTaskId), ...data.projects.items.map(p => p.waiting?.chaseTaskId)].filter((x): x is string => !!x));
 
 // What to offer, in Tasks' order: unfinished, not let go, not on today's plan and not waiting in the queue (those are
 // in hand). `kept`: ones you chose to keep, on this device.
 export function tidyCandidates(data: MyDayData, k: DateKey, kept: ReadonlySet<string> = new Set()): TidyItem[] {
-  const before = shift(k, -OLD_AFTER_DAYS), out: TidyItem[] = [];
+  const before = shift(k, -OLD_AFTER_DAYS), out: TidyItem[] = [], reasons = reasonsGone(data, k), chased = chasedIds(data);
   for (const t of [...data.tasks.items].sort(taskOrder)) {
     if (kept.has(t.id) || isDone(data, t) || t.letGoOn || onTodaysPlan(data, t, k) || inQueue(data, t)) continue;
-    const gone = reasonGone(data, t, k);
+    const gone = reasons.has(t.id) ? reasons.get(t.id) : t.title.startsWith('Chase: ') && !chased.has(t.id) ? 'no wait points at it any more' : null;
     if (gone) { out.push({ id: t.id, title: t.title, why: gone[0].toUpperCase() + gone.slice(1), group: 'gone' }); continue; }
     const p = t.projectId ? data.projects.items.find(x => x.id === t.projectId) : undefined;
     if (p?.status === 'done') { out.push({ id: t.id, title: t.title, why: `${p.title} is finished`, group: 'finished' }); continue; }

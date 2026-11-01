@@ -17,7 +17,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const due = dueForToday(data, k);
   if (!due.length) return null;
   const room = planRoom(data, k), ids = new Set(due.map(t => t.id));
-  const old = tidyResting(tidyPrefs().notNowOn, k) ? 0 : tidyCandidates(data, k, new Set(tidyPrefs().kept)).filter(i => i.group !== 'old-in-project' && ids.has(i.id)).length;
+  const tp = tidyPrefs(), old = tidyResting(tp.notNowOn, k) ? 0 : tidyCandidates(data, k, new Set(tp.kept)).filter(i => i.group !== 'old-in-project' && ids.has(i.id)).length;
   function plan(id: string) {
     let r = '';
     update(d => { r = addToTodaysPlan(d, id, k); if (r !== 'added') return false; });
