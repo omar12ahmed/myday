@@ -11750,7 +11750,7 @@
      "root_reading": "r-m-z",
      "example_ar": "لَمْ أَعْرِفْ هَذَا الرَّمْزَ، فَبَحَثْتُ عَنْهُ فِي دَلِيلِ الطَّبْعَةِ.",
      "example_meaning_en": "I didn't know this symbol, so I looked it up in the edition's guide.",
-     "note": "Plural رُمُوز. In computing it also means “code”."
+     "note": "Plural رُمُوز. It can also mean a code, such as an access code."
     },
     {
      "id": "lexeme.arabic-uthmani-script-4",
@@ -12066,7 +12066,7 @@
      "root_ar": "ع-م-ل",
      "root_reading": "ʿ-m-l",
      "example_ar": "طَلَبَ الْعَمِيلُ تَرْجَمَةً رَسْمِيَّةً لِلْعَقْدِ.",
-     "example_meaning_en": "The client asked for a formal translation of the contract.",
+     "example_meaning_en": "The client asked for an official translation of the contract.",
      "note": "Plural عُمَلَاء. The same root as عَمَل, “work”."
     },
     {
@@ -12357,7 +12357,7 @@
      "root_reading": "h-m-m",
      "example_ar": "الْمُهِمُّ أَنَّ التَّسْجِيلَ مَجَّانِيٌّ.",
      "example_meaning_en": "The main thing is that registration is free.",
-     "note": "Before a verb, use أَنْ: الْمُهِمُّ أَنْ تَحْضُرَ."
+     "note": "Directly before a present verb for what should happen, use أَنْ: الْمُهِمُّ أَنْ تَحْضُرَ."
     },
     {
      "id": "lexeme.arabic-oral-mediation-7",
@@ -12466,7 +12466,7 @@
      "root_reading": "ʾ-m-n",
      "example_ar": "يَدْرُسُ أَخِي الْأَمْنَ السِّيبْرَانِيَّ فِي الْجَامِعَةِ.",
      "example_meaning_en": "My brother is studying cybersecurity at university.",
-     "note": "أَمْن alone means “security, safety”. سِيبْرَانِيّ comes from the English “cyber”."
+     "note": "أَمْن alone means “security, safety”. The adjective سِيبْرَانِيّ corresponds to English “cyber-”."
     },
     {
      "id": "lexeme.arabic-technical-terminology-2",
