@@ -231,7 +231,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an extra field on the review', { ...rv, extra: 'x' });
     bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
     const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v27', A.ASK_PROMPT_VERSION === 'myday-ask-v27', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v28', A.ASK_PROMPT_VERSION === 'myday-ask-v28', A.ASK_PROMPT_VERSION);
     check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
     const m1 = JSON.parse(A.mockAsk(mk(rv)));
     check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
@@ -389,6 +389,22 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the practice version looks at what to study next', ms1.kind === 'lookup' && ms1.lookup.tool === 'study', ms1);
     const ms2 = JSON.parse(A.mockAsk({ ...base, text: 'What should I study next?', can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: study }));
     check('…and, with them, names the focus\'s next step and its reason, citing it', ms2.kind === 'answer' && ms2.message.includes('next is “How the web works” (Cybersecurity), about 25 minutes. It builds on what you finished last.') && ms2.sources.join() === 'cybersecurity', ms2);
+    // "Your ambitions" (v28): their titles only, oldest first, and how many.
+    const goals = { tool: 'goals', query: 'all', found: 2, ambitions: ['Work in cybersecurity', 'Read Arabic literature'] }, CANG = ['notes', 'day', 'project', 'decisions', 'waiting', 'study', 'goals'];
+    check('a goals lookup is accepted (the app saying it can look at your ambitions too)', A.checkAskContext({ ...base, can: CANG }) === true && A.checkAskContext({ ...base, can: CANG, lookup: goals }) === true);
+    bad('a goals lookup for something other than all of it', { ...base, lookup: { ...goals, query: 'cyber' } });
+    bad('a goals lookup carrying an ambition\'s why', { ...base, lookup: { ...goals, why: 'Because' } });
+    bad('13 ambitions', { ...base, lookup: { ...goals, found: 13, ambitions: Array.from({ length: 13 }, (_, i) => 'Ambition ' + i) } });
+    bad('fewer found than sent', { ...base, lookup: { ...goals, found: 1 } });
+    const goalsPlain = sysOf({ ...base, can: CANG }), goalsAfter = sysOf({ ...base, can: CANG, lookup: goals });
+    check('the instructions offer a goals lookup only when the app says it can', goalsPlain.includes('At their ambitions') && goalsPlain.includes('"tool":"goals","query":"all"') && !offerStudy.includes('"tool":"goals"'));
+    check('…and, with the titles, answer from them only, never judging an ambition, and never look again', goalsAfter.includes('The app looked at their ambitions') && goalsAfter.includes('Answer from those only') && goalsAfter.includes('never judge whether one is realistic or worth having') && goalsAfter.includes('Never reply "lookup" again'));
+    check('a goals lookup reply is read as all of it, whatever words came with it', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'goals', query: 'my aims' } }))?.lookup.query === 'all'
+      && A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'goals' } }))?.lookup.query === 'all');
+    const mgl1 = JSON.parse(A.mockAsk({ ...base, text: 'What am I working towards?', can: CANG }));
+    check('the practice version looks at your ambitions when asked what you are working towards', mgl1.kind === 'lookup' && mgl1.lookup.tool === 'goals' && mgl1.lookup.query === 'all', mgl1);
+    const mgl2 = JSON.parse(A.mockAsk({ ...base, text: 'What am I working towards?', can: CANG, lookup: goals }));
+    check('…and, with the titles, lists them', mgl2.kind === 'answer' && mgl2.message.includes('“Work in cybersecurity”') && mgl2.message.includes('“Read Arabic literature”'), mgl2);
     // "Look across MyDay" (v24, the owner's choices): names, kinds and where, with references — never ids, links or text.
     const CAN = ['day', 'project', 'decisions', 'waiting', 'study', 'search'];
     const srch = { tool: 'search', query: 'electrician', total: 3, titlesOnly: true, found: [
@@ -621,7 +637,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
     check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
     const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
-    check('the instructions are version myday-ask-v27 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v27' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v28 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v28' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
     const m1 = JSON.parse(A.mockAsk(mk(page)));
     check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
@@ -634,7 +650,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
       context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
     const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v27', A.ASK_PROMPT_VERSION === 'myday-ask-v27', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v28', A.ASK_PROMPT_VERSION === 'myday-ask-v28', A.ASK_PROMPT_VERSION);
     check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
     check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
     const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);

@@ -1103,7 +1103,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v27' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v28' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -2102,7 +2102,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     for (const [why, v] of [['more than 8', Array.from({ length: 9 }, (_, i) => `s${i}`)], ['one over 120 characters', ['x'.repeat(121)]], ['an empty one', ['  ']], ['not a list', 'Learning tasks: 20 min at most'], ['an empty list', []]])
       check(`the server refuses "howYouWork" that\'s ${why}`, !K.checkAskContext({ ...hc, howYouWork: v }));
     const sysOn = K.buildAskMessages(hc)[0].content, sysOff = K.buildAskMessages(K.askContext(K.askSlice(K.freshState(), '#today', HD), 'Plan my study', HD))[0].content;
-    check('the instructions (v26) say to keep within its lengths and fit advice to it, only when it\'s sent', /"howYouWork" is what they've confirmed about how they work/.test(sysOn) && !/howYouWork/.test(sysOff) && K.ASK_PROMPT_VERSION === 'myday-ask-v27');
+    check('the instructions (v26) say to keep within its lengths and fit advice to it, only when it\'s sent', /"howYouWork" is what they've confirmed about how they work/.test(sysOn) && !/howYouWork/.test(sysOff) && K.ASK_PROMPT_VERSION === 'myday-ask-v28');
     // The app keeps Ask's suggestions to your longest, whatever the AI said — only when you've let it use how you work.
     const R = x => JSON.stringify(x), T = { kind: 'add', message: 'Here are two study tasks.', items: [{ type: 'task', title: 'Read about DNS', minutes: 45, category: 'learning' }, { type: 'task', title: 'Pay the bill', minutes: 45, category: 'admin' }], action: null };
     const kept = K.checkAskReply(R(T), hw, hs(), HD);
@@ -2162,7 +2162,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       check(`…refused: ${why}`, !K.checkAskContext({ ...tc, thinking: th }));
     const sysT = K.buildAskMessages(tc)[0].content.replace(/\s+/g, ' '), sysN = K.buildAskMessages(K.askContext(ts, 'I want to start an online business', TD))[0].content;
     check('the instructions (v27) say to ask before ideas, with choices, up to the limit, then reflect back and offer one step, never on what a professional should advise on — only when "thinking" is sent', /don't offer ideas or plans yet/.test(sysT) && /"choices" \(only with such a question, never with an action\): up to 4 short ways/.test(sysT) && /ending with the question \(no next step after it/.test(sysT) && /offer at most one next step they can take or leave: one item in "items"/.test(sysT) && /If they ask for ideas or a straight answer, give it at once/.test(sysT) && /professional should advise on \(medication/.test(sysT)
-      && /"choices":\["…/.test(sysT) && !/thinking|"choices"/.test(sysN) && K.ASK_PROMPT_VERSION === 'myday-ask-v27');
+      && /"choices":\["…/.test(sysT) && !/thinking|"choices"/.test(sysN) && K.ASK_PROMPT_VERSION === 'myday-ask-v28');
     // Reading a reply's choices: on an answer only, trimmed, different from each other, short, at most four.
     const RA = x => K.readAsk(JSON.stringify(x));
     const q = RA({ kind: 'answer', message: 'Before ideas: what are you looking for?', items: [], action: null, choices: [' Extra income ', 'Extra income', 'Something that grows', 'x'.repeat(41), '', 'A full-time business', 'Not sure yet', 'One more'] });
@@ -2199,6 +2199,113 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('Questions before Ask MyDay offers something: set to 3, back to the usual 5 removes it', K.setAskQuestions(pq, 3) && pq.prefs.askQuestions === 3 && K.setAskQuestions(pq, 5) && !('askQuestions' in pq.prefs) && !K.setAskQuestions(pq, null));
     check('…kept when saved (1–5), dropped otherwise', K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askQuestions: 2 }, answers: {} }, { dropped: 0 }).prefs.askQuestions === 2
       && [0, 6, 2.5, '3'].every(v => !('askQuestions' in K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askQuestions: v }, answers: {} }, { dropped: 0 }).prefs)));
+  }
+
+  console.log('\n[Ambitions] Ask MyDay and your ambitions: titles only, on linked work and a goals look (v28; specs/ask-ambitions.md)');
+  {
+    const AD = '2026-11-10', aat = `${AD}T08:00`;
+    K.setClock(`${AD}T09:30`);
+    const AP = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: aat, updatedAt: aat, ...x });
+    const AT = (id, title, projectId) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: aat, postponed: 0, blockers: [], letGoOn: null, projectId });
+    const AM = (id, title, day, links = [], x = {}) => ({ id, title, createdAt: `2026-10-${day}T08:00`, updatedAt: `2026-10-${day}T08:00`, links: links.map(([kind, ref], i) => ({ id: `${id}l${i}`, kind, ref })), ...x });
+    const world = (projects, ambitions, tasks = []) => {
+      const w = K.freshState();
+      w.projects.items = projects; w.ambitions = { items: ambitions }; w.tasks.items = tasks;
+      return K.normalize(w);
+    };
+    const ctxOf = (w, hash, text = 'x', lookup) => K.askContext(K.askSlice(w, hash, AD), text, AD, undefined, undefined, lookup);
+    const sysOf = c => K.buildAskMessages(c)[0].content.replace(/\s+/g, ' ');
+
+    // The slices: titles in the order you made them, at most 3, only ambitions that link this project.
+    const w1 = world([AP('pjCourse', 'Book the course'), AP('pjLone', 'Tidy the shed'), AP('pjOther', 'Other work')],
+      [AM('amB', 'Read Arabic literature', '02', [['project', 'pjCourse']]), AM('amA', 'Work in cybersecurity', '01', [['project', 'pjCourse'], ['topic', 'pjLone']]),
+        AM('amKinds', 'Only other kinds', '03', [['topic', 'pjLone'], ['course', 'pjLone'], ['cyber', 'pjLone'], ['arabic', 'pjLone'], ['mystery', 'pjLone']]),
+        AM('amGone', 'Linked to a project that is gone', '04', [['project', 'pjGone']])],
+      [AT('tkCourse', 'Pick a date', 'pjCourse'), AT('tkLone', 'Sweep the floor', 'pjLone')]);
+    const c1 = ctxOf(w1, '#projects/p/pjCourse');
+    check('a project linked by two ambitions sends their titles, in the order they were made', eq(c1.context.project.towards, ['Work in cybersecurity', 'Read Arabic literature']), c1.context.project.towards);
+    check('a task in that project sends the same titles', eq(ctxOf(w1, '#today/tasks/tkCourse').context.task.towards, ['Work in cybersecurity', 'Read Arabic literature']), ctxOf(w1, '#today/tasks/tkCourse').context.task);
+    const c1n = ctxOf(w1, '#projects/p/pjLone'), c1t = ctxOf(w1, '#today/tasks/tkLone');
+    check('a project with no ambition sends no "towards", and neither does its task', !('towards' in c1n.context.project) && !('towards' in c1t.context.task), [c1n.context.project, c1t.context.task]);
+    check('links to a topic, a course, the Cybersecurity path, the Arabic route or a kind this version doesn\'t know don\'t count', !JSON.stringify([c1n.context, c1t.context]).includes('Only other kinds'));
+    check('a link to a project that is gone counts for nothing: it is not in any other project\'s titles', !JSON.stringify(c1.context).includes('that is gone'));
+    const w4 = world([AP('pjFour', 'Big plans')], [1, 2, 3, 4].map(i => AM(`am${i}`, `Ambition ${i}`, `0${i}`, [['project', 'pjFour']])), [AT('tkFour', 'First step', 'pjFour')]);
+    check('four ambitions send at most three (the first three made), on the project and on its task', eq(ctxOf(w4, '#projects/p/pjFour').context.project.towards, ['Ambition 1', 'Ambition 2', 'Ambition 3']) && eq(ctxOf(w4, '#today/tasks/tkFour').context.task.towards, ['Ambition 1', 'Ambition 2', 'Ambition 3']));
+
+    // Privacy.
+    const wp = world([AP('pjPub', 'Public project'), AP('pjPriv', 'Private project', { private: true })],
+      [AM('amMix', 'Leave my job', '01', [['project', 'pjPriv'], ['project', 'pjPub']]), AM('amOk', 'Learn to cook', '02', [['project', 'pjPub']]), AM('amHid', 'Quietly move house', '03', [['project', 'pjPriv']])],
+      [AT('tkPub', 'Public step', 'pjPub'), AT('tkPriv', 'Private step', 'pjPriv')]);
+    const cp = ctxOf(wp, '#projects/p/pjPub'), cpt = ctxOf(wp, '#today/tasks/tkPub');
+    check('an ambition that links a private project as well as a public one is never in the public project\'s titles, nor its task\'s', eq(cp.context.project.towards, ['Learn to cook']) && eq(cpt.context.task.towards, ['Learn to cook']), [cp.context.project.towards, cpt.context.task?.towards]);
+    check('the rule is the one filter: an ambition linking a private project doesn\'t reach AI, one linking only public work does', K.aiReach(wp).ambition(wp.ambitions.items.find(a => a.id === 'amMix')) === false && K.aiReach(wp).ambition(wp.ambitions.items.find(a => a.id === 'amOk')) === true);
+    const cpriv = ctxOf(wp, '#projects/p/pjPriv'), cprivT = ctxOf(wp, '#today/tasks/tkPriv');
+    check('a private project\'s page sends no project at all, so no ambitions either', !cpriv.context.project && !cprivT.context.task && !/Leave my job|Quietly move house|Learn to cook|towards/.test(JSON.stringify([cpriv.context, cprivT.context])), [cpriv.context, cprivT.context]);
+
+    // The goals look.
+    const wg = world([AP('pjPub', 'Public project'), AP('pjPriv', 'Private project', { private: true })],
+      [...Array.from({ length: 14 }, (_, i) => AM(`amN${i}`, `Ambition number ${String(i + 1).padStart(2, '0')}`, String(i + 1).padStart(2, '0'), [], { why: 'SECRET-WHY', steps: [{ id: `st${i}`, text: 'SECRET-STEP', done: false }] })),
+        AM('amPriv', 'SECRET-PRIVATE-TITLE', '20', [['project', 'pjPriv']], { why: 'SECRET-WHY' })].map((a, i) => i === 0 ? { ...a, links: [{ id: 'lk0', kind: 'project', ref: 'pjPub' }, { id: 'lk1', kind: 'course', ref: 'SECRET-COURSE-REF' }] } : a));
+    const gl = K.goalsLookup(wg), gj = JSON.stringify(gl.lookup);
+    check('the goals look returns titles only, oldest first, at most 12, and "found" says how many may be sent', gl.lookup.tool === 'goals' && gl.lookup.query === 'all' && eq(Object.keys(gl.lookup).sort(), ['ambitions', 'found', 'query', 'tool']) && gl.lookup.ambitions.length === 12 && gl.lookup.ambitions[0] === 'Ambition number 01' && gl.lookup.ambitions[11] === 'Ambition number 12' && gl.lookup.found === 14, gl.lookup);
+    check('…and counts, on the device, the ambition linked to a private project that was left out', gl.leftOut === 1 && !('leftOut' in gl.lookup) && !gj.includes('SECRET-PRIVATE-TITLE'), [gl.leftOut, gj.slice(0, 120)]);
+    const gsl = K.askSlice(wg, '#projects/p/pjPub', AD), gctx = K.askContext(gsl, 'what am I working towards?', AD, undefined, undefined, gl.lookup);
+    check('nothing else of an ambition (why, steps, links) is anywhere in the request', !/SECRET-/.test(JSON.stringify(gctx)) && !/SECRET-|amN0|lk0/.test(gj), JSON.stringify(gctx).match(/SECRET-[A-Z-]*/g));
+    check('with no ambitions, the goals look finds none', eq(K.goalsLookup(world([], [])).lookup, { tool: 'goals', query: 'all', found: 0, ambitions: [] }) && K.goalsLookup(world([], [])).leftOut === 0);
+
+    // What Ask may look at.
+    const none = world([], []), onlyPriv = world([AP('pjPriv', 'Private project', { private: true })], [AM('amHid', 'Quietly move house', '01', [['project', 'pjPriv']])]);
+    check('"goals" can be looked at only when there is an ambition that may be sent', ctxOf(w1, '#today').can.includes('goals') && !ctxOf(none, '#today').can.includes('goals') && !ctxOf(onlyPriv, '#today').can.includes('goals'), [ctxOf(w1, '#today').can, ctxOf(none, '#today').can]);
+
+    // The server accepts these, and refuses the rest.
+    const gok = K.askContext(K.askSlice(w1, '#projects/p/pjCourse', AD), 'x', AD, undefined, undefined, K.goalsLookup(w1).lookup);
+    check('the server accepts a project\'s and a task\'s "towards" and a goals look', K.checkAskContext(c1) && K.checkAskContext(ctxOf(w1, '#today/tasks/tkCourse')) && K.checkAskContext(gok) && K.checkAskContext(gctx), [c1.context.project.towards]);
+    const clone = x => JSON.parse(JSON.stringify(x)), tk = ctxOf(w1, '#today/tasks/tkCourse');
+    const withProject = f => { const c = clone(c1); f(c.context.project); return c; }, withTask = f => { const c = clone(tk); f(c.context.task); return c; }, withLook = f => { const c = clone(gok); f(c.lookup); return c; };
+    const refused = [
+      ['a project\'s "towards" with no entries', withProject(p => { p.towards = []; })],
+      ['a project\'s "towards" with four entries', withProject(p => { p.towards = ['a', 'b', 'c', 'd']; })],
+      ['a project\'s "towards" with a title over 120 characters', withProject(p => { p.towards = ['x'.repeat(121)]; })],
+      ['a task\'s "towards" with no entries', withTask(t => { t.towards = []; })],
+      ['a task\'s "towards" with four entries', withTask(t => { t.towards = ['a', 'b', 'c', 'd']; })],
+      ['a task\'s "towards" with a title over 120 characters', withTask(t => { t.towards = ['x'.repeat(121)]; })],
+      ['a goals look with a query other than "all"', withLook(l => { l.query = 'cyber'; })],
+      ['a goals look with more than 12 ambitions', withLook(l => { l.ambitions = Array.from({ length: 13 }, (_, i) => `A${i}`); l.found = 13; })],
+      ['a goals look that found fewer than it sent', withLook(l => { l.ambitions = ['A', 'B']; l.found = 1; })],
+      ['a goals look with a field it doesn\'t know', withLook(l => { l.why = 'x'; })],
+    ];
+    for (const [why, c] of refused) check(`…refused: ${why}`, !K.checkAskContext(c));
+    check('…and a title of exactly 120 characters is accepted', K.checkAskContext(withProject(p => { p.towards = ['x'.repeat(120)]; })));
+
+    // Reading a reply.
+    const rg = K.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking at your ambitions.', items: [], action: null, lookup: { tool: 'goals', query: 'x' } }));
+    check('a request to look at ambitions always comes back with the query "all", whatever the model wrote', rg?.kind === 'lookup' && rg.lookup.tool === 'goals' && rg.lookup.query === 'all', rg);
+
+    // The instructions.
+    const sLook = sysOf({ ...gok, lookup: K.goalsLookup(w1).lookup }), sNo = sysOf(ctxOf(w1, '#today')), sTow = sysOf(c1), sTowTask = sysOf(tk), sPlain = sysOf(ctxOf(w1, '#projects/p/pjLone'));
+    check('the instructions are version myday-ask-v28 and, after a goals look, say what it holds and what never to do with it', K.ASK_PROMPT_VERSION === 'myday-ask-v28' && /The app looked at their ambitions/.test(sLook) && /never judge whether one is realistic or worth having/.test(sLook) && /haven't set any ambitions yet/.test(sLook) && !/The app looked at their ambitions/.test(sNo));
+    check('…the offer to look at their ambitions is there when it can, and not when it can\'t', /- At their ambitions: they ask about their goals/.test(sNo) && !/At their ambitions/.test(sysOf(ctxOf(none, '#today'))), sNo.slice(-700));
+    check('…the "towards" instruction is there when a project or task sends it, and not otherwise', /are the titles of their ambitions that this work is a step towards/.test(sTow) && /are the titles of their ambitions that this work is a step towards/.test(sTowTask) && !/are the titles of their ambitions that this work is a step/.test(sPlain) && !/are the titles of their ambitions that this work is a step/.test(sNo));
+
+    // The practice helper.
+    const AS = K.askSlice(w1, '#today', AD), NS = K.askSlice(none, '#today', AD);
+    const mg = (text, lookup, slice = AS) => K.readAsk(K.mockAsk(K.askContext(slice, text, AD, undefined, undefined, lookup)));
+    const first = mg('what am I working towards?');
+    check('practice helper: "what am I working towards?" with ambitions on offer gives a goals look', first?.kind === 'lookup' && first.lookup.tool === 'goals' && first.lookup.query === 'all', first);
+    const second = mg('what am I working towards?', K.goalsLookup(w1).lookup);
+    check('…with the look, it answers with the titles', second?.kind === 'answer' && second.message.includes('“Work in cybersecurity”') && second.message.includes('“Read Arabic literature”') && second.message.includes('“Linked to a project that is gone”'), second);
+    const third = mg('what am I working towards?', K.goalsLookup(none).lookup, NS);
+    check('…with none found, it says they haven\'t set any ambitions yet', third?.kind === 'answer' && /you haven't set any ambitions yet/.test(third.message), third);
+    check('…and with nothing to look at it doesn\'t offer the look', mg('what am I working towards?', undefined, NS)?.kind !== 'lookup');
+
+    // The line above the answer.
+    const line = (found, ambitions, held = 0) => K.lookupLine({ tool: 'goals', query: 'all', found, ambitions }, held);
+    check('what the panel says: how many ambitions it looked at', line(3, ['a', 'b', 'c']) === 'Looked at your ambitions: 3.', line(3, ['a', 'b', 'c']));
+    check('…one', line(1, ['a']) === 'Looked at your ambitions: one.', line(1, ['a']));
+    check('…and none yet', line(0, []) === 'Looked at your ambitions: none yet.', line(0, []));
+    check('…and which were left out, when one is linked to a private project', line(3, ['a', 'b', 'c'], 1) === 'Looked at your ambitions: 3 — one linked to a private project left out.', line(3, ['a', 'b', 'c'], 1));
+    check('…and several left out', line(2, ['a', 'b'], 2) === 'Looked at your ambitions: 2 — 2 linked to private projects left out.', line(2, ['a', 'b'], 2));
+    check('…and when more were found than sent, how many went', line(14, Array(12).fill('a')) === 'Looked at your ambitions: 14 (the first 12 sent).', line(14, Array(12).fill('a')));
   }
 
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');

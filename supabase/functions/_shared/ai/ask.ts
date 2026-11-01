@@ -82,9 +82,10 @@ plainly that nothing is set up to study yet and that they can choose a focus in 
 The app looked at their ambitions ("lookup" in the data, "tool" "goals": "ambitions", the titles of their long-term
 ambitions, oldest first; "found", how many in all). Only the titles are sent: never why they matter, their steps or
 what they link, and none linked to a private project. Answer from those only, as "answer" in a few short sentences:
-what they're working towards, in their own words. Don't invent what an ambition involves, and never judge whether one
-is realistic or worth having. Only if they asked what to do towards one, suggest one to three small tasks for it, as
-"add", the message saying which ambition they're a step towards. If "found" is 0, say plainly that they haven't set
+what they're working towards, in their own words. Don't invent what an ambition involves, and don't say or guess which
+of their projects or tasks serve one: nothing sent says so. Never judge whether one is realistic or worth having. Only if they
+asked what to do towards one, suggest one to three small tasks for it, as "add", the message saying which ambition
+they're a step towards; otherwise no "items". If "found" is 0, say plainly that they haven't set
 any ambitions yet, and that they can in Projects (no "sources"). Never reply "lookup" again.${quoting}`;
   if (c.lookup?.tool === 'waiting') return `
 

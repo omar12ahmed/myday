@@ -1323,6 +1323,49 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8t] Ask MyDay and your ambitions (practice mode): titles on linked work, and a look when you ask about your goals');
+  {
+    const at = `${TODAY}T09:00`;
+    const PJ = { id: 'pjGoalLk', title: 'Book the course', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at };
+    const AMB = { id: 'amGoalLk', title: 'Work in cybersecurity', why: 'WHY-NEVER-SENT', links: [{ id: 'lkGoalLk', kind: 'project', ref: 'pjGoalLk' }], steps: [{ id: 'stGoalLk', text: 'STEP-NEVER-SENT', done: false }], createdAt: '2026-10-01T08:00', updatedAt: '2026-10-01T08:00' };
+    const clearSeed = `s => { s.ambitions = { items: [] }; s.projects.items = s.projects.items.filter(p => p.id !== 'pjGoalLk'); }`;
+    const goalSeed = `s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjGoalLk'); s.projects.items.push(${JSON.stringify(PJ)}); s.ambitions = { items: [${JSON.stringify(AMB)}] }; }`;
+    const openPlus = async (Dv, hash, text) => {
+      await Dv.ev(`location.hash = ${JSON.stringify(hash)}`); await sleep(300);
+      await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
+      await Dv.type('#captureText', text); await sleep(150);
+      await Dv.ev(`document.querySelector('[data-s=ask-sends-all] summary').click()`); await sleep(150);
+      return Dv.text('[data-s=ask-sends-all]');
+    };
+    const closeIt = async Dv => { await Dv.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200); };
+    await seeded(mock, MOCK); await mock.setData(clearSeed); await mock.until(`document.querySelector('#app')`);
+    const none = await openPlus(mock, 'today', 'hello');
+    check('with no ambitions, the "Sent to the AI" preview has no line about looking at your ambitions', !none.includes('If it needs to: your ambitions') && !none.includes('A step towards'), none);
+    await closeIt(mock);
+    await mock.setData(goalSeed); await mock.until(`document.querySelector('#app')`);
+    const calls0 = aiCalls().length;
+    const onProject = await openPlus(mock, 'projects/p/pjGoalLk', 'Break this into smaller steps');
+    check('on a project an ambition links, the expanded preview shows "A step towards (your ambitions’ titles)" with the title', onProject.includes('A step towards (your ambitions’ titles)') && onProject.includes('Work in cybersecurity'), onProject);
+    check('…and never the ambition\'s why or steps', !/WHY-NEVER-SENT|STEP-NEVER-SENT/.test(onProject), onProject);
+    await closeIt(mock);
+    const onToday = await openPlus(mock, 'today', 'hello');
+    check('on Today, with an ambition, the preview says it may look at your ambitions, titles only', onToday.includes('If it needs to: your ambitions') && onToday.includes('their titles only'), onToday);
+    await closeIt(mock);
+    await mock.ev(`location.hash = 'today'`); await sleep(300);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`);
+    await mock.type('#captureText', 'what am I working towards?'); await sleep(150);
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 25000);
+    const looked = await mock.text('[data-s=ask-looked]'), msg = await mock.text('[data-s=ask-message]'), phase = await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`);
+    check('practice mode: "what am I working towards?" looks at your ambitions and says so above the answer', phase === 'shown' && /^Looked at your ambitions: one\./.test(looked), [phase, looked]);
+    check('…the answer lists the ambition\'s title', msg.includes('Work in cybersecurity') && !/WHY-NEVER-SENT|STEP-NEVER-SENT/.test(msg), msg);
+    check('…and no AI request is made (practice mode)', aiCalls().length === calls0, [aiCalls().length, calls0]);
+    await closeIt(mock);
+    await mock.ev(`location.hash = 'knows'`); await mock.until(`document.querySelector('[data-s=knows-lookup]')`, 5000);
+    const kl = await mock.text('[data-s=knows-lookup]');
+    check('What MyDay knows says Ask MyDay may look at your ambitions ("If it needs your ambitions"), their titles only', kl.includes('If it needs your ambitions'), kl);
+    await mock.setData(clearSeed); await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[8s] "Check my answer" under a lesson check (practice mode, then through the real server code)');
   {
     const LESSON = 'lesson.arabic-relative-clauses', Q2 = 'assessment.arabic-relative-clauses-check.q2', CYB = 'assessment.learning-evidence-check';
