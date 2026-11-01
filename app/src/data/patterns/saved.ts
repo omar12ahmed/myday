@@ -117,14 +117,15 @@ export function setAskUse(d: PatternsData, on: boolean, today = todayKey()): boo
 export const ASK_SEEN_DAYS = 56;
 export function pruneAskSeen(d: PatternsData, today = todayKey()): boolean {
   const from = shift(today, -ASK_SEEN_DAYS), kept = (d.askSeen ?? []).filter(x => x.on >= from);
-  const keptStart = (d.startSeen ?? []).filter(x => x.on >= from); // Help me start's uses go the same way (§6)
-  const askChanged = !!d.askSeen && kept.length !== d.askSeen.length, startChanged = !!d.startSeen && keptStart.length !== d.startSeen.length;
-  if (askChanged) { if (kept.length) d.askSeen = kept; else delete d.askSeen; }
-  if (startChanged) { if (keptStart.length) d.startSeen = keptStart; else delete d.startSeen; }
-  return askChanged || startChanged;
+  if (!d.askSeen || kept.length === d.askSeen.length) return false;
+  if (kept.length) d.askSeen = kept; else delete d.askSeen;
+  return true;
 }
-// A use of Help me start's small acts (specs/help-me-start.md §6): newest last, the last 8 weeks, at most 200.
+// A use of Help me start's small acts (specs/help-me-start.md §6): newest last, the last 8 weeks, at most 200; the same
+// way on the same task counts once a day. Older ones are trimmed here, when you use it — never by MyDay on its own, so
+// it doesn't write your synced data by itself.
 export function recordStartSeen(d: PatternsData, x: Omit<StartSeen, 'on'>, today = todayKey()): boolean {
+  if (d.startSeen?.some(s => s.on === today && s.way === x.way && s.taskId === x.taskId)) return false;
   const from = shift(today, -ASK_SEEN_DAYS);
   d.startSeen = [...(d.startSeen ?? []).filter(s => s.on >= from), { ...x, on: today } as StartSeen].slice(-ASK_SEEN_MAX);
   return true;
@@ -138,6 +139,12 @@ export function recordAskSeen(d: PatternsData, xs: Omit<AskSeen, 'on'>[], today 
   return true;
 }
 // Forget what it counted of Ask MyDay's suggestions (it goes on counting from now, while it's on).
+// "Later" or "Let it go" after using Help me start: today's uses for that task aren't counted for or against a way.
+export function excuseStartSeen(d: PatternsData, taskId: string, today = todayKey()): boolean {
+  let changed = false;
+  for (const s of d.startSeen ?? []) if (s.on === today && s.taskId === taskId && !s.excused) { s.excused = true; changed = true; }
+  return changed;
+}
 export function forgetAskSeen(d: PatternsData): boolean {
   if (!d.askSeen) return false;
   delete d.askSeen;

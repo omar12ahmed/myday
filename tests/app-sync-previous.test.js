@@ -814,6 +814,27 @@ async function signIn(d, url) {
     await now.open(NOW + '#noticed');
     check('…and What MyDay has noticed shows the choice as Off', await now.until(`document.getElementById('prefStartOffers')?.value === 'off'`, 15000), await now.ev(`document.getElementById('prefStartOffers')?.value`));
 
+    console.log('\n[30] The days a task was touched, and your uses of Help me start, pass through the previous release unchanged (specs/help-me-start.md §6)');
+    const TTB = 'tkTouchBack', touchedDays = ['2026-10-01', today];
+    const startSeenBack = [{ on: today, way: 'five', category: 'admin', taskId: TTB }, { on: today, way: 'smaller', category: 'admin', taskId: TTB, pieceId: 'tkPieceBack' }];
+    await now.returnToApp();
+    await now.setData(`s => { s.tasks.items.push({ id: '${TTB}', title: 'Sort the post', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${stamp}', postponed: 0, blockers: [], letGoOn: null, touched: ${JSON.stringify(touchedDays)} }); s.patterns.startSeen = ${JSON.stringify(startSeenBack)}; }`);
+    check('this release sends the task with its touched days, and the patterns record with the uses of Help me start (one with a piece id), exactly', await eventually(async () => eq((await record('task', TTB))?.data?.touched, touchedDays) && same((await patOf())?.startSeen, startSeenBack)) && await synced(now), [(await record('task', TTB))?.data?.touched, (await patOf())?.startSeen]);
+    await before.returnToApp();
+    const heldTouched = () => before.data().then(d => d.tasks.items.find(t => t.id === TTB)?.touched);
+    check('the previous release syncs normally and receives the task', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.some(t => t.id === '${TTB}')`, 20000));
+    check('…its saved data holds the touched days exactly', eq(await heldTouched(), touchedDays), await heldTouched());
+    check('…and the uses of Help me start exactly, the piece id included', same((await before.data()).patterns.startSeen, startSeenBack), (await before.data()).patterns.startSeen);
+    await before.setData(`s => { const t = s.tasks.items.find(x => x.id === '${TTB}'); t.title = 'Sort the post (renamed)'; }`);
+    check('a rename on the previous release reaches the account with the touched days still exact', await eventually(async () => { const r = (await record('task', TTB))?.data; return r?.title === 'Sort the post (renamed)' && eq(r?.touched, touchedDays); }) && await synced(before), (await record('task', TTB))?.data);
+    await before.open(BEFORE + '#noticed');
+    if (!(await before.until(`!!document.getElementById('prefMin-admin')`, 30000))) console.log('  (the previous release is at', await before.ev('location.hash'), ')');
+    await before.ev(`(() => { const el = document.getElementById('prefMin-admin'); if (!el) return false; Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, '20'); el.dispatchEvent(new Event('change', { bubbles: true })); return true; })()`);
+    check('a preference changed on the previous release reaches the account with the uses of Help me start as they were', await eventually(async () => { const r = await patOf(); return r?.prefs?.maxMinutes?.admin?.value === 20 && same(r?.startSeen, startSeenBack); }) && await synced(before), await patOf());
+    await now.returnToApp();
+    check('back on this release: the new title and preference arrive, with the touched days and the uses of Help me start exactly as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TTB}')?.title === 'Sort the post (renamed)' && JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 20`, 20000)
+      && eq((await now.data()).tasks.items.find(t => t.id === TTB)?.touched, touchedDays) && same((await now.data()).patterns.startSeen, startSeenBack) && await synced(now), [(await now.data()).tasks.items.find(t => t.id === TTB)?.touched, (await now.data()).patterns.startSeen]);
+
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

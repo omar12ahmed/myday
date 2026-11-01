@@ -971,6 +971,15 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
       eq(await ev(`[...document.querySelectorAll('#prefStartOffers option')].map(o => [o.value, o.textContent])`), [['on', 'On Today, when a task keeps moving (the usual)'], ['off', 'Off']]) && (await ev(`document.getElementById('prefStartOffers').value`)) === 'on', await ev(`document.getElementById('prefStartOffers').outerHTML`));
     await setVal('#prefStartOffers', 'off'); await sleep(300);
     check('choosing Off saves startOffers: false', (await prefs()).startOffers === false, await prefs());
+
+    // Help steps back (specs/help-me-start.md §6): the last 5 done tasks of a kind were done without moving.
+    const EASY = [1, 2, 3, 4, 5].map(i => OT('tkEasy' + i, 'Done admin ' + i, { done: true, doneOn: key(-i), due: key(-i), postponed: 0 }));
+    await scene([...EASY, OT('tkStuckAdmin', 'Renew the licence', { postponed: 3 })]);
+    check('a stuck admin task gets no start offer when the last 5 admin tasks were done without moving', !(await offerCard()), await text('#app'));
+    await scene([...EASY, OT('tkStuckAdmin', 'Renew the licence', { postponed: 3 }), OT('tkStuckLearn', 'Read the chapter', { category: 'learning', postponed: 2 })]);
+    check('…but a stuck learning task still does: "You’ve moved “Read the chapter” twice. Want an easier way in?"', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Read the chapter” twice. Want an easier way in?', await text('#startOffer'));
+    await scene([...EASY.slice(0, 4), OT('tkStuckAdmin', 'Renew the licence', { postponed: 3 })]);
+    check('…and with only 4 such admin tasks done, a stuck admin task is offered as usual', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Renew the licence” 3 times. Want an easier way in?', await text('#startOffer'));
   }
 
 

@@ -168,7 +168,7 @@ function PrefsCard({ data }: { data: MyDayData }) {
         const easier = CATEGORIES.filter(c => startingEasier(data, c)).map(c => CAT_LABEL[c].toLowerCase());
         if (!easier.length || prefs.startOffers === false) return null;
         const kinds = easier.length === 1 ? easier[0] : `${easier.slice(0, -1).join(', ')} and ${easier[easier.length - 1]}`;
-        return <p className="text-sm text-fg-2 m-0 mt-2" data-s="start-easier">Starting {kinds} tasks has been easier lately: your last 5{easier.length > 1 ? ' of each' : ''} were done without moving, so MyDay isn’t offering help with {easier.length > 1 ? 'those' : 'them'} on Today. Help me start is still on every task.</p>;
+        return <p className="text-sm text-fg-2 m-0 mt-2" data-s="start-easier">{kinds.charAt(0).toUpperCase() + kinds.slice(1)} tasks have been getting done on time lately: your last 5{easier.length > 1 ? ' of each' : ''} were done without moving, so MyDay isn’t offering help with {easier.length > 1 ? 'those' : 'them'} on Today. Help me start is still on every task.</p>;
       })()}
       <Note className="mb-0 mt-3">Shorter tasks keep how long they were, so the plan shows e.g. "25 min (shortened from 60)". Fewer tasks never means more: your energy's limit still applies.</Note>
     </Card>
@@ -179,11 +179,11 @@ function PrefsCard({ data }: { data: MyDayData }) {
 // can inspect and outgrow). Asked twice, as it can't be undone; your own preferences stay.
 function ForgetLearned({ data }: { data: MyDayData }) {
   const [sure, setSure] = useState(false);
-  const any = Object.keys(data.patterns.answers).length > 0 || !!data.patterns.askSeen?.length;
+  const any = Object.keys(data.patterns.answers).length > 0 || !!data.patterns.askSeen?.length || !!data.patterns.startSeen?.length;
   if (!any) return null;
   return (
     <Card id="forgetLearned">
-      <p className="text-[15px] m-0">Forget everything MyDay has learned about you: your answers about these patterns, and what it counted of Ask MyDay’s suggestions. Patterns are worked out afresh from what you do; your preferences stay.</p>
+      <p className="text-[15px] m-0">Forget everything MyDay has learned about you: your answers about these patterns, what it counted of Ask MyDay’s suggestions, and when you used Help me start. Patterns are worked out afresh from what you do; your preferences stay.</p>
       {sure ? (
         <div className="flex flex-wrap gap-2 mt-3">
           <Button inline variant="primary" data-action="forget-learned-yes" onClick={() => { if (update(d => (forgetLearned(d.patterns) ? undefined : false))) toast('Forgotten. MyDay starts learning afresh.'); setSure(false); }}>Yes, forget it all</Button>

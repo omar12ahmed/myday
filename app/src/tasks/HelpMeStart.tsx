@@ -8,7 +8,7 @@ import { Field, TextInput } from '../components/Field';
 import { Choice, Choices, ExternalLink, LinkButton, Note, TextLink } from '../components/parts';
 import { todayKey } from '../data/dates';
 import { answerLabel, startWayFor, type Answer, type LearnedWay } from '../data/patterns/notice';
-import { recordStartSeen } from '../data/patterns/saved';
+import { excuseStartSeen, recordStartSeen } from '../data/patterns/saved';
 import { projectById } from '../data/projects';
 import { update } from '../data/storage';
 import { addToTodaysPlan, noteBlocker, notToday, onTodaysPlan, planRoom, TASK_LIMITS, tickStep, unstick } from '../data/tasks';
@@ -85,12 +85,12 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
   function later() {
     let msg: string | null = null;
     act();
-    if (update(d => { keep(d); msg = notToday(d, t.id, k); if (!msg) return false; }) && msg) { toast(msg); onClose(); }
+    if (update(d => { keep(d); msg = notToday(d, t.id, k); if (!msg) return false; excuseStartSeen(d.patterns, t.id, k); }) && msg) { toast(msg); onClose(); }
   }
   function letGo() {
     let msg: string | null = null;
     act();
-    update(d => { keep(d); msg = unstick(d, t.id, { reason: 'notneeded', quiet: true }, k); if (!msg) return false; });
+    update(d => { keep(d); msg = unstick(d, t.id, { reason: 'notneeded', quiet: true }, k); if (!msg) return false; excuseStartSeen(d.patterns, t.id, k); });
     if (msg) { toast(msg); onClose(); }
   }
   function smallerPiece() {
@@ -131,7 +131,7 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
       {answer === 'perfect' && <p className="text-[15px] m-0 mt-1" data-s="start-rough">A rough first try still counts as started.</p>}
       <div className="flex flex-wrap gap-2.5 mt-2">
         {shownWay === 'five' && <Button inline variant="primary" data-action="start-five" onClick={fiveMinutes}>Start for 5 minutes</Button>}
-        {shownWay === 'smaller' && <Button inline variant="primary" data-action="start-piece" onClick={piecePlease}>A 10-minute piece</Button>}
+        {shownWay === 'smaller' && !smaller && <Button inline variant="primary" aria-expanded={false} aria-controls="startPiece" data-action="start-piece" onClick={piecePlease}>A 10-minute piece</Button>}
         {shownWay === 'ask' && <Button inline variant="primary" data-action="start-ask" onClick={e => think(e.currentTarget)}>Think it through with Ask MyDay</Button>}
         {next && (answer === 'start' || answer === 'big') && <Button inline variant={shownWay ? 'tonal' : 'primary'} className="max-w-full whitespace-normal break-words text-left" data-action="start-tick" onClick={tick}>Tick off: {next.text}</Button>}
         {canTime && shownWay !== 'five' && <Button inline variant={shownWay || (next && (answer === 'start' || answer === 'big')) ? 'tonal' : 'primary'} data-action="start-five" onClick={fiveMinutes}>Start for 5 minutes</Button>}

@@ -324,6 +324,116 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
     await open('tkNoAsk');
     await pick('start');
     check('with AI help off in this build, "I don\'t know where to start" has no "Think it through with Ask MyDay"', !(await exists('[data-action=start-ask]')) && !(await exists('[data-s=start-ask]')));
+
+    // What helps you start: kept, learned and confirmed; help that steps back (specs/help-me-start.md §6).
+    const ago = n => { const d = new Date(2026, 9, 16 - n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+    const seenOf = async () => (await pats()).startSeen;
+    const onlyFields = (x, keys) => eq(Object.keys(x).sort(), keys.slice().sort());
+    const clearSeen = () => editStorage(`s => { delete s.patterns.startSeen; delete s.patterns.answers['start-way:admin:five']; }`);
+
+    await clearSeen();
+    await scene([tk('tkRecStep', 'Clear the hall', { due: TODAY, steps })], { built: true });
+    await open('tkRecStep'); await pick('start');
+    await click('[data-action=start-tick]'); await sleep(250);
+    let ss = await seenOf();
+    check('ticking off the next step in Help me start records one use: way "step", the kind of work, the task and today', ss && ss.length === 1 && ss[0].way === 'step' && ss[0].category === 'admin' && ss[0].taskId === 'tkRecStep' && ss[0].on === TODAY, ss);
+    check('…and only those fields, never any words', ss && onlyFields(ss[0], ['way', 'category', 'taskId', 'on']), ss);
+
+    await clearSeen();
+    await scene([tk('tkRecFive', 'Sort the post', { due: TODAY })], { built: true });
+    await open('tkRecFive');
+    await click('[data-action=start-five]'); await sleep(400);
+    ss = await seenOf();
+    check('"Start for 5 minutes" records one use: way "five", the kind of work, the task and today, and nothing else', ss && ss.length === 1 && ss[0].way === 'five' && ss[0].category === 'admin' && ss[0].taskId === 'tkRecFive' && ss[0].on === TODAY && onlyFields(ss[0], ['way', 'category', 'taskId', 'on']), ss);
+    check('the task has not been touched yet while its five minutes are still running', !(await item('tkRecFive')).touched, (await item('tkRecFive')).touched);
+    await editStorage(`s => { s.timer.startedAt = s.timer.startedAt - 301000; }`);
+    await go('today', 2026, 10, 16, 9, 30); await sleep(2500);
+    const fin = await data();
+    check('when the five-minute start runs to the end, the task is marked touched today', fin.timer.finished === true && eq((await item('tkRecFive')).touched, [TODAY]), [fin.timer, (await item('tkRecFive')).touched]);
+
+    await clearSeen();
+    await scene([tk('tkRecLate', 'Post the form', { due: TODAY })], { built: true });
+    await open('tkRecLate');
+    await click('[data-action=start-five]'); await sleep(400);
+    await editStorage(`s => { s.timer.startedAt = s.timer.startedAt - 400000; }`);
+    await go('today', 2026, 10, 16, 9, 30); await sleep(2500);
+    check('a five-minute start that ended long ago, found finished when MyDay is opened again, does not mark the task touched', (await data()).timer.finished === true && !(await item('tkRecLate')).touched, [(await data()).timer, (await item('tkRecLate')).touched]);
+
+    await clearSeen();
+    await scene([tk('tkRecLater', 'Book the plumber', { due: TODAY })], { built: true });
+    await open('tkRecLater');
+    await click('[data-action=start-five]'); await sleep(400);
+    await open('tkRecLater');
+    await click('[data-action=start-five]'); await sleep(400);
+    ss = await seenOf();
+    check('using "Start for 5 minutes" twice the same day on one task is recorded once', ss && ss.length === 1 && ss[0].way === 'five' && ss[0].excused === undefined, ss);
+    await open('tkRecLater');
+    await click('[data-action=start-later]'); await sleep(300);
+    ss = await seenOf();
+    check('"Later" afterwards marks that day\'s use excused (it counts neither for nor against a way)', ss && ss.length === 1 && ss[0].excused === true, ss);
+    await clearSeen();
+    await scene([tk('tkRecGo', 'Cancel the paper', { due: TODAY, steps })], { built: true });
+    await open('tkRecGo'); await pick('start');
+    await click('[data-action=start-tick]'); await sleep(250);
+    await click('[data-action=start-let-go]'); await sleep(300);
+    ss = await seenOf();
+    check('"Let it go" afterwards marks that day\'s use of it excused too', ss && ss.length === 1 && ss[0].way === 'step' && ss[0].excused === true, ss);
+
+    await clearSeen();
+    await scene([tk('tkRecSm', 'Clear the garage', { due: TODAY, postponed: 2 })], { built: true });
+    await open('tkRecSm');
+    await click('[data-action=start-smaller]'); await sleep(200);
+    await type('#startPiece', 'clear just the workbench'); await click('[data-action=start-smaller-go]'); await sleep(300);
+    const madeP = (await data()).tasks.items.find(x => x.title === 'clear just the workbench');
+    ss = await seenOf();
+    check('"Make it smaller" and "Add it for today" records one use: way "smaller", the kind of work, the task, today and the new piece\'s id', ss && ss.length === 1 && madeP && ss[0].way === 'smaller' && ss[0].category === 'admin' && ss[0].taskId === 'tkRecSm' && ss[0].on === TODAY && ss[0].pieceId === madeP.id, [ss, madeP && madeP.id]);
+    check('…and only those fields, never the words of the piece', ss && onlyFields(ss[0], ['way', 'category', 'taskId', 'on', 'pieceId']) && !JSON.stringify(ss).includes('workbench'), ss);
+
+    // The confirmed way comes first.
+    await clearSeen();
+    const doneBefore = (id, n) => tk(id, 'Past admin ' + id, { touched: [ago(n)] });
+    const pastAdmin = [2, 3, 4, 5, 6].map(n => doneBefore('tkPa' + n, n));
+    const confirm = `s => { s.patterns.startSeen = ${JSON.stringify([2, 3, 4, 5, 6].map(n => ({ on: ago(n), way: 'five', category: 'admin', taskId: 'tkPa' + n })))};
+      s.patterns.answers['start-way:admin:five'] = { said: 'yes', on: '${ago(1)}', examples: 5, title: 'Five-minute starts work for you on admin tasks' }; }`;
+    await scene([...pastAdmin, tk('tkAd', 'File the receipts', { due: TODAY }), tk('tkLn', 'Read the chapter', { due: TODAY, category: 'learning' })], { built: true });
+    await editStorage(confirm);
+    await open('tkAd');
+    check('with "a five-minute start" confirmed for admin, an admin task\'s Help me start says "What’s worked for you before: a five-minute start."', (await text('[data-s=start-worked]')) === 'What’s worked for you before: a five-minute start.', await text('[data-s=start-worked]'));
+    const firstAct = () => ev(`(() => { let el = [...document.querySelectorAll('#startCard h4')].find(h => h.textContent === 'One small act'); while (el && el.tagName !== 'DIV') el = el.nextElementSibling; const b = el && el.querySelector('button'); return b && b.dataset.action; })()`);
+    check('…and "Start for 5 minutes" is the first of the small acts', (await firstAct()) === 'start-five', await firstAct());
+    await open('tkLn');
+    check('a learning task, with nothing confirmed for learning, has no "What’s worked for you before" line', !(await exists('[data-s=start-worked]')) && (await exists('#startCard')));
+    await editStorage(`s => { s.patterns.startSeen.forEach(x => { x.way = 'smaller'; }); delete s.patterns.answers['start-way:admin:five']; s.patterns.answers['start-way:admin:smaller'] = { said: 'yes', on: '${ago(1)}', examples: 5, title: 'Starting with a 10-minute piece works for you on admin tasks' }; }`);
+    await open('tkAd');
+    check('with a 10-minute piece confirmed, it is the first small act, "A 10-minute piece"', (await firstAct()) === 'start-piece' && (await text('[data-action=start-piece]')) === 'A 10-minute piece' && (await text('[data-s=start-worked]')) === 'What’s worked for you before: starting with a 10-minute piece.', [await firstAct(), await text('[data-s=start-worked]')]);
+    await click('[data-action=start-piece]'); await sleep(200);
+    check('…tapping it opens the box for the piece and the button goes', (await exists('#startPiece')) && !(await exists('[data-action=start-piece]')));
+    await editStorage(`s => { delete s.patterns.answers['start-way:admin:smaller']; s.patterns.answers['start-way:admin:five'] = { said: 'no', on: '${ago(1)}', examples: 5, title: 'x' }; }`);
+    await open('tkAd');
+    check('…and an admin task has none once that way isn\'t confirmed', !(await exists('[data-s=start-worked]')) && (await exists('#startCard')));
+    await clearSeen();
+
+    // Help that steps back, in What MyDay has noticed.
+    const doneAdmin = n => [1, 2, 3, 4, 5].slice(0, n).map(i => tk('tkDa' + i, 'Done admin ' + i, { done: true, doneOn: ago(i + 1), due: ago(i + 1), postponed: 0 }));
+    await scene(doneAdmin(5));
+    await go('noticed', 2026, 10, 16, 9, 30); await sleep(300);
+    check('with the last 5 done admin tasks all done on time without moving, What MyDay has noticed says so: "Admin tasks have been getting done on time lately…"', (await exists('[data-s=start-easier]')) && (await text('[data-s=start-easier]')) === 'Admin tasks have been getting done on time lately: your last 5 were done without moving, so MyDay isn’t offering help with them on Today. Help me start is still on every task.', await ev(`document.querySelector('[data-s=start-easier]')?.textContent`));
+    await scene(doneAdmin(4));
+    await go('noticed', 2026, 10, 16, 9, 30); await sleep(300);
+    check('…with only 4 done admin tasks it says nothing about it', !(await exists('[data-s=start-easier]')));
+    await scene(doneAdmin(5));
+    await editStorage(`s => { s.patterns.prefs.startOffers = false; }`);
+    await go('noticed', 2026, 10, 16, 9, 30); await sleep(300);
+    check('…and with start offers off it isn\'t shown, since there are none to stop', !(await exists('[data-s=start-easier]')));
+    await editStorage(`s => { delete s.patterns.prefs.startOffers; }`);
+
+    // Forgetting what it has learned, when only the uses of Help me start exist.
+    await scene([]);
+    await editStorage(`s => { s.patterns.startSeen = [{ on: '${ago(2)}', way: 'five', category: 'admin', taskId: 'tkX' }]; s.patterns.answers = {}; delete s.patterns.askSeen; }`);
+    await go('noticed', 2026, 10, 16, 9, 30); await sleep(300);
+    check('with only uses of Help me start kept, "Forget everything it has learned…" is offered, and says it covers when you used Help me start', (await exists('[data-action=forget-learned]')) && (await text('#forgetLearned')).includes('when you used Help me start'), await ev(`document.querySelector('#forgetLearned')?.textContent`));
+    await click('[data-action=forget-learned]'); await sleep(150); await click('[data-action=forget-learned-yes]'); await sleep(300);
+    check('…and forgetting clears them', !('startSeen' in (await pats())), await pats());
   }
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);

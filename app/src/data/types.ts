@@ -630,7 +630,7 @@ export interface TaskItem {
                               // startsAfter (data/tasks.ts): one done, let go, deleted or in another project no longer counts
   deadline?: TaskDeadline;    // a dated task's deadline details (specs/projects-deadlines.md; absent → an ordinary date)
   touched?: DateKey[];        // days you did something MyDay can see on it — a step ticked, its notes edited, its timer
-                              // run to the end — the last 10 (Help me start learns what helps, specs/help-me-start.md §6)
+                              // run to the end — the last 30 (Help me start learns what helps, specs/help-me-start.md §6)
   milestoneId?: string;       // the milestone of its project it's toward (specs/projects-evidence-decisions.md; absent →
                               // none). Read through milestoneTasks (data/projectPlan.ts): one removed no longer counts
 }
@@ -659,7 +659,8 @@ export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: numb
 // A use of one of Help me start's small acts (specs/help-me-start.md §6): the day, the way, the kind of work, the task
 // (and for "smaller", the 10-minute piece it made). Never words. Judged once its day is over: did you start that day?
 export type StartWay = 'five' | 'step' | 'ask' | 'smaller';
-export interface StartSeen { on: DateKey; way: string; category: Category; taskId: string; pieceId?: string; [other: string]: unknown }
+// `excused`: you said "Later" or "Let it go" that day, so it counts neither way.
+export interface StartSeen { on: DateKey; way: string; category: Category; taskId: string; pieceId?: string; excused?: true; [other: string]: unknown }
 export interface AskSeen { on: DateKey; type: string; category: Category | null; proposed: number | null; minutes: number | null; added: boolean; renamed: boolean; [other: string]: unknown }
 export interface PatternsData {
   // name: what MyDay calls you (from 1.11.0); aiNotes: you let AI help place notes in projects (1.15.0; absent = off)

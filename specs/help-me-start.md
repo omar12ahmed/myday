@@ -97,11 +97,25 @@ The owner's choices (1 Nov 2026, ~09:40 UTC, with advance approval to build and 
 - each use of Help me start's small acts, in your patterns (`startSeen`, synced, like Ask's counts): the day, the way
   (`five`, `step`, `ask`, `smaller`), the kind of work, the task, and for "smaller" the piece it made. Never words. At
   most 200, the last 8 weeks; forgotten with "Forget everything it has learned";
-- the days a task was touched (`touched`, its last 10 days): when a step is ticked, its notes are edited, or its timer
+- the days a task was touched (`touched`, its last 30 days): when a step is ticked, its notes are edited, or its timer
   runs to the end.
 
 **"Ticking off the next step"** is the start itself, so it's kept but not offered as a pattern (it would always "work").
 A use is judged only once its day is over.
+
+**After the review:**
+- Not counted either way: a use you followed with "Later" or "Let it go" that day (`excused`), or one whose task is gone.
+- The same way on the same task counts once a day.
+- Each way that qualifies is its own pattern; if you've confirmed more than one, the one that has worked best lately
+  comes first.
+- **"Getting done on time"** (help stepping back) counts only dated tasks done on or before their date, never moved,
+  with nothing said about what was in the way, and without Help me start (nor one of its 10-minute pieces).
+- MyDay never trims or writes these on its own: old uses go when you next use Help me start; the timer marks a task only
+  when it runs to the end while MyDay is open (not when it's reopened later). A task keeps its last 30 days.
+- "Forget everything it has learned" shows, and says so, when your uses of Help me start are all there is.
+- Older versions (1.123.0) keep `startSeen` and `touched` unread; their "Forget everything" doesn't clear `startSeen`.
+- For the owner: a five-minute start counts when its timer runs to the end (the chosen definition), so it will nearly
+  always "work" if you let it run.
 
 ## 4. Not in this step
 

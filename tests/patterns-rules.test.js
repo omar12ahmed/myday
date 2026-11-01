@@ -20,6 +20,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     `export * from ${src('patterns/notice')};`, `export * from ${src('patterns/saved')};`, `export * from ${src('patterns/adapt')};`,
     `export * from ${src('tasks')};`, `export * from ${src('offers')};`, `export { proposeBuild, proposeReview } from ${src('proposal')};`, `export { freshState, normalize } from ${src('normalize')};`,
     `export { makeTask, minutesLabel, limitFor } from ${src('plan')};`, `export { shift, todayKey, parseKey } from ${src('dates')};`,
+    `export { howYouWork } from ${JSON.stringify(path.join(ROOT, 'app/src/ai/askContext'))};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const k = '2026-10-15'; // a Thursday
@@ -422,6 +423,160 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('startOffers: false is kept', pf({ startOffers: false }).startOffers === false);
     check('startOffers: true, "no" or anything else is dropped', [true, 'no', 0, null].every(v => !('startOffers' in pf({ startOffers: v }))));
     check('moved once, twice and 3 times are said as "once", "twice" and "3 times"', K.movedTimes(1) === 'once' && K.movedTimes(2) === 'twice' && K.movedTimes(3) === '3 times' && K.movedTimes(12) === '12 times');
+  }
+
+  console.log('\n[10g] What helps you start: kept, learned, confirmed, and help that steps back');
+  {
+    const j = a => JSON.stringify(a);
+    const day10 = i => K.shift('2026-09-01', i);
+    // touchTask, tickStep, editTask
+    const tt = { id: 'tkT', title: 'Pay council tax' };
+    K.touchTask(tt, '2026-10-10'); K.touchTask(tt, '2026-10-10');
+    check('touching a task adds the day once', eq(tt.touched, ['2026-10-10']), tt.touched);
+    K.touchTask(tt, '2026-10-05');
+    check('…and keeps the days sorted', eq(tt.touched, ['2026-10-05', '2026-10-10']), tt.touched);
+    const t12 = { id: 'tkU', title: 'Book the dentist' };
+    for (let i = 32; i >= 1; i--) K.touchTask(t12, day10(i));
+    check('touching keeps only the last 30 days, sorted', eq(t12.touched, Array.from({ length: 30 }, (_, i) => day10(i + 3))), t12.touched);
+    K.touchTask(t12);
+    check('with no day given it touches today', t12.touched.at(-1) === K.todayKey(), t12.touched);
+    const ts = fresh(), tsId = K.addTask(ts.tasks, { title: 'Sort the post' }), stp = K.addStep(ts.tasks, tsId, 'find the envelope');
+    const TS = () => ts.tasks.items.find(x => x.id === tsId);
+    check('ticking a step marks the task touched today', K.tickStep(ts.tasks, tsId, stp, true) === true && eq(TS().touched, [K.todayKey()]), TS().touched);
+    TS().touched = undefined;
+    check('unticking a step does not mark it touched', K.tickStep(ts.tasks, tsId, stp, false) === true && !TS().touched, TS().touched);
+    const te = fresh(), teId = K.addTask(te.tasks, { title: 'Write the letter' });
+    const TE = () => te.tasks.items.find(x => x.id === teId);
+    K.editTask(te.tasks, teId, { notes: 'Use the blue paper' });
+    check('editing the notes to something new marks the task touched today', eq(TE().touched, [K.todayKey()]), TE().touched);
+    TE().touched = undefined;
+    K.editTask(te.tasks, teId, { notes: 'Use the blue paper' });
+    check('saving the same notes again does not mark it touched', !TE().touched, TE().touched);
+    // The tasks loader
+    const rawT = JSON.parse(JSON.stringify(fresh()));
+    const base = { title: 'Loader', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-04T10:00', blockers: [] };
+    rawT.tasks = { lists: [], items: [
+      { ...base, id: 'tkA', touched: [...Array.from({ length: 32 }, (_, i) => day10(32 - i)), day10(5), 'yesterday', 7, null, '2026-13-45'] },
+      { ...base, id: 'tkB', touched: ['nope', 3] }, { ...base, id: 'tkC', touched: 'x' }, { ...base, id: 'tkD' }] };
+    const lt = K.normalize(rawT).tasks.items;
+    check('the loader keeps a task\'s touched days: each once, sorted, the last 30, and not what isn\'t a date', eq(lt[0].touched, Array.from({ length: 30 }, (_, i) => day10(i + 3))), lt[0].touched);
+    check('…and a task whose touched has no dates, or isn\'t a list, ends up with none', !('touched' in lt[1]) && !('touched' in lt[2]) && !('touched' in lt[3]), lt.map(x => x.touched));
+
+    // recordStartSeen
+    const rs = { prefs: { maxMinutes: {}, maxTasks: null }, answers: {} };
+    check('a use is added with the day, and returns true', K.recordStartSeen(rs, { way: 'five', category: 'admin', taskId: 'tkA' }, k) === true && eq(rs.startSeen, [{ way: 'five', category: 'admin', taskId: 'tkA', on: k }]), rs.startSeen);
+    rs.startSeen.unshift({ way: 'five', category: 'admin', taskId: 'tkOld', on: K.shift(k, -57) }, { way: 'step', category: 'admin', taskId: 'tkEdge', on: K.shift(k, -56) });
+    K.recordStartSeen(rs, { way: 'smaller', category: 'learning', taskId: 'tkB', pieceId: 'tkP' }, k);
+    check('a use older than 8 weeks is dropped when another is recorded (56 days is kept), and a piece id is kept', eq(rs.startSeen.map(x => x.taskId), ['tkEdge', 'tkA', 'tkB']) && rs.startSeen[2].pieceId === 'tkP', rs.startSeen);
+    check('the same way on the same task again the same day returns false and adds nothing', K.recordStartSeen(rs, { way: 'smaller', category: 'learning', taskId: 'tkB' }, k) === false && rs.startSeen.length === 3, rs.startSeen);
+    check('…but another way, or another task, the same day is added', K.recordStartSeen(rs, { way: 'five', category: 'learning', taskId: 'tkB' }, k) === true && K.recordStartSeen(rs, { way: 'smaller', category: 'learning', taskId: 'tkC' }, k) === true && rs.startSeen.length === 5, rs.startSeen);
+    const ex = { prefs: { maxMinutes: {}, maxTasks: null }, answers: {}, startSeen: [{ on: k, way: 'five', category: 'admin', taskId: 'tkA' }, { on: k, way: 'step', category: 'admin', taskId: 'tkA' }, { on: k, way: 'five', category: 'admin', taskId: 'tkB' }, { on: K.shift(k, -1), way: 'five', category: 'admin', taskId: 'tkA' }] };
+    check('excusing a task marks only today\'s uses of it as excused, and returns true', K.excuseStartSeen(ex, 'tkA', k) === true && eq(ex.startSeen.map(x => x.excused === true), [true, true, false, false]), ex.startSeen);
+    check('…and again changes nothing and returns false, as does a task with no uses today', K.excuseStartSeen(ex, 'tkA', k) === false && K.excuseStartSeen(ex, 'tkNone', k) === false);
+    const many = { prefs: { maxMinutes: {}, maxTasks: null }, answers: {}, startSeen: Array.from({ length: 200 }, (_, i) => ({ way: 'five', category: 'admin', taskId: 'tk' + i, on: k })) };
+    K.recordStartSeen(many, { way: 'five', category: 'admin', taskId: 'tkLast' }, k);
+    check('at most 200 uses are kept, the newest last', many.startSeen.length === 200 && many.startSeen[0].taskId === 'tk1' && many.startSeen[199].taskId === 'tkLast', [many.startSeen.length, many.startSeen[0].taskId]);
+
+    // the startSeen normalise
+    const ns = (startSeen, rep = { dropped: 0 }) => ({ out: K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null }, answers: {}, startSeen }, rep).startSeen, rep });
+    const good = [{ on: k, way: 'five', category: 'admin', taskId: 'tkA' }, { on: k, way: 'smaller', category: 'learning', taskId: 'tkB', pieceId: 'tkP' },
+      { on: k, way: 'x'.repeat(20), category: 'health', taskId: 'tkC' }, { on: k, way: 'newway', category: 'admin', taskId: 'tkD', extra: 1 }];
+    let r = ns(good);
+    check('the loader keeps good uses (a way up to 20 characters, an optional piece id, a way it doesn\'t know) and counts none as dropped', eq(r.out, good) && r.rep.dropped === 0, r);
+    const bad = [{ on: 'soon', way: 'five', category: 'admin', taskId: 'tkA' }, { on: k, way: 'five', category: 'cooking', taskId: 'tkA' }, { on: k, way: 'five', category: 'admin' },
+      { on: k, way: 'five', category: 'admin', taskId: 'tkA', pieceId: 7 }, { on: k, way: '', category: 'admin', taskId: 'tkA' }, { on: k, way: 'x'.repeat(21), category: 'admin', taskId: 'tkA' }, 'five'];
+    r = ns([...bad, good[0]]);
+    check('…drops a bad day, an unknown kind of work, no task, a piece id that isn\'t words, an empty or too long way, or a non-object, and counts each as dropped', eq(r.out, [good[0]]) && r.rep.dropped === 7, r);
+    check('…and with nothing good left, or none saved, there is no startSeen', ns(bad).out === undefined && ns(undefined).out === undefined && ns('x').out === undefined);
+
+    // pruneAskSeen and forgetLearned
+    const pr = { prefs: { maxMinutes: {}, maxTasks: null }, answers: {}, startSeen: [{ on: K.shift(k, -57), way: 'five', category: 'admin', taskId: 'tkA' }, { on: K.shift(k, -56), way: 'five', category: 'admin', taskId: 'tkB' }] };
+    check('pruning leaves the uses of Help me start alone, even old ones (only recording one trims them), and returns false', K.pruneAskSeen(pr, k) === false && eq(pr.startSeen.map(x => x.taskId), ['tkA', 'tkB']), pr.startSeen);
+    const fl = { prefs: { maxMinutes: {}, maxTasks: null, askUse: true }, answers: {}, startSeen: [{ on: k, way: 'five', category: 'admin', taskId: 'tkA' }] };
+    check('forgetting what it has learned clears startSeen and returns true when only startSeen exists', K.forgetLearned(fl) === true && !('startSeen' in fl) && fl.prefs.askUse === true && K.forgetLearned(fl) === false, fl);
+
+    // startedThatDay
+    const sd = fresh();
+    sd.projects.items = [{ id: 'pjL', title: 'Paint the hall', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00', leftOff: { text: 'Taped the edges', at: before(3) + 'T18:30' } }];
+    const mk = (id, over = {}) => { const tid = K.addTask(sd.tasks, { title: id }); const t = sd.tasks.items.find(x => x.id === tid); t.id = id; Object.assign(t, over); return t; };
+    mk('tkDone', { done: true, doneOn: before(1) }); mk('tkTouch', { touched: [before(2), before(4)] }); mk('tkProj', { projectId: 'pjL' }); mk('tkNone'); mk('tkPiece', { done: true, doneOn: before(5) });
+    const sdn = (taskId, on, pieceId) => K.startedThatDay(sd, { on, way: 'smaller', category: 'admin', taskId, ...(pieceId ? { pieceId } : {}) });
+    check('you started that day when the task was done that day', sdn('tkDone', before(1)) === true && sdn('tkDone', before(2)) === false);
+    check('…or it was touched that day (and not on another day)', sdn('tkTouch', before(4)) === true && sdn('tkTouch', before(2)) === true && sdn('tkTouch', before(3)) === false);
+    check('…or its project\'s where you left off was written that day', sdn('tkProj', before(3)) === true && sdn('tkProj', before(4)) === false);
+    check('…or the 10-minute piece it made was done that day', sdn('tkNone', before(5), 'tkPiece') === true && sdn('tkNone', before(6), 'tkPiece') === false);
+    check('…otherwise not, and a deleted task with no piece is not a start', sdn('tkNone', before(1)) === false && sdn('tkGone', before(1)) === false);
+
+    // the pattern
+    const seenOn = (x, list, way, cat, started) => list.forEach((i, n) => {
+      const id = `tkS${way}${cat}${i}`; const t = K.addTask(x.tasks, { title: id, category: cat }); const it = x.tasks.items.find(y => y.id === t); it.id = id; if (started.includes(n)) it.touched = [before(i)];
+      (x.patterns.startSeen ??= []).push({ on: before(i), way, category: cat, taskId: id });
+    });
+    const sw = (way, cat, started, days = [9, 8, 7, 6, 5]) => { const x = fresh(); seenOn(x, days, way, cat, started); return x; };
+    const swp = find(sw('five', 'learning', [0, 1, 2, 3]), 'start-way:learning:five');
+    check('five uses of a five-minute start on learning tasks, 4 of them started: a pattern with its title, evidence and tip', swp && swp.title === 'Five-minute starts work for you on learning tasks' && swp.why === '4 of the last 5 times you used it, you started that day.' && swp.tip === 'Help me start puts it first for these tasks.', swp);
+    check('only 3 started: no pattern', !find(sw('five', 'learning', [0, 1, 2]), 'start-way:learning:five'));
+    check('only 4 uses (all started): no pattern', !find(sw('five', 'learning', [0, 1, 2, 3], [9, 8, 7, 6]), 'start-way:learning:five'));
+    check('today\'s uses are not counted: 4 past uses and one today is no pattern', !find(sw('five', 'learning', [0, 1, 2, 3, 4], [9, 8, 7, 6, 0]), 'start-way:learning:five'));
+    check('ticking off the next step never makes a pattern, however often it\'s used', !K.findPatterns(sw('step', 'learning', [0, 1, 2, 3, 4]), k).some(x => x.id.startsWith('start-way')));
+    check('thinking it through with Ask MyDay has its own title', find(sw('ask', 'health', [0, 1, 2, 3, 4]), 'start-way:health:ask')?.title === 'Thinking it through with Ask MyDay helps you start health tasks');
+    check('a 10-minute piece has its own title', find(sw('smaller', 'learning', [0, 1, 2, 3, 4]), 'start-way:learning:smaller')?.title === 'Starting with a 10-minute piece works for you on learning tasks');
+    const both = sw('five', 'learning', [0, 1, 2, 3]); seenOn(both, [9, 8, 7, 6, 5], 'five', 'admin', [0, 1, 2, 3, 4]);
+    check('each kind of work has its own pattern (admin apart from learning)', find(both, 'start-way:admin:five')?.title === 'Five-minute starts work for you on admin tasks' && find(both, 'start-way:admin:five').why.startsWith('5 of') && find(both, 'start-way:learning:five').why.startsWith('4 of'));
+
+    const ghost = sw('five', 'learning', [0, 1, 2, 3]); ghost.tasks.items = ghost.tasks.items.filter(t => t.id !== 'tkSfivelearning9');
+    check('a use whose task is gone is not counted: 4 left, no pattern', !find(ghost, 'start-way:learning:five'));
+    const kept = sw('smaller', 'learning', [0, 1, 2, 3, 4]); kept.tasks.items = kept.tasks.items.filter(t => t.id !== 'tkSsmallerlearning9'); kept.patterns.startSeen.find(s => s.taskId === 'tkSsmallerlearning9').pieceId = kept.tasks.items[0].id;
+    check('…unless the piece it made is still there', !!find(kept, 'start-way:learning:smaller'));
+    const exc = sw('five', 'learning', [0, 1, 2, 3]); exc.patterns.startSeen[4].excused = true;
+    check('a use you followed with "Later" or "Let it go" (excused) is not counted either way: 4 left, no pattern', !find(exc, 'start-way:learning:five'));
+    const two = sw('five', 'learning', [0, 1, 2, 3, 4]); seenOn(two, [9, 8, 7, 6, 5], 'ask', 'learning', [0, 1, 2, 3]);
+    check('every way that qualifies has its own pattern, in the order five then ask', eq(K.findPatterns(two, k).filter(x => x.id.startsWith('start-way')).map(x => x.id), ['start-way:learning:five', 'start-way:learning:ask']), K.findPatterns(two, k).map(x => x.id));
+    const ans = (said, n) => ({ said, on: before(1), examples: 5, title: n });
+    two.patterns.answers['start-way:learning:five'] = ans('yes', 'Five-minute starts work for you on learning tasks'); two.patterns.answers['start-way:learning:ask'] = ans('yes', 'Thinking it through with Ask MyDay helps you start learning tasks');
+    check('with two ways confirmed, the one with the most starts comes first (five: 5 of 5 beats ask: 4 of 5)', K.startWayFor(two, 'learning', k) === 'five');
+    const two2 = sw('five', 'learning', [0, 1, 2, 3]); seenOn(two2, [9, 8, 7, 6, 5], 'ask', 'learning', [0, 1, 2, 3, 4]);
+    two2.patterns.answers = two.patterns.answers;
+    check('…and with ask at 5 of 5 and five at 4 of 5, ask wins', K.startWayFor(two2, 'learning', k) === 'ask');
+
+    // confirmed and fading
+    const sf = sw('five', 'learning', [0, 1, 2, 3]);
+    check('a way not yet answered is not the way for that kind of work', K.startWayFor(sf, 'learning', k) === null);
+    sf.patterns.answers['start-way:learning:five'] = { said: 'no', on: before(1), examples: 5, title: swp.title };
+    check('…nor when the answer is "Not really"', K.startWayFor(sf, 'learning', k) === null);
+    sf.patterns.answers['start-way:learning:five'] = { said: 'yes', on: before(1), examples: 5, title: swp.title };
+    check('once confirmed, it is the way for that kind of work (and not for another)', K.startWayFor(sf, 'learning', k) === 'five' && K.startWayFor(sf, 'admin', k) === null);
+    const old = sw('five', 'learning', [0, 1, 2, 3], [70, 69, 68, 67, 66]);
+    old.patterns.answers['start-way:learning:five'] = sf.patterns.answers['start-way:learning:five'];
+    check('…and null again once the evidence fades (the five uses are older than 8 weeks)', K.startWayFor(old, 'learning', k) === null);
+
+    // startingEasier
+    const easy = (n, over = []) => { const x = fresh(); for (let i = 1; i <= n; i++) { const id = K.addTask(x.tasks, { title: 'Done ' + i, category: 'admin' }); Object.assign(x.tasks.items.find(y => y.id === id), { done: true, doneOn: before(i), due: before(i), postponed: 0 }); } over.forEach(f => f(x)); return x; };
+    check('the last 5 done admin tasks all done without a move: starting is easier for admin (and not for another kind)', K.startingEasier(easy(5), 'admin') === true && K.startingEasier(easy(5), 'learning') === false);
+    check('…with only 4 done tasks it is not', K.startingEasier(easy(4), 'admin') === false);
+    check('…one of the last 5 moved once: not', K.startingEasier(easy(5, [x => { x.tasks.items[4].postponed = 1; }]), 'admin') === false);
+    check('…a move on an older, sixth task does not count', K.startingEasier(easy(6, [x => { x.tasks.items[5].postponed = 3; }]), 'admin') === true);
+    check('…one of the last 5 done after its date: not', K.startingEasier(easy(5, [x => { x.tasks.items[2].due = before(4); }]), 'admin') === false);
+    check('…one of the last 5 with no date is not one of the 5 (the sixth takes its place)', K.startingEasier(easy(5, [x => { x.tasks.items[2].due = null; }]), 'admin') === false && K.startingEasier(easy(6, [x => { x.tasks.items[2].due = null; }]), 'admin') === true);
+    check('…one of the last 5 with an answer about what was in the way: not', K.startingEasier(easy(5, [x => { x.tasks.items[1].blockers.push({ reason: 'start', on: before(3) }); }]), 'admin') === false);
+    check('…one of the last 5 that you used Help me start on, or one of its 10-minute pieces: not', K.startingEasier(easy(5, [x => { x.patterns.startSeen = [{ on: before(9), way: 'step', category: 'admin', taskId: x.tasks.items[0].id }]; }]), 'admin') === false
+      && K.startingEasier(easy(5, [x => { x.patterns.startSeen = [{ on: before(9), way: 'smaller', category: 'admin', taskId: 'tkElse', pieceId: x.tasks.items[3].id }]; }]), 'admin') === false);
+    check('…a task let go does not count as done', K.startingEasier(easy(5, [x => { x.tasks.items[0].letGoOn = before(0); }]), 'admin') === false);
+
+    // start offers step back
+    const so2 = easy(5); so2.tasks.items.forEach(t => { t.doneOn = before(40); });
+    const stuckAdmin = K.addTask(so2.tasks, { title: 'Stuck admin', category: 'admin' }), stuckLearn = K.addTask(so2.tasks, { title: 'Stuck learning', category: 'learning' });
+    for (const id2 of [stuckAdmin, stuckLearn]) so2.tasks.items.find(y => y.id === id2).postponed = 3;
+    check('a stuck task of a kind where starting is easier is not offered, but a stuck task of another kind is', K.startOfferTask(so2, k)?.title === 'Stuck learning', K.startOfferTask(so2, k));
+    so2.tasks.items.find(y => y.id === stuckLearn).postponed = 0;
+    check('…and with nothing stuck of another kind there is no offer', K.startOfferTask(so2, k) === null);
+
+    // Ask
+    const ak = sw('five', 'learning', [0, 1, 2, 3]);
+    ak.patterns.answers['start-way:learning:five'] = { said: 'yes', on: before(1), examples: 5, title: swp.title };
+    check('with Ask allowed to use how you work, a confirmed way of starting is one of the lines it gets', (ak.patterns.prefs.askUse = true) && K.howYouWork(ak, k).includes('Five-minute starts work for you on learning tasks'), K.howYouWork(ak, k));
+    delete ak.patterns.prefs.askUse;
+    check('…and with that off it gets nothing', K.howYouWork(ak, k).length === 0, K.howYouWork(ak, k));
   }
 
   console.log('\n[11] What usually gets in the way');

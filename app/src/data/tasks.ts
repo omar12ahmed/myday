@@ -86,8 +86,8 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
     }
     // The milestone of its project it's toward (specs/projects-evidence-decisions.md): an id, read through milestoneTasks.
     if (typeof t.milestoneId !== 'string' || !t.milestoneId) delete item.milestoneId;
-    // The days you did something MyDay can see on it (specs/help-me-start.md §6): dates, each once, the last 10.
-    const touched = Array.isArray(t.touched) ? [...new Set(t.touched.filter(isDateKey))].sort().slice(-10) : [];
+    // The days you did something MyDay can see on it (specs/help-me-start.md §6): dates, each once, the last 30.
+    const touched = Array.isArray(t.touched) ? [...new Set(t.touched.filter(isDateKey))].sort().slice(-30) : [];
     if (touched.length) item.touched = touched; else delete item.touched;
     // A deadline's details (specs/projects-deadlines.md): kept when it says what kind it is — a kind from a newer MyDay
     // as it is, with anything that MyDay keeps beside it; a shape this version can't read is counted.
@@ -406,10 +406,10 @@ export const stepsText = (t: TaskItem) => (t.steps?.length ? `${t.steps.filter(x
 // Every step ticked: the task's page offers to mark the task done — one tap, never by itself.
 export const allStepsDone = (t: TaskItem) => !!t.steps?.length && t.steps.every(x => x.done);
 // A day you did something MyDay can see on a task (a step ticked, its notes edited, its timer run to the end): kept so
-// Help me start can tell whether you started the day you asked for help (specs/help-me-start.md §6). The last 10 days.
+// Help me start can tell whether you started the day you asked for help (specs/help-me-start.md §6). The last 30 days.
 export function touchTask(t: TaskItem, k: DateKey = todayKey()): void {
   if (t.touched?.includes(k)) return;
-  t.touched = [...(t.touched ?? []), k].sort().slice(-10);
+  t.touched = [...(t.touched ?? []), k].sort().slice(-30);
 }
 const stepOf = (d: TasksData, id: string, stepId: string) => { const t = d.items.find(x => x.id === id); return { t, st: t?.steps?.find(x => x.id === stepId) }; };
 // A new step at the end (words trimmed; up to 30). Returns its id, or null.

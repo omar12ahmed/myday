@@ -26,9 +26,11 @@ export function TimerCard({ data, onAction }: { data: MyDayData; onAction: (a: T
           dt.finished = true;
           dt.accumulatedMs = dt.durationSec * 1000;
           dt.startedAt = null;
-          // Run to the end: the task it's for was touched today (Help me start learns from it, specs/help-me-start.md §6).
+          // Run to the end while you were here: the task it's for was touched today (Help me start learns from it,
+          // specs/help-me-start.md §6). Not when MyDay is opened again later, so reopening never edits a task on its own.
           const item = draft.tasks.items.find(x => x.planUid === dt.uid && x.plannedOn === dt.dayKey);
-          if (item) touchTask(item, dt.dayKey);
+          const pastEnd = t.accumulatedMs + (t.startedAt ? Date.now() - t.startedAt : 0) - t.durationSec * 1000;
+          if (item && pastEnd < 60000) touchTask(item, dt.dayKey);
         });
         try { navigator.vibrate?.(120); } catch { /* not supported */ }
       }
