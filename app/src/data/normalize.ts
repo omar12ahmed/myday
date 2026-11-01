@@ -27,7 +27,7 @@ import { emptyCareer, normalizeCareer } from './career';
 import { emptyContent, normalizeContent } from './content';
 import { emptyResearch, normalizeResearch } from './research';
 import { emptyTasks, normalizeTasks } from './tasks';
-import type { Category, Commitment, DateKey, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
+import type { Category, Commitment, DateKey, DayContext, Energy, ListItem, MyDayData, PlanStudy, QueueItem, Settings, Task, Theme } from './types';
 import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
 
 // The small helpers live in util.ts; they're re-exported here for the files that already use them.
@@ -39,14 +39,18 @@ export const CATS: Category[] = ['learning', 'admin', 'health'];
 const THEMES: Theme[] = ['dark', 'light', 'auto'];
 export const DEFAULT_SETTINGS: Settings = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'light', motion: 'auto' }; // light by default in the new app (from 1.11.0); the classic MyDay's default stays dark
 
+// The learning items every MyDay started with until 1.130.0. Today's learning task now comes from Study's next step, so
+// they're no longer seeded, and ones still exactly as MyDay added them are removed (specs/today-learning-and-tidy.md §4).
+export const OLD_LEARNING_STARTERS: readonly ListItem[] = [
+  { id: 'l1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 },
+  { id: 'l2', title: 'OverTheWire Bandit — one level', minutes: 20 },
+  { id: 'l3', title: 'HTB Academy: Networking module — one section', minutes: 30 },
+  { id: 'l4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 },
+];
+
 // The starter task lists, used when a list is missing.
 export const SEED: Record<Category, ListItem[]> = {
-  learning: [
-    { id: 'l1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 },
-    { id: 'l2', title: 'OverTheWire Bandit — one level', minutes: 20 },
-    { id: 'l3', title: 'HTB Academy: Networking module — one section', minutes: 30 },
-    { id: 'l4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 },
-  ],
+  learning: [],
   admin: [
     { id: 'a1', title: 'Laundry', minutes: 15 },
     { id: 'a2', title: 'Bulk cook 2 meals', minutes: 60 },
@@ -139,7 +143,13 @@ function cleanTask(o: unknown): Task | null {
     rolledQid: stringOrNull(o.rolledQid),
     scheduledStart: s,
     scheduledEnd: e,
+    ...(o.category === 'learning' && cleanPlanStudy(o.study) ? { study: cleanPlanStudy(o.study)! } : {}),
   };
+}
+function cleanPlanStudy(o: unknown): PlanStudy | null {
+  if (!isObj(o) || !['arabic', 'cybersecurity', 'roadmap'].includes(o.subject as string)) return null;
+  const id = (v: unknown) => typeof v === 'string' && v.length > 0 && v.length <= 200;
+  return { subject: o.subject as PlanStudy['subject'], ...(id(o.courseId) ? { courseId: o.courseId as string } : {}), ...(id(o.lessonId) ? { lessonId: o.lessonId as string } : {}) };
 }
 
 function cleanCommitment(o: unknown): Commitment | null {
@@ -300,9 +310,23 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   for (const k of ['queue', 'commitments']) if (wrong(raw[k], 'array')) report.dropped++;
   if (isObj(raw.lists)) for (const cat of CATS) if (cat in raw.lists && wrong(raw.lists[cat], 'array')) report.dropped++;
   if (isObj(raw.health)) for (const k of ['workout', 'food', 'daily']) if (wrong(raw.health[k], 'object')) report.dropped++;
+  dropOldStarters(s);
   // Keep everything else exactly as it was: anything added by a newer MyDay.
   for (const key of Object.keys(raw)) {
     if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];
   }
   return s;
+}
+
+// The old learning starters still exactly as MyDay added them (same id, title and minutes) leave your Learning list, and
+// their copies waiting in the queue. One a Study course of yours is linked to stays: you made it a course.
+function dropOldStarters(s: MyDayData) {
+  const linked = new Set(s.study.stages.flatMap(g => g.courses.map(c => c.listId)).filter(Boolean));
+  const old = new Map(OLD_LEARNING_STARTERS.map(x => [x.id, x]));
+  const unchanged = (id: string | null, title: string, minutes?: number) => {
+    const x = id ? old.get(id) : undefined;
+    return !!x && !linked.has(x.id) && x.title === title && (minutes === undefined || x.minutes === minutes);
+  };
+  s.lists.learning = s.lists.learning.filter(i => !unchanged(i.id, i.title, i.minutes));
+  s.queue = s.queue.filter(q => !(q.category === 'learning' && unchanged(q.taskId, q.title)));
 }

@@ -21,7 +21,8 @@ translation, technology and cybersecurity, academic and professional). This adds
    - how many of its lessons are ready, and how many need revision. A core stage counts its required lessons, like your
      path; a branch's lessons are all optional in the course, so the branch counts them all (and says so);
    - where you are: **the stage of your next step** (the same plan as the map's next-step card), even when that stage
-     is all ready (resuming a ready lesson); a stage before it that isn't all ready is **earlier, not finished**; one
+     is all ready (resuming a ready lesson; a session left open more than 7 days no longer counts as resuming,
+     `specs/today-learning-and-tidy.md` §3); a stage before it that isn't all ready is **earlier, not finished**; one
      that's all ready is **done**; the rest are **ahead**. When the plan's step is "complete" (your path's lessons are
      ready, or only revision is left), where you are is the first stage that isn't all ready (for a specialist goal,
      its branch). A stage with no lessons is never shown as done;
@@ -33,7 +34,8 @@ translation, technology and cybersecurity, academic and professional). This adds
    lesson, "…, the goal's own stage (6 of 6)"; for a one-stage goal, just "A step towards “…”". A lesson that isn't on
    the route to your goal shows no line.
 3. **The same line on the map's next-step card**, under the lesson's title: not for a revision round, and not when
-   your path is all ready (the step then points back at the first lesson), unless you're resuming a session. When only
+   your path is all ready (the step then points back at the first lesson), unless you're resuming a session (one opened
+   in the last 7 days: `specs/today-learning-and-tidy.md` §3). When only
    lessons needing revision are left, the line shows for the one to revisit.
 4. **On Study home's Arabic card:** "Your next lesson is a step towards …" (the next lesson from the same plan as the
    map, with the same exceptions; `learningGlance`), with **Hide**. Hiding moves focus to a message ("Hidden here. To

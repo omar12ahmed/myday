@@ -2,7 +2,7 @@
 // a lesson's state, when it "looks ready", the next step and why, how long a session to suggest, and where cards
 // that join revision by themselves land. Nothing here saves anything or knows a subject: each subject passes in its
 // own evidence (data/arabic/lessons.ts). States are places in words, never scores (specs/adaptive-study.md).
-import { shift } from '../dates';
+import { keyOf, shift } from '../dates';
 import type { DateKey, Outcome, Rating, Support } from '../types';
 
 export type LessonState = 'new' | 'practised' | 'ready' | 'holding' | 'needs-revision';
@@ -69,6 +69,11 @@ export interface StepInput {
 }
 // In order: resume an open session; revisit a lesson the next one builds on that needs revision; revise what's due;
 // the first lesson that's New or Practised. With nothing left, say so.
+// A session left open (or a notebook draft) holds the next step only for this long: an older one no longer does, and
+// Today offers it as "You left … open" instead (specs/today-learning-and-tidy.md §3; the owner's choice, 1 Nov 2026).
+export const OPEN_HOLDS_DAYS = 7;
+export const stillOpen = (startedAt: string, k: DateKey) => keyOf(new Date(startedAt)) >= shift(k, -OPEN_HOLDS_DAYS);
+
 export function nextStep(i: StepInput): Step | null {
   if (!i.path.length) return null;
   const step = (kind: StepKind, lessonId: string, because?: string): Step => ({ kind, lessonId, because, state: i.state(lessonId), due: i.due });

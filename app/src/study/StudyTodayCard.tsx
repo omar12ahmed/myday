@@ -11,6 +11,9 @@ import { optionAction } from './courseOption';
 import { Meta, Row, TextLink } from './parts';
 import { useNextLearning } from './useNextLearning';
 import { ambitionsOfLesson, towardsLine } from '../data/ambitions';
+import { useConfirm } from '../components/confirm';
+import { shortDate } from '../data/dates';
+import { toast } from '../data/toast';
 
 const pickOptions = (m: typeof import('./nextLearning'), d: MyDayData) => m.learningOptions(d);
 
@@ -34,6 +37,8 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
           ? <div><strong>Continue learning</strong><p className="text-sm text-fg-2 m-0">Your next lesson is ready — or choose another subject.</p></div>
           : <div><strong>Start learning</strong><p className="text-sm text-fg-2 m-0">Your first lesson is ready — or choose another subject.</p></div>}
         <LessonOption option={options[0]} primary towards={towardsLine(ambitionsOfLesson(data, options[0].subject, options[0].courseId, options[0].lessonId))} />
+        {options[0].practised && options[0].lessonId && options[0].subject !== 'roadmap' && <ReadyNext subject={options[0].subject} lessonId={options[0].lessonId} />}
+        {options[0].left && options[0].subject !== 'roadmap' && <LeftOpen subject={options[0].subject} left={options[0].left} />}
         {options.length > 1 && <details className="rounded-tile border border-outline p-3" data-s="study-other-subjects">
           <summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold">Choose another subject</summary>
           <div className="grid gap-2 mt-2">{options.slice(1).map(option => <LessonOption key={option.subject} option={option} towards={towardsLine(ambitionsOfLesson(data, option.subject, option.courseId, option.lessonId))} />)}</div>
@@ -54,6 +59,36 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
       )}
     </Card>
   );
+}
+
+// "Ready — next lesson": the lesson page's Ready to move on, from Today, for a lesson you've practised; the card (and
+// today's Study entry) then show the next step (specs/today-learning-and-tidy.md §3).
+function ReadyNext({ subject, lessonId }: { subject: 'arabic' | 'cybersecurity'; lessonId: string }) {
+  const ready = () => void import('./todayCardActions').then(m => {
+    const added = m.readyFromToday(subject, lessonId);
+    if (added) toast(added.length ? `Ready to move on. Its checks come back in your revision from ${shortDate(added.map(a => a.due).sort()[0])}.` : 'Ready to move on.');
+  }, () => toast('That didn’t load — try again, or mark it ready on the lesson’s page.'));
+  return <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="today-ready">
+    <Button inline variant="ghost" data-action="today-ready" onClick={ready}>Ready — next lesson</Button>
+    <span className="text-sm text-fg-2">When this one has clicked.</span>
+  </div>;
+}
+
+// A session (or notebook draft) left open more than 7 days no longer holds the card: offered here instead. An Arabic
+// session can be let go (discarded, as from the lesson); a Cybersecurity draft stays in your notebook.
+function LeftOpen({ subject, left }: { subject: 'arabic' | 'cybersecurity'; left: NonNullable<LearningOption['left']> }) {
+  const confirm = useConfirm();
+  async function letGo() {
+    if (!left.attemptId || !await confirm({ title: 'Let this session go?', body: 'Its answers, marks and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Let it go', cancelLabel: 'Keep it' })) return;
+    import('./todayCardActions').then(m => { if (m.letGoOfSession(left.attemptId!, left.lessonId)) toast('Session let go.'); }, () => toast('That didn’t load — try again from the lesson.'));
+  }
+  return <div className="rounded-tile bg-surface-2 px-3 py-2" data-s="today-left-open">
+    <p className="m-0 text-sm">{subject === 'arabic' ? `You left “${left.title}” open on ${shortDate(left.on)}.` : `You have a notebook draft on “${left.title}” from ${shortDate(left.on)}. It stays in your notebook.`}</p>
+    <span className="flex flex-wrap items-center gap-x-3">
+      <TextLink href={left.href}>{subject === 'arabic' ? 'Resume' : 'Open it'}</TextLink>
+      {subject === 'arabic' && left.attemptId && <Button inline variant="quiet" data-action="today-let-go" onClick={() => void letGo()}>Let it go</Button>}
+    </span>
+  </div>;
 }
 
 // `towards`: on Today, which ambition the lesson is a step towards (specs/projects-ambitions.md).

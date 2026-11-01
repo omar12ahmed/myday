@@ -53,6 +53,18 @@ import { markOffer, sayNotNow, startOfferTask, todaysOffer } from '../data/offer
 import { noticed } from '../data/patterns/notice';
 import { setStartOffers } from '../data/patterns/saved';
 import { StartOfferCard } from './StartOfferCard';
+import { studyDoneAs, studyNow, studyPick } from '../study/todayStudy';
+import { loadNextLearning, nextLearningNow } from '../study/useNextLearning';
+import type { StudyPick } from '../data/plan';
+
+// Study's next step for the learning task, once the Study catalogues are in (specs/today-learning-and-tidy.md §2).
+function studyOf(now: MyDayData): StudyPick | null {
+  const m = nextLearningNow();
+  try { return m ? studyPick(m, now) : null; } catch (e) { console.error('MyDay: the next step could not be worked out', e); return null; }
+}
+// Building waits for them (they're usually in already: Today's Study card loads them), so the plan never falls back to
+// your own list just because they hadn't loaded yet.
+const withStudy = (go: () => void) => { if (nextLearningNow()) go(); else loadNextLearning().then(go, go); };
 
 // The Today section. Saved data comes in as `data`; everything else here (an open proposal, the
 // evening check-in, the commitment form…) is kept only while the screen is open, as in the current
@@ -124,8 +136,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
       if (!p) return p;
       if (p.touched) return { ...p, stale: true };
       const now = getSnapshot().data, day = now.days[k];
-      if (p.mode === 'build') return day ? null : proposeBuild(now, k, contextFor(now, k).energy || p.energy);
-      return day && !day.rest ? proposeReview(now, k) : null;
+      if (p.mode === 'build') return day ? null : proposeBuild(now, k, contextFor(now, k).energy || p.energy, studyOf(now));
+      return day && !day.rest ? proposeReview(now, k, studyOf(now)) : null;
     });
   }
 
@@ -152,34 +164,43 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
     refresh() {
       const now = getSnapshot().data, day = now.days[k];
       setProposal(p => (p && p.mode === 'review'
-        ? (day && !day.rest ? proposeReview(now, k) : null)
-        : (day ? null : proposeBuild(now, k, contextFor(now, k).energy || 3))));
+        ? (day && !day.rest ? proposeReview(now, k, studyOf(now)) : null)
+        : (day ? null : proposeBuild(now, k, contextFor(now, k).energy || 3, studyOf(now)))));
     },
   };
 
   function build(energy: Energy) {
     if (getSnapshot().data.days[k]) return;
     update(dr => { ensureContext(dr, k).energy = energy; });
-    setProposal(proposeBuild(getSnapshot().data, k, energy));
-    setAnimateProposal(motionAllowed);
-    scrollTo('proposalCard');
+    withStudy(() => {
+      const now = getSnapshot().data;
+      if (now.days[k]) return;
+      setProposal(proposeBuild(now, k, energy, studyOf(now)));
+      setAnimateProposal(motionAllowed);
+      scrollTo('proposalCard');
+    });
   }
   function review() {
-    const now = getSnapshot().data;
-    if (!now.days[k] || now.days[k].rest) return;
-    setProposal(proposeReview(now, k));
-    setAnimateProposal(motionAllowed);
-    scrollTo('proposalCard');
+    withStudy(() => {
+      const now = getSnapshot().data;
+      if (!now.days[k] || now.days[k].rest) return;
+      setProposal(proposeReview(now, k, studyOf(now)));
+      setAnimateProposal(motionAllowed);
+      scrollTo('proposalCard');
+    });
   }
 
   // ---------- Ticking off ----------
   function toggle(dayKey: string, t: Task, done: boolean) {
     let celebrateNow = false;
+    // A Study entry ticked by hand keeps the lesson it was ("Arabic Fuṣḥā: The Fuṣḥā register"), for your history.
+    const m = nextLearningNow(), now = done && t.study && m ? studyNow(m.learningOptions(getSnapshot().data), t) : null;
     const ok = update(dr => {
       const task = findTask(dr, dayKey, t.uid);
       if (!task) return false;
       setDone(dr, task, done);
       if (!done) return;
+      if (now && task.study) { const as = studyDoneAs(now); task.title = as.title; if (as.lessonId) task.study = { ...task.study, lessonId: as.lessonId }; }
       if (dr.timer && dr.timer.uid === task.uid) dr.timer = null;
       const day = dr.days[dayKey];
       if (dayKey === k && day && !day.rest && day.tasks.length && day.tasks.every(x => x.done) && dr.celebratedOn !== dayKey) {
@@ -266,7 +287,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   }
   function swapLearning(replaceUid: string | null) {
     let result: ReturnType<typeof swapInLearning> = { changed: false, message: null };
-    update(dr => { result = swapInLearning(dr, k, replaceUid); if (!result.changed) return false; });
+    const study = studyOf(getSnapshot().data);
+    update(dr => { result = swapInLearning(dr, k, replaceUid, study); if (!result.changed) return false; });
     if (result.changed) hideNudge();
     if (result.message) toast(result.message);
   }

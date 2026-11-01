@@ -5,7 +5,7 @@ import { keyOf, todayKey } from '../../data/dates';
 import { checkIds, evidence, lessonRecord, stateOf } from '../../data/arabic/lessons';
 import { practiceOf } from '../../data/arabic/practice';
 import { MODALITIES, type Modality, type Variant } from '../../data/arabic/types';
-import { isDone, lengthFor, lessonState, nextStep, onOwn, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
+import { isDone, lengthFor, lessonState, nextStep, onOwn, stepReason, stepsFor, stillOpen, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
 import { dueIds } from '../../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../../data/study/revision';
 import { suggestLength } from '../../data/study/sessions';
@@ -57,10 +57,19 @@ export function journeyFor(d: MyDayData, lessonId: string, length: string, refle
 // `complete`: every lesson on your path is ready to move on or holding (true even while a session is open).
 // `aiReason`: the reason without your own "Needs revision" words, as it may reach AI.
 export interface ArabicPlan { step: Step; reason: string; aiReason: string; length: { variant: Variant; minutes: number; why: string[]; plain: string[] }; complete: boolean }
+// A session left open more than 7 days, now that it no longer holds the step: Today offers to resume it or let it go.
+// None while a newer one is being resumed.
+export function leftSession(d: MyDayData, k: DateKey = todayKey()): { lessonId: string; on: DateKey; attemptId: string } | null {
+  const path = pathLessons(d.arabic.pathId), open = d.arabic.attempts.filter(a => !a.finishedAt && path.includes(a.lessonId));
+  if (open.some(a => stillOpen(a.startedAt, k))) return null;
+  const a = open.pop();
+  return a ? { lessonId: a.lessonId, on: keyOf(new Date(a.startedAt)), attemptId: a.id } : null;
+}
 export function arabicPlan(d: MyDayData, k: DateKey = todayKey()): ArabicPlan | null {
   const path = pathLessons(d.arabic.pathId), cache = new Map<string, LessonState>();
   const state = (id: string) => { if (!cache.has(id)) cache.set(id, arabicState(d, id)); return cache.get(id)!; };
-  const open = d.arabic.attempts.filter(a => !a.finishedAt && path.includes(a.lessonId)).pop()?.lessonId ?? null;
+  // A session left open in the last 7 days is resumed first; an older one no longer holds the step (stillOpen).
+  const open = d.arabic.attempts.filter(a => !a.finishedAt && path.includes(a.lessonId) && stillOpen(a.startedAt, k)).pop()?.lessonId ?? null;
   const step = nextStep({ path, state, open, buildsOn, due: dueIds(d, k, 'arabic').length, stopped: reviewedOn(d.study, k) >= DAILY_ENOUGH });
   if (!step) return null;
   const what = lessonRecord(d, step.lessonId)?.revisit?.what;

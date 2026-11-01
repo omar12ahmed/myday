@@ -8,6 +8,10 @@ import type { Day, MyDayData, Task } from '../data/types';
 import { QueueNote } from './QueueNote';
 import { TaskList } from './TaskList';
 import { ambitionsOfTask, towardsLine } from '../data/ambitions';
+import { studyNow, type StudyNow } from '../study/todayStudy';
+import { useNextLearning } from '../study/useNextLearning';
+
+const pickOptions = (m: typeof import('../study/nextLearning'), d: MyDayData) => m.learningOptions(d);
 
 // What a rest day shows in place of tasks.
 export function RestDayCard() {
@@ -40,7 +44,10 @@ export function DayTasks({ data, k, d, mode, justDoneUid, onToggle, onTimer, onR
   const help: Record<string, string> = {};
   const nextItem = nextUid ? data.tasks.items.find(x => x.plannedOn === k && x.planUid === nextUid && !x.waiting && !x.done && !x.letGoOn) : undefined;
   if (nextUid && nextItem) help[nextUid] = nextItem.id;
-  const common = { dayKey: k, nextUid, justDoneUid, warnings, steps, towards, help, mode, onToggle, onTimer, onRoll };
+  // …and a Study entry still to do, as the step it is now (specs/today-learning-and-tidy.md §2).
+  const options = useNextLearning(data, pickOptions), study: Record<string, StudyNow> = {};
+  if (mode === 'plan') for (const t of d.tasks) { const n = studyNow(options, t); if (n) study[t.uid] = n; }
+  const common = { dayKey: k, nextUid, justDoneUid, warnings, steps, towards, help, study, mode, onToggle, onTimer, onRoll };
   return (
     <>
       {timed.length > 0 && <TaskList tasks={timed} joined {...common} />}

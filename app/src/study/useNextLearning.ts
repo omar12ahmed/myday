@@ -9,14 +9,18 @@ type NextLearning = typeof import('./nextLearning');
 let loaded: NextLearning | null = null;
 let loading: Promise<NextLearning> | null = null;
 
+// The same module outside a component: loaded (or loading) once for everyone. `nextLearningNow` is null until it's in.
+export const loadNextLearning = (): Promise<NextLearning> => (loading ??= import('./nextLearning').then(m => (loaded = m), e => { loading = null; throw e; }));
+export const nextLearningNow = (): NextLearning | null => loaded;
+
 export function useNextLearning<T>(data: MyDayData, pick: (m: NextLearning, data: MyDayData) => T): T | null | undefined {
   const [mod, setMod] = useState<NextLearning | null>(loaded);
   const [failed, setFailed] = useState<MyDayData | null>(null);
   useEffect(() => {
     if (mod) return;
     let live = true;
-    (loading ??= import('./nextLearning')).then(m => { loaded = m; if (live) setMod(m); })
-      .catch(() => { loading = null; if (live) setFailed(data); });
+    loadNextLearning().then(m => { if (live) setMod(m); })
+      .catch(() => { if (live) setFailed(data); });
     return () => { live = false; };
   }, [mod, data]);
   return useMemo(() => {

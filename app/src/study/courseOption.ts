@@ -28,6 +28,10 @@ export interface LearningOption {
   lessonId?: string;    // the lesson it opens (Arabic, Cybersecurity)
   attemptId?: string;   // the open session it resumes (Arabic), and the steps that session shows, for where you left off
   steps?: JourneyStep[];
+  practised?: boolean;  // the step is a lesson you've practised but not marked ready: Today offers "Ready — next lesson"
+  // A session (Arabic) or notebook draft (Cybersecurity) left open more than 7 days, which no longer holds the step:
+  // Today offers it as "You left … open" (specs/today-learning-and-tidy.md §3).
+  left?: { lessonId: string; title: string; on: string; href: string; attemptId?: string };
 }
 
 const ticked = (ix: StudyIndex, courseId: string) => !!ix.courseTasks.get(courseId)?.some(t => t.done);

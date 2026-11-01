@@ -2,10 +2,10 @@
 // path, Progress and Today's Study card: the course's facts from the catalogue, your records
 // (data/cybersecurity/lessons.ts) and the shared rules (data/study/mastery.ts), as Arabic's (study/arabic/plan.ts).
 // Worked out on the device each time; nothing here is saved and nothing is sent.
-import { todayKey } from '../../data/dates';
+import { keyOf, todayKey } from '../../data/dates';
 import { cyberEvidence, cyberLessonRecord, cyberStateOf, type CyberLessonFacts } from '../../data/cybersecurity/lessons';
 import { CYBER_VERSION } from '../../data/cybersecurity/types';
-import { isDone, lengthFor, lessonState, nextStep, onOwn, stepReason, type LessonState, type Length, type Step } from '../../data/study/mastery';
+import { isDone, lengthFor, lessonState, nextStep, onOwn, stepReason, stillOpen, type LessonState, type Length, type Step } from '../../data/study/mastery';
 import { dueIds } from '../../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../../data/study/revision';
 import { suggestLength } from '../../data/study/sessions';
@@ -29,16 +29,29 @@ export const pathIds = (d: MyDayData) => selectedPathLessons(d.cybersecurity.pat
 const onPathIds = (d: MyDayData) => selectedPathLessons(d.cybersecurity.pathId).map(l => l.id);
 
 // A lesson on your path (optional ones too) with a notebook attempt still open (the current version and rubric), as
-// the next step resumes it. Drafts from older versions, unknown activities and lessons off your path don't count.
-export function openLesson(d: MyDayData, path: string[]): string | null {
+// the next step resumes it. Drafts from older versions, unknown activities and lessons off your path don't count, and
+// with `k`, nor does a draft started more than 7 days before it (stillOpen: it no longer holds the step).
+export function openLesson(d: MyDayData, path: string[], k?: DateKey): string | null {
+  return openDraft(d, path, k)?.lessonId ?? null;
+}
+function openDraft(d: MyDayData, path: string[], k?: DateKey): { lessonId: string; startedAt: string } | null {
   const on = new Set(path);
   for (const a of d.cybersecurity.attempts) {
     const activity = activities.get(a.activityId);
     if (!activity || a.submittedAt || a.curriculumVersion !== CYBER_VERSION || a.rubricVersion !== (activity.version ?? CYBER_VERSION)) continue;
+    if (k && !stillOpen(a.startedAt, k)) continue;
     const l = [...on].find(id => factsOf(id).activityIds.includes(a.activityId) || practiceById.get(a.activityId)?.lessonIds.includes(id));
-    if (l) return l;
+    if (l) return { lessonId: l, startedAt: a.startedAt };
   }
   return null;
+}
+// A draft left more than 7 days, now that it no longer holds the step: Today offers to open it (it stays in your
+// notebook; nothing is discarded). None while a newer draft is being resumed.
+export function leftDraft(d: MyDayData, k: DateKey = todayKey()): { lessonId: string; on: DateKey } | null {
+  const path = onPathIds(d);
+  if (openDraft(d, path, k)) return null;
+  const old = openDraft(d, path);
+  return old ? { lessonId: old.lessonId, on: keyOf(new Date(old.startedAt)) } : null;
 }
 
 // How long a session to suggest: energy and free time decide (suggestLength); a lesson to revisit gets the revision
@@ -57,7 +70,7 @@ export interface CyberPlan { step: Step; reason: string; aiReason: string; lengt
 export function cyberPlan(d: MyDayData, k: DateKey = todayKey()): CyberPlan | null {
   const path = pathIds(d), cache = new Map<string, LessonState>();
   const state = (id: string) => { if (!cache.has(id)) cache.set(id, cyberState(d, id)); return cache.get(id)!; };
-  const open = openLesson(d, onPathIds(d)), due = dueIds(d, k, 'cybersecurity').length;
+  const open = openLesson(d, onPathIds(d), k), due = dueIds(d, k, 'cybersecurity').length;
   // A draft on an optional lesson of your path resumes too (the shared rules only resume on the path itself).
   const step: Step | null = open && !path.includes(open) && path.length ? { kind: 'resume', lessonId: open, state: state(open), due }
     : nextStep({ path, state, open, buildsOn, due, stopped: reviewedOn(d.study, k) >= DAILY_ENOUGH });

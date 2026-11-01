@@ -4,10 +4,10 @@ import type { MyDayData } from '../data/types';
 import { isDone, MODE_LABEL, modeOf } from '../data/study/mastery';
 import { stIndex } from '../data/study/roadmap';
 import { lessonIndex } from './arabic/catalogue';
-import { arabicPlan, arabicState, journeyFor, pathLessons, stepTowards } from './arabic/plan';
+import { arabicPlan, arabicState, journeyFor, leftSession, pathLessons, stepTowards } from './arabic/plan';
 import { roadmapOption, type LearningOption } from './courseOption';
 import { lessons as cyberLessons } from './cybersecurity/catalogue';
-import { cyberGlance, cyberPlan } from './cybersecurity/plan';
+import { cyberGlance, cyberPlan, leftDraft } from './cybersecurity/plan';
 
 export type { LearningOption, LearningSubject } from './courseOption';
 
@@ -38,6 +38,8 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     resume: cs.kind === 'resume', allComplete: cp.complete, started: cyberStarted,
     revise: cs.kind === 'revise' || (cs.kind === 'complete' && cs.due > 0 && cs.state !== 'needs-revision') ? 'cybersecurity' : undefined,
     mode: cs.kind === 'resume' ? undefined : MODE_LABEL[modeOf(cp.length.mode)], lessonId: cs.lessonId,
+    ...(cs.kind === 'lesson' && cs.state === 'practised' ? { practised: true } : {}),
+    ...(() => { const l = cs.kind === 'resume' ? null : leftDraft(data); return l ? { left: { ...l, title: cyberTitle(l.lessonId), href: '#study/cybersecurity/' + encodeURIComponent(l.lessonId) } } : {}; })(),
   };
 
   // Arabic: the same adaptive next step as its learning map (study/arabic/plan.ts), with the length that suits today.
@@ -60,6 +62,8 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     revise: step.kind === 'revise' || (step.kind === 'complete' && step.due > 0 && step.state !== 'needs-revision') ? 'arabic' : undefined,
     mode: step.kind === 'resume' ? undefined : MODE_LABEL[modeOf(plan.length.variant)], lessonId: step.lessonId,
     attemptId: open?.id, steps: open ? journeyFor(data, step.lessonId, open.variant, true) : undefined,
+    ...(step.kind === 'lesson' && step.state === 'practised' ? { practised: true } : {}),
+    ...(() => { const l = step.kind === 'resume' ? null : leftSession(data); return l ? { left: { ...l, title: lessonIndex[l.lessonId].title, href: '#study/arabic/' + encodeURIComponent(l.lessonId) } } : {}; })(),
   };
 
   // User-authored roadmap courses remain available, in the order of their stages and lessons.

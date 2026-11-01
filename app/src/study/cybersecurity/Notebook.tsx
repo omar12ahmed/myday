@@ -3,6 +3,7 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { CommitInput, CommitTextarea, Field, Select } from '../../components/Field';
 import { update, updateSaved } from '../../data/storage';
+import { todayKey } from '../../data/dates';
 import { toast } from '../../data/toast';
 import type { MyDayData } from '../../data/types';
 import type { CyberAttempt } from '../../data/cybersecurity/types';
@@ -17,6 +18,7 @@ import { AddToPortfolio } from './Portfolio';
 import { CheckMyAnswer } from '../CheckMyAnswer';
 import { loadTeaching } from '../teaching/useTeaching';
 import { cyberCheckSource } from './checkSource';
+import { studiedTitle, tickStudyOnPlan } from '../../data/plan';
 
 // "Check my answer" on a knowledge check's question: the answer guide's answer and the lesson's teaching, loaded on the tap.
 const checkSource = (lessonId: string, q: { id: string; prompt: string }) =>
@@ -36,7 +38,11 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
   function submit() {
     if (!draft) return;
     let error: string | null = null;
-    const saved = updateSaved(d => { error = submitAttempt(d, draft.id); if (error) return false; }) === 'saved';
+    const saved = updateSaved(d => {
+      error = submitAttempt(d, draft.id); if (error) return false;
+      // Handed in today: today's Cybersecurity entry is ticked (specs/today-learning-and-tidy.md §2).
+      tickStudyOnPlan(d, todayKey(), 'cybersecurity', lesson ? { title: studiedTitle('cybersecurity', lesson.title), lessonId: lesson.id } : {});
+    }) === 'saved';
     setProblem(error ?? (saved ? '' : 'Could not save this attempt. Check the saving message and try again.'));
     if (saved) toast('Attempt saved. Your evidence stays in the notebook.');
   }

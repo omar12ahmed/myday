@@ -6,6 +6,7 @@ import { Switch } from '../../components/Switch';
 import { Card } from '../../components/Card';
 import { useConfirm } from '../../components/confirm';
 import { CommitTextarea, Field, Select, TextInput } from '../../components/Field';
+import { studiedTitle, tickStudyOnPlan } from '../../data/plan';
 import { shift, shortDate, todayKey } from '../../data/dates';
 import { getSnapshot, update } from '../../data/storage';
 import { toast } from '../../data/toast';
@@ -496,7 +497,7 @@ function SessionFinish({ data, lesson: l, session: open, steps, onFinished }: { 
   function finish() {
     let notYet: Finished['notYet'] = [], practice: string | null = null;
     const k = todayKey();
-    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); practice = bringBackPractice(d, open.id, l.id, k); }))
+    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); practice = bringBackPractice(d, open.id, l.id, k); tickStudyOnPlan(d, k, 'arabic', { title: studiedTitle('arabic', l.title), lessonId: l.id }); }))
       onFinished({ attemptId: open.id, notYet, variant: open.variant, practice });
   }
   const did = ticksIn(data, open.id, l.id);

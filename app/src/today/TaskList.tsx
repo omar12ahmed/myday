@@ -4,6 +4,8 @@ import { CategoryChip } from '../components/CategoryChip';
 import { taskDetails, taskTime } from '../data/today';
 import type { Task } from '../data/types';
 import { openHelpMeStart } from '../tasks/helpPending';
+import { StudyEntryAction } from '../study/StudyEntryAction';
+import type { StudyNow } from '../study/todayStudy';
 
 // A day's tasks as a timeline: a round marker beside each task (a tick once it's done, a green ring
 // with a dot for the task that's up next). The whole row is the checkbox, so tapping anywhere on a
@@ -20,6 +22,7 @@ export interface TaskListProps {
   steps?: Record<string, string>;         // task uid → "2 of 5 steps" (a task from Tasks with steps)
   towards?: Record<string, string>;       // task uid → "A step towards “…”" (its project's ambition)
   help?: Record<string, string>;          // the Up next task's uid → its task, for Help me start (specs/help-me-start.md)
+  study?: Record<string, StudyNow>;       // task uid → the Study step it is now (specs/today-learning-and-tidy.md §2)
   mode: 'plan' | 'evening';               // plan: timer buttons; evening: "Roll to tomorrow"
   onToggle: (t: Task, done: boolean) => void;
   onTimer?: (t: Task, kind: 'start' | 'focus') => void;
@@ -36,13 +39,13 @@ function Marker({ done, next }: { done: boolean; next: boolean }) {
   );
 }
 
-export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDoneUid = null, warnings = {}, steps = {}, towards = {}, help = {}, mode, onToggle, onTimer, onRoll }: TaskListProps) {
+export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDoneUid = null, warnings = {}, steps = {}, towards = {}, help = {}, study = {}, mode, onToggle, onTimer, onRoll }: TaskListProps) {
   const List = joined ? 'ol' : 'ul';
   return (
     <List className="tasks space-y-3 mt-3.5">
       {tasks.map((t, i) => {
         const next = t.uid === nextUid && !t.done;
-        const time = taskTime(t);
+        const time = taskTime(t), now = study[t.uid];
         return (
           <li key={t.uid} className="relative">
             {/* The line down to the next marker: from just below this one (top-11) to just above the next (-bottom-4). */}
@@ -57,7 +60,8 @@ export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDo
                     {time}
                   </p>
                 )}
-                <p className={`title m-0 font-medium leading-snug ${t.done ? 'text-fg-2' : ''}`}>{t.title}</p>
+                <p className={`title m-0 font-medium leading-snug ${t.done ? 'text-fg-2' : ''}`}>{now ? now.title : t.title}</p>
+                {now && <p className="m-0 mt-0.5 text-sm text-fg-2 break-words" data-s="plan-study-detail">{now.detail}</p>}
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm text-fg-3 tabular-nums">
                   <CategoryChip kind={t.category} />
                   <span className="meta">{taskDetails(t)}</span>
@@ -74,12 +78,14 @@ export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDo
             </label>
             {mode === 'plan' && !t.done && onTimer && (
               <div className="task-actions flex flex-wrap gap-2 mt-2 ml-[46px]">
+                {now && <StudyEntryAction now={now} next={next} />}
                 <Button inline variant={next ? 'tonal' : 'ghost'} data-action="timer-start" data-uid={t.uid} onClick={() => onTimer(t, 'start')}>Just start · 2 min</Button>
                 <Button inline variant="ghost" data-action="timer-focus" data-uid={t.uid} onClick={() => onTimer(t, 'focus')}>Focus · {t.minutes} min</Button>
                 {help[t.uid] && <Button inline variant="ghost" data-action="help-start" data-uid={t.uid} aria-label={`Help me start: ${t.title}`} onClick={() => openHelpMeStart(help[t.uid])}>Help me start</Button>}
               </div>
             )}
-            {mode === 'evening' && !t.done && onRoll && (
+            {mode === 'evening' && !t.done && t.study && <p className="m-0 mt-2 ml-[46px] text-sm text-fg-2" data-s="study-no-roll">Tomorrow’s plan picks up where you are in Study.</p>}
+            {mode === 'evening' && !t.done && !t.study && onRoll && (
               <div className="roll mt-2 ml-[46px]">
                 <Button inline variant={t.rolledQid ? 'selected' : 'ghost'} aria-pressed={!!t.rolledQid} data-action="roll" data-uid={t.uid} data-day={dayKey} onClick={() => onRoll(t)}>
                   {t.rolledQid ? <><Check size={16} strokeWidth={3} aria-hidden="true" /> Rolling to tomorrow</> : 'Roll to tomorrow'}

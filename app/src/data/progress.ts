@@ -2,7 +2,7 @@
 // Ported from the current MyDay (same rules and wording). Nothing here ever resets to zero:
 // missed days and rest days simply slide out of the 7-day window.
 import { dtToMin, minToDt, shift, todayKey } from './dates';
-import { followQueued, learningDoneOn, learningForToday, limitFor, releaseTask, shrinkTask } from './plan';
+import { followQueued, learningDoneOn, learningForToday, limitFor, releaseTask, shrinkTask, type StudyPick } from './plan';
 import type { DateKey, MyDayData, Task } from './types';
 
 // Learning done (true/false) for the 6 days before today and today, oldest first.
@@ -42,14 +42,14 @@ export function acceptShrink(data: MyDayData, k: DateKey): 'later' | 'shrunk' | 
 
 // Swap a 15-minute learning task in for task `replaceUid` (or add it, if there's room).
 // Returns whether the plan changed, and the message to show (if any).
-export function swapInLearning(data: MyDayData, k: DateKey, replaceUid: string | null): { changed: boolean; message: string | null } {
+export function swapInLearning(data: MyDayData, k: DateKey, replaceUid: string | null, study: StudyPick | null = null): { changed: boolean; message: string | null } {
   const d = data.days[k];
   const nothing = { changed: false, message: null };
   if (!d || d.rest) return nothing;
   const i = replaceUid ? d.tasks.findIndex(t => t.uid === replaceUid && !t.done) : -1;
   if (replaceUid && i < 0) return nothing;
   if (!replaceUid && d.tasks.length >= limitFor(d.energy)) return nothing;
-  const lt = learningForToday(data, k, d);
+  const lt = learningForToday(data, k, d, study);
   if (!lt) return { changed: false, message: "There isn't a learning task available right now." };
   shrinkTask(lt);
   if (i >= 0) {

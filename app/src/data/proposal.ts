@@ -3,7 +3,7 @@
 // which changes the draft passed to it.
 import { dtToMin, localStamp, minToDt, todayKey } from './dates';
 import { fitToPrefs, limitIsYours, taskLimit } from './patterns/adapt';
-import { chooseAdditional, chooseTasks, followQueued, queueTask, sendToQueue } from './plan';
+import { chooseAdditional, chooseTasks, followQueued, queueTask, sendToQueue, type StudyPick } from './plan';
 import { contextFor, ensureContext, explainNoFit, freeSegments, subtract, type Segment } from './schedule';
 import type { DateKey, MyDayData, Task } from './types';
 
@@ -64,9 +64,10 @@ export function placeItems(data: MyDayData, p: Proposal) {
 }
 
 // "Build my day": tasks for this energy, with suggested times.
-export function proposeBuild(data: MyDayData, k: DateKey, energy: number): Proposal {
+// `study`: Study's next step, for the learning task (specs/today-learning-and-tidy.md §2).
+export function proposeBuild(data: MyDayData, k: DateKey, energy: number, study: StudyPick | null = null): Proposal {
   // Your preferences (a shorter length, fewer tasks) are applied here, in the open; without any it's unchanged.
-  const fit = fitToPrefs(data, chooseTasks(data, k, energy), energy);
+  const fit = fitToPrefs(data, chooseTasks(data, k, energy, study), energy);
   const items = fit.tasks.map(t => { const it = itemFromTask(t, true); const n = fit.notes[t.uid]; if (n) { it.note = n.note; it.why = n.why; } return it; });
   const p: Proposal = { mode: 'build', dayKey: k, energy, items, editing: false, touched: false, stale: false, fewer: fit.fewer };
   placeItems(data, p);
@@ -74,7 +75,7 @@ export function proposeBuild(data: MyDayData, k: DateKey, energy: number): Propo
 }
 
 // "Review my plan": fit today's plan to the current energy and context.
-export function proposeReview(data: MyDayData, k: DateKey): Proposal {
+export function proposeReview(data: MyDayData, k: DateKey, study: StudyPick | null = null): Proposal {
   const d = data.days[k];
   const energy = contextFor(data, k).energy || d.energy || 3;
   const limit = taskLimit(data, energy);
@@ -95,7 +96,7 @@ export function proposeReview(data: MyDayData, k: DateKey): Proposal {
     it.note = limitIsYours(data, energy) ? `Today has room for ${limit} task${limit === 1 ? '' : 's'}, as you chose.` : `Your energy is ${energy} now, so today has room for ${limit} task${limit === 1 ? '' : 's'}.`;
   }
   if (room > 0) {
-    for (const t of chooseAdditional(data, k, d.tasks, room)) {
+    for (const t of chooseAdditional(data, k, d.tasks, room, study)) {
       const it = itemFromTask(t, true);
       it.note = `your energy is ${energy} now`;
       items.push(it);

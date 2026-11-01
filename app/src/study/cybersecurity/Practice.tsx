@@ -3,6 +3,7 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Field, Select, TextInput, TextArea } from '../../components/Field';
 import { update, updateSaved } from '../../data/storage';
+import { todayKey } from '../../data/dates';
 import type { MyDayData } from '../../data/types';
 import { CYBER_VERSION, lessonHref, type CyberAttempt } from '../../data/cybersecurity/types';
 import { toast } from '../../data/toast';
@@ -12,6 +13,7 @@ import { assistanceWords, beginAttempt, submitAttempt } from './learning';
 import { Lines, LinkButton } from './parts';
 import { accessLabel, practiceActivities, practiceCheckedOn, practiceVersion, relatedPractice, type Practice } from './practiceCatalogue';
 import { answer, answerKey, authRows, logQuestions, networkConfig, networkScenarios, networkSignature, outcomes, practiceChecks, scopeCases, scopeChoices, setScenario, simulateNetwork } from './practiceRules';
+import { tickStudyOnPlan } from '../../data/plan';
 
 const currentAttempt = (a: CyberAttempt) => a.curriculumVersion === CYBER_VERSION && a.rubricVersion === practiceVersion;
 function progress(data: MyDayData, id: string) {
@@ -60,7 +62,7 @@ export function PracticeView({ data, activity }: { data: MyDayData; activity: Ac
   function submit() {
     if (!draft) return;
     let error: string | null = null;
-    const saved = updateSaved(d => { error = submitAttempt(d, draft.id); if (error) return false; }) === 'saved';
+    const saved = updateSaved(d => { error = submitAttempt(d, draft.id); if (error) return false; tickStudyOnPlan(d, todayKey(), 'cybersecurity'); }) === 'saved';
     setProblem(error ?? (saved ? '' : 'Could not save. Check the saving message and try again.'));
     if (saved) toast('Saved in your lab notebook.');
   }

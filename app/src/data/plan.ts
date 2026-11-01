@@ -4,7 +4,7 @@
 import { localStamp, shift } from './dates';
 import { CATS, uid } from './normalize';
 import { studiedOn } from './study/sessions';
-import type { Category, DateKey, Day, Energy, ListItem, MyDayData, QueueItem, Task } from './types';
+import type { Category, DateKey, Day, Energy, ListItem, MyDayData, PlanStudy, QueueItem, Task } from './types';
 
 // ---------- How much fits in a day ----------
 // Energy 1–2 → one task, 3 → two, 4–5 → three.
@@ -61,8 +61,31 @@ function nextFrom(list: ListItem[], afterId: string | null, exclude: Set<string>
 // Learning follows the roadmap: the session after the last *completed* one (cycling after the last).
 // Admin and health rotate: the one after the last *planned* one.
 function freshPick(data: MyDayData, cat: Category, k: DateKey, exclude: Set<string>): ListItem | null {
-  const after = cat === 'learning' ? lastTaskId(data, 'learning', t => t.done, k) : lastTaskId(data, cat, () => true, k);
+  const after = cat === 'learning' ? lastTaskId(data, 'learning', t => t.done && !t.study, k) : lastTaskId(data, cat, () => true, k);
   return nextFrom(data.lists[cat], after, exclude);
+}
+
+// ---------- Study's next step (specs/today-learning-and-tidy.md §2) ----------
+// Today's learning task is Study's next step: the Study card's first option, worked out by the screen (the Arabic and
+// Cybersecurity catalogues load on demand, so they never come in here). Your own Learning list is used only when there
+// isn't one. Its title names the subject; Today shows the lesson it is now, and it keeps the lesson's name once done.
+export interface StudyPick { subject: PlanStudy['subject']; courseId?: string; title: string; minutes: number }
+function makeStudyTask(s: StudyPick): Task {
+  return { ...makeTask({ id: null, title: s.title, minutes: s.minutes }, 'learning', null), study: { subject: s.subject, ...(s.courseId ? { courseId: s.courseId } : {}) } };
+}
+// The name a ticked Study entry keeps ("Arabic Fuṣḥā: The Fuṣḥā register"), the same as Today's row shows it.
+export const studiedTitle = (subject: 'arabic' | 'cybersecurity', lesson: string) => `${subject === 'arabic' ? 'Arabic Fuṣḥā' : 'Cybersecurity'}: ${lesson}`;
+// You studied that subject today (a session finished, a notebook handed in, a revision round finished, a study session
+// finished, or one of your own course's tasks ticked): today's Study entry for it is ticked, by that action, with the
+// lesson's name when it's known. Marking a lesson ready doesn't tick it: the entry moves on to the next lesson instead.
+// Nothing else ticks it but you.
+export function tickStudyOnPlan(data: MyDayData, k: DateKey, subject: PlanStudy['subject'], o: { courseId?: string; title?: string; lessonId?: string } = {}): boolean {
+  const t = data.days[k]?.tasks.find(x => !x.done && x.study?.subject === subject && (subject !== 'roadmap' || !o.courseId || x.study.courseId === o.courseId));
+  if (!t) return false;
+  setDone(data, t, true);
+  if (o.title?.trim()) t.title = o.title.trim().slice(0, 200);
+  if (o.lessonId) t.study = { ...t.study!, lessonId: o.lessonId };
+  return true;
 }
 
 // ---------- Making tasks ----------
@@ -85,10 +108,11 @@ export function minutesLabel(minutes: number, base: number, shrunk: boolean): st
 }
 
 // ---------- Choosing tasks (nothing is saved here) ----------
-function picker(data: MyDayData, k: DateKey) {
+function picker(data: MyDayData, k: DateKey, study: StudyPick | null = null) {
   const doneYesterday = doneIdsOn(data, shift(k, -1));
   const usedQ = new Set<string>();
   const chosen = new Set<string>();
+  let studyUsed = false;
   const blocked = () => new Set([...doneYesterday, ...chosen]);
   const queued = (cats: Category[]) => data.queue.find(q => cats.includes(q.category) && !usedQ.has(q.qid) && !blocked().has(q.taskId as string));
   const take = (t: Task | null) => {
@@ -97,32 +121,39 @@ function picker(data: MyDayData, k: DateKey) {
     if (t.taskId) chosen.add(t.taskId);
     return t;
   };
-  // Oldest eligible queued task in this category first, otherwise a fresh one.
+  // Oldest eligible queued task in this category first, then (for learning) Study's next step, otherwise a fresh one.
+  const studyTask = () => { if (!study || studyUsed) return null; studyUsed = true; return makeStudyTask(study); };
   const slot = (cat: Category) => {
     const q = queued([cat]);
     if (q) return take(taskFromQueue(q));
+    const s = cat === 'learning' ? studyTask() : null;
+    if (s) return s;
     const f = freshPick(data, cat, k, blocked());
     return take(f ? makeTask(f, cat, null) : null);
   };
-  return { doneYesterday, usedQ, chosen, queued, take, slot };
+  const useStudy = () => { studyUsed = true; };
+  return { doneYesterday, usedQ, chosen, queued, take, slot, studyTask, useStudy };
 }
 
 // The tasks to propose for day k at this energy: never more than the energy allows.
-export function chooseTasks(data: MyDayData, k: DateKey, energy: number): Task[] {
-  const P = picker(data, k);
+export function chooseTasks(data: MyDayData, k: DateKey, energy: number, study: StudyPick | null = null): Task[] {
+  const P = picker(data, k, study);
   const shrink = data.nudge.shrinkOn === k;
   const n = limitFor(energy);
   let tasks: (Task | null)[] = [];
   if (n === 1) {
     let one = shrink ? P.slot('learning') : null;
     if (!one) {
-      type Cand = { q?: QueueItem; f?: ListItem; cat?: Category; minutes: number };
+      type Cand = { q?: QueueItem; f?: ListItem; s?: true; cat?: Category; minutes: number };
       const cands: Cand[] = [];
       data.queue.forEach(q => { if (!P.doneYesterday.has(q.taskId as string)) cands.push({ q, minutes: q.minutes }); });
-      CATS.forEach(cat => { const f = freshPick(data, cat, k, P.doneYesterday); if (f) cands.push({ f, cat, minutes: f.minutes }); });
+      CATS.forEach(cat => {
+        if (cat === 'learning' && study) { cands.push({ s: true, minutes: study.minutes }); return; }
+        const f = freshPick(data, cat, k, P.doneYesterday); if (f) cands.push({ f, cat, minutes: f.minutes });
+      });
       if (cands.length) {
         const best = cands.reduce((a, b) => (b.minutes < a.minutes ? b : a)); // ties keep the older queued task
-        one = P.take(best.q ? taskFromQueue(best.q) : makeTask(best.f!, best.cat!, null));
+        one = best.s ? P.studyTask() : P.take(best.q ? taskFromQueue(best.q) : makeTask(best.f!, best.cat!, null));
       }
     }
     tasks = [one];
@@ -147,9 +178,9 @@ export function chooseTasks(data: MyDayData, k: DateKey, energy: number): Task[]
 }
 
 // Extra tasks for a review when energy went up: one per category not already in the plan.
-export function chooseAdditional(data: MyDayData, k: DateKey, existing: Task[], count: number): Task[] {
-  const P = picker(data, k);
-  existing.forEach(t => { if (t.taskId) P.chosen.add(t.taskId); if (t.fromQueue) P.usedQ.add(t.fromQueue.qid); });
+export function chooseAdditional(data: MyDayData, k: DateKey, existing: Task[], count: number, study: StudyPick | null = null): Task[] {
+  const P = picker(data, k, study);
+  existing.forEach(t => { if (t.taskId) P.chosen.add(t.taskId); if (t.fromQueue) P.usedQ.add(t.fromQueue.qid); if (t.study) P.useStudy(); });
   const out: Task[] = [];
   for (const cat of CATS) {
     if (out.length >= count) break;
@@ -161,11 +192,12 @@ export function chooseAdditional(data: MyDayData, k: DateKey, existing: Task[], 
 }
 
 // A learning task to swap in today (oldest queued one first), taken out of the queue if it came from there.
-export function learningForToday(data: MyDayData, k: DateKey, d: Day): Task | null {
+export function learningForToday(data: MyDayData, k: DateKey, d: Day, study: StudyPick | null = null): Task | null {
   const doneY = doneIdsOn(data, shift(k, -1));
   const inPlan = new Set(d.tasks.map(t => t.taskId as string));
   const q = data.queue.find(x => x.category === 'learning' && !doneY.has(x.taskId as string) && !inPlan.has(x.taskId as string));
   if (q) { data.queue = data.queue.filter(x => x.qid !== q.qid); return taskFromQueue(q); }
+  if (study && !d.tasks.some(t => t.study)) return makeStudyTask(study);
   const f = freshPick(data, 'learning', k, new Set([...doneY, ...inPlan]));
   return f ? makeTask(f, 'learning', null) : null;
 }
@@ -202,6 +234,7 @@ export function followQueued(data: MyDayData, k: DateKey) {
 
 // Put a task in the queue for a later day (never twice).
 export function queueTask(data: MyDayData, t: Task, k: DateKey) {
+  if (t.study) return; // Study's next step never waits in the queue: it's still there in Study
   if (t.taskId && data.queue.some(q => q.taskId === t.taskId)) return;
   data.queue.push({ qid: uid(), taskId: t.taskId, category: t.category, title: t.title, minutes: t.baseMinutes, queuedOn: k, sourceUid: null });
   sortQueue(data.queue);
@@ -240,7 +273,7 @@ export function makeRestDay(data: MyDayData, k: DateKey, energy: Energy | null) 
 
 // Evening check-in: mark (or unmark) an open task to roll to tomorrow via the queue.
 export function toggleRoll(data: MyDayData, dayKey: DateKey, t: Task) {
-  if (t.done) return;
+  if (t.done || t.study) return; // Study's next step isn't carried over: tomorrow's plan picks up where you are in Study
   if (t.rolledQid) {
     data.queue = data.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
     t.rolledQid = null;
