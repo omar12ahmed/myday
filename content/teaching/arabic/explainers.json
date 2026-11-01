@@ -19357,7 +19357,7 @@
     ],
     "steps": [
      "A حَال says what state someone or something was in while something happened: رَجَعَ سَامِي مُبْتَسِمًا, Sāmī came back smiling. It answers \"in what state?\" or \"how?\".",
-     "A one-word حَال is usually an indefinite describing word. It ends as an object would, -an for one and -īna for several men, and it matches the person or thing in gender and number: دَخَلَتِ الْمُدِيرَةُ غَاضِبَةً; خَرَجَ الطُّلَّابُ فَرِحِينَ.",
+     "A one-word حَال is usually an indefinite describing word. It ends as an object would, the accusative: usually -an for one, and -īna where a plural would end in -ūna. It follows the usual agreement in gender and number: دَخَلَتِ الْمُدِيرَةُ غَاضِبَةً; خَرَجَ الطُّلَّابُ فَرِحِينَ.",
      "It can also be a sentence, often after وَ, \"while\": دَخَلَ وَهُوَ يَضْحَكُ, he came in laughing. A present verb with its doer can do it without وَ: جَاءَتْ تَرْكُضُ, she came running.",
      "Not every -an is an object. In رَأَيْتُ الْمُدِيرَةَ غَاضِبَةً, الْمُدِيرَةَ is who I saw, and غَاضِبَةً is the state she was in. Here, taking غَاضِبَةً away still leaves a whole sentence."
     ],
@@ -19728,11 +19728,11 @@
      }
     ],
     "steps": [
-     "From 11 to 19, both parts of the number end in -a, except the first part of 12, which changes like a word for two: اِثْنَا عَشَرَ as the subject, اِثْنَيْ عَشَرَ otherwise. The counted noun, the مَعْدُود, is singular with -an: خَمْسَةَ عَشَرَ يَوْمًا.",
+     "From 11 to 19, both parts of the number end in -a, except the first part of 12, which changes like a word for two: اِثْنَا عَشَرَ in the nominative, اِثْنَيْ عَشَرَ in the accusative or genitive. The counted noun, the مَعْدُود, is singular with -an: خَمْسَةَ عَشَرَ يَوْمًا.",
      "In 13 to 19, the first part takes the opposite gender, as 3 to 10 do, while عَشَرَ or عَشْرَةَ matches the noun: خَمْسَ عَشْرَةَ سَاعَةً. In 11 and 12, both parts match: أَحَدَ عَشَرَ شَهْرًا.",
      "The tens, from عِشْرُونَ to تِسْعُونَ, also take a singular noun with -an: عِشْرُونَ طَالِبًا. Like a plural in -ūna, they change to -īna as an object, after a preposition, or after a word like بَعْدَ or خِلَالَ: خِلَالَ أَرْبَعِينَ يَوْمًا, within forty days.",
      "From 21 to 99, apart from the round tens, the unit comes first, joined to the tens by وَ, and it follows the same gender rules as it does on its own: خَمْسَةٌ وَعِشْرُونَ طَالِبًا; خَمْسٌ وَعِشْرُونَ دَقِيقَةً.",
-     "مِئَة and أَلْف take a singular noun ending in -in: مِئَةُ سَنَةٍ, أَلْفُ كِتَابٍ."
+     "مِئَة and أَلْف take a singular genitive noun, usually ending in -in: مِئَةُ سَنَةٍ, أَلْفُ كِتَابٍ."
     ],
     "examples": [
      {
@@ -20026,7 +20026,7 @@
        "مَعَ أَصْدِقَاءَ جُدُدَ"
       ],
       "answer": "مَعَ أَصْدِقَاءَ جُدُدٍ",
-      "why_en": "أَصْدِقَاء never takes تَنْوِين: after مَعَ, with no الْـ and no word after it, it ends in -a. جُدُد is an ordinary word and takes -in."
+      "why_en": "أَصْدِقَاء never takes تَنْوِين: after مَعَ, with no الْـ and not the first word of an إِضَافَة, it ends in -a. جُدُد is an ordinary word and takes -in."
      },
      {
       "q_en": "Which is right for \"in the museums\"?",
@@ -20083,7 +20083,7 @@
      {
       "form_en": "only, for focus",
       "ar": "إِنَّمَا الْمُشْكِلَةُ فِي الْوَقْتِ",
-      "en": "the problem is only the time"
+      "en": "time is the only problem"
      },
      {
       "form_en": "but rather",
@@ -20095,7 +20095,7 @@
      "A negative followed by إِلَّا means \"only\": مَا بَقِيَ إِلَّا يَوْمَانِ, only two days are left. It doesn't mean that none are left.",
      "Other negatives work the same way, لَا and لَمْ among them: لَا أَعْرِفُ هُنَا إِلَّا سَلْمَى, I only know Salmā here.",
      "فَقَطْ, only, normally comes after the word or phrase it limits: يَوْمَانِ فَقَطْ.",
-     "إِنَّمَا at the start limits the sentence to its last part: إِنَّمَا الْمُشْكِلَةُ فِي الْوَقْتِ, the problem lies only in the time.",
+     "إِنَّمَا at the start limits the sentence to its last part: إِنَّمَا الْمُشْكِلَةُ فِي الْوَقْتِ, time is the only problem.",
      "After a negative, وَإِنَّمَا means \"but rather\": لَا أَعْمَلُ لِلْمَالِ، وَإِنَّمَا لِلْخِبْرَةِ."
     ],
     "examples": [
@@ -20273,9 +20273,9 @@
      "After a whole sentence that isn't negative, إِلَّا takes someone or something out of the group: حَضَرَ الْجَمِيعُ إِلَّا سَامِرًا, everyone came except Sāmir.",
      "There, the word after إِلَّا ends as an object would: إِلَّا سَامِرًا, with -an; إِلَّا لَاعِبَيْنِ, with -ayni.",
      "With a negative and no group before إِلَّا, it means \"only\" instead, and the word takes the ending its role needs: مَا حَضَرَ إِلَّا سَامِرٌ, only Sāmir came.",
-     "With both a negative and a group named before إِلَّا, the word after it can end as an object would or match the group: مَا حَضَرَ الطُّلَّابُ إِلَّا سَامِرٌ, or إِلَّا سَامِرًا.",
-     "غَيْر and سِوَى also mean \"except\". The word after them, or after بِاسْتِثْنَاءِ, with the exception of, is the second word of an إِضَافَة, so it usually ends in -in or -i: غَيْرَ سَامِرٍ, سِوَى سَامِرٍ, بِاسْتِثْنَاءِ يَوْمِ السَّبْتِ. A word without tanween ends in -a: غَيْرَ يُوسُفَ.",
-     "غَيْر itself takes the ending the word after إِلَّا would have: حَضَرَ الْجَمِيعُ غَيْرَ سَامِرٍ, with -a, as in إِلَّا سَامِرًا."
+     "With a negative and a group named before إِلَّا, when the word after it belongs to that group, it can end as an object would or match the group's case: مَا حَضَرَ الطُّلَّابُ إِلَّا سَامِرٌ, or إِلَّا سَامِرًا.",
+     "غَيْر and سِوَى also mean \"except\". The word after them, or after بِاسْتِثْنَاءِ, with the exception of, is genitive, the second word of an إِضَافَة, usually ending in -in or -i: غَيْرَ سَامِرٍ, سِوَى سَامِرٍ, بِاسْتِثْنَاءِ يَوْمِ السَّبْتِ.",
+     "A word like يُوسُف, which never takes تَنْوِين, ends in -a there: غَيْرَ يُوسُفَ. غَيْر itself takes the case the word after إِلَّا would have, with no تَنْوِين since an إِضَافَة follows: حَضَرَ الْجَمِيعُ غَيْرَ سَامِرٍ, with -a, as in إِلَّا سَامِرًا."
     ],
     "examples": [
      {
@@ -20466,7 +20466,7 @@
     ],
     "steps": [
      "In simple cases like these, لَا before an indefinite noun with a plain -a, no تَنْوِين, denies the whole kind: لَا شَكَّ, no doubt at all; لَا أَحَدَ, nobody.",
-     "The noun comes straight after لَا, without الْـ. A describing word said about it ends in -un: لَا طَالِبَ غَائِبٌ, no student is absent. What's said can also be a phrase: لَا أَحَدَ هُنَا.",
+     "The noun comes straight after لَا, without الْـ. A describing word said about it is nominative, as غَائِبٌ is here, with -un: لَا طَالِبَ غَائِبٌ, no student is absent. What's said can also be a phrase: لَا أَحَدَ هُنَا.",
      "Everyday phrases use it: لَا بُدَّ مِنَ الصَّبْرِ, patience is a must; لَا دَاعِيَ لِلْقَلَقِ, there's no need to worry.",
      "Check how far a نَفْي, a negative, reaches: لَمْ يَحْضُرِ الْجَمِيعُ, not everyone came, leaves room for some; لَمْ يَحْضُرْ أَحَدٌ, nobody came, leaves none."
     ],
