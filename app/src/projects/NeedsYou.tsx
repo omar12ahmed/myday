@@ -5,6 +5,7 @@ import { Card } from '../components/Card';
 import { Select } from '../components/Field';
 import { LinkButton } from '../components/parts';
 import { GROUP_LABEL, type Need, type NeedGroup } from '../data/attention';
+import { FollowUpActions } from './CareerView';
 import { isBusiness, isCase } from '../data/businessModel';
 import { nextStep, projectById, projectsInOrder, stageOf } from '../data/projects';
 import type { MyDayData, Project } from '../data/types';
@@ -72,6 +73,7 @@ function NeedRow({ data, n }: { data: MyDayData; n: Need }) {
       </a>
       {t && <div className="pb-2"><ChaseIt data={data} t={t} /></div>}
       {c && 'projectId' in c && p && <div className="pb-2"><ChaseIt data={data} p={p} /></div>}
+      {n.followUp && <div className="pb-2"><FollowUpActions data={data} applicationId={n.followUp.applicationId} /></div>}
     </li>
   );
 }

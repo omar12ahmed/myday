@@ -78,7 +78,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
     if (!id) return;
     setText(''); setKind('general');
     // A business idea opens on its one page: the four questions are where it starts.
-    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : kind === 'case' ? 'Case started — its timeline, evidence and issues each have a tab.' : kind === 'software' ? 'Software project started — its requirements and bugs each have a tab, and a milestone can be a release.' : 'Project started — everything about it can live here.');
+    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : kind === 'case' ? 'Case started — its timeline, evidence and issues each have a tab.' : kind === 'software' ? 'Software project started — its requirements and bugs each have a tab, and a milestone can be a release.' : kind === 'career' ? 'Career project started — the roles you’re aiming for and your applications are on the Applications tab.' : 'Project started — everything about it can live here.');
     location.hash = kind === 'business' ? `projects/p/${id}/model` : `projects/p/${id}`;
   }
   return (

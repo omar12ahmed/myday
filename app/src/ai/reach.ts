@@ -19,7 +19,9 @@
 //     transcript, links, posts and results, specs/projects-content.md; the tasks you make from them — "Post: …",
 //     "Film: …" — are ordinary tasks and go as tasks always have); a Software project's requirements, bugs and release
 //     checklists (their checks, what proved them and which links they point at, specs/projects-software.md; "Fix: …"
-//     tasks are ordinary tasks), and whether a link is marked as a repository, issue or pull request; who a task is waiting on (Ask MyDay's waiting lookup sends only that
+//     tasks are ordinary tasks), and whether a link is marked as a repository, issue or pull request; a Career project's roles and applications
+//     (companies, roles, links, contacts, notes, stages and why one closed, interviews with their prep, questions and how
+//     they went, specs/projects-career.md; the "Prepare for … interview" and "Follow up: …" tasks are ordinary tasks); who a task is waiting on (Ask MyDay's waiting lookup sends only that
 //     it waits, since and until); where a deadline's date comes from and who checked it (specs/projects-deadlines.md;
 //     a task's date goes as it always has); your name and email; your preferences and patterns, except what you've let
 //     Ask MyDay use (v26, its "how you work": your preferences as limits and the patterns you confirmed) and, with every

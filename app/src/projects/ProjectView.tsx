@@ -12,7 +12,7 @@ import { BackLink, Choice, Choices, Eyebrow, LinkButton, Note, NotFound } from '
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { isCase, isContent, isResearchKind, isSoftware, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { isCareer, isCase, isContent, isResearchKind, isSoftware, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
 import { arrived, arriving, hiddenWords, isHidden, overviewSections, SECTIONS, setHidden, type HiddenWith, type Section } from '../data/projectSections';
@@ -45,6 +45,7 @@ import { ProjectWaitForm, ProjectWaitingCard, WaitOfferLine } from './ProjectWai
 import { ContentCard, VideosView } from './ContentView';
 import { CompareView, ExploringCard } from './ExploringView';
 import { BugsView, RequirementsView, SoftwareCard } from './SoftwareView';
+import { ApplicationsView, CareerCard } from './CareerView';
 import { kindChangeWords, kindOf, TAB_LABEL, tabFor, tabsOf, type ProjectTab } from '../data/templates';
 import { ProjectTowards } from './AmbitionsView';
 
@@ -81,7 +82,7 @@ export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: 
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
-      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'requirements' ? <RequirementsView data={data} p={p} /> : tab === 'bugs' ? <BugsView data={data} p={p} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'requirements' ? <RequirementsView data={data} p={p} /> : tab === 'bugs' ? <BugsView data={data} p={p} /> : tab === 'applications' ? <ApplicationsView data={data} p={p} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
       <ExploringCard p={p} />
@@ -89,6 +90,7 @@ export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: 
       <OverviewTop data={data} p={p} />
       {isContent(p) && <ContentCard data={data} p={p} />}
       {isSoftware(p) && <SoftwareCard data={data} p={p} />}
+      {isCareer(p) && <CareerCard data={data} p={p} />}
       <AtAGlance data={data} p={p} />
       <ProjectHead data={data} p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
