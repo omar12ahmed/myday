@@ -3084,6 +3084,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
       && K.AM.moveStep(ds, 'amA', st1, 1) && eq(order(), [st2, st3, st1]) && !K.AM.moveStep(ds, 'amA', st1, 1) && eq(order(), [st2, st3, st1]) && K.AM.moveStep(ds, 'amA', st1, -1) && eq(order(), [st2, st1, st3]) && !K.AM.moveStep(ds, 'amA', 'nope', 1), order());
     check('removing a step takes only it away; one that isn\'t there gives false', K.AM.removeStep(ds, 'amA', st1) && eq(order(), [st2, st3]) && !K.AM.removeStep(ds, 'amA', st1) && !K.AM.removeStep(ds, 'nope', st2), order());
 
+    const odd = { id: 'asOdd', kind: 'quiz' }, oddLink = 'not a link';
+    const dk = mk(am('amA', 'Kept', { links: [oddLink, { id: 'alA', kind: 'arabic' }], steps: [{ id: 'asA', text: 'First' }, odd, { id: 'asB', text: 'Second', linkId: 'alA' }] }));
+    check('a step with no words isn\'t shown or counted', eq(K.AM.stepsOf(one(dk)).map(x => x.id), ['asA', 'asB']) && K.AM.stepsWords(one(dk)) === '0 of 2 steps', K.AM.stepsOf(one(dk)));
+    const sNew = K.AM.addStep(dk, 'amA', 'Third'), lNew = K.AM.addLink(dk, 'amA', 'cyber');
+    check('adding a step or a link keeps what this version can\'t read, where it was', eq(one(dk).steps.map(x => x.id), ['asA', 'asOdd', 'asB', sNew]) && one(dk).steps[1] === odd && one(dk).links[0] === oddLink && one(dk).links[2].id === lNew, one(dk));
+    check('moving a step swaps it with its neighbour around an unreadable one, which stays put', K.AM.moveStep(dk, 'amA', 'asB', -1) && eq(one(dk).steps.map(x => x.id), ['asB', 'asOdd', 'asA', sNew]), one(dk).steps.map(x => x.id));
+    check('removing a step or a link (and the linkId it cleared) keeps the unreadable ones', K.AM.removeLink(dk, 'amA', 'alA') && K.AM.removeStep(dk, 'amA', 'asA') && eq(one(dk).steps.map(x => x.id), ['asB', 'asOdd', sNew]) && !('linkId' in one(dk).steps[0])
+      && one(dk).steps[1] === odd && eq(one(dk).links.map(l => (typeof l === 'string' ? l : l.id)), [oddLink, lNew]), one(dk));
+
     console.log('  what is a step towards what');
     const cyber = am('amCy', 'Work in cybersecurity', { createdAt: T0, links: [{ id: 'l1', kind: 'project', ref: 'pjA' }, { id: 'l2', kind: 'cyber' }, { id: 'l3', kind: 'topic', ref: 'tpC' }] });
     const arab = am('amAr', 'Read Arabic literature', { createdAt: T1, links: [{ id: 'l4', kind: 'arabic' }, { id: 'l5', kind: 'project', ref: 'pjA' }, { id: 'l6', kind: 'course', ref: 'coX' }] });
@@ -3093,10 +3102,6 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const task = (id, x = {}) => ({ id, title: 'Pay council tax', plannedOn: null, planUid: null, ...x });
     check('a task is towards the ambitions of its project; with no project, nothing (and a null task nothing)', eq(ids(K.AM.ambitionsOfTask(dt, task('tkA', { projectId: 'pjB' }))), ['amBz']) && eq(ids(K.AM.ambitionsOfTask(dt, task('tkB', { projectId: 'pjA' }))), ['amCy', 'amAr'])
       && eq(K.AM.ambitionsOfTask(dt, task('tkC')), []) && eq(K.AM.ambitionsOfTask(dt, task('tkD', { projectId: null })), []) && eq(K.AM.ambitionsOfTask(dt, null), []) && eq(K.AM.ambitionsOfTask(dt, undefined), []));
-    const dp = mk();
-    dp.tasks.items = [task('tkP1', { plannedOn: '2026-11-03', planUid: 'u1', projectId: 'pjA' }), task('tkP2', { plannedOn: '2026-11-04', planUid: 'u1' }), task('tkP3', { plannedOn: '2026-11-03', planUid: 'u2' })];
-    check('a plan row\'s task is the one planned on that day with that uid; none when the day or uid doesn\'t match', K.AM.taskOfPlanRow(dp, '2026-11-03', 'u1').id === 'tkP1' && K.AM.taskOfPlanRow(dp, '2026-11-04', 'u1').id === 'tkP2' && K.AM.taskOfPlanRow(dp, '2026-11-03', 'u2').id === 'tkP3'
-      && K.AM.taskOfPlanRow(dp, '2026-11-05', 'u1') === null && K.AM.taskOfPlanRow(dp, '2026-11-03', 'u9') === null);
     check('the ambitions of the Cybersecurity path and of the Arabic route need no ref', eq(ids(K.AM.ambitionsOfStudy(dt, 'cyber')), ['amCy']) && eq(ids(K.AM.ambitionsOfStudy(dt, 'arabic')), ['amAr']) && eq(ids(K.AM.ambitionsOfStudy(mk(biz), 'arabic')), []));
     check('the ambitions of a topic or a course are found by ref, not by kind alone', eq(ids(K.AM.ambitionsOfStudy(dt, 'topic', 'tpC')), ['amCy']) && eq(K.AM.ambitionsOfStudy(dt, 'topic', 'tpOther'), []) && eq(ids(K.AM.ambitionsOfStudy(dt, 'course', 'coX')), ['amAr'])
       && eq(K.AM.ambitionsOfStudy(dt, 'course', 'tpC'), []) && eq(K.AM.ambitionsOfStudy(dt, 'topic', 'coX'), []));
@@ -3107,6 +3112,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a course is towards the ambitions that link it itself', eq(ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coX')), ['amAr']), ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coX')));
     check('a course is also towards the ambitions that link its topic (found through the stage that holds it): coC through tpC', eq(ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coC')), ['amCy']), ids(K.AM.ambitionsOfLesson(dlsn, 'study', 'coC')));
     check('a course that nothing links, itself or through its topic, has none; neither has a lesson with no course or a course that isn\'t in any stage', eq(K.AM.ambitionsOfLesson(dlsn, 'study', 'coA'), []) && eq(K.AM.ambitionsOfLesson(dlsn, 'study'), []) && eq(K.AM.ambitionsOfLesson(dlsn, 'study', 'coGone'), []));
+    // A Cybersecurity lesson copied into Study sits in its module's course under the Cybersecurity topic.
+    const dcy = mk(am('amT', 'Work in security', { links: [{ id: 'l1', kind: 'topic', ref: 'tpCy' }] }), am('amK', 'Networking', { createdAt: T1, links: [{ id: 'l2', kind: 'course', ref: 'cyber:1:module.net' }] }), am('amP', 'The path', { createdAt: '2026-10-03T09:00', links: [{ id: 'l3', kind: 'cyber' }] }));
+    dcy.study.topics = [{ id: 'tpCy', title: 'Cybersecurity' }];
+    dcy.study.stages = [{ id: 'cyber:1:stage.core', title: 'Cybersecurity foundations', topicId: 'tpCy', courses: [
+      { id: 'cyber:1:module.net', title: 'Networking', modules: [{ id: 'cyber:1:topic.n', title: 'N', sections: [{ id: 'cyber:1:section.n', title: 'Lessons', tasks: [{ id: 'cyber:1:lesson.packets', title: 'Packets', done: false }] }] }] },
+      { id: 'cyber:1:module.web', title: 'The web', modules: [{ id: 'cyber:1:topic.w', title: 'W', sections: [{ id: 'cyber:1:section.w', title: 'Lessons', tasks: [{ id: 'cyber:1:lesson.http', title: 'HTTP', done: false }] }] }] }] }];
+    check('a Cybersecurity lesson in Study is towards the path\'s ambitions and those linking its course or the Cybersecurity topic', eq(ids(K.AM.ambitionsOfLesson(dcy, 'cybersecurity', undefined, 'lesson.packets')), ['amT', 'amK', 'amP']), ids(K.AM.ambitionsOfLesson(dcy, 'cybersecurity', undefined, 'lesson.packets')));
+    check('…a lesson in another module isn\'t towards that course\'s, and one not copied into Study is towards the path\'s alone', eq(ids(K.AM.ambitionsOfLesson(dcy, 'cybersecurity', undefined, 'lesson.http')), ['amT', 'amP'])
+      && eq(ids(K.AM.ambitionsOfLesson(dcy, 'cybersecurity', undefined, 'lesson.notcopied')), ['amP']) && eq(ids(K.AM.ambitionsOfLesson(dcy, 'cybersecurity')), ['amP']), ids(K.AM.ambitionsOfLesson(dcy, 'cybersecurity', undefined, 'lesson.http')));
     check('with no ambitions at all, nothing is towards anything', eq(K.AM.ambitionsOfLesson(mk(), 'arabic'), []) && eq(K.AM.ambitionsOfProject(mk(), 'pjA'), []) && K.AM.towardsLine(K.AM.ambitionsOfLesson(mk(), 'cybersecurity')) === '');
 
     console.log('  in words');

@@ -33,10 +33,10 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
         {options[0].started || options[0].resume || options[0].allComplete
           ? <div><strong>Continue learning</strong><p className="text-sm text-fg-2 m-0">Your next lesson is ready — or choose another subject.</p></div>
           : <div><strong>Start learning</strong><p className="text-sm text-fg-2 m-0">Your first lesson is ready — or choose another subject.</p></div>}
-        <LessonOption option={options[0]} primary towards={towardsLine(ambitionsOfLesson(data, options[0].subject, options[0].courseId))} />
+        <LessonOption option={options[0]} primary towards={towardsLine(ambitionsOfLesson(data, options[0].subject, options[0].courseId, options[0].lessonId))} />
         {options.length > 1 && <details className="rounded-tile border border-outline p-3" data-s="study-other-subjects">
           <summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold">Choose another subject</summary>
-          <div className="grid gap-2 mt-2">{options.slice(1).map(option => <LessonOption key={option.subject} option={option} towards={towardsLine(ambitionsOfLesson(data, option.subject, option.courseId))} />)}</div>
+          <div className="grid gap-2 mt-2">{options.slice(1).map(option => <LessonOption key={option.subject} option={option} towards={towardsLine(ambitionsOfLesson(data, option.subject, option.courseId, option.lessonId))} />)}</div>
         </details>}
         <a href="#study" className="text-primary font-semibold text-sm min-h-11 inline-flex items-center">Browse all courses and lessons</a>
       </div>}

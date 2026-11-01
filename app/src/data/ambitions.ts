@@ -3,10 +3,11 @@
 // section. An ambition links, by reference only, projects, Study topics or courses, the Cybersecurity path and the
 // Arabic route (whichever path or goal you've chosen there), and keeps its own ordered steps. Nothing it links is
 // moved, copied or told. Words and counts only; never sent to AI.
+import { curriculumTaskId } from './cybersecurity/types';
 import { isDateTime, localStamp } from './dates';
 import { tidyText } from './projectResources';
 import { topicOfStage } from './study/topics';
-import type { Ambition, AmbitionLink, AmbitionsData, AmbitionStep, MyDayData, Project, TaskItem } from './types';
+import type { Ambition, AmbitionLink, AmbitionsData, AmbitionStep, MyDayData, Project, StudyData, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
 export const AMBITION_LIMITS = { items: 12, title: 120, why: 400, links: 20, steps: 20, step: 160 };
@@ -33,9 +34,14 @@ export function normalizeAmbitions(raw: unknown, report: { dropped: number }): A
   }
   return out;
 }
+// What's shown and counted: links with an id, steps with an id and words. Changes keep anything else in the list as
+// written (a newer MyDay's entries), so editing never drops what this version can't read.
 const objs = <T>(v: unknown): T[] => listOf(v).filter((x): x is T => isObj(x) && typeof x.id === 'string');
 export const linksOf = (a: Ambition) => objs<AmbitionLink>(a.links);
-export const stepsOf = (a: Ambition) => objs<AmbitionStep>(a.steps);
+export const stepsOf = (a: Ambition) => objs<AmbitionStep>(a.steps).filter(x => typeof x.text === 'string');
+const isEntry = (x: unknown, id: string) => isObj(x) && x.id === id;
+// The saved lists as written, entries this version can't read included (they're kept, never looked into).
+const savedLinks = (a: Ambition) => listOf(a.links) as AmbitionLink[], savedSteps = (a: Ambition) => listOf(a.steps) as AmbitionStep[];
 // In the order you made them.
 export const ambitionsInOrder = (data: MyDayData) => [...data.ambitions.items].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
 export const ambitionById = (data: MyDayData, id: string) => data.ambitions.items.find(a => a.id === id) ?? null;
@@ -43,22 +49,25 @@ export const ambitionById = (data: MyDayData, id: string) => data.ambitions.item
 // ---------- What's a step towards what ----------
 // The ambitions that link a project (or one of its steps points at it).
 export const ambitionsOfProject = (data: MyDayData, projectId: string) => ambitionsInOrder(data).filter(a => linksOf(a).some(l => l.kind === 'project' && l.ref === projectId));
-// A task's: through its project. A plan row is a copy: its task is the one planned today with its uid.
+// A task's: through its project.
 export function ambitionsOfTask(data: MyDayData, t: Pick<TaskItem, 'projectId'> | null | undefined) {
   return t?.projectId ? ambitionsOfProject(data, t.projectId) : [];
 }
-export const taskOfPlanRow = (data: MyDayData, k: string, uid: string) => data.tasks.items.find(x => x.plannedOn === k && x.planUid === uid) ?? null;
 // Study: a link to the Cybersecurity path, the Arabic route, a topic or a course.
 export const ambitionsOfStudy = (data: MyDayData, kind: 'cyber' | 'arabic' | 'topic' | 'course', ref?: string) =>
   ambitionsInOrder(data).filter(a => linksOf(a).some(l => l.kind === kind && (kind === 'cyber' || kind === 'arabic' || l.ref === ref)));
 // A lesson on Today: its path (Arabic, Cybersecurity), or one of your courses — linked itself, or through its topic.
-export function ambitionsOfLesson(data: MyDayData, subject: string, courseId?: string): Ambition[] {
-  if (subject === 'arabic') return ambitionsOfStudy(data, 'arabic');
-  if (subject === 'cybersecurity') return ambitionsOfStudy(data, 'cyber');
-  if (!courseId) return [];
-  const stage = data.study.stages.find(sg => sg.courses.some(c => c.id === courseId)), topic = stage ? topicOfStage(data.study, stage) : '';
-  return ambitionsInOrder(data).filter(a => linksOf(a).some(l => (l.kind === 'course' && l.ref === courseId) || (!!topic && l.kind === 'topic' && l.ref === topic)));
+// A Cybersecurity lesson copied into Study is in a course too (its module, under the Cybersecurity topic), so linking
+// that course or topic counts as well.
+export function ambitionsOfLesson(data: MyDayData, subject: string, courseId?: string, lessonId?: string): Ambition[] {
+  const path = subject === 'arabic' ? 'arabic' : subject === 'cybersecurity' ? 'cyber' : null;
+  const course = subject === 'arabic' ? undefined : subject === 'cybersecurity' ? (lessonId ? courseOfTask(data.study, curriculumTaskId(lessonId)) : undefined) : courseId;
+  const stage = course ? data.study.stages.find(sg => sg.courses.some(c => c.id === course)) : undefined, topic = stage ? topicOfStage(data.study, stage) : '';
+  if (!path && !course) return [];
+  return ambitionsInOrder(data).filter(a => linksOf(a).some(l => (!!path && l.kind === path) || (!!course && l.kind === 'course' && l.ref === course) || (!!topic && l.kind === 'topic' && l.ref === topic)));
 }
+const courseOfTask = (st: StudyData, taskId: string) =>
+  st.stages.flatMap(sg => sg.courses).find(c => c.modules.some(m => m.sections.some(sc => sc.tasks.some(t => t.id === taskId))))?.id;
 // "A step towards “Work in cybersecurity”" (two: "“A” and “B”"; more: "“A” and 2 more").
 export function towardsLine(list: Ambition[]): string {
   if (!list.length) return '';
@@ -111,16 +120,15 @@ export function addLink(d: MyDayData, id: string, kind: LinkKind, ref?: string):
   if (ls.length >= AMBITION_LIMITS.links) return null;
   const lid = 'al' + uid(), l: AmbitionLink = { id: lid, kind };
   if (needsRef) l.ref = ref;
-  a.links = [...ls, l]; touch(a);
+  a.links = [...savedLinks(a), l]; touch(a);
   return lid;
 }
 // Unlinking also takes the link off any step that pointed at it (the step stays).
 export function removeLink(d: MyDayData, id: string, linkId: string): boolean {
   const a = find(d, id), ls = a ? linksOf(a) : [];
   if (!a || !ls.some(l => l.id === linkId)) return false;
-  a.links = ls.filter(l => l.id !== linkId);
-  const st = stepsOf(a);
-  if (st.some(x => x.linkId === linkId)) a.steps = st.map(x => { if (x.linkId !== linkId) return x; const { linkId: _gone, ...rest } = x; return rest as AmbitionStep; });
+  a.links = savedLinks(a).filter(l => !isEntry(l, linkId));
+  if (stepsOf(a).some(x => x.linkId === linkId)) a.steps = savedSteps(a).map(x => { if (!isObj(x) || x.linkId !== linkId) return x; const { linkId: _gone, ...rest } = x; return rest as AmbitionStep; });
   touch(a);
   return true;
 }
@@ -129,7 +137,7 @@ export function addStep(d: MyDayData, id: string, text: string, linkId?: string)
   if (!a || !t || st.length >= AMBITION_LIMITS.steps) return null;
   const sid = 'as' + uid(), s: AmbitionStep = { id: sid, text: t };
   if (linkId && linksOf(a).some(l => l.id === linkId)) s.linkId = linkId;
-  a.steps = [...st, s]; touch(a);
+  a.steps = [...savedSteps(a), s]; touch(a);
   return sid;
 }
 export function editStep(d: MyDayData, id: string, stepId: string, patch: { text?: string; linkId?: string | null }): boolean {
@@ -154,15 +162,16 @@ export function tickStep(d: MyDayData, id: string, stepId: string): boolean {
 export function moveStep(d: MyDayData, id: string, stepId: string, by: -1 | 1): boolean {
   const a = find(d, id), st = a ? stepsOf(a) : [], i = st.findIndex(x => x.id === stepId), j = i + by;
   if (!a || i < 0 || j < 0 || j >= st.length) return false;
-  const next = [...st];
-  [next[i], next[j]] = [next[j], next[i]];
+  // (Swapped where they sit in the saved list, around anything this version can't read.)
+  const next = [...savedSteps(a)], ri = next.indexOf(st[i]), rj = next.indexOf(st[j]);
+  [next[ri], next[rj]] = [next[rj], next[ri]];
   a.steps = next; touch(a);
   return true;
 }
 export function removeStep(d: MyDayData, id: string, stepId: string): boolean {
   const a = find(d, id), st = a ? stepsOf(a) : [];
   if (!a || !st.some(x => x.id === stepId)) return false;
-  a.steps = st.filter(x => x.id !== stepId); touch(a);
+  a.steps = savedSteps(a).filter(x => !isEntry(x, stepId)); touch(a);
   return true;
 }
 // A project's link, as shown: the project or null when it's gone.
