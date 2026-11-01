@@ -76,7 +76,7 @@ export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDo
               <div className="task-actions flex flex-wrap gap-2 mt-2 ml-[46px]">
                 <Button inline variant={next ? 'tonal' : 'ghost'} data-action="timer-start" data-uid={t.uid} onClick={() => onTimer(t, 'start')}>Just start · 2 min</Button>
                 <Button inline variant="ghost" data-action="timer-focus" data-uid={t.uid} onClick={() => onTimer(t, 'focus')}>Focus · {t.minutes} min</Button>
-                {help[t.uid] && <Button inline variant="ghost" data-action="help-start" data-uid={t.uid} onClick={() => openHelpMeStart(help[t.uid])}>Help me start</Button>}
+                {help[t.uid] && <Button inline variant="ghost" data-action="help-start" data-uid={t.uid} aria-label={`Help me start: ${t.title}`} onClick={() => openHelpMeStart(help[t.uid])}>Help me start</Button>}
               </div>
             )}
             {mode === 'evening' && !t.done && onRoll && (

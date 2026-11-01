@@ -32,7 +32,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   // as you left it, so you can write the first step when you come back from +.
   const [kept, setKept] = useState(false);
   // Help me start (specs/help-me-start.md): open on your tap, or on arrival from Today's Up next task.
-  const [arrived] = useState(() => takeHelpMeStart(id));
+  const [arrived, setArrived] = useState(() => takeHelpMeStart(id)); // (focus moves to the card on that arrival only)
   const [helping, setHelping] = useState(arrived);
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return <><BackLink to="today/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
@@ -98,7 +98,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
       </Card>
       {!done && !t.waiting && waitAsk && <WaitingCard key="asking" data={data} t={t} asking onClose={() => setWaitAsk(false)} />}
       {helping && !done && !t.waiting && <HelpMeStart data={data} t={t} focusOnOpen={arrived} onKeep={() => { if (stuck) setKept(true); }}
-        onClose={() => { setHelping(false); setTimeout(() => document.querySelector<HTMLElement>('[data-action="task-help-start"]')?.focus(), 0); }} />}
+        onClose={() => { setHelping(false); setArrived(false); setTimeout(() => document.querySelector<HTMLElement>('[data-action="task-help-start"]')?.focus(), 0); }} />}
       {ask && !done && !stuck && !kept && !t.waiting && <StuckCard data={data} t={t} stuck={false} />}
       <DeadlineCard data={data} t={t} />
       <StepsCard data={data} t={t} />

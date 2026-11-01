@@ -271,6 +271,9 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
     await go('today', 2026, 10, 16, 9, 30); await sleep(300);
     await go('today/tasks/tkUp', 2026, 10, 16, 9, 30); await sleep(300);
     check('…and only that once: opening the task again later, the card waits for your tap', !(await exists('#startCard')) && await exists('[data-action=task-help-start]'));
+    await editStorage(`s => { s.tasks.items.find(x => x.id === 'tkUp').letGoOn = '${TODAY}'; }`);
+    await go('today', 2026, 10, 16, 9, 30); await sleep(300);
+    check('a task you\'ve let go gets no "Help me start", even while it\'s still Up next', !(await exists('[data-action=help-start]')));
 
     // Later, make it smaller, let it go.
     await scene([tk('tkLater', 'Book the plumber', { due: TODAY, postponed: 1 })], { built: true });

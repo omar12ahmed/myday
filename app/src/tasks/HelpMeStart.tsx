@@ -95,7 +95,7 @@ export function HelpMeStart({ data, t, onClose, onKeep, focusOnOpen = false }: {
 
   return (
     <Card id="startCard" aria-labelledby="start-h">
-      <h3 id="start-h" ref={heading} tabIndex={-1} className="m-0 outline-none">Let’s get started</h3>
+      <h3 id="start-h" ref={heading} tabIndex={-1} className="m-0 outline-none scroll-mt-28">Let’s get started</h3>
       <p className="text-[15px] m-0 mt-1">You don’t need to finish anything right now.</p>
 
       <h4 className="m-0 mt-4 text-[15px]">What’s getting in the way? <span className="font-normal text-fg-2">(if you like)</span></h4>

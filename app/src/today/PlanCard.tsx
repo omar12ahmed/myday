@@ -38,7 +38,7 @@ export function DayTasks({ data, k, d, mode, justDoneUid, onToggle, onTimer, onR
   for (const x of data.tasks.items) if (x.plannedOn === k && x.planUid && x.projectId) { const w = towardsLine(ambitionsOfTask(data, x)); if (w) towards[x.planUid] = w; }
   // …and Help me start on the Up next task, when it's one of your tasks (specs/help-me-start.md): never on every row.
   const help: Record<string, string> = {};
-  const nextItem = nextUid ? data.tasks.items.find(x => x.plannedOn === k && x.planUid === nextUid && !x.waiting) : undefined;
+  const nextItem = nextUid ? data.tasks.items.find(x => x.plannedOn === k && x.planUid === nextUid && !x.waiting && !x.done && !x.letGoOn) : undefined;
   if (nextUid && nextItem) help[nextUid] = nextItem.id;
   const common = { dayKey: k, nextUid, justDoneUid, warnings, steps, towards, help, mode, onToggle, onTimer, onRoll };
   return (
