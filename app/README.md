@@ -1,5 +1,20 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.120.0 — Help me start:** MyDay helps you *begin* a task, not only plan it (the first step of the owner's "getting
+started" proposal; `specs/help-me-start.md`). A quiet **Help me start** on any open task's page, and on Today's **Up
+next** task beside "Just start", opens a short card: "Let's get started. You don't need to finish anything right now."
+- **What's getting in the way?** *(if you like)*: it's too big, I don't know where to start, it's boring, I'm too
+  tired, and three new answers: **I just can't get going**, **I want it perfect** (“a rough first try still counts as
+  started”) and **I keep getting pulled away**. Your answer is kept with the task when you act, as the Stuck card's are,
+  and What MyDay has noticed can notice it.
+- **Open it:** the task's project and where you left off, a link in its notes, its notes and its next step.
+- **One small act:** **Start for 5 minutes** (the timer's "Just start", for five minutes; the task joins today's plan
+  if there's room), tick off the next step, or, for "I don't know where to start", think it through with Ask MyDay.
+- **Then decide:** carry on, **later** (not today, and not counted as a move), make it smaller, or let it go.
+
+No AI in it. The new answers are kept as "Something else" with their name, so 1.119.0 keeps them exactly (checked);
+no schema, sync or server change. Going back to 1.119.0 is safe: the card goes, and the answers stay.
+
 **1.119.0 — Ambitions: what your work is a step towards:** name your long-term ambitions — "Work in
 cybersecurity", "Read Arabic literature" — at the top of the Projects home ("Your ambitions"). Each links, without
 moving anything, the projects and learning that are steps towards it (a project, a Study topic or course, the
