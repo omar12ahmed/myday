@@ -8,9 +8,9 @@ project's stage and next step, a course's tasks and what's next, the Cybersecuri
 Arabic route's stage and what you'll be able to do. Today then says "A step towards “Work in cybersecurity”" under a
 task from a linked project (in the plan, Due today and From your projects) and under a lesson from a linked path, topic
 or course (a Cybersecurity lesson copied into Study counts its course and topic); a project's page says it too. Saved data stays schema 5: a new section
-`ambitions`, synced as a new kind `ambition` (migration 20261101120000_sync_ambitions.sql, applied first), which 1.117.0
+`ambitions`, synced as a new kind `ambition` (migration 20261101120000_sync_ambitions.sql, applied first), which 1.118.0
 keeps unread and its sync ignores (checked with the actual previous release: it leaves an ambition untouched through
-its own rename and deletion of a linked project, and this release then says the link is gone). Going back to 1.117.0
+its own rename and deletion of a linked project, and this release then says the link is gone). Going back to 1.118.0
 hides ambitions (they stay in your account). No server change besides the migration; nothing of an ambition is sent to
 AI.
 

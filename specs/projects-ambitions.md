@@ -56,7 +56,7 @@ says what a task on Today moves forward, so the day can feel like a list rather 
   `topic` or `course` (ref: the Study id), `cyber` or `arabic` (no ref: whichever path or goal you've chosen there, so
   it never goes out of date when you change it). Read as written: a link or step of a kind this version doesn't know is
   kept; unknown fields kept. Limits: 12 ambitions, a title 120, why 400, 20 links, 20 steps (a step 160).
-  1.117.0 keeps the section unread (it keeps unknown sections) and its sync ignores the kind.
+  1.118.0 (and 1.117.0) keep the section unread (they keep unknown sections) and their sync ignores the kind.
 - **Nothing is moved:** a project, topic or course doesn't know it's linked; a link whose item is gone says so ("No
   longer in Study") and can be unlinked; deleting a project leaves the link to say it's gone.
 - **Rules** in `data/ambitions.ts` (adding, editing, linking, steps, what a task or project is a step towards); the
