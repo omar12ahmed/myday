@@ -1,5 +1,23 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.123.0 — Software projects: requirements, bugs and release checklists:** a new kind of project, **Software** (Start a
+project, or Edit → Kind of project), for building something — MyDay itself is one. Its tabs: **Requirements** (what it
+must do — Proposed, Agreed, Built or Dropped — each with acceptance checks you tick when they're proven, saying what
+proved them, a test run or a link, with the day kept), **Bugs** (what happens, what should happen, steps to repeat it;
+open, fixed or won't fix; **Fix it** makes a "Fix: …" task), and Milestones, where any milestone can be **a release**:
+its checklist gathers the acceptance checks of the requirements in it, your own release checks and the bugs still open
+in it, and says what's left or "Ready: every check ticked and no bug open" — no score. A project's links can be marked
+**Repository, Issue or Pull request**, saying where they point ("Pull request #34 · owner/repo"), never their state; a
+requirement or bug can point at them. The Overview's "Software at a glance" says it all in words. Changing kind keeps
+everything, out of sight. Also: the kind switcher shows a Content project as Content; Content's 1,000 cap says it's
+across your projects; a script or transcript changed elsewhere to text of the same length now shows. Saved data stays
+schema 5: a new section `software`, synced as a new kind `software` (migration 20261101180000_sync_software.sql, applied
+first), which the previous release keeps unread and its sync ignores (checked with the actual previous release: a rename
+and a link edit there keep the project's kind and the link's mark, and leave its items untouched); a link's mark is a
+new optional field it keeps. Going back shows a Software project as a general one (its items stay in your account). No
+server change besides the migration; nothing of a requirement, bug or release is sent to AI ("Fix: …" tasks go as tasks
+always have).
+
 **1.121.0 — Arabic explainers for modules 8 to 24, with their voice, and "Where this leads":** eighty more **How it
 works** cards, so every lesson from module 4 to module 24 has them: modules 8–13 (A1 and A2, with a card on the language
 each skills and portfolio lesson uses), modules 16–19 (B1: reading, listening, writing and the B1 checkpoint), modules
@@ -1617,6 +1635,19 @@ towards “…”" under a linked project's tasks on Today (the plan, Due today,
 card lessons from a linked path, course or topic (a Cybersecurity lesson in Study through its module's course and the
 Cybersecurity topic), and under a linked project's title (each named ambition opens its page). Never sent to AI; display only.
 
+**Software projects (1.123.0; `specs/projects-software.md`):** the kind `software`; `data/templates.ts` now holds each
+kind's tabs and what changing kind says, and the tab bar, tab routes and kind switcher read it. One synced record per
+item in the top-level `software` section (`data/software.ts`; kind `software`): a requirement (title, detail, Proposed /
+Agreed / Built / Dropped, acceptance checks ticked with what proved them and the day, the release it's in, the links it
+points at), a bug (what happens, what should happen, steps, open / fixed / won't fix with the day, its "Fix: …" task),
+or a release (a milestone's own checks; its id comes from the milestone, so two devices marking it make one record;
+`off` when unmarked, its checks kept). A release's checklist: its requirements' checks (not dropped ones), its own checks
+and its open bugs; ready when there's at least one check, every one is ticked and none of its bugs is open. Links
+(`data/projectResources.ts`) carry an optional `kind` (repo, issue, pr; a newer MyDay's kept) and `linkWhere` reads
+where they point from the address (GitHub and GitLab issue, pull and merge request numbers; otherwise the site). Limits
+per project: 200 requirements, 500 bugs, 30 releases in use. Deleted with its project, here and through sync. Never sent
+to AI; display only.
+
 **Exploring a while; comparing the options (1.116.0; `specs/projects-exploring.md`):** a project remembers its
 board column and the day it entered it (`columnSince`, set on starting it, on a move into another column — Explore →
 Decide keeps the day — and on bringing it back from paused or finished). From 21 days in Exploring (Explore or Decide)
@@ -2239,6 +2270,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/content.ts`, `src/projects/ContentView.tsx` | Content projects (1.114.0): `content.ts` (reading as written, ideas and videos, steps, options, examples, outline/shots/needs/steps and their tasks, clips, the post day and its task, posts, results, the size check); `ContentView.tsx` (the Overview's Videos card, the Videos tab, a video's page). Uploads in parts: `src/sync/files.ts` (`sendInParts`, `md5Of`, `videoFrame`) and `supabase/functions/files/` (the `mp-*` actions). |
 | `src/data/exploring.ts`, `src/projects/ExploringView.tsx` | Exploring a while (1.116.0): `exploring.ts` (three weeks in Exploring, comparing the options, what's still unknown); `ExploringView.tsx` (the Overview's ask, the compare page, the Decisions tab's link). |
 | `src/data/ambitions.ts`, `src/projects/AmbitionsView.tsx` | Ambitions (1.119.0): `ambitions.ts` (reading as written, adding, links and steps, what a task, project or lesson is a step towards, the wording); `AmbitionsView.tsx` (the Projects home's strip, an ambition's page, a project's line). Today's lines are in `src/today/` (PlanCard, DueTodayCard, ProjectCards) and `src/study/StudyTodayCard.tsx`. |
+| `src/data/software.ts`, `src/data/templates.ts`, `src/projects/SoftwareView.tsx` | Software projects (1.123.0): `software.ts` (reading as written, requirements, bugs and Fix it, releases and their checklist, checks with proof, at a glance, links on items); `templates.ts` (each kind of project's tabs, routes and switch wording); `SoftwareView.tsx` (the Overview's card, the Requirements and Bugs tabs, a milestone's release checklist). Marked links are in `src/data/projectResources.ts` and `src/projects/ResourcesCard.tsx`. |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
