@@ -2,21 +2,29 @@
 //
 //   GOOGLE_TTS_API_KEY=… node app/scripts/make-arabic-audio.mjs <source>      e.g. lesson-examples
 //   GOOGLE_TTS_API_KEY=… node app/scripts/make-arabic-audio.mjs <source> --redo-only
+//   GOOGLE_TTS_API_KEY=… node app/scripts/make-arabic-audio.mjs <source> --only=<file of texts, one per line>
 //
 // For each text of that voiced source (arabic-voice-sources.mjs) that has no clip yet, or whose check says "redo", one
 // voice speaks the exact vowelled text; the clip is saved as an MP3 named by its contents and recorded in
 // content/arabic-audio/audio-audit.json under its text, as "to check". The build ships nothing until it's been
 // listened to (prepare-audio.mjs). With --redo-only, only clips marked "redo" are made: a text of that source with no
-// clip yet waits for its own round (its words may not have been checked). The key (Google Cloud Text-to-Speech only)
-// comes from the environment and is never written anywhere.
+// clip yet waits for its own round (its words may not have been checked). With --only, only the texts listed in that
+// file are made (a batch the owner has checked, when others in the same source haven't been). Any other option stops
+// before anything is made. The key (Google Cloud Text-to-Speech only) comes from the environment and is never written
+// anywhere.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spokenFor, voiceSources } from './arabic-voice-sources.mjs';
 
 const root = new URL('../../', import.meta.url);
 const dir = new URL('content/arabic-audio/', root), clips = new URL('clips/', dir), auditFile = new URL('audio-audit.json', dir);
-const sources = voiceSources(root), source = sources.find(s => s.id === process.argv[2]), redoOnly = process.argv.includes('--redo-only');
+const sources = voiceSources(root), source = sources.find(s => s.id === process.argv[2]);
 if (!source) throw new Error(`Name a voiced source: ${sources.map(s => s.id).join(', ')}`);
+const options = process.argv.slice(3), unknown = options.filter(o => o !== '--redo-only' && !/^--only=./.test(o));
+if (unknown.length) throw new Error(`Unknown option ${unknown.join(' ')}: use --redo-only or --only=<file>`);
+const redoOnly = options.includes('--redo-only'), onlyFile = options.find(o => o.startsWith('--only='))?.slice('--only='.length);
+const only = onlyFile ? new Set(readFileSync(onlyFile, 'utf8').split('\n').map(t => t.trim()).filter(Boolean)) : null;
+if (only && ![...only].every(t => source.texts.includes(t))) throw new Error(`${onlyFile}: lists a text that isn't in ${source.id}`);
 const key = process.env.GOOGLE_TTS_API_KEY;
 if (!key) throw new Error('Set GOOGLE_TTS_API_KEY (a key for the Text-to-Speech API only).');
 if (!existsSync(auditFile)) throw new Error('No audio-audit.json: round one made it; restore it from Git.');
@@ -39,14 +47,15 @@ const slower = rate => typeof rate === 'number' && rate >= 0.5 && rate < 1;
 const earlierVoices = (audit.earlier_voices ?? []).map(v => v.name);
 const voiceOf = entry => entry?.fallback ?? VOICE;
 const rateOf = entry => entry?.voice === voiceOf(entry) || entry?.fallback ? entry?.rate : undefined;
-for (const text of source.texts) {
+const texts = only ? source.texts.filter(t => only.has(t)) : source.texts;
+for (const text of texts) {
   const entry = audit.clips[text];
   if (entry?.check !== 'redo') continue;
-  if (entry.fallback && !earlierVoices.includes(entry.fallback)) throw new Error(`“${text}”: a fallback is an earlier voice the audit lists (${entry.fallback})`);
+  if (entry.fallback !== undefined && (!earlierVoices.includes(entry.fallback) || entry.fallback === VOICE)) throw new Error(`“${text}”: a fallback is an earlier voice the audit lists, not the voice for new clips (${entry.fallback})`);
   if (rateOf(entry) !== undefined && !slower(rateOf(entry))) throw new Error(`“${text}”: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${entry.rate})`);
 }
 let made = 0, chars = 0;
-for (const text of source.texts) {
+for (const text of texts) {
   const entry = audit.clips[text];
   if (entry ? entry.check !== 'redo' : redoOnly) continue;
   const rate = rateOf(entry), voice = voiceOf(entry);

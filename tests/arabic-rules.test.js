@@ -32,6 +32,9 @@ check('the reading texts and starter words are all there', texts.assets.length =
 const courseWords = JSON.parse(read(path.join(ROOT, 'content/teaching/arabic/course-words.json')));
 check('the app has the course words exactly as checked (MyDay\'s own list, beside the package\'s starter words)', JSON.stringify(texts.course) === JSON.stringify(courseWords.lessons) && Object.keys(texts.course).length >= 5);
 const shipped = JSON.parse(read(path.join(ROOT, 'app/src/study/arabic/voice-clips.json'))).clips;
+// A word listed for the dictionary only says so with "dictionary": true (specs/arabic-dictionary.md); the build refuses
+// any other value.
+check('a course word marked for the dictionary only uses "dictionary": true, never another value', Object.values(courseWords.lessons).flatMap(l => l.words).every(w => w.dictionary === undefined || w.dictionary === true));
 const spoken = Object.values(courseWords.lessons).flatMap(l => l.words).flatMap(w => [w.form_ar, w.example_ar]).filter(s => s.replace(/[\u064B-\u0652]/g, '').length > 1);
 check('every course word and its example (but a lone letter like وَ) has a voice that was listened to', spoken.length >= 90 && spoken.every(s => shipped[s]), spoken.filter(s => !shipped[s]));
 

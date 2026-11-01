@@ -3267,28 +3267,6 @@
     "serviceTier": "standard"
    }
   },
-  "طَلَاقَة": {
-   "file": "8f3c3fab31cd9a5d.mp3",
-   "heard": "طَلَاقًا",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 65,
-    "candidatesTokenCount": 5,
-    "totalTokenCount": 975,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 28
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 905,
-    "serviceTier": "standard"
-   }
-  },
   "تَفْرِيغ": {
    "file": "30815857143ab233.mp3",
    "heard": "أَهْلًا",
@@ -5773,50 +5751,6 @@
     "serviceTier": "standard"
    }
   },
-  "مُقَيِّمَة": {
-   "file": "2909dfb712d0cc45.mp3",
-   "heard": "مُخَيَّمَ",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 84,
-    "candidatesTokenCount": 7,
-    "totalTokenCount": 260,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 47
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 169,
-    "serviceTier": "standard"
-   }
-  },
-  "عِبْء": {
-   "file": "d9d4ac7173f1f3c0.mp3",
-   "heard": "عَيْبْ",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 73,
-    "candidatesTokenCount": 4,
-    "totalTokenCount": 210,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 36
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 133,
-    "serviceTier": "standard"
-   }
-  },
   "الصَّوْتُ غَيْرُ وَاضِحٍ": {
    "file": "86b64a04e49d9010.mp3",
    "heard": "اَلصَّوْتُ غَيْرُ وَاضِحٍ",
@@ -7531,28 +7465,6 @@
     "serviceTier": "standard"
    }
   },
-  "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءْ. هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَة؟\nلَا أَسْتَطِيعْ، لِأَنَّ عِنْدِي مَوْعِدَا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءْ.\nهَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَة؟\nنَعَمْ. أَيْنَ سَنَلْتَقِي؟\nفِي الْمَكْتَبَة. سَأُرْسِلُ إِلَيْكِ الْعُنْوَانْ.\nشُكْرَا. إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَة.": {
-   "file": "41b5fd84990b1c3b.mp3",
-   "heard": "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءِ. هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَةِ؟\nلَا أَسْتَطِيعُ، لِأَنَّ عِنْدِي مَوْعِدًا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءِ. فَهَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَةُ؟\nنَعَمْ، أَيْنَ سَنَلْتَقِي؟\nفِي الْمَكْتَبَةِ، سَأُرْسِلُ إِلَيْكِ الْعُنْوَانَ.\nاتَّفَقْنَا. إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَةِ.",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 746,
-    "candidatesTokenCount": 234,
-    "totalTokenCount": 2307,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 709
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 1327,
-    "serviceTier": "standard"
-   }
-  },
   "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءَا. تُغْلَقُ يَوْمَ السَّبْتِ. يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنْ. لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَة. لِطَلَبِ الْمُسَاعَدَة، يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلْ.": {
    "file": "a09358cacb3b9375.mp3",
    "heard": "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءً، تُغْلَقُ يَوْمَ السَّبْتِ. يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنِ. لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَةِ. لِطَلَبِ الْمُسَاعَدَةِ، يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلِ.",
@@ -7838,28 +7750,6 @@
     "serviceTier": "standard"
    }
   },
-  "كَاتَبَ": {
-   "file": "a308102b7fe3c59a.mp3",
-   "heard": "كَتَبَ",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 73,
-    "candidatesTokenCount": 4,
-    "totalTokenCount": 188,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 36
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 111,
-    "serviceTier": "standard"
-   }
-  },
   "كَسَّرَ": {
    "file": "2ee7e43fafb7d1a1.mp3",
    "heard": "كَسَّرَ",
@@ -7923,28 +7813,6 @@
      }
     ],
     "thoughtsTokenCount": 173,
-    "serviceTier": "standard"
-   }
-  },
-  "كَاتَبَ سَامِي لَيْلَى.": {
-   "file": "45925479260f39ba.mp3",
-   "heard": "كَتَبَ سَامِي لَيْلَى",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 94,
-    "candidatesTokenCount": 12,
-    "totalTokenCount": 339,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 57
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 233,
     "serviceTier": "standard"
    }
   },
@@ -8165,28 +8033,6 @@
      }
     ],
     "thoughtsTokenCount": 102,
-    "serviceTier": "standard"
-   }
-  },
-  "ظِلّ": {
-   "file": "f11534856bdc4a89.mp3",
-   "heard": "وَلْ",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 73,
-    "candidatesTokenCount": 3,
-    "totalTokenCount": 400,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 36
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 324,
     "serviceTier": "standard"
    }
   },
@@ -13312,28 +13158,6 @@
     "serviceTier": "standard"
    }
   },
-  "سُورَة": {
-   "file": "c47170a3f79570b8.mp3",
-   "heard": "صُورَة",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 65,
-    "candidatesTokenCount": 4,
-    "totalTokenCount": 168,
-    "promptTokensDetails": [
-     {
-      "modality": "AUDIO",
-      "tokenCount": 28
-     },
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     }
-    ],
-    "thoughtsTokenCount": 99,
-    "serviceTier": "standard"
-   }
-  },
   "تَرْجَمَةُ الْمَعَانِي": {
    "file": "c34c5f34b774fd7b.mp3",
    "heard": "تَرْجَمَةُ الْمَعَانِي",
@@ -13661,28 +13485,6 @@
      }
     ],
     "thoughtsTokenCount": 236,
-    "serviceTier": "standard"
-   }
-  },
-  "لَاحِقَة": {
-   "file": "468381c50b1e4e34.mp3",
-   "heard": "لَاحِقًا",
-   "finish": "STOP",
-   "usage": {
-    "promptTokenCount": 69,
-    "candidatesTokenCount": 6,
-    "totalTokenCount": 194,
-    "promptTokensDetails": [
-     {
-      "modality": "TEXT",
-      "tokenCount": 37
-     },
-     {
-      "modality": "AUDIO",
-      "tokenCount": 32
-     }
-    ],
-    "thoughtsTokenCount": 119,
     "serviceTier": "standard"
    }
   },
@@ -16603,5 +16405,206 @@
     }
    }
   ]
- }
+ },
+ "earlier_takes": {
+  "طَلَاقَة": {
+   "file": "8f3c3fab31cd9a5d.mp3",
+   "heard": "طَلَاقًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 975,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 905,
+    "serviceTier": "standard"
+   }
+  },
+  "مُقَيِّمَة": {
+   "file": "2909dfb712d0cc45.mp3",
+   "heard": "مُخَيَّمَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 84,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 260,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 47
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 169,
+    "serviceTier": "standard"
+   }
+  },
+  "عِبْء": {
+   "file": "d9d4ac7173f1f3c0.mp3",
+   "heard": "عَيْبْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 210,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 133,
+    "serviceTier": "standard"
+   }
+  },
+  "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءْ. هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَة؟\nلَا أَسْتَطِيعْ، لِأَنَّ عِنْدِي مَوْعِدَا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءْ.\nهَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَة؟\nنَعَمْ. أَيْنَ سَنَلْتَقِي؟\nفِي الْمَكْتَبَة. سَأُرْسِلُ إِلَيْكِ الْعُنْوَانْ.\nشُكْرَا. إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَة.": {
+   "file": "41b5fd84990b1c3b.mp3",
+   "heard": "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءِ. هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَةِ؟\nلَا أَسْتَطِيعُ، لِأَنَّ عِنْدِي مَوْعِدًا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءِ. فَهَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَةُ؟\nنَعَمْ، أَيْنَ سَنَلْتَقِي؟\nفِي الْمَكْتَبَةِ، سَأُرْسِلُ إِلَيْكِ الْعُنْوَانَ.\nاتَّفَقْنَا. إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 746,
+    "candidatesTokenCount": 234,
+    "totalTokenCount": 2307,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 709
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 1327,
+    "serviceTier": "standard"
+   }
+  },
+  "كَاتَبَ": {
+   "file": "a308102b7fe3c59a.mp3",
+   "heard": "كَتَبَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 188,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 111,
+    "serviceTier": "standard"
+   }
+  },
+  "كَاتَبَ سَامِي لَيْلَى.": {
+   "file": "45925479260f39ba.mp3",
+   "heard": "كَتَبَ سَامِي لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 339,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 233,
+    "serviceTier": "standard"
+   }
+  },
+  "ظِلّ": {
+   "file": "f11534856bdc4a89.mp3",
+   "heard": "وَلْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 400,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 324,
+    "serviceTier": "standard"
+   }
+  },
+  "سُورَة": {
+   "file": "c47170a3f79570b8.mp3",
+   "heard": "صُورَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 168,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 99,
+    "serviceTier": "standard"
+   }
+  },
+  "لَاحِقَة": {
+   "file": "468381c50b1e4e34.mp3",
+   "heard": "لَاحِقًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 194,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 119,
+    "serviceTier": "standard"
+   }
+  }
+ },
+ "earlier_takes_note": "Transcripts of takes later made again: the final take of each was reheard three times at temperature 1 (not saved here) and approved by the owner’s ear. Kept for the record; results lists only transcripts of the clips that ship."
 }

@@ -100,6 +100,9 @@ for (const [lessonId, entry] of Object.entries(words.lessons)) {
     for (const f of ['form_ar', 'meaning_en', 'part_of_speech', 'example_ar', 'example_meaning_en', 'note']) if (typeof w[f] !== 'string' || !w[f].trim()) fail(`${w.id}: no ${f}`);
     if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || !markedThrough(w.form_ar) || !ARABIC.test(w.example_ar) || !markedThrough(w.example_ar)) fail(`${w.id}: the word and its example must be fully vowelled Arabic`);
     if ((w.root_ar === null) !== (w.root_reading === null) || (w.root_ar !== null && (!ROOT_FORM.test(w.root_ar) || typeof w.root_reading !== 'string' || !w.root_reading.trim()))) fail(`${w.id}: a root is written like ك-ت-ب, with its reading, or both are null`);
+    // A word listed for the dictionary only (specs/arabic-dictionary.md): never one of the lesson's own words or a
+    // review card unless the learner adds it. The field is true or absent.
+    if (w.dictionary !== undefined && w.dictionary !== true) fail(`${w.id}: "dictionary" is true or absent, not ${JSON.stringify(w.dictionary)}`);
     if (forms.has(w.form_ar)) fail(`${w.id}: ${w.form_ar} is already ${forms.get(w.form_ar)} (list it once, or under "seed")`);
     forms.set(w.form_ar, w.id);
   });

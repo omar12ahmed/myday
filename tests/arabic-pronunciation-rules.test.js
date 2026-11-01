@@ -319,7 +319,13 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   brokenAudio('rate-one', c => { c.clips[firstText].rate = 1; }, "a clip's speaking rate is only ever slower", 'a speaking rate of exactly the usual speed');
   brokenAudio('rate-low', c => { c.clips[firstText].rate = 0.49; }, "a clip's speaking rate is only ever slower", 'a speaking rate under half the usual speed');
   // Where Charon fails, one clip can be made in an earlier voice, its "fallback" (round twenty-two: كَاتَبَ's long ā).
-  check('where Charon can\'t be got right, a clip is made in WaveNet B and says so (its fallback)', audit.clips['كَاتَبَ']?.fallback === 'ar-XA-Wavenet-B' && audit.clips['كَاتَبَ'].voice === 'ar-XA-Wavenet-B' && audit.clips['كَاتَبَ'].check === 'checked');
+  check('where Charon can\'t be got right, a clip is made in WaveNet B and says so (its fallback), here at a slower rate', audit.clips['كَاتَبَ']?.fallback === 'ar-XA-Wavenet-B' && audit.clips['كَاتَبَ'].voice === 'ar-XA-Wavenet-B' && audit.clips['كَاتَبَ'].rate === 0.85 && audit.clips['كَاتَبَ'].check === 'checked');
+  // The clip maker stops on an option it doesn't know, or an --only list naming a text outside its source, before it
+  // needs a key or touches a file (myday-20's review, 1 November 2026).
+  const maker = args => { try { execFileSync('node', [path.join(ROOT, 'app/scripts/make-arabic-audio.mjs'), ...args], { stdio: 'pipe', env: { ...process.env, GOOGLE_TTS_API_KEY: '' } }); return ''; } catch (e) { return `${e.stdout || ''}${e.stderr || ''}`; } };
+  check('the clip maker refuses an option it doesn\'t know (a misspelt --redo-only)', maker(['explainers', '--redoonly']).includes('Unknown option --redoonly'));
+  const onlyList = path.join(temp, 'only-texts.txt'); fs.writeFileSync(onlyList, 'نَصٌّ لَيْسَ فِي الدَّرْسِ.\n');
+  check('the clip maker refuses an --only list with a text outside its source', maker(['explainers', `--only=${onlyList}`]).includes("lists a text that isn't in explainers"));
   brokenAudio('fallback-main', c => { c.clips[firstText].voice = c.voice.name; c.clips[firstText].fallback = c.voice.name; }, 'a fallback is an earlier voice the audit lists', 'a fallback naming the voice for new clips');
   brokenAudio('fallback-other', c => { c.clips[firstText].voice = c.voice.name; c.clips[firstText].fallback = c.earlier_voices[0].name; }, 'a fallback is an earlier voice the audit lists', 'a fallback that is not the voice the clip was made in');
   const halfDir = path.join(temp, 'audio-rate-half');

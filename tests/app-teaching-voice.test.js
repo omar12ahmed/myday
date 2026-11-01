@@ -146,6 +146,9 @@ const button = '[data-action="ar-play"]';
     // تِين / طِين had no clip until module 3's explainers voiced both (round twenty-two, approved by ear); one clip serves
     // every place its text appears, so all eight pairs now play.
     check('all eight sound pairs have two controls each', await ev(`(() => { const pairs = [...document.querySelectorAll('li')]; return pairs.length === 8 && pairs.every(li => li.querySelectorAll('[data-action="ar-play"]').length === 2); })()`));
+    await show('asset.arabic-contrast-bank', ['تِين', 'طِين']); await until(() => exists('[data-ar-clip^="asset.arabic-contrast-bank:pair:"]'));
+    check('a sound pair whose words have no clip stays text only, while the others keep their controls', await ev(`(() => { const pairs = [...document.querySelectorAll('li')]; return pairs.length === 8 && pairs.every((li, i) => li.querySelectorAll('[data-action="ar-play"]').length === (i === 4 ? 0 : 2)); })()`));
+    await show('asset.arabic-contrast-bank'); await until(() => exists('[data-ar-clip^="asset.arabic-contrast-bank:pair:"]'));
     check('the sound-pair label distinguishes synthesised examples from its original listening assignment', await exists('[data-ar-voice-label]') && (await T.text('#fixture')).includes('The course’s listening task still needs a fluent speaker’s recording.'));
     check('leaving the question stops the old question player', (await state()).playing === null);
     await show('vocabulary'); await until(() => exists('[data-ar-families]'));
