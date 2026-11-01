@@ -6,7 +6,7 @@ card), 16–24 and module 14's verb moods and passive, with the "where this lead
 123 explainers. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
 checker, voiced and listened to, then released.
 Approved by the owner's checker and waiting for their voice and a release: modules 1–3 (eighteen), and modules 25–27, 29
-and 30 (twenty-five). Module 28 waits for its quotes (§6).
+and 30 (twenty-five). Module 28 (five, with quotes, §6): cross-checked, its quotes compared with Tanzil's text, with the owner's checker.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 
