@@ -201,6 +201,8 @@ Round twenty-two (modules 3 and 25–30 in Charon; module 28's Qur'anic quotes a
 ear in two passes. Charon shortened the long ā of كَاتَبَ at every speed and on every take, and was heard as another word
 for ظِلّ, so those three clips were made in WaveNet B, recorded on each clip as its "fallback" (the owner's choice,
 1 November 2026: WaveNet B where Charon fails, before a clip is left out). The key was deleted.
+Round twenty-four (module 22's split explainers): 59 new clips in Charon, approved by ear; one sentence made again at
+0.9 for a clearer lām. The narrowed card's dropped form فِي مَدَارِسَ was retired. The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
