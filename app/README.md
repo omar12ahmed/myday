@@ -1,6 +1,6 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-**1.125.0 — Career projects: roles, applications and interviews:** a new kind of project, **Career** (Start a project,
+**1.126.0 — Career projects: roles, applications and interviews:** a new kind of project, **Career** (Start a project,
 or Edit → Kind of project), for looking for work. Its **Applications** tab holds the **roles you're aiming for** (each
 with a note, and the work that shows you can do it — entries from your Cybersecurity portfolio, by reference; they stay
 in Study) and your **applications**, by where each is at: Interested, Applied (with the day), Interviewing, Offer — and
@@ -1713,7 +1713,7 @@ where they point from the address (GitHub and GitLab issue, pull and merge reque
 per project: 200 requirements, 500 bugs, 30 releases in use. Deleted with its project, here and through sync. Never sent
 to AI; display only.
 
-**Career projects (1.125.0; `specs/projects-career.md`):** the kind `career` (its tabs in `data/templates.ts`). One
+**Career projects (1.126.0; `specs/projects-career.md`):** the kind `career` (its tabs in `data/templates.ts`). One
 synced record per item in the top-level `career` section (`data/career.ts`; kind `career`): a role (title, notes, set
 aside, the Cybersecurity portfolio entries that show it, by reference) or an application (company, the role as
 advertised, which of your roles, a link, a contact, notes; stage Interested / Applied / Interviewing / Offer / Closed
@@ -2346,7 +2346,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/exploring.ts`, `src/projects/ExploringView.tsx` | Exploring a while (1.116.0): `exploring.ts` (three weeks in Exploring, comparing the options, what's still unknown); `ExploringView.tsx` (the Overview's ask, the compare page, the Decisions tab's link). |
 | `src/data/ambitions.ts`, `src/projects/AmbitionsView.tsx` | Ambitions (1.119.0): `ambitions.ts` (reading as written, adding, links and steps, what a task, project or lesson is a step towards, the wording); `AmbitionsView.tsx` (the Projects home's strip, an ambition's page, a project's line). Today's lines are in `src/today/` (PlanCard, DueTodayCard, ProjectCards) and `src/study/StudyTodayCard.tsx`. |
 | `src/data/software.ts`, `src/data/templates.ts`, `src/projects/SoftwareView.tsx` | Software projects (1.122.0): `software.ts` (reading as written, requirements, bugs and Fix it, releases and their checklist, checks with proof, at a glance, links on items); `templates.ts` (each kind of project's tabs, routes and switch wording); `SoftwareView.tsx` (the Overview's card, the Requirements and Bugs tabs, a milestone's release checklist). Marked links are in `src/data/projectResources.ts` and `src/projects/ResourcesCard.tsx`. |
-| `src/data/career.ts`, `src/projects/CareerView.tsx` | Career projects (1.125.0): `career.ts` (reading as written, roles, applications and their stages, closing gently, interviews and their Prepare task, questions, the follow-up rule, at a glance); `CareerView.tsx` (the Overview's card, the Applications tab, Needs you's Follow up and Close it). The nudge is in `src/data/attention.ts`. |
+| `src/data/career.ts`, `src/projects/CareerView.tsx` | Career projects (1.126.0): `career.ts` (reading as written, roles, applications and their stages, closing gently, interviews and their Prepare task, questions, the follow-up rule, at a glance); `CareerView.tsx` (the Overview's card, the Applications tab, Needs you's Follow up and Close it). The nudge is in `src/data/attention.ts`. |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
