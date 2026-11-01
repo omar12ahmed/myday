@@ -28006,7 +28006,7 @@
       "en": "authorisation: what you're allowed to do"
      },
      {
-      "form_en": "authorisation, again",
+      "form_en": "authorisation (a variant term)",
       "ar": "التَّخْوِيل",
       "en": "authorisation, in another provider's wording"
      },
@@ -28200,14 +28200,14 @@
      }
     ],
     "steps": [
-     "Read the whole section before you do anything: find the مُتَطَلَّبٌ مُسْبَقٌ, prerequisites, the conditions, the steps and the expected result.",
+     "Read the whole section before you do anything: find any مُتَطَلَّبٌ مُسْبَقٌ, prerequisite, the conditions, the steps and the expected result.",
      "A condition with إِذَا, if, comes with its step: read them together.",
      "يَجِبُ, must, is required; يُمْكِنُ, can, is possible; اِخْتِيَارِيّ, optional, is up to you; and a تَحْذِير, warning, may say a step is unsafe.",
-     "Check the الْإِصْدَار, the version: a help page can describe something that has since changed."
+     "Check الْإِصْدَار, the version: a help page can describe something that has since changed."
     ],
     "examples": [
      {
-      "ar": "إِذَا انْتَهَتْ صَلَاحِيَةُ كَلِمَةِ الْمُرُورِ، يَجِبُ تَغْيِيرُهَا.",
+      "ar": "إِذَا انْتَهَتْ صَلَاحِيَّةُ كَلِمَةِ الْمُرُورِ، يَجِبُ تَغْيِيرُهَا.",
       "en": "If the password expires, it must be changed.",
       "words": [
        {
@@ -28219,7 +28219,7 @@
         "en": "ends, expires"
        },
        {
-        "ar": "صَلَاحِيَةُ",
+        "ar": "صَلَاحِيَّةُ",
         "en": "the validity (of)"
        },
        {
@@ -28378,8 +28378,8 @@
     ],
     "examples": [
      {
-      "ar": "كَلِمَةُ الْمُرُورِ تُثْبِتُ أَنَّكَ صَاحِبُ الْحِسَابِ.",
-      "en": "The password shows that you're the account's owner.",
+      "ar": "كَلِمَةُ الْمُرُورِ تُسَاعِدُ عَلَى إِثْبَاتِ أَنَّكَ صَاحِبُ الْحِسَابِ.",
+      "en": "The password helps prove that you're the account's owner.",
       "words": [
        {
         "ar": "كَلِمَةُ",
@@ -28390,8 +28390,16 @@
         "en": "passing: \"the password\""
        },
        {
-        "ar": "تُثْبِتُ",
-        "en": "shows, proves"
+        "ar": "تُسَاعِدُ",
+        "en": "helps"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(with سَاعَدَ)"
+       },
+       {
+        "ar": "إِثْبَاتِ",
+        "en": "proving"
        },
        {
         "ar": "أَنَّكَ",
@@ -28549,7 +28557,7 @@
      "Keep apart what was رُصِدَ, observed, what's only a فَرَضِيَّة, a hypothesis, what was done, and what's still open.",
      "Give exact times, in order: a تَسَلْسُلٌ زَمَنِيٌّ, a timeline.",
      "Mark how sure each claim is: يُرَجَّحُ, it's thought likely; لَمْ يَثْبُتْ, it hasn't been proven. Don't name a culprit or a motive the evidence doesn't show.",
-     "For practice, use وَهْمِيّ, fictional, material, labelled as such, with no real names or secrets."
+     "For practice, use fictional material, وَهْمِيّ, labelled as such, with no real names or secrets."
     ],
     "examples": [
      {
@@ -28610,7 +28618,7 @@
      },
      {
       "ar": "لَمْ يَثْبُتْ حُدُوثُ اخْتِرَاقٍ.",
-      "en": "No break-in has been proven.",
+      "en": "No breach has been proven.",
       "words": [
        {
         "ar": "لَمْ",
@@ -28626,7 +28634,7 @@
        },
        {
         "ar": "اخْتِرَاقٍ",
-        "en": "a break-in"
+        "en": "a breach"
        }
       ]
      }
