@@ -186,11 +186,16 @@ Round nineteen (modules 8–23's 71 approved explainers): 790 clips, 522 new tex
 The owner heard four a bit off and each was made again at a slower speaking rate, in the same words (an explainer's
 text can't be reworded). The sentence and سِجِلّ were then approved; ضِعْف said alone is left out (no play button), and
 أَيّ, also a course word, keeps its earlier Charon clip approved on 25 October (the owner's choice). The key was deleted.
+Round twenty (module 24's five B2 explainers and module 14's four on the moods and the passive): 77 clips, 62 new
+texts and 15 made again from Charon; two heard otherwise on a retake too (لَمْ يَكْتُبَا, مُضَارِع) were made at a speaking
+rate of 0.9. Approved by ear ("all good"). The owner then asked whether a better voice than Charon and WaveNet B exists:
+a blind comparison (below) chose Charon for new clips, and ضِعْف, left out in round nineteen, was made in Charon and
+approved ("good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
   1. a Text-to-Speech-only key is made, and deleted afterwards;
-  2. the clips are made in the same voice (Chirp 3 HD Charon);
+  2. the clips are made in the voice for new clips (Chirp 3 HD Charon; WaveNet B from 25 to 31 October 2026);
   3. Gemini transcribes every clip, and any clip it hears differently is made again;
   4. you listen on a checklist page and tick anything that sounds off;
   5. the clips are made again until they're right; a clip heard too fast, or with a sound wrong at the usual
@@ -255,6 +260,17 @@ forms. It is used for the reading texts and for every new clip from now on; olde
 each is redone (the audit lists it under `earlier_voices`). Pause forms are for connected reading only, because in a
 short example the last word's ending is often the point of the lesson. Each reading text also has one clip read in one
 go, for "Listen to the whole text".
+
+**The voice for new clips is Chirp 3 HD Charon again (owner, 31 October 2026, a blind comparison):** asked whether any
+voice is better than Charon and WaveNet B, five voices read the same texts, labelled Voice 1 to 5: WaveNet B, Chirp 3 HD
+Charon, Fenrir and Aoede, and Gemini 3.8 Flash TTS (Kore). The texts were 13 forms WaveNet B had got wrong and 8 the owner
+had approved in it. The owner chose Charon. Transcribed blind first: on 24 approved texts the voices barely differed (67 to
+71 of 72 hearings right, the misses mostly spelling, such as إِسْمِي for اِسْمِي); on the 13 hard forms, chosen from
+WaveNet B's own mistakes, Charon and the other Chirp 3 HD voices did far better than WaveNet B. The Gemini voices read
+any instruction aloud and sometimes ignored the vowel marks for a commoner word (ضَعْف for ضِعْف, سَجِّلْ for سِجِلّ), so
+they don't suit a course that teaches the marks. Not tried: ElevenLabs, Azure and Amazon Polly (each needs an account).
+The approved WaveNet B clips stay, so each explainer stays in one voice and the reading texts keep WaveNet B (the audit
+lists it under `earlier_voices`); every new clip, and any clip made again, is Charon.
 
 ## 7. Questions for you
 

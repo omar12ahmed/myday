@@ -198,8 +198,9 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   const allSourceTexts = new Set(sources.flatMap(s => s.texts));
   check('every text in the audit is in one of the voice sources', auditTexts.every(x => allSourceTexts.has(x)), auditTexts.filter(x => !allSourceTexts.has(x)));
   const voices = [audit.voice.name, ...(audit.earlier_voices || []).map(v => v.name)];
-  check('every clip was made with the audit\'s voice or one it lists as earlier, and the voice for new clips is WaveNet B', audit.voice.name === 'ar-XA-Wavenet-B' && voices.includes('ar-XA-Chirp3-HD-Charon') && auditTexts.every(x => voices.includes(audit.clips[x].voice)), [...new Set(auditTexts.map(x => audit.clips[x].voice))]);
-  check('every reading-text clip, by sentence and whole, is in the voice for new clips', [...src('reading-texts').texts, ...src('reading-wholes').texts].every(x => audit.clips[x]?.voice === audit.voice.name));
+  // The voice for new clips: WaveNet B from 25 October 2026, Chirp 3 HD Charon again from 31 October (the owner's blind choice).
+  check('every clip was made with the audit\'s voice or one it lists as earlier, and the voice for new clips is Chirp 3 HD Charon', audit.voice.name === 'ar-XA-Chirp3-HD-Charon' && voices.includes('ar-XA-Wavenet-B') && auditTexts.every(x => voices.includes(audit.clips[x].voice)), [...new Set(auditTexts.map(x => audit.clips[x].voice))]);
+  check('every reading-text clip, by sentence and whole, is in one voice', new Set([...src('reading-texts').texts, ...src('reading-wholes').texts].map(x => audit.clips[x]?.voice)).size === 1);
   check('every clip has one of the four known checks', auditTexts.every(x => Object.keys(audit.checks).includes(audit.clips[x].check)), [...new Set(auditTexts.map(x => audit.clips[x].check))]);
   check('the label says what the voice is and that no teacher has checked it', audit.label === 'Synthesised voice — a model to copy; checked by ear, not yet by a teacher.');
   const auditText = fs.readFileSync(path.join(audioDir, 'audio-audit.json'), 'utf8');
@@ -308,6 +309,13 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   check('a clip the owner heard too fast records the slower rate it was made again at', Object.values(audit.clips).some(c => c.rate === 0.9 && c.check === 'checked'));
   brokenAudio('rate-faster', c => { c.clips[firstText].rate = 1.2; }, "a clip's speaking rate is only ever slower", 'a clip made faster than the usual speed');
   brokenAudio('rate-word', c => { c.clips[firstText].rate = 'slow'; }, "a clip's speaking rate is only ever slower", 'a speaking rate that is not a number');
+  brokenAudio('rate-one', c => { c.clips[firstText].rate = 1; }, "a clip's speaking rate is only ever slower", 'a speaking rate of exactly the usual speed');
+  brokenAudio('rate-low', c => { c.clips[firstText].rate = 0.49; }, "a clip's speaking rate is only ever slower", 'a speaking rate under half the usual speed');
+  const halfDir = path.join(temp, 'audio-rate-half');
+  fs.cpSync(audioDir, halfDir, { recursive: true });
+  const halfAudit = JSON.parse(fs.readFileSync(path.join(halfDir, 'audio-audit.json'), 'utf8')); halfAudit.clips[firstText].rate = 0.5;
+  fs.writeFileSync(path.join(halfDir, 'audio-audit.json'), JSON.stringify(halfAudit));
+  check('a clip made at half the usual speed (0.5, the slowest allowed) passes the build', runAudio(halfDir).code === 0);
   brokenAudio('nameless-voice', c => { c.earlier_voices = [{ service: 'x' }]; }, 'every voice the audit lists needs its name', 'an earlier voice without a name');
   const firstPiece = Object.keys(realPieces).find(t => audit.clips[t]?.check === 'checked');
   brokenAudio('piece-unrecorded', c => { delete c.clips[firstPiece].spoken; }, 'must record the script it was made from', 'a scripted piece\'s clip that doesn\'t record what it was made from');

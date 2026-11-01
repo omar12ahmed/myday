@@ -26,18 +26,24 @@ const today = new Date().toISOString().slice(0, 10);
 // a short pause (an Arabic comma) — read aloud, the slash came out as a stray word.
 // A final full stop makes an isolated form a complete utterance, without changing any of its letters or marks.
 const spoken = spokenFor(root);
+// A clip the owner heard too fast, or with a sound wrong at the usual speed, can be redone slower: its "rate" (the
+// voice's speaking rate, from 0.5 to under 1, as prepare-audio.mjs checks) is set on the clip before the redo and kept
+// with it, so a later take keeps it. Every clip to be made is checked before any is made or any file is touched.
+const slower = rate => typeof rate === 'number' && rate >= 0.5 && rate < 1;
+for (const text of source.texts) {
+  const entry = audit.clips[text];
+  if (entry?.check === 'redo' && 'rate' in entry && !slower(entry.rate)) throw new Error(`“${text}”: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${entry.rate})`);
+}
 let made = 0, chars = 0;
 for (const text of source.texts) {
   const entry = audit.clips[text];
   if (entry && entry.check !== 'redo') continue;
-  // A clip the owner heard too fast, or with a sound wrong at the usual speed, can be redone slower: its "rate" (the
-  // voice's speaking rate, under 1) is set on the clip before the redo and kept with it, so a later take keeps it.
   const rate = entry?.rate;
   const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST',
     signal: AbortSignal.timeout(30000),
     headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({ input: { text: spoken(text) }, voice: { languageCode: 'ar-XA', name: VOICE }, audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000, ...(rate ? { speakingRate: rate } : {}) } }),
+    body: JSON.stringify({ input: { text: spoken(text) }, voice: { languageCode: 'ar-XA', name: VOICE }, audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000, ...(rate !== undefined ? { speakingRate: rate } : {}) } }),
   });
   if (!res.ok) throw new Error(`“${text}”: ${res.status} ${(await res.text()).slice(0, 200)}`);
   const audio = Buffer.from((await res.json()).audioContent, 'base64');
@@ -47,7 +53,9 @@ for (const text of source.texts) {
   // the same audio: لَمْ, and the piece لم read from its script); the build then asks for a take of its own.
   const shared = Object.entries(audit.clips).some(([other, c]) => other !== text && c.file === entry?.file);
   if (entry?.file && entry.file !== file && !shared) rmSync(new URL(entry.file, clips), { force: true });
-  audit.clips[text] = { file, voice: VOICE, made: today, spoken: spoken(text), ...(rate ? { rate } : {}), check: 'to check', ...(entry?.note ? { earlier: entry.note } : {}) };
+  // The clip's history goes with it: what an earlier take recorded ("earlier"), then any note set before this redo.
+  const earlier = [entry?.earlier, entry?.note].filter(Boolean).join(' ');
+  audit.clips[text] = { file, voice: VOICE, made: today, spoken: spoken(text), ...(rate !== undefined ? { rate } : {}), check: 'to check', ...(earlier ? { earlier } : {}) };
   // Keep completed clips in the audit even if a later request fails or the run is interrupted.
   writeFileSync(auditFile, JSON.stringify(audit, null, 1) + '\n');
   made++; chars += text.length;

@@ -4,8 +4,8 @@
 //
 // The build fails on: a clip whose text is no longer in any voiced part of the course (so a changed sentence can't
 // keep an old voice), a file whose contents don't match its name, a file cut short, a stray file, a clip made with
-// another voice, or an unknown check. Clips not yet listened to ("to check", "redo") and ones left out ship nothing:
-// their text simply has no play button.
+// another voice, an unknown check, or a speaking rate that isn't slower (from 0.5 to under 1). Clips not yet listened
+// to ("to check", "redo") and ones left out ship nothing: their text simply has no play button.
 // Clips: content/arabic-audio/ (made by make-arabic-audio.mjs) → public/arabic-audio/ (not in Git; cached by the
 // service worker only when played) and the list the app reads, src/study/arabic/voice-clips.json — kept out of
 // src/study/arabic/data/, which prepare-arabic.mjs empties and rewrites whenever it runs.
