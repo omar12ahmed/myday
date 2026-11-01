@@ -387,6 +387,33 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('a device that knows the new epoch (v3) can write research again', Array.isArray(r2) && r2[0].status === 'applied', r2);
   }
 
+  console.log('\n[22] An ambition (Ambitions, 20261101120000_sync_ambitions.sql)');
+  {
+    const MA = await S.addUser(db, 'ambition-a@example.test', 'x'), MB = await S.addUser(db, 'ambition-b@example.test', 'x');
+    const apush = (who, changes) => S.as(db, who, q => q('select public.sync_push_v3($1, $2::jsonb, $3, $4) as r', [who, JSON.stringify(changes), 'dev-am', 0])).then(x => x.rows[0].r);
+    const apull = who => S.as(db, who, q => q('select * from public.sync_pull_v2($1, 0, 500)', [who])).then(x => x.rows);
+    const canon = v => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v);
+    const eq = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b)); // (jsonb orders keys its own way)
+    const am1 = { id: 'amdbtest0001', title: 'Work in cybersecurity', why: 'A steadier career', links: [{ id: 'aldbtest01', kind: 'project', ref: 'pjdbtest' }, { id: 'aldbtest02', kind: 'arabic' }],
+      steps: [{ id: 'asdbtest01', text: 'Learn networking', done: true, linkId: 'aldbtest01' }], futureBit: { keep: [1] }, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' };
+    let r3 = await apush(MA, [change('ambition', am1.id, 0, am1)]);
+    check('an ambition saves through sync_push as its own record (version 1)', r3[0]?.status === 'applied' && r3[0].version === 1, r3);
+    const got = (await apull(MA)).find(x => x.kind === 'ambition');
+    check('it comes back exactly, including a key a newer MyDay added', !!got && eq(got.data, am1), got?.data);
+    check('another account cannot read it, through sync_pull or the table', !(await apull(MB)).some(x => x.kind === 'ambition') && (await S.as(db, MB, q => q(`select * from public.sync_records where kind = 'ambition'`))).rows.length === 0);
+    r3 = await apush(MA, [change('ambition', am1.id, 0, { ...am1, title: 'Stale' })]);
+    check('a stale device cannot overwrite it (conflict)', r3[0].status === 'conflict', r3);
+    r3 = await apush(MA, [change('ambition', am1.id, 1, null, { deleted: true })]);
+    check('deleting it reaches other devices as a tombstone (the kind is deletable)', r3[0].status === 'applied' && (await apull(MA)).some(x => x.kind === 'ambition' && x.deleted && x.data === null), r3);
+    r3 = await apush(MA, [change('content', 'cvdbambition1', 0, { id: 'cvdbambition1', projectId: 'pjdbtest', type: 'video', step: 'idea', title: 'x' }), change('research', 'rqdbambition1', 0, { id: 'rqdbambition1', type: 'question', projectId: 'pjdbtest', text: 'x' }),
+      change('project', 'pjdbtest', 0, { projectId: 'pjdbtest', value: { id: 'pjdbtest', title: 'x' } }), change('note', 'ntdbambition1', 0, { id: 'ntdbambition1', text: 'x' }), change('file', 'fldbambition1', 0, { id: 'fldbambition1', name: 'A.pdf', type: 'application/pdf', size: 1, sha256: 'a'.repeat(64), area: 'project', state: 'kept', addedOn: '2026-11-01' })]);
+    check('every earlier kind is still accepted after the kind lists change again (content, research, project, note, file)', r3.length === 5 && r3.every(x => x.status === 'applied'), r3);
+    r3 = await apush(MA, [change('ambitions', 'all', 0, { items: [] })]);
+    check('a kind that is still unknown is refused', r3[0].status === 'rejected', r3);
+    r3 = await apush(MA, [change('settings', 'planning', 0, {}), change('settings', 'planning', 1, null, { deleted: true })]);
+    check('…and a one-record kind still can\'t be deleted', r3[0].status === 'applied' && r3[1].status === 'rejected', r3);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
