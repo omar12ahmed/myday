@@ -191,6 +191,12 @@ texts and 15 made again from Charon; two heard otherwise on a retake too (لَم
 rate of 0.9. Approved by ear ("all good"). The owner then asked whether a better voice than Charon and WaveNet B exists:
 a blind comparison (below) chose Charon for new clips, and ضِعْف, left out in round nineteen, was made in Charon and
 approved ("good"). The key was deleted.
+Round twenty-one (all in Charon, by the owner's rule of 1 November 2026: new cards in Charon; an approved WaveNet B
+clip stays unless the blind cross-check had doubted it, and then it is made again in Charon): the eleven modules 1–2
+explainers (56 new texts), 211 doubted clips (140 explainer forms, 78 course words, lesson checks and others), and the
+ten reading texts with a doubted clip, made again whole so each keeps one voice (82 clips). 349 clips, approved by ear
+("all good"). `make-arabic-audio.mjs --redo-only` makes only the clips marked "redo", so a remake round never voices a
+text whose words haven't been checked. The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
