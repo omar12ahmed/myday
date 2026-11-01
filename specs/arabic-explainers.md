@@ -1,12 +1,10 @@
 # Proposal: Arabic explainers ("How this works")
 
-**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Live with their voice: module 14 (1.98.0,
-voiced in 1.102.0), module 15 and modules 4–5 (1.105.0), modules 6–7 (1.108.0), and modules 8–13 (with the A1 portfolio
-card), 16–24 and module 14's verb moods and passive, with the "where this leads" lines and a second go (§7) (1.121.0):
-123 explainers. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
-checker, voiced and listened to, then released.
-Approved by the owner's checker and waiting for their voice and a release: modules 1–3 (eighteen), and modules 25–27, 29
-and 30 (twenty-five). Module 28 (five, with quotes, §6): cross-checked, its quotes compared with Tanzil's text, and approved by the owner's checker (1 November 2026).
+**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Every lesson has explainers, live with their
+voice: module 14 (1.98.0, voiced in 1.102.0), module 15 and modules 4–5 (1.105.0), modules 6–7 (1.108.0), modules 8–24
+and module 14's verb moods and passive, with the "where this leads" lines and a second go (§7) (1.121.0), and modules 1–3
+and 25–30, with module 28's quotes (§6) (1.124.0): 171 explainers in 152 lessons. Each batch: drafted, validated,
+cross-checked independently (fixes re-checked), checked by the owner's checker, voiced and listened to, then released.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 

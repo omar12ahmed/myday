@@ -1,7 +1,8 @@
 // Live check of the Arabic explainers on the site (tests/live/run.py), on a disposable account and one throwaway device
 // (a Mac, then a 320 px phone width): the weak-verbs lesson's Understand step has How it works with its five cards; a
 // card opens with its table, and its questions answer when you choose (one wrong, one right); module 15's إِنَّ and
-// كَانَ lesson has its two (1.105.0), and module 7's time and days lesson its two; Vocabulary has the 651
+// كَانَ lesson has its two (1.105.0), module 7's time and days lesson its two, module 2's joining lesson its card, and module 28's 1:2 quote shows exactly
+// with no transliteration (1.124.0); Vocabulary has the 651
 // links, and one opens the irregular-families lesson with the Take card open and its title clear of the step bar; at
 // 320 px a card doesn't scroll sideways. Nothing is saved: the device's learning data and the account's Arabic and
 // Study records are as before. Never prints account details. Reads the live database (no writes of its own beyond
@@ -72,6 +73,16 @@ const WV = 'study/arabic/lesson.arabic-weak-verbs', SAY = 'details[data-ar-expla
   await mac.open(BASE + '#study/arabic/lesson.arabic-clock-calendar');
   const m7 = await mac.until(`!!document.querySelector('#ar-step-understand [data-ar-explainers="2"]')`, 60000);
   check('module 7: the time and days lesson has its two explainers, the time and the days of the week', m7 && await mac.ev(`[...document.querySelectorAll('[data-ar-explainers] details[data-ar-explainer]')].map(d => d.dataset.arExplainer).join() === 'explainer.arabic-telling-the-time,explainer.arabic-days-of-the-week'`));
+
+  // Module 2 (1.124.0): the joining lesson has its card. Module 28: a quote in the muṣḥaf's exact spelling, without a
+  // transliteration (and never voiced).
+  await mac.open(BASE + '#study/arabic/lesson.arabic-letter-joining');
+  check('module 2: the joining lesson has its explainer', await mac.until(`!!document.querySelector('#ar-step-understand [data-ar-explainers="1"] details[data-ar-explainer="explainer.arabic-joining-letters"]')`, 60000));
+  const q12 = require(path.join(__dirname, '..', '..', 'content/teaching/arabic/explainers.json')).lessons['lesson.arabic-quranic-scope'][0].quotes[0];
+  await mac.open(BASE + '#study/arabic/lesson.arabic-quranic-scope');
+  await mac.until(`!!document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]')`, 60000);
+  await mac.ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-three-kinds-of-study"]').open = true`); await D.sleep(300);
+  check('module 28: the 1:2 quote shows exactly as written in the muṣḥaf, with "(Qur\'an 1:2)" and no transliteration', await mac.ev(`(() => { const f = document.querySelector('figure[data-ar-explainer-quote="1:2"]'); return !!f && f.querySelector('[lang="ar"]')?.textContent === ${JSON.stringify(q12.ar)} && f.textContent.includes("(Qur'an 1:2)") && !f.querySelector(':scope > [lang="ar"] + [data-ar-transliteration]'); })()`));
 
   // Vocabulary's links, and following one.
   await mac.open(BASE + '#study/arabic/vocabulary');

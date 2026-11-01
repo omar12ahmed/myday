@@ -1,5 +1,21 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.124.0 — Arabic explainers for every lesson: modules 1 to 3 and 25 to 30, with their voice:** forty-eight more
+**How it works** cards, so all 152 lessons of the course now have them (171 cards). Modules 1–3 are for complete
+beginners: the words for talking about Arabic and learning, the script (letter shapes, joining, the vowels, sukūn, shadda
+and tanwīn, ء, ة and ى, reading for meaning) and the sounds (long vowels and doubled letters, the throat sounds, the
+heavy letters, ق and the th sounds, hearing the article, pauses), mostly in pairs of words that differ by one sound.
+Modules 25–30, the optional branches: academic and professional Arabic, literature, classical Arabic, Qur'anic Arabic,
+translation and technology. Module 28 studies the Qur'anic text as language only: its cards may quote short phrases
+(**Quoted**) in the muṣḥaf's exact spelling, with sūra and verse and a plain meaning, never voiced and with no
+transliteration (the owner's decisions; each quote was copied from Quran.com's Uthmani text, compared with Tanzil's and
+checked by the owner's fluent checker). An independent reviewer cross-checked every batch and the owner's checker
+approved it. Voice: 648 clips made in two rounds, in Chirp 3 HD Charon, the voice for new clips: 355 for the new cards (three of
+them in WaveNet B where Charon couldn't say them right: كَاتَبَ, its sentence, ظِلّ) and 293 remakes, 211 earlier WaveNet B
+clips that the blind checks had doubted and the ten reading texts that had one (82 clips). All were listened to by the
+owner; 4,442 clips in all. No saved-data, sync or
+database change; going back to 1.123.0 is safe.
+
 **1.123.0 — An easier way in, offered when a task keeps moving, and one offer a day at most:** step 2 of "getting
 started" (`specs/help-me-start.md` §5, the owner's choices of 1 Nov 2026).
 - **A task that keeps moving** — now **moved twice** (3 times before; the Stuck card, Needs you and Your week follow), or
@@ -1172,7 +1188,7 @@ Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Underst
 works**, under its teaching: one closed card per family of forms or grammar topic (so far ten for module 14's weak,
 irregular and derived verbs, 1.98.0; and, in 1.105.0, eight for module 15's relative words, إِنَّ and كَانَ and their
 sisters, reporting, conditions, reasons and contrast, and thirteen for modules 4–5's first patterns, from "you" to a
-man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages; in 1.121.0, eighty for modules 8–24 and module 14's moods and passive). Each has a table (form, Arabic, meaning; on a phone the form
+man or a woman to plurals and possession; in 1.108.0, twelve for modules 6–7, from present verbs to short messages; in 1.121.0, eighty for modules 8–24 and module 14's moods and passive; in 1.124.0, forty-eight for modules 1–3 and 25–30, so every lesson has them). Module 28's cards may also quote short Qur'anic phrases under **Quoted**: in the muṣḥaf's exact spelling, with sūra and verse and a meaning, never voiced and with no transliteration. Each has a table (form, Arabic, meaning; on a phone the form
 sits under the meaning; a form label or a word's gloss may name Arabic, shown as Arabic and never voiced),
 short steps, two or three sentences broken down word by word, a "why" question, and three questions: a first wrong choice
 says "Not quite." and asks again (a question with two choices shows the answer at once), then the answer shows with its
