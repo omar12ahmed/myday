@@ -1,5 +1,21 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.125.0 — MyDay learns what helps you start, and steps back as starting gets easier:** step 3 of "getting started"
+(`specs/help-me-start.md` §6, the owner's choices of 1 Nov 2026).
+- **It notices what works.** Each time you use one of Help me start's small acts, MyDay notes which (never any words),
+  and judges it only by what it can see that day: the task done, a step ticked, its timer run to the end, its notes or
+  its project's *where I left off* written. "Later" and "Let it go" never count against you.
+- **You confirm it.** When a way worked 4 of the last 5 times for a kind of work, What MyDay has noticed asks: "Five-minute
+  starts work for you on learning tasks — 4 of the last 5 times you used one, you started that day." Confirmed, Help me
+  start says "What's worked for you before" and leads with it; it's held back again if the evidence fades.
+- **Help steps back.** When your last 5 dated tasks of a kind were done on time without moving or help, start offers
+  stop for that kind, and Your preferences says so. Help me start stays on every task.
+- **Ask MyDay** gets a confirmed way as one "how you work" line — only while you've let it use how you work.
+
+Kept with your patterns (`startSeen`, synced, at most 200 over 8 weeks; forgotten with "Forget everything it has
+learned") and, on each task, the days you were seen working on it (`touched`, the last 30). MyDay never writes either on
+its own. 1.124.0 keeps both unread (checked); going back is safe.
+
 **1.124.0 — Arabic explainers for every lesson: modules 1 to 3 and 25 to 30, with their voice:** forty-eight more
 **How it works** cards, so all 152 lessons of the course now have them (171 cards). Modules 1–3 are for complete
 beginners: the words for talking about Arabic and learning, the script (letter shapes, joining, the vowels, sukūn, shadda

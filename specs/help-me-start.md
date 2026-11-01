@@ -113,7 +113,7 @@ A use is judged only once its day is over.
 - MyDay never trims or writes these on its own: old uses go when you next use Help me start; the timer marks a task only
   when it runs to the end while MyDay is open (not when it's reopened later). A task keeps its last 30 days.
 - "Forget everything it has learned" shows, and says so, when your uses of Help me start are all there is.
-- Older versions (1.123.0) keep `startSeen` and `touched` unread; their "Forget everything" doesn't clear `startSeen`.
+- Older versions (1.124.0 and before) keep `startSeen` and `touched` unread; their "Forget everything" doesn't clear `startSeen`.
 - For the owner: a five-minute start counts when its timer runs to the end (the chosen definition), so it will nearly
   always "work" if you let it run.
 
