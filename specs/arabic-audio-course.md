@@ -206,6 +206,9 @@ that batch (`make-arabic-audio.mjs --only=<list>`) while modules 25–30's words
 by ear; أَخْطَاء is in WaveNet B as a fallback. The key was deleted.
 Round twenty-four (module 22's split explainers): 59 new clips in Charon, approved by ear; one sentence made again at
 0.9 for a clearer lām. The narrowed card's dropped form فِي مَدَارِسَ was retired. The key was deleted.
+Round twenty-five (the course words for modules 25–30, course words 1.8): 690 clips, approved by ear; every course word
+now has a voice. Where every take of a short word was transcribed as another word, the owner chose by ear from four
+takes (two in Charon, two in WaveNet B): three Charon takes and three WaveNet B fallbacks. The keys were deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
