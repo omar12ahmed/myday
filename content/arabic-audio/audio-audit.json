@@ -5405,14 +5405,6 @@
    "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
    "checked": "2026-10-31"
   },
-  "أَنَا مِنْ مِصْرَ.": {
-   "file": "e117ae33593e13ac.mp3",
-   "voice": "ar-XA-Chirp3-HD-Charon",
-   "made": "2026-10-25",
-   "spoken": "أَنَا مِنْ مِصْرَ.",
-   "check": "checked",
-   "checked": "2026-10-25"
-  },
   "مِصْرِيّ": {
    "file": "d3212cd58509e578.mp3",
    "voice": "ar-XA-Wavenet-B",
@@ -5907,14 +5899,6 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-25",
    "spoken": "مُدُن.",
-   "check": "checked",
-   "checked": "2026-10-25"
-  },
-  "مِنْ مِصْرَ": {
-   "file": "299f3056a96fa0c6.mp3",
-   "voice": "ar-XA-Chirp3-HD-Charon",
-   "made": "2026-10-25",
-   "spoken": "مِنْ مِصْرَ.",
    "check": "checked",
    "checked": "2026-10-25"
   },
@@ -6552,14 +6536,6 @@
    "check": "checked",
    "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
    "checked": "2026-10-31"
-  },
-  "هَذَا الْبَيْتُ كَبِيرٌ.": {
-   "file": "00402d6cdbc0902b.mp3",
-   "voice": "ar-XA-Chirp3-HD-Charon",
-   "made": "2026-10-25",
-   "spoken": "هَذَا الْبَيْتُ كَبِيرٌ.",
-   "check": "checked",
-   "checked": "2026-10-25"
   },
   "بَيْتُكَ": {
    "file": "28e3209eb14f267e.mp3",
@@ -8134,14 +8110,6 @@
    "check": "checked",
    "earlier": "Made in the earlier voice (Chirp 3 HD Charon) on 2026-10-25 and listened to on 2026-10-25; made again in WaveNet B for the explainers, so each explainer is in one voice (the owner’s choice, 31 October 2026).",
    "checked": "2026-10-31"
-  },
-  "كَبِيرٌ": {
-   "file": "0b60524e00d28202.mp3",
-   "voice": "ar-XA-Chirp3-HD-Charon",
-   "made": "2026-10-25",
-   "spoken": "كَبِيرٌ.",
-   "check": "checked",
-   "checked": "2026-10-25"
   },
   "بَيْتُكِ": {
    "file": "bc86346ce8fe77ed.mp3",
@@ -45325,6 +45293,16 @@
    "reason": "فِي مَدَارِسَ, a table form of the module 22 explainer on numbers and words without tanween, approved in WaveNet B; the module 22 split (owner’s checker, 1 November 2026) narrowed that card and moved the form to its own card as فِي مَدَارِسَ كَثِيرَةٍ, so no voiced place shows it any more.",
    "files": [
     "dddd70fa4d6681f8.mp3"
+   ]
+  },
+  {
+   "date": "2026-11-01",
+   "reason": "The example and note Arabic of two older course words (demonstratives-8 هَذَا الْبَيْتُ, origin-location-4 مِصْر) changed so they no longer give away their lesson’s check (approved by the owner’s checker, 1 November 2026); these texts are no longer shown anywhere: أَنَا مِنْ مِصْرَ.، مِنْ مِصْرَ، هَذَا الْبَيْتُ كَبِيرٌ.، كَبِيرٌ.",
+   "files": [
+    "e117ae33593e13ac.mp3",
+    "299f3056a96fa0c6.mp3",
+    "00402d6cdbc0902b.mp3",
+    "0b60524e00d28202.mp3"
    ]
   }
  ],
