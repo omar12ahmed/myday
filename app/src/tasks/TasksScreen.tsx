@@ -16,6 +16,7 @@ import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
 import { ListsView } from './ListsView';
 import { dueText, tasksRoute, waitingText } from './route';
 import { TaskEditor } from './TaskEditor';
+import { TidyCard } from './TidyCard';
 
 export function TasksScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const r = tasksRoute(hash);
@@ -89,6 +90,7 @@ function TasksHome({ data, listId }: { data: MyDayData; listId: string | null })
   return (
     <>
       {list ? <BackLink to="today/tasks" label="All tasks" /> : <BackLink to="today" label="Today" />}
+      {!list && <TidyCard data={data} />}
       <Card aria-labelledby="tasks-h">
         <h2 id="tasks-h" className="m-0">{list ? list.name : 'Tasks'}</h2>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-3" onSubmit={e => { e.preventDefault(); add(); }}>

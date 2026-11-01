@@ -6,6 +6,7 @@ import { shortDate } from '../data/dates';
 import { update } from '../data/storage';
 import { addToTodaysPlan, deadlineWords, dueForToday, isStuck, isWaiting, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { waitingText } from '../tasks/route';
+import { tidyCandidates, tidyPrefs, tidyResting } from '../data/tidy';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
 import { ambitionsOfTask, towardsLine } from '../data/ambitions';
@@ -15,7 +16,8 @@ import { ambitionsOfTask, towardsLine } from '../data/ambitions';
 export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const due = dueForToday(data, k);
   if (!due.length) return null;
-  const room = planRoom(data, k);
+  const room = planRoom(data, k), ids = new Set(due.map(t => t.id));
+  const old = tidyResting(tidyPrefs().notNowOn, k) ? 0 : tidyCandidates(data, k, new Set(tidyPrefs().kept)).filter(i => i.group !== 'old-in-project' && ids.has(i.id)).length;
   function plan(id: string) {
     let r = '';
     update(d => { r = addToTodaysPlan(d, id, k); if (r !== 'added') return false; });
@@ -53,6 +55,8 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
           : room.room <= 0 ? `Today's plan is full for your energy (${room.limit} task${room.limit === 1 ? '' : 's'}). Open a task to move it to another day.`
           : `Room for ${room.room} more on today's plan.`}{' '}<a href="#today/tasks" className="text-primary font-semibold">All tasks</a>
       </p>
+      {/* Older ones that may need tidying (specs/today-learning-and-tidy.md §4): Tidy up is at the top of Tasks. */}
+      {old > 0 && <p className="text-sm text-fg-2 m-0 mt-1" data-s="due-tidy">{old === 1 ? 'One of these looks' : `${old} of these look`} old or unrelated. <a href="#today/tasks" className="text-primary font-semibold" data-action="due-tidy">Tidy up</a></p>}
     </Card>
   );
 }
