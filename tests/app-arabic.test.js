@@ -934,5 +934,113 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   }
 
 
+  console.log('\n[18] The dictionary: search, browse, your words, adding a word');
+  {
+    const until = async (predicate, label, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return true; await sleep(100); } throw new Error('Timed out waiting for ' + label); };
+    const Q = '[data-s="ar-dict-q"]', FOUND = '[data-ar-dict-found]', ROWS = '[data-ar-dictionary] [data-ar-dict-list] > li';
+    const search = async q => { await typeIn(Q, q); await sleep(200); };
+    const found = () => ev(`(() => { const e = document.querySelector('[data-ar-dict-found]'); return { text: e.textContent, n: e.dataset.arDictFound, role: e.getAttribute('role') }; })()`);
+    const firstWord = () => ev(`document.querySelector(${JSON.stringify(ROWS)})?.dataset.arWord ?? null`);
+    const rowIds = () => ev(`[...document.querySelectorAll(${JSON.stringify(ROWS)})].map(e => e.dataset.arWord)`);
+    const KITAB = 'lexeme.arabic-seed-009';
+    const raw18 = () => ev(`localStorage.getItem('myday.data.v4')`);
+    const net = () => ev(`performance.getEntriesByType('resource').filter(r => ['fetch', 'xmlhttprequest', 'beacon'].includes(r.initiatorType)).map(r => r.name)`);
+    await go('study'); await ev('localStorage.clear()'); await go('study/arabic/vocabulary'); await until(() => exists('[data-ar-dictionary]'), 'the dictionary');
+    const tabs = await ev(`[...document.querySelectorAll('nav.workspace-tabs a')].map(a => ({ t: a.textContent, h: a.getAttribute('href') }))`);
+    check('the Arabic tab bar\'s third tab reads "Dictionary" and links to the dictionary page', tabs[3]?.t === 'Dictionary' && tabs[3]?.h === '#study/arabic/vocabulary', tabs);
+    check('the page shows the dictionary above Your words, in that order', await ev(`!!(document.querySelector('[data-ar-dictionary]').compareDocumentPosition(document.querySelector('[data-ar-your-words]')) & Node.DOCUMENT_POSITION_FOLLOWING)`));
+    check('the search box has the visible label "Search the dictionary"', await ev(`(() => { const l = document.querySelector('label[for="' + document.querySelector('[data-s="ar-dict-q"]').id + '"]'); return !!l && l.textContent === 'Search the dictionary' && l.getBoundingClientRect().height > 0; })()`));
+    const before0 = await found();
+    check('the status is a status region and is empty before typing', before0.role === 'status' && before0.text === '' && before0.n === '', before0);
+
+    await search('kitab');
+    let f = await found(), ids = await rowIds();
+    check('typing "kitab" says "5 words found."', f.text === '5 words found.', f);
+    check('…and the status carries the count 5', f.n === '5' && ids.length === 5, [f.n, ids]);
+    check('…with the starter word كِتَاب first, saying "A starter word, first in" a lesson', ids[0] === KITAB && (await T.text(`${ROWS}:first-child [data-ar-taught]`)).startsWith('A starter word, first in'), [ids[0], await T.text(`${ROWS}:first-child [data-ar-taught]`)]);
+    const course1 = await ev(`(() => { const li = [...document.querySelectorAll(${JSON.stringify(ROWS)})].find(l => l.querySelector('[data-ar-taught]')?.dataset.arTaught); const t = li?.querySelector('[data-ar-taught]'); return t ? { id: li.dataset.arWord, lesson: t.dataset.arTaught, text: t.textContent, href: t.querySelector('a')?.getAttribute('href'), linkText: t.querySelector('a')?.textContent } : null; })()`);
+    check('a course word\'s row says "Taught in <lesson title>" with a link to that lesson', !!course1 && course1.text === 'Taught in ' + course1.linkText && course1.href === '#study/arabic/' + course1.lesson && course1.linkText.length > 0, course1);
+
+    await search('كتاب'); check('typing كتاب finds كِتَاب first', await firstWord() === KITAB, await rowIds());
+    await search('door'); const doorIds = await rowIds();
+    check('typing "door" finds بَاب first', doorIds.length > 0 && await ev(`document.querySelector(${JSON.stringify(ROWS)} + ' [lang="ar"]').textContent.replace(/[\\u064B-\\u0652]/g, '')`) === 'باب', doorIds);
+    await search('xylophone'); f = await found();
+    check('a word that isn\'t there says "Nothing found." and lists nothing', f.text.startsWith('Nothing found.') && await count(ROWS) === 0 && f.n === '0', f);
+
+    await search('م'); f = await found();
+    const total = +f.n;
+    check('a one-letter Arabic search finds more than 50 words and says only the first 50 are below', total > 50 && f.text === `${total} words found; the first 50 are below.`, f);
+    check('…and lists exactly 50', await count(ROWS) === 50);
+    await click('[data-action="ar-dict-more"]'); await sleep(200);
+    check('"Show more" adds 50 more, or all of them if fewer', await count(ROWS) === Math.min(100, total), [await count(ROWS), total]);
+    f = await found();
+    check('…and the status follows (says the first 100 below, or nothing more is hidden)', total > 100 ? f.text === `${total} words found; the first 100 are below.` : f.text === `${total} words found.`, f);
+
+    await search('');
+    check('with the search box empty the status is empty again and the browse choices appear', (await found()).text === '' && await exists('[data-action="ar-dict-by"][data-v="letter"]') && await exists('[data-action="ar-dict-by"][data-v="root"]'));
+    check('browsing starts by first letter', await ev(`document.querySelector('[data-action="ar-dict-by"][data-v="letter"]').getAttribute('aria-pressed') === 'true' && document.querySelector('[data-action="ar-dict-by"][data-v="root"]').getAttribute('aria-pressed') === 'false'`));
+    check('a letter with no words (ء) is disabled, and no letter is pressed', await ev(`document.querySelector('[data-action="ar-dict-letter"][data-v="ء"]').disabled && !document.querySelector('[data-action="ar-dict-letter"][aria-pressed="true"]')`));
+    await click('[data-action="ar-dict-letter"][data-v="ك"]'); await sleep(200);
+    check('choosing the letter ك presses it and shows its words', await ev(`document.querySelector('[data-action="ar-dict-letter"][data-v="ك"]').getAttribute('aria-pressed') === 'true'`) && await exists('[data-ar-dict-letter="ك"] [data-ar-dict-list]') && await count('[data-ar-dict-letter="ك"] [data-ar-word]') > 0);
+    const starts = await ev(`[...document.querySelectorAll('[data-ar-dict-letter="ك"] [data-ar-word] > div:first-child p[lang="ar"]')].map(p => p.textContent.replace(/[\\u064B-\\u0652\\u0670\\u0640]/g, '').replace(/ٱ/g, 'ا').replace(/^(?:وال|فال|بال|كال|لل|ال)(?=..)/, '')).filter(w => !w.startsWith('ك'))`);
+    check('every word under ك starts with ك, the article aside', starts.length === 0 && await count('[data-ar-dict-letter="ك"] [data-ar-word]') === await ev(`+document.querySelector('[data-ar-dict-letter="ك"] [data-ar-dict-list]').dataset.arDictList`), starts);
+    await click('[data-action="ar-dict-by"][data-v="root"]'); await sleep(200);
+    check('switching to By root shows the roots starting with ك, with ك-ت-ب holding the row for كِتَاب', await exists('[data-ar-dict-roots="ك"]') && await exists(`[data-ar-dict-root="ك-ت-ب"] [data-ar-word="${KITAB}"]`));
+
+    await click('[data-action="ar-dict-by"][data-v="letter"]'); await search('akbaru');
+    const chunk = 'lexeme.arabic-quantity-comparison-1', rootLabel = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-root]')?.textContent ?? null`);
+    check('a phrase (أَكْبَرُ مِنْ) shows "Root of the main word:"', (await rootLabel(chunk))?.startsWith('Root of the main word:'), [await rootLabel(chunk), await rowIds()]);
+    await search('kitabuha');
+    check('a noun (كِتَابُهَا) shows "Root:" and not "Root of the main word"', (await rootLabel('lexeme.arabic-pronoun-attachment-1'))?.startsWith('Root:') && !(await rootLabel('lexeme.arabic-pronoun-attachment-1')).startsWith('Root of'), [await rootLabel('lexeme.arabic-pronoun-attachment-1'), await rowIds()]);
+    await search('');
+
+    // Your words in the dictionary.
+    await click('[data-action="ar-word-own"]'); await sleep(150);
+    await typeIn('[data-s="ar-own-ar"]', 'نَافِذَة'); await typeIn('[data-s="ar-own-meaning"]', 'window'); await sleep(150);
+    await click('[data-action="ar-own-save"]'); await sleep(250);
+    const kw18 = (await AR()).words;
+    check('a word kept under Your words is saved (نَافِذَة, "window")', kw18?.length === 1 && kw18[0].ar === 'نَافِذَة' && kw18[0].meaning === 'window', kw18);
+    await search('window');
+    const yours = await ev(`(() => { const e = document.querySelector('[data-ar-dict-yours]'); return e ? { id: e.dataset.arDictYours, text: e.textContent } : null; })()`);
+    check('searching "window" shows it as yours, with its meaning', !!yours && yours.id === kw18[0].id && yours.text.includes('Yours') && yours.text.includes('window'), yours);
+    await click('[data-action="ar-dict-yours"]'); await sleep(300);
+    check('its "Show it in Your words" button moves focus to that word under Your words', await ev(`document.activeElement === document.querySelector('[data-ar-your-words] [data-ar-kept="${kw18[0].id}"]')`));
+
+    // Adding a word looks in the dictionary first.
+    const SORRY = 'lexeme.arabic-messages-needs-8';
+    await search('');
+    await click('[data-action="ar-word-own"]'); await sleep(150);
+    await typeIn('[data-s="ar-own-ar"]', 'آسف'); await sleep(200);
+    const inDict = await ev(`[...document.querySelectorAll('[data-ar-own-in-dict]')].map(e => ({ id: e.dataset.arOwnInDict, text: e.textContent, href: e.querySelector('a')?.getAttribute('href') }))`);
+    const sorryRow = inDict.find(r => r.id === SORRY);
+    check('typing آسف in "Add your own word" shows the dictionary\'s آسِف, "sorry", with a link to its lesson', !!sorryRow && sorryRow.text.includes('sorry') && sorryRow.text.includes('آسِف') && sorryRow.href === '#study/arabic/lesson.arabic-messages-needs', inDict);
+    check('…and exactly one of the rows is for آسِف (the other is لِلْأَسَفِ, "unfortunately", which has the same letters under its article)', inDict.filter(r => r.id === SORRY).length === 1 && inDict.every(r => r.id === SORRY || r.text.includes('unfortunately')), inDict);
+    await ev(`[...document.querySelectorAll('[data-ar-own-in-dict] button')].find(b => b.textContent === 'Use the course’s meaning').click()`); await sleep(150);
+    check('"Use the course\'s meaning" fills the meaning field with "sorry"', await ev(`document.querySelector('[data-s="ar-own-meaning"]').value`) === 'sorry');
+    await click('[data-action="ar-own-dict-add"]'); await sleep(300);
+    const a18 = await AR();
+    check('"Add it to revision instead" puts آسِف in revision (recognise card)', a18.cards.some(c => c.id === SORRY + ':recognise'), a18.cards.map(c => c.id));
+    check('…keeps no new word of your own', a18.words.length === 1 && a18.words[0].id === kw18[0].id, a18.words);
+    check('…closes the form and says the word "is in your revision now"', !(await exists('[data-ar-own-word]')) && (await T.text('[data-ar-your-words] p[role="status"]')).includes('is in your revision now'), await T.text('[data-ar-your-words] p[role="status"]'));
+    await click('[data-action="ar-word-own"]'); await sleep(150);
+    await typeIn('[data-s="ar-own-ar"]', 'آسف'); await sleep(200);
+    check('typing آسف again still shows the dictionary word but no longer offers "Add it to revision instead"', await exists(`[data-ar-own-in-dict="${SORRY}"]`) && !(await exists(`[data-ar-own-in-dict="${SORRY}"] [data-action="ar-own-dict-add"]`)));
+
+    // Nothing sent, nothing saved.
+    await go('study'); await ev('localStorage.clear()'); await go('study/arabic/vocabulary'); await until(() => exists('[data-ar-dictionary]'), 'the dictionary again'); await sleep(300);
+    const savedBefore = await raw18(), netBefore = await net();
+    await search('kitab'); await search('م'); await click('[data-action="ar-dict-more"]'); await search('');
+    await click('[data-action="ar-dict-letter"][data-v="ك"]'); await click('[data-action="ar-dict-by"][data-v="root"]'); await sleep(300);
+    check('searching and browsing leave the saved MyDay data exactly as it was', await raw18() === savedBefore);
+    check('…and make no network request', JSON.stringify(await net()) === JSON.stringify(netBefore), await net());
+
+    // Phone width.
+    await send('Emulation.setDeviceMetricsOverride', { width: 320, height: 800, deviceScaleFactor: 2, mobile: true });
+    await go('study/arabic/vocabulary'); await until(() => exists(Q), 'the search box at 320 px'); await search('kitab');
+    const w320 = await ev(`({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth })`);
+    check('at 320 px with a search shown the page doesn\'t scroll sideways', w320.sw <= w320.cw && await count(ROWS) > 0, w320);
+    await send('Emulation.clearDeviceMetricsOverride');
+  }
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

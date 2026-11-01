@@ -29,13 +29,13 @@ export function MixedVoiceLabel({ texts }: { texts: string[] }) {
   if (!voiced.length) return null;
   // Arabic shown without marks is voiced from MyDay's vowelled copy (voice-scripts.json "pieces"): say so.
   const scripted = voiced.some(isScriptedPiece);
-  return <p className="text-xs text-fg-2 m-0 mt-2" data-ar-voice-label="">{voiceLabel}{scripted && <span data-ar-voice-script=""> Where the Arabic has no vowel marks, it reads MyDay’s vowelled copy.</span>} Slower playback: Study → Arabic → Vocabulary.</p>;
+  return <p className="text-xs text-fg-2 m-0 mt-2" data-ar-voice-label="">{voiceLabel}{scripted && <span data-ar-voice-script=""> Where the Arabic has no vowel marks, it reads MyDay’s vowelled copy.</span>} Slower playback: Study → Arabic → Dictionary.</p>;
 }
 
 // The honest label under a piece of Arabic that has a voice, away from the Vocabulary card (e.g. a lesson's example).
 export function VoiceLabel({ text }: { text: string }) {
   if (!clipFor(text)) return null;
-  return <p className="text-xs text-fg-2 m-0 mt-1" data-ar-voice-label="">{voiceLabel} Slower playback: Study → Arabic → Vocabulary.</p>;
+  return <p className="text-xs text-fg-2 m-0 mt-1" data-ar-voice-label="">{voiceLabel} Slower playback: Study → Arabic → Dictionary.</p>;
 }
 
 // What the voice is, honestly, and the Slower switch: on the Vocabulary card.

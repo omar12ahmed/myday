@@ -181,7 +181,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   await go('study/arabic/' + withClip.id); await wait('[data-ar-example]'); await sleep(300);
   check('a lesson whose example has a shipped clip shows a 44 by 44 play button named "Play the lesson\u2019s example"', await ev(`(() => { const b = document.querySelector('${lessonBtn}'); if (!b) return false; const r = b.getBoundingClientRect(); return Math.round(r.width) === 44 && Math.round(r.height) === 44 && b.getAttribute('aria-label') === 'Play the lesson\u2019s example'; })()`), withClip.id);
   const lessonLabel = await T.text('[data-ar-example] [data-ar-voice-label]').catch(() => '');
-  check('…and the voice label sits under it, with where to find Slower playback', lessonLabel.includes('Synthesised voice — a model to copy; checked by ear, not yet by a teacher.') && lessonLabel.includes('Slower playback: Study → Arabic → Vocabulary.') && await exists('[data-ar-voice-label]'), lessonLabel);
+  check('…and the voice label sits under it, with where to find Slower playback', lessonLabel.includes('Synthesised voice — a model to copy; checked by ear, not yet by a teacher.') && lessonLabel.includes('Slower playback: Study → Arabic → Dictionary.') && await exists('[data-ar-voice-label]'), lessonLabel);
   const lessonFetchesBefore = (await clipFetches()).length;
   await realTap(lessonBtn);
   const lessonPlaying = await until(async () => (await ev(`document.querySelector('${lessonBtn}').getAttribute('data-state')`)) === 'playing');

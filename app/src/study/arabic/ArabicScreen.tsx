@@ -39,12 +39,13 @@ import { CheckMyAnswer } from '../CheckMyAnswer';
 import { arabicCheckSource } from './checkSource';
 import { RestartOffer, StepBar } from '../journey/Journey';
 import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX, practiseWriting, removeWord, sentencesIn } from '../../data/arabic/words';
+import type { KeptWord } from '../../data/arabic/types';
 import { KeepAWord } from './KeepAWord';
 import { WordNote } from './WordNote';
 import { ExplainerLink, LessonExplainers } from './Explainers';
 import { explainerFor, useExplainers, useLessonExplainers, type ExplainerRef } from './explainerData';
 import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
-import { starterFor } from './starter';
+import { courseEntries, dictionarySize, inDictionary, LETTERS, rootsWith, search, withLetter, type Entry } from './dictionary';
 import { ARABIC_TINY, toStep } from '../journey/dom';
 import { takeStep } from '../journey/pending';
 import { useJourney } from '../journey/useJourney';
@@ -69,7 +70,7 @@ export default function ArabicScreen({ data, id }: { data: MyDayData; id: string
   return <Pronunciation><div className="arabic-study break-words">
     <nav className="workspace-tabs" aria-label="Arabic">
       <a href="#study">‹ Study</a>
-      {([['map', 'Learning map', ''], ['texts', 'Reading texts', '/texts'], ['vocabulary', 'Vocabulary', '/vocabulary'], ['sessions', 'Your sessions', '/sessions']] as const).map(([key, label, path]) =>
+      {([['map', 'Learning map', ''], ['texts', 'Reading texts', '/texts'], ['vocabulary', 'Dictionary', '/vocabulary'], ['sessions', 'Your sessions', '/sessions']] as const).map(([key, label, path]) =>
         <a key={key} href={'#study/arabic' + path} aria-current={tab === key ? 'page' : undefined}>{label}</a>)}
     </nav>
     <PronunciationControls />
@@ -681,7 +682,7 @@ function RevisionGlance({ data }: { data: MyDayData }) {
     <h3 className="flex items-center gap-2 mt-0"><RotateCcw size={20} aria-hidden="true" />Revision</h3>
     {any
       ? <p className="text-[15px]">In your revision: {[words && plural(words, 'course word'), kept && plural(kept, 'word') + ' you kept', checks && plural(checks, 'lesson check'), practice && plural(practice, 'lesson') + ' to practise again'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
-      : <p className="text-[15px]">Bring words and lesson checks back at growing gaps, so they stay with you. Add them from <InlineLink href="#study/arabic/vocabulary">Vocabulary</InlineLink> or a lesson’s checks.</p>}
+      : <p className="text-[15px]">Bring words and lesson checks back at growing gaps, so they stay with you. Add them from the <InlineLink href="#study/arabic/vocabulary">Dictionary</InlineLink> or a lesson’s checks.</p>}
     {due > 0 && <Button variant="primary" data-action="ar-revise" onClick={() => startRevision('arabic')}>Revise Arabic</Button>}
   </Card>;
 }
@@ -815,7 +816,7 @@ function YourWords({ data }: { data: MyDayData }) {
   const [adding, setAdding] = useState(false), [ar, setAr] = useState(''), [meaning, setMeaning] = useState(''), [note, setNote] = useState('');
   const [editing, setEditing] = useState<string | null>(null), [editMeaning, setEditMeaning] = useState(''), [editNote, setEditNote] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
-  const starter = ar.trim() ? starterFor(ar) : null, already = ar.trim() ? keptWord(data, ar) : null;
+  const already = ar.trim() ? keptWord(data, ar) : null, found = ar.trim() && !already ? inDictionary(ar) : [];
   const add = () => {
     const k = todayKey(); let res: { id: string; added: boolean } | null = null;
     if (update(d => { res = keepWord(d, { ar, meaning, note }, k); if (!res?.added) return false; })) { setMsg(`Kept ${ar.trim()}. It comes back in revision from tomorrow.`); setAr(''); setMeaning(''); setNote(''); setAdding(false); }
@@ -825,21 +826,23 @@ function YourWords({ data }: { data: MyDayData }) {
     if (await confirm({ title: 'Remove this word?', body: `${word}: it leaves your words and your revision. Your past answers stay in your history.`, confirmLabel: 'Remove it', cancelLabel: 'Keep it' }))
       update(d => { if (!removeWord(d, id)) return false; });
   }
-  return <Card data-ar-your-words={words.length}><Eyebrow>Vocabulary</Eyebrow><h2>Your words</h2>
+  return <Card data-ar-your-words={words.length}><Eyebrow>Dictionary</Eyebrow><h2>Your words</h2>
     <p className="text-[15px]">{words.length ? `${plural(words.length, 'word')} you kept, each with your meaning.` : 'None yet. Keep a word from a lesson’s examples or a reading text, or add one here.'} A word you keep comes back in revision from the next day, Arabic → meaning; writing it from memory is your choice.</p>
     {msg && <p role="status" className="text-[15px]">{msg}</p>}
     {!adding ? <Button inline variant="ghost" data-action="ar-word-own" onClick={() => { setAdding(true); setMsg(null); }}>Add your own word</Button>
       : <form className="grid gap-3 rounded-tile border border-outline px-4 py-3" onSubmit={e => { e.preventDefault(); add(); }} data-ar-own-word="">
         <Field label="The word in Arabic" htmlFor="arOwnWord"><TextInput id="arOwnWord" data-s="ar-own-ar" dir="rtl" lang="ar" className="ar-input" maxLength={AR_MAX} value={ar} onChange={e => setAr(e.target.value)} placeholder="بَيْت" /></Field>
         {already && <p className="text-sm m-0" data-ar-keep-already="">Already in your words: {already.meaning}.</p>}
-        {starter && !already && <p className="text-sm text-fg-2 m-0">One of the starter words: “{starter.meaning_en}”. <button type="button" className="text-primary font-semibold underline-offset-2 hover:underline bg-transparent border-0 p-0 cursor-pointer min-h-11" onClick={() => setMeaning(starter.meaning_en)}>Use the course’s meaning</button></p>}
+        {found.map(e => e.kind === 'word' && <p key={e.id} className="text-sm text-fg-2 m-0" data-ar-own-in-dict={e.id}>In the dictionary: <Ar>{e.w.form_ar}</Ar>, “{e.w.meaning_en}”, {e.lessonId ? <>taught in <InlineLink href={'#study/arabic/' + e.lessonId}>{lessonIndex[e.lessonId]?.title}</InlineLink></> : 'a starter word'}.{' '}
+          <button type="button" className={LINKISH} onClick={() => setMeaning(e.w.meaning_en)}>Use the course’s meaning</button>
+          {!wordInRevision(data, e.id) && <>{' · '}<button type="button" className={LINKISH} data-action="ar-own-dict-add" onClick={() => { addToRevision([wordCard(e.id, 'recognise')]); setMsg(`${e.w.form_ar} is in your revision now: it first comes back tomorrow.`); setAr(''); setMeaning(''); setNote(''); setAdding(false); }}>Add it to revision instead</button></>}</p>)}
         <Field label="Your meaning" htmlFor="arOwnMeaning"><TextInput id="arOwnMeaning" data-s="ar-own-meaning" maxLength={MEANING_MAX} value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="e.g. house" /></Field>
         <Field label="A note (optional)" htmlFor="arOwnNote"><TextInput id="arOwnNote" data-s="ar-own-note" maxLength={NOTE_MAX} value={note} onChange={e => setNote(e.target.value)} /></Field>
         <div className="flex flex-wrap gap-2"><Button inline type="submit" variant="primary" data-action="ar-own-save" disabled={!ar.trim() || !meaning.trim() || !!already}>Keep it</Button><Button inline variant="ghost" onClick={() => setAdding(false)}>Cancel</Button></div>
       </form>}
     {words.length > 0 && <ul className="list-none p-0 m-0 mt-3 divide-y divide-outline" data-ar-kept-words="">{[...words].reverse().map(w => {
       const recognise = cardState(data, keptCardId(w.id, 'recognise')), write = w.write ? cardState(data, keptCardId(w.id, 'write')) : null, from = fromLabel(w.from);
-      return <li key={w.id} className="py-3" data-ar-kept={w.id}>
+      return <li key={w.id} className="py-3" data-ar-kept={w.id} tabIndex={-1}>
         <Ar block className="text-[26px] font-medium m-0">{w.ar}</Ar>
         {editing === w.id ? <form className="grid gap-2 mt-2" onSubmit={e => { e.preventDefault(); update(d => { if (!editWord(d, w.id, { meaning: editMeaning, note: editNote })) return false; }); setEditing(null); }}>
             <Field label="Your meaning" htmlFor={'arEditM' + w.id}><TextInput id={'arEditM' + w.id} maxLength={MEANING_MAX} value={editMeaning} onChange={e => setEditMeaning(e.target.value)} /></Field>
@@ -860,13 +863,65 @@ function YourWords({ data }: { data: MyDayData }) {
   </Card>;
 }
 
+// The dictionary (specs/arabic-dictionary.md): every word the course lists and the words you kept, found by Arabic
+// (vowel marks optional), English or Latin letters, or browsed by first letter or root. The search runs here; nothing
+// is sent. The first 50 found show, with Show more; how many were found is said aloud to a screen reader.
+const LINKISH = 'text-primary font-semibold underline-offset-2 hover:underline bg-transparent border-0 p-0 cursor-pointer min-h-11';
+const FOUND_PAGE = 50;
+function Dictionary({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) => void }) {
+  const explainers = useExplainers(), kept = data.arabic.words ?? [], size = dictionarySize();
+  const [q, setQ] = useState(''), [upTo, setUpTo] = useState(FOUND_PAGE);
+  const [by, setBy] = useState<'letter' | 'root'>('letter'), [letter, setLetter] = useState<string | null>(null);
+  const found = q.trim() ? search(q, kept) : null, all = courseEntries();
+  const count = (l: string) => (by === 'letter' ? withLetter(all, l).length : rootsWith(all, l).length);
+  const list = (entries: Entry[]) => <ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-dict-list={entries.length}>
+    {entries.map(e => e.kind === 'yours' ? <YoursRow key={e.id} k={e.k} />
+      : <WordRow key={e.id} data={data} w={e.w} takeOut={takeOut} explainer={explainerFor(explainers, e.id)} taught={{ lessonId: e.lessonId, firstIn: e.firstIn }} />)}
+  </ul>;
+  return <Card data-ar-dictionary=""><Eyebrow>Dictionary</Eyebrow><h2>Look up a word</h2>
+    <p className="text-[15px]">{plural(size.course + size.starter, 'word')}: each lesson’s words and the {size.starter} starter words{kept.length ? `, and ${plural(kept.length, 'word')} of your own` : ''}. Search in Arabic, with or without vowel marks, in English, or in Latin letters, such as “kitab”.</p>
+    <Field label="Search the dictionary" htmlFor="arDictQ"><TextInput id="arDictQ" type="search" data-s="ar-dict-q" dir="auto" value={q} onChange={e => { setQ(e.target.value); setUpTo(FOUND_PAGE); }} placeholder="كِتَاب, book or kitab" /></Field>
+    <p role="status" className="text-[15px] mt-2" data-ar-dict-found={found ? found.length : ''}>{!found ? '' : found.length
+      ? `${plural(found.length, 'word')} found${found.length > upTo ? `; the first ${upTo} are below` : ''}.` : 'Nothing found. If it’s a word you’ve met, you can keep it under Your words.'}</p>
+    {found ? <>{list(found.slice(0, upTo))}
+      {found.length > upTo && <Button inline variant="ghost" data-action="ar-dict-more" onClick={() => setUpTo(n => n + FOUND_PAGE)}>Show more</Button>}</>
+    : <>
+      <h3 className="mb-2">Browse</h3>
+      <Choices label="Browse by">
+        <Choice on={by === 'letter'} data-action="ar-dict-by" data-v="letter" onClick={() => setBy('letter')}>By first letter</Choice>
+        <Choice on={by === 'root'} data-action="ar-dict-by" data-v="root" onClick={() => setBy('root')}>By root</Choice>
+      </Choices>
+      <div className="flex flex-wrap gap-1.5" dir="rtl" role="group" aria-label={by === 'letter' ? 'First letter' : 'First letter of the root'}>
+        {LETTERS.map(l => { const n = count(l); return <button key={l} type="button" disabled={!n} aria-pressed={letter === l} aria-label={`${l}: ${n ? plural(n, by === 'letter' ? 'word' : 'root') : 'none'}`} data-action="ar-dict-letter" data-v={l} onClick={() => setLetter(l)}
+          className={`ar min-h-11 min-w-11 px-2 rounded-btn border text-[20px] cursor-pointer disabled:opacity-40 disabled:cursor-default ${letter === l ? 'border-primary bg-primary-container text-on-primary-container' : 'border-outline bg-surface-2 text-fg'}`}><bdi lang="ar">{l}</bdi></button>; })}
+      </div>
+      {!letter || !count(letter) ? <p className="text-sm text-fg-2 mt-3">Choose a letter to see its words. Each lesson’s words, in the course’s order, are under Words from the lessons below.</p>
+        : by === 'letter' ? <div className="mt-3" data-ar-dict-letter={letter}>{list(withLetter(all, letter))}</div>
+        : <div className="mt-3" data-ar-dict-roots={letter}>{rootsWith(all, letter).map(({ root, entries }) => <section key={root} data-ar-dict-root={root} className="mt-3">
+            <h4 className="mb-0"><Root f={{ root_ar: root, root_reading: rootReading(entries) }} /></h4>{list(entries)}</section>)}</div>}
+    </>}
+  </Card>;
+}
+// A root's reading, from the first of its words that gives one (a course word's, or a starter word's family's).
+const rootReading = (entries: Entry[]) => entries.map(e => e.kind !== 'word' ? '' : isCourseWord(e.w) ? e.w.root_reading ?? '' : familyOf(e.id)?.root_reading ?? '').find(Boolean) ?? '';
+// A word you kept, as the dictionary shows it: yours, with your meaning; changed or removed under Your words.
+function YoursRow({ k }: { k: KeptWord }) {
+  const show = () => { const el = document.querySelector<HTMLElement>(`[data-ar-kept="${k.id}"]`); el?.scrollIntoView({ block: 'center' }); el?.focus(); };
+  return <li className="py-3" data-ar-dict-yours={k.id}>
+    <p className="m-0 flex flex-wrap items-baseline gap-2"><Ar className="text-[26px] font-medium">{k.ar}</Ar><span className="text-xs font-semibold rounded-full bg-primary-container text-on-primary-container px-2 py-0.5">Yours</span></p>
+    <p className="text-[15px] m-0">{k.meaning}</p>{k.note && <p className="text-sm text-fg-2 m-0" dir="auto">{k.note}</p>}
+    <Button inline variant="ghost" data-action="ar-dict-yours" onClick={show}>Show it in Your words</Button>
+  </li>;
+}
+
 function Vocabulary({ data }: { data: MyDayData }) {
   const takeOut = useTakeOut();
   const k = todayKey(), ids = texts.lexicon.map(w => w.id), next = nextWords(data, ids, ADD_A_FEW), today = wordsAddedOn(data, k);
   const inRev = ids.filter(id => wordInRevision(data, id)).length, plenty = today >= NEW_WORDS_A_DAY;
   return <>
+    <Dictionary data={data} takeOut={takeOut} />
     <YourWords data={data} />
-    <Card><Eyebrow>Vocabulary</Eyebrow><h2>Starter words</h2>
+    <Card><Eyebrow>Dictionary</Eyebrow><h2>Starter words</h2>
       <p>{texts.lexicon.length} first words, each with an example sentence. A seed, not the whole vocabulary: lessons and texts add more as you go.</p>
       <h3>Bring them back in revision</h3>
       <p className="text-[15px]" data-ar-words-in={inRev}>{inRev ? `${plural(inRev, 'word')} of ${texts.lexicon.length} in your revision.` : 'None in your revision yet.'} Words you add first come back tomorrow, then at growing gaps. A few new ones a day is plenty: the course suggests 3 to 8, and a day with none is fine.</p>
@@ -893,7 +948,7 @@ function useTakeOut() {
 // taking it out. A word you know well (wordKnown) asks you to read it aloud first: its voice and reading wait for
 // "Read it aloud, then check" (only when it has one of them to hold back), unless "Always show the help" is on; its
 // example keeps its voice. Each row listens only to that switch, not to the playing state.
-function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: ExplainerRef } | null }) {
+function WordRow({ data, w, takeOut, explainer = null, taught }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: ExplainerRef } | null; taught?: { lessonId: string | null; firstIn: string | null } }) {
   const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
   const course = isCourseWord(w) ? w : null;
   const alwaysHelp = useSyncExternalStore(subscribe, () => voiceState().alwaysHelp);
@@ -906,7 +961,9 @@ function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: A
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block showReading={!ask} className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
       {ask && <Button inline variant="ghost" data-action="ar-word-check" onClick={check}>Read it aloud, then check</Button>}
       {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}
-      {course?.root_ar && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-root={course.root_ar}>Root: <Root f={{ root_ar: course.root_ar, root_reading: course.root_reading ?? '' }} /></p>}</div>
+      {course?.root_ar && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-root={course.root_ar}>{course.part_of_speech === 'chunk' ? 'Root of the main word' : 'Root'}: <Root f={{ root_ar: course.root_ar, root_reading: course.root_reading ?? '' }} /></p>}
+      {taught && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-taught={taught.lessonId ?? ''}>{taught.lessonId ? <>Taught in <InlineLink href={'#study/arabic/' + taught.lessonId}>{lessonIndex[taught.lessonId]?.title}</InlineLink></>
+        : <>A starter word{taught.firstIn && <>, first in <InlineLink href={'#study/arabic/' + taught.firstIn}>{lessonIndex[taught.firstIn]?.title}</InlineLink></>}</>}</p>}</div>
       {!ask && <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} />}</div>
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
       <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
@@ -926,7 +983,7 @@ function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: A
 function CourseWords({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) => void }) {
   const lessons = courseLessons.filter(id => lessonIndex[id] && lessonWords(id).own.length), explainers = useExplainers();
   if (!lessons.length) return null;
-  return <Card data-ar-course-words={lessons.length}><Eyebrow>Vocabulary</Eyebrow><h2>Words from the lessons</h2>
+  return <Card data-ar-course-words={lessons.length}><Eyebrow>Dictionary</Eyebrow><h2>Words from the lessons</h2>
     <p>Each lesson’s words, with the root they come from, an example and a note. A lesson’s words join your revision when you mark it ready to move on, a few a day; you can add any of them sooner here.</p>
     {lessons.map(id => <section key={id} data-ar-course-lesson={id} className="mt-4">
       <h3 className="mb-1"><InlineLink href={'#study/arabic/' + id}>{lessonIndex[id].title}</InlineLink></h3>
