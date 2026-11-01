@@ -197,6 +197,10 @@ explainers (56 new texts), 211 doubted clips (140 explainer forms, 78 course wor
 ten reading texts with a doubted clip, made again whole so each keeps one voice (82 clips). 349 clips, approved by ear
 ("all good"). `make-arabic-audio.mjs --redo-only` makes only the clips marked "redo", so a remake round never voices a
 text whose words haven't been checked. The key was deleted.
+Round twenty-two (modules 3 and 25–30 in Charon; module 28's Qur'anic quotes are never voiced): 299 clips, approved by
+ear in two passes. Charon shortened the long ā of كَاتَبَ at every speed and on every take, and was heard as another word
+for ظِلّ, so those three clips were made in WaveNet B, recorded on each clip as its "fallback" (the owner's choice,
+1 November 2026: WaveNet B where Charon fails, before a clip is left out). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
@@ -206,6 +210,7 @@ text whose words haven't been checked. The key was deleted.
   4. you listen on a checklist page and tick anything that sounds off;
   5. the clips are made again until they're right; a clip heard too fast, or with a sound wrong at the usual
      speed, can be made slower: its "rate" (0.5 to under 1) is set on the clip before the redo and kept with it;
+     where the voice for new clips can't be got right, a clip can be made in an earlier voice, its "fallback";
   6. the full test run, a release, and a live check.
 - **The cost is about nothing:**
   - **Text-to-Speech:** within the free allowance (to be confirmed on the day).

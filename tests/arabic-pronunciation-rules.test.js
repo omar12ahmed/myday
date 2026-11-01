@@ -318,6 +318,10 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   brokenAudio('rate-word', c => { c.clips[firstText].rate = 'slow'; }, "a clip's speaking rate is only ever slower", 'a speaking rate that is not a number');
   brokenAudio('rate-one', c => { c.clips[firstText].rate = 1; }, "a clip's speaking rate is only ever slower", 'a speaking rate of exactly the usual speed');
   brokenAudio('rate-low', c => { c.clips[firstText].rate = 0.49; }, "a clip's speaking rate is only ever slower", 'a speaking rate under half the usual speed');
+  // Where Charon fails, one clip can be made in an earlier voice, its "fallback" (round twenty-two: كَاتَبَ's long ā).
+  check('where Charon can\'t be got right, a clip is made in WaveNet B and says so (its fallback)', audit.clips['كَاتَبَ']?.fallback === 'ar-XA-Wavenet-B' && audit.clips['كَاتَبَ'].voice === 'ar-XA-Wavenet-B' && audit.clips['كَاتَبَ'].check === 'checked');
+  brokenAudio('fallback-main', c => { c.clips[firstText].voice = c.voice.name; c.clips[firstText].fallback = c.voice.name; }, 'a fallback is an earlier voice the audit lists', 'a fallback naming the voice for new clips');
+  brokenAudio('fallback-other', c => { c.clips[firstText].voice = c.voice.name; c.clips[firstText].fallback = c.earlier_voices[0].name; }, 'a fallback is an earlier voice the audit lists', 'a fallback that is not the voice the clip was made in');
   const halfDir = path.join(temp, 'audio-rate-half');
   fs.cpSync(audioDir, halfDir, { recursive: true });
   const halfAudit = JSON.parse(fs.readFileSync(path.join(halfDir, 'audio-audit.json'), 'utf8')); halfAudit.clips[firstText].rate = 0.5;

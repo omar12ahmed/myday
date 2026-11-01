@@ -4,8 +4,9 @@
 //
 // The build fails on: a clip whose text is no longer in any voiced part of the course (so a changed sentence can't
 // keep an old voice), a file whose contents don't match its name, a file cut short, a stray file, a clip made with
-// another voice, an unknown check, or a speaking rate that isn't slower (from 0.5 to under 1). Clips not yet listened
-// to ("to check", "redo") and ones left out ship nothing: their text simply has no play button.
+// another voice, an unknown check, a speaking rate that isn't slower (from 0.5 to under 1), or a fallback that isn't the
+// earlier voice the clip was made in. Clips not yet listened to ("to check", "redo") and ones left out ship nothing:
+// their text simply has no play button.
 // Clips: content/arabic-audio/ (made by make-arabic-audio.mjs) → public/arabic-audio/ (not in Git; cached by the
 // service worker only when played) and the list the app reads, src/study/arabic/voice-clips.json — kept out of
 // src/study/arabic/data/, which prepare-arabic.mjs empties and rewrites whenever it runs.
@@ -37,6 +38,7 @@ for (const [text, c] of Object.entries(audit.clips ?? {})) {
   if (pieces[text] && c.spoken === undefined) fail(`${short}: a scripted piece's clip must record the script it was made from`);
   if (!VOICES.includes(c.voice)) fail(`${short}: made with a voice the audit doesn't list (${c.voice ?? 'none recorded'})`);
   if (c.rate !== undefined && !(typeof c.rate === 'number' && c.rate >= 0.5 && c.rate < 1)) fail(`${short}: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${c.rate})`);
+  if (c.fallback !== undefined && (c.fallback === audit.voice.name || !VOICES.includes(c.fallback) || c.fallback !== c.voice)) fail(`${short}: a fallback is an earlier voice the audit lists, and the voice the clip was made in (${c.fallback})`);
   if (!/^[0-9a-f]{16}\.mp3$/.test(c.file ?? '')) fail(`${short}: a clip is named by its contents (16 hex + .mp3)`);
   const at = new URL(c.file, clipsDir);
   if (!existsSync(at)) fail(`${short}: ${c.file} is missing`);

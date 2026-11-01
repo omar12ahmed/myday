@@ -32,22 +32,29 @@ const spoken = spokenFor(root);
 // voice's speaking rate, from 0.5 to under 1, as prepare-audio.mjs checks) is set on the clip before the redo and kept
 // with it, so a later take keeps it. A rate belongs to the voice it was found for: made in another voice, a clip starts
 // again at the usual speed. Every clip to be made is checked before any is made or any file is touched.
+// Where the voice for new clips can't be got right, one clip can be made in an earlier voice the audit lists: its
+// "fallback" names that voice and stays with the clip (the owner's choice, 1 November 2026: WaveNet B where Charon
+// fails, before a clip is left out). A rate set together with a fallback is for the fallback voice.
 const slower = rate => typeof rate === 'number' && rate >= 0.5 && rate < 1;
-const rateOf = entry => entry?.voice === VOICE ? entry.rate : undefined;
+const earlierVoices = (audit.earlier_voices ?? []).map(v => v.name);
+const voiceOf = entry => entry?.fallback ?? VOICE;
+const rateOf = entry => entry?.voice === voiceOf(entry) || entry?.fallback ? entry?.rate : undefined;
 for (const text of source.texts) {
   const entry = audit.clips[text];
-  if (entry?.check === 'redo' && rateOf(entry) !== undefined && !slower(rateOf(entry))) throw new Error(`“${text}”: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${entry.rate})`);
+  if (entry?.check !== 'redo') continue;
+  if (entry.fallback && !earlierVoices.includes(entry.fallback)) throw new Error(`“${text}”: a fallback is an earlier voice the audit lists (${entry.fallback})`);
+  if (rateOf(entry) !== undefined && !slower(rateOf(entry))) throw new Error(`“${text}”: a clip's speaking rate is only ever slower, from 0.5 to under 1 (${entry.rate})`);
 }
 let made = 0, chars = 0;
 for (const text of source.texts) {
   const entry = audit.clips[text];
   if (entry ? entry.check !== 'redo' : redoOnly) continue;
-  const rate = rateOf(entry);
+  const rate = rateOf(entry), voice = voiceOf(entry);
   const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST',
     signal: AbortSignal.timeout(30000),
     headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({ input: { text: spoken(text) }, voice: { languageCode: 'ar-XA', name: VOICE }, audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000, ...(rate !== undefined ? { speakingRate: rate } : {}) } }),
+    body: JSON.stringify({ input: { text: spoken(text) }, voice: { languageCode: 'ar-XA', name: voice }, audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000, ...(rate !== undefined ? { speakingRate: rate } : {}) } }),
   });
   if (!res.ok) throw new Error(`“${text}”: ${res.status} ${(await res.text()).slice(0, 200)}`);
   const audio = Buffer.from((await res.json()).audioContent, 'base64');
@@ -59,7 +66,7 @@ for (const text of source.texts) {
   if (entry?.file && entry.file !== file && !shared) rmSync(new URL(entry.file, clips), { force: true });
   // The clip's history goes with it: what an earlier take recorded ("earlier"), then any note set before this redo.
   const earlier = [entry?.earlier, entry?.note].filter(Boolean).join(' ');
-  audit.clips[text] = { file, voice: VOICE, made: today, spoken: spoken(text), ...(rate !== undefined ? { rate } : {}), check: 'to check', ...(earlier ? { earlier } : {}) };
+  audit.clips[text] = { file, voice, made: today, spoken: spoken(text), ...(rate !== undefined ? { rate } : {}), ...(entry?.fallback ? { fallback: entry.fallback } : {}), check: 'to check', ...(earlier ? { earlier } : {}) };
   // Keep completed clips in the audit even if a later request fails or the run is interrupted.
   writeFileSync(auditFile, JSON.stringify(audit, null, 1) + '\n');
   made++; chars += text.length;
