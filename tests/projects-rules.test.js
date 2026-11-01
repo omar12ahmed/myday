@@ -3612,6 +3612,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…false with no appliedOn (or one that is not a date), and once followedOn is set', !nf({ appliedOn: undefined }) && !nf({ appliedOn: 'soon' }) && !nf({ followedOn: days(-1) }));
     const dnf = mk(appl('caA', { stage: 'applied', appliedOn: days(-12) }));
     check('…and false after followUp is done', C.needsFollowUp(item(dnf, 'caA'), k) && !!C.followUp(dnf, 'caA', k) && !C.needsFollowUp(item(dnf, 'caA'), k));
+    // Either answer is for good (specs/projects-career.md): closing from Applied, then opening it again, doesn't bring it back.
+    const dcl = mk(appl('caA', { stage: 'applied', appliedOn: days(-12) }), appl('caB', { stage: 'interested' }));
+    check('closing from applied answers "Heard back?" for good: opened again, it doesn\'t come back', C.closeApplication(dcl, 'caA', 'No reply', k) && item(dcl, 'caA').askedOn === k
+      && C.setStage(dcl, 'caA', 'applied', k) && item(dcl, 'caA').stage === 'applied' && !C.needsFollowUp(item(dcl, 'caA'), k), item(dcl, 'caA'));
+    check('…closing from interested notes no answer', C.closeApplication(dcl, 'caB', '', k) && !('askedOn' in item(dcl, 'caB')));
+    check('…and an application with an interview never asks, even back at applied', !nf({ interviews: [{ id: 'ciX', on: days(2) }] }) && !nf({ askedOn: days(-1) }));
 
     console.log('  interviews');
     check('prepareDay is the day before for a later day, the day itself for today, and null for a day that has passed', C.prepareDay('2026-11-12', k) === '2026-11-11' && C.prepareDay(k, k) === k && C.prepareDay('2026-11-09', k) === null && C.prepareDay('2026-11-11', k) === k);
@@ -3629,7 +3635,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const dkd = mk(appl('caZ'));
     for (const kind of ['phone', 'video', 'in-person', 'other', 'newer', 'Phone', '']) C.addInterview(dkd, 'caZ', '2026-11-14', { kind }, k);
     check('a kind is kept only if it is phone, video, in-person or other', item(dkd, 'caZ').interviews.map(v => v.kind ?? '-').join(',') === 'phone,video,in-person,other,-,-,-', item(dkd, 'caZ').interviews);
-    check('adding an interview moves interested and applied to interviewing, and leaves offer, closed and interviewing as they are', (C.addInterview(di, 'caB', '2026-11-14', {}, k), item(di, 'caB').stage === 'interviewing') && item(di, 'caA').stage === 'interviewing' && (C.addInterview(di, 'caC', '2026-11-14', {}, k), item(di, 'caC').stage === 'offer') && (C.addInterview(di, 'caD', '2026-11-14', {}, k), item(di, 'caD').stage === 'closed') && (C.addInterview(di, 'caE', '2026-11-14', {}, k), item(di, 'caE').stage === 'interviewing'), di.career.items.map(x => [x.id, x.stage]));
+    check('adding an interview moves interested and applied to interviewing, and leaves offer and interviewing as they are; a closed application takes none (null) until it\'s opened again', (C.addInterview(di, 'caB', '2026-11-14', {}, k), item(di, 'caB').stage === 'interviewing') && item(di, 'caA').stage === 'interviewing' && (C.addInterview(di, 'caC', '2026-11-14', {}, k), item(di, 'caC').stage === 'offer') && C.addInterview(di, 'caD', '2026-11-14', {}, k) === null && item(di, 'caD').stage === 'closed' && !C.interviewsOf(item(di, 'caD')).length && (C.addInterview(di, 'caE', '2026-11-14', {}, k), item(di, 'caE').stage === 'interviewing'), di.career.items.map(x => [x.id, x.stage]));
     const dbad = mk(appl('caA'));
     check('an invalid date, an unknown id or a role\'s id returns null and adds nothing', C.addInterview(dbad, 'caA', 'soon', {}, k) === null && C.addInterview(dbad, 'caA', '2026-13-45', {}, k) === null && C.addInterview(dbad, 'nope', '2026-11-14', {}, k) === null && !('interviews' in item(dbad, 'caA')) && dbad.tasks.items.length === 0 && item(dbad, 'caA').stage === 'interested');
     const d10 = mk(appl('caA'));
@@ -3641,6 +3647,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('changing the day moves a task that is not done to the day before the new day', C.editInterview(dei, 'caA', e1, { on: '2026-11-20' }, k) && item(dei, 'caA').interviews[0].on === '2026-11-20' && tk(dei, e1t).due === '2026-11-19' && dei.tasks.items.length === 1, [item(dei, 'caA').interviews[0], tk(dei, e1t)]);
     K.setTaskDone(dei, e1t, true);
     check('a task that is done is not moved', C.editInterview(dei, 'caA', e1, { on: '2026-11-25' }, k) && tk(dei, e1t).due === '2026-11-19' && item(dei, 'caA').interviews[0].on === '2026-11-25', tk(dei, e1t));
+    // A Prepare task you deleted isn't made again when the day changes.
+    const ddl = mk(appl('caA', { stage: 'applied', appliedOn: days(-3) })), dl1 = C.addInterview(ddl, 'caA', days(4), {}, k), dlT = item(ddl, 'caA').interviews[0].taskId;
+    ddl.tasks.items = ddl.tasks.items.filter(t => t.id !== dlT);
+    check('a Prepare task you deleted isn\'t made again when the interview\'s day changes', C.editInterview(ddl, 'caA', dl1, { on: days(6) }, k) && !ddl.tasks.items.some(t => t.title.startsWith('Prepare for')) && item(ddl, 'caA').interviews[0].taskId === dlT, ddl.tasks.items.map(t => t.title));
     const e2 = C.addInterview(dei, 'caB', '2026-11-05', {}, k);
     check('an interview with no task gets one when its new day has not passed (and none when it still has)', !('taskId' in item(dei, 'caB').interviews[0]) && C.editInterview(dei, 'caB', e2, { on: '2026-11-08' }, k) && !('taskId' in item(dei, 'caB').interviews[0]) && dei.tasks.items.length === 1
       && C.editInterview(dei, 'caB', e2, { on: '2026-11-18' }, k) && tk(dei, item(dei, 'caB').interviews[0].taskId).due === '2026-11-17' && tk(dei, item(dei, 'caB').interviews[0].taskId).title === 'Prepare for Beta interview' && tk(dei, item(dei, 'caB').interviews[0].taskId).projectId === 'pjA' && dei.tasks.items.length === 2, dei.tasks.items);
@@ -3715,7 +3725,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const dn = () => mk(appl('caA', { company: 'Acme Security', stage: 'applied', appliedOn: days(-10) }));
     const follows = d => K.needsYou(d, k).filter(n => n.key.startsWith('follow:'));
     const f1 = follows(dn());
-    check('an application at applied for 10 days gives one line: "Heard back from <company>?", why "applied <day>", waiting, to the Applications tab, with Follow up for that application', f1.length === 1 && f1[0].key === 'follow:caA' && f1[0].reason === 'waiting' && f1[0].title === 'Heard back from Acme Security?' && f1[0].why === `applied ${kd(days(-10))}` && f1[0].href === '#projects/p/pjA/applications' && eq(f1[0].followUp, { applicationId: 'caA' }), f1);
+    check('an application at applied for 10 days gives one line: "Heard back from <company>?", why "applied <day>", waiting, to the Applications tab, with Follow up for that application', f1.length === 1 && f1[0].key === 'follow:caA' && f1[0].reason === 'waiting' && f1[0].title === 'Heard back from Acme Security?' && f1[0].why === `applied ${kd(days(-10))}` && f1[0].href === '#projects/p/pjA/applications/caA' && eq(f1[0].followUp, { applicationId: 'caA' }), f1);
     const dn9 = dn(); item(dn9, 'caA').appliedOn = days(-9);
     check('no line appears at 9 days', follows(dn9).length === 0, follows(dn9));
     const dnu = dn(); C.followUp(dnu, 'caA', k);

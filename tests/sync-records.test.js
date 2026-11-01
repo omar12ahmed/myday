@@ -410,7 +410,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('its label in words is "Career item"', R.recordLabel('career:casync00001') === 'Career item', R.recordLabel('career:casync00001'));
     check('a role\'s lines are its notes and how many portfolio entries it points at', eq(R.recordLines('career:crsync00001', cr1), ['Notes: Shift work is fine', '1 portfolio entry']) && eq(R.recordLines('career:crsync00002', cr2), []), R.recordLines('career:crsync00001', cr1));
     check('an application\'s lines are its role, contact, link, notes, the day applied, closed with why, the follow-up, and each interview with its time, kind, prep, questions asked and how it went', eq(R.recordLines('career:casync00001', ca),
-      ['Role: SOC analyst', 'Contact: Priya in hiring', 'Link: https://example.com/jobs/1', 'Notes: Found on a job board', 'Applied 2026-10-20', 'Closed 2026-11-02 · Not this time', 'Followed up 2026-11-01',
+      ['Role: SOC analyst', 'Contact: Priya in hiring', 'Link: https://example.com/jobs/1', 'Notes: Found on a job board', 'Applied 2026-10-20', 'Closed 2026-11-02 · Not this time', 'Followed up 2026-11-01', 'Has a follow-up task',
         'Interview 2026-11-04 at 10:00 (Video) · prep · 1 of 2 questions asked · how it went']), R.recordLines('career:casync00001', ca));
     { const gone = clone(data); R.putRecord(gone, 'career:casync00001', null); check('an item deleted elsewhere removes it here', gone.career.items.length === 2 && !gone.career.items.some(x => x.id === 'casync00001')); }
   }
