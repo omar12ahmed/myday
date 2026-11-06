@@ -212,6 +212,9 @@ takes (two in Charon, two in WaveNet B): three Charon takes and three WaveNet B 
 Round twenty-six (the first dictionary words, modules 1–7, myday-20's 78; four older course words fixed so they don't
 give away their lesson's check; module 5's this-that card): 188 clips in Charon, approved by ear ("all good"). Seven
 clips whose texts are no longer shown were retired. The key was deleted.
+Round twenty-seven (dictionary words, batch 2, modules 8–13, myday-cc's 45): 153 clips in Charon, approved by ear
+("clips seem good"), تَاسِعَة and مَقَاهٍ included although every blind transcription heard another word: the ear
+decides. The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
