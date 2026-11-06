@@ -1,6 +1,6 @@
 # Arabic dictionary
 
-Status: the page is live (1.127.0, §2); dictionary-only words (§4) start with modules 1–7, 78 words, in the next release, with word-forms.json and the check against lesson checks; modules 8–19 (myday-20) and 20–30 (myday-5a) follow in batches. Proposal of 1 November 2026, myday-20. The owner asked for a dictionary holding every word in the course, with
+Status: the page is live (1.127.0, §2); dictionary-only words (§4) are live for modules 1–7 (78 words, 1.130.0, with word-forms.json and the check against lesson checks) and 8–13 (45 words, 1.131.0); modules 14–19 (myday-cc, formerly myday-20) and 20–30 (myday-78, formerly myday-5a) follow in batches, then catch-up batches for what the corrected inventory found (6 November: every word a lesson shows, plus words common in dictionary examples). Proposal of 1 November 2026, myday-20. The owner asked for a dictionary holding every word in the course, with
 the option to add new words. They chose to build the page **next, after 1.124.0**, and to give **every word used in
 the course an entry, in batches**.
 

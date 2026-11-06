@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.131.0 — Dictionary words for modules 8–13:** 45 more words in the **Dictionary**: words modules 8–13 already use,
+in their examples, explanations and reading texts, that had no entry yet. Among them are مُنْذُ, شَهْر, يَوْم, دَائِمًا,
+بِدَايَة, نِهَايَة, مَطْبَخ, شَرِكَة, مُدِير, مَعْلُومَات and لَا النَّاهِيَةُ; each is fully vowelled, with its meaning, root, an
+example and a note, all voiced. Like modules 1–7's, they're dictionary-only: found in the Dictionary and in Search, and
+folded in each lesson under **Also in this lesson**, never added to revision unless you add them. 43 more forms a lesson
+uses now find their entry (`content/teaching/arabic/word-forms.json`). The words were cross-checked independently and
+checked by the owner's fluent checker, whose four corrections were applied (مُنْذُ سَنَتَيْنِ, مِنْ تُونِسَ, صَيْدَلِيَّة as the
+shop and a woman pharmacist, لَا النَّاهِيَةُ in use). Course words 1.10. Voice, round twenty-seven (myday-78): 153 clips in
+Chirp 3 HD Charon, all listened to; 5,883 clips. No app code or saved-data change. Going back to 1.130.0 is safe: a
+dictionary word you added to revision stays saved there, unasked.
+
 **1.130.0 — Dictionary words for modules 1–7, and course words that never give a check away:** 78 more words in the
 **Dictionary**: words modules 1–7 already use, in their examples, explanations and reading texts, that had no entry
 yet. Among them are كُلّ, عَنْ, طَرِيق, اِمْتِحَان, صَيْف, الْقَاهِرَة, the days and the ordinal numbers; each is fully
