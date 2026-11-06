@@ -109,9 +109,11 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const shiftKey = n => { const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
   const Y = shiftKey(-1), Y2 = shiftKey(-2);
   await mac.setData(`s => {
-    s.lists.learning[0].title = 'Mac: Networking basics';
+    // A new MyDay has no learning items (Today's learning comes from Study), so these are the user's own, as the four starters used to be.
+    s.lists.learning = [{ id: 'lt1', title: 'Mac: Networking basics', minutes: 30 }, { id: 'lt2', title: 'OverTheWire Bandit — one level', minutes: 20 },
+      { id: 'lt3', title: 'HTB Academy: Networking module — one section', minutes: 30 }, { id: 'lt4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 }];
     s.lists.learning.push({ id: 'lmac1', title: 'Mac: Linux fundamentals', minutes: 25 });
-    s.days['${Y}'] = { energy: 4, rest: false, builtAt: '${Y}T08:00', checkedIn: true, tasks: [${JSON.stringify(task('t-mac-1', 'l1', 'learning', 'Mac: Networking basics', 30, true))}] };
+    s.days['${Y}'] = { energy: 4, rest: false, builtAt: '${Y}T08:00', checkedIn: true, tasks: [${JSON.stringify(task('t-mac-1', 'lt1', 'learning', 'Mac: Networking basics', 30, true))}] };
     s.context['${Y}'] = { energy: 4, sleep: { start: null, end: null, estimatedHours: 7.5 } };
     s.queue = [{ qid: 'q-mac-1', taskId: 'a2', category: 'admin', title: 'Bulk cook 2 meals', minutes: 60, queuedOn: '${Y}', sourceUid: null }];
   }`);
@@ -184,7 +186,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await signIn(phone, A);
   check('signing in on the phone: no questions — MyDay opens with your account\'s MyDay', await phone.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000) && (await statusIs(phone, 'synced')), await diag(phone));
   let pd = await phone.data();
-  check('what was only in your account came here: the Mac\'s plan, learning list and queue', !!pd.days[Y] && pd.days[Y].tasks[0].uid === 't-mac-1' && listTitle(pd, 'learning', 'l1') === 'Mac: Networking basics' && pd.queue.some(q => q.qid === 'q-mac-1'));
+  check('what was only in your account came here: the Mac\'s plan, learning list and queue', !!pd.days[Y] && pd.days[Y].tasks[0].uid === 't-mac-1' && listTitle(pd, 'learning', 'lt1') === 'Mac: Networking basics' && pd.queue.some(q => q.qid === 'q-mac-1'));
   check('what was only on the phone went to your account: its own plan', !!pd.days[Y2] && (await sql(`select 1 from public.day_plans where user_id = $1 and id = $2`, [userA, Y2])).length === 1);
   check('where the same part differed, your account\'s version is used (the admin list, that day\'s context)', !listTitle(pd, 'admin', 'aphone1') && pd.context[Y].energy === 4 && !(await cloudList('admin', userA)).data.items.some(i => i.id === 'aphone1'));
   let pn = await phone.notes();
@@ -459,41 +461,41 @@ function task(uid, taskId, category, title, minutes, done = false) {
 
   console.log('\n[7] Editing the same record on both devices at once: a conflict to decide, nothing overwritten');
   await mac.offline(true); await phone.offline(true);
-  await editList(mac, 'learning', 'l2', 'Mac title');
-  await editList(phone, 'learning', 'l2', 'Phone title');
-  check('offline, each device keeps its own change ("Saved on this device")', listTitle(await mac.data(), 'learning', 'l2') === 'Mac title' && listTitle(await phone.data(), 'learning', 'l2') === 'Phone title' && (await statusIs(phone, 'local', 8000)));
+  await editList(mac, 'learning', 'lt2', 'Mac title');
+  await editList(phone, 'learning', 'lt2', 'Phone title');
+  check('offline, each device keeps its own change ("Saved on this device")', listTitle(await mac.data(), 'learning', 'lt2') === 'Mac title' && listTitle(await phone.data(), 'learning', 'lt2') === 'Phone title' && (await statusIs(phone, 'local', 8000)));
   await mac.offline(false);
   await mac.returnToApp();
-  await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Mac title');
+  await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'lt2').title === 'Mac title');
   await synced(mac);
-  check('the Mac, back online first, saves its version', (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Mac title');
+  check('the Mac, back online first, saves its version', (await cloudList('learning', userA)).data.items.find(i => i.id === 'lt2').title === 'Mac title');
   await phone.offline(false);
   await phone.returnToApp();
   check('the phone, back online, reports a conflict ("Needs attention")', await statusIs(phone, 'attention'), await phone.status());
-  check('…its own version is still there, and the account still has the Mac\'s', listTitle(await phone.data(), 'learning', 'l2') === 'Phone title' && (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Mac title');
+  check('…its own version is still there, and the account still has the Mac\'s', listTitle(await phone.data(), 'learning', 'lt2') === 'Phone title' && (await cloudList('learning', userA)).data.items.find(i => i.id === 'lt2').title === 'Mac title');
   await goSync(phone);
   await phone.until(`document.querySelector('#syncConflicts .conflict[data-key="list:learning"]')`);
   check('the sync screen shows both versions side by side', (await phone.text('#syncConflicts [data-side=here]')).includes('Phone title') && (await phone.text('#syncConflicts [data-side=cloud]')).includes('Mac title'));
   await phone.click('[data-action=conflict-cloud][data-key="list:learning"]');
   await synced(phone);
   pd = await phone.data(); pn = await phone.notes();
-  check('choosing the account\'s version puts it on the phone…', listTitle(pd, 'learning', 'l2') === 'Mac title');
+  check('choosing the account\'s version puts it on the phone…', listTitle(pd, 'learning', 'lt2') === 'Mac title');
   check('…and keeps the phone\'s version aside', pn.kept.some(k => k.key === 'list:learning' && k.why === 'conflict' && k.content.items.some(i => i.title === 'Phone title')));
   await mac.offline(true); await phone.offline(true);
-  await editList(mac, 'learning', 'l2', 'Mac second');
-  await editList(phone, 'learning', 'l2', 'Phone second');
+  await editList(mac, 'learning', 'lt2', 'Mac second');
+  await editList(phone, 'learning', 'lt2', 'Phone second');
   await mac.offline(false); await mac.returnToApp();
-  await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Mac second');
+  await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'lt2').title === 'Mac second');
   await synced(mac);
   await phone.offline(false); await phone.returnToApp(); await statusIs(phone, 'attention');
   await goSync(phone);
   await phone.until(`document.querySelector('[data-action=conflict-here][data-key="list:learning"]')`);
   await phone.click('[data-action=conflict-here][data-key="list:learning"]');
-  await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Phone second');
+  await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'lt2').title === 'Phone second');
   await synced(phone);
-  check('choosing this device\'s version sends it (based on the version it saw, so it\'s a deliberate choice)', (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Phone second');
+  check('choosing this device\'s version sends it (based on the version it saw, so it\'s a deliberate choice)', (await cloudList('learning', userA)).data.items.find(i => i.id === 'lt2').title === 'Phone second');
   await mac.returnToApp();
-  check('…and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.find(i => i.id === 'l2').title === 'Phone second'`));
+  check('…and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.find(i => i.id === 'lt2').title === 'Phone second'`));
 
   console.log('\n[8] Failed, interrupted and retried requests');
   srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'error', times: 1 });
@@ -542,7 +544,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
 
   await mac.returnToApp(); await synced(mac); // the Mac catches up with the phone's changes first
   srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'delay', ms: 2000, times: 1 });
-  await editList(mac, 'learning', 'l3', 'HTB Academy (slow connection)');
+  await editList(mac, 'learning', 'lt3', 'HTB Academy (slow connection)');
   check('on a slow connection the status shows "Saving…" while it works', await statusIs(mac, 'syncing', 8000) && (await mac.text('#syncBadge')) === 'Saving…', await mac.text('#syncBadge'));
   check('…then "Synced"', await synced(mac));
 
@@ -569,10 +571,10 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await mac.until(`document.querySelector('dialog[open]')`); await mac.answer(true);
   check('with everything saved: signed out — back to "Welcome to MyDay"', await mac.until(`document.getElementById('signInGate') && document.getElementById('gate-h').textContent === 'Welcome to MyDay'`, 15000), await diag(mac));
   const cleared = await mac.data();
-  check('…and MyDay\'s data is gone from this device (a new MyDay\'s, nothing of yours)', !cleared.days[Y] && listTitle(cleared, 'learning', 'l1') !== 'Mac: Networking basics' && !cleared.notes.items.length && (await mac.notes()).link === null);
+  check('…and MyDay\'s data is gone from this device (a new MyDay\'s, nothing of yours)', !cleared.days[Y] && listTitle(cleared, 'learning', 'lt1') !== 'Mac: Networking basics' && !cleared.notes.items.length && (await mac.notes()).link === null);
   srv.log.length = 0;
   await signIn(mac, C);
-  check('another account signing in on the same device sees its own MyDay (empty), nothing of yours', await mac.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000) && !(await mac.data()).days[Y] && listTitle(await mac.data(), 'learning', 'l1') !== 'Mac: Networking basics');
+  check('another account signing in on the same device sees its own MyDay (empty), nothing of yours', await mac.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000) && !(await mac.data()).days[Y] && listTitle(await mac.data(), 'learning', 'lt1') !== 'Mac: Networking basics');
   await synced(mac);
   check('…and nothing of yours reached that account', (await sql(`select data from public.task_lists where user_id = $1`, [userC])).every(r => !JSON.stringify(r.data).includes('Mac:')) && (await sql(`select count(*)::int as n from public.day_plans where user_id = $1`, [userC]))[0].n === 0
     && (await sql(`select count(*)::int as n from public.sync_records where user_id = $1 and kind = 'note'`, [userC]))[0].n === 0);

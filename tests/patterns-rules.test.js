@@ -19,7 +19,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('patterns/notice')};`, `export * from ${src('patterns/saved')};`, `export * from ${src('patterns/adapt')};`,
     `export * from ${src('tasks')};`, `export * from ${src('offers')};`, `export { proposeBuild, proposeReview } from ${src('proposal')};`, `export { freshState, normalize } from ${src('normalize')};`,
-    `export { makeTask, minutesLabel, limitFor } from ${src('plan')};`, `export { shift, todayKey, parseKey } from ${src('dates')};`,
+    `export { makeTask, minutesLabel, limitFor } from ${src('plan')};`, `export { shift, todayKey, parseKey, shortDate } from ${src('dates')};`,
+    // Today's learning follows Study, and Tidy up (specs/today-learning-and-tidy.md).
+    `export { chooseTasks, chooseAdditional, learningForToday, queueTask, toggleRoll, tickStudyOnPlan, studiedTitle, setDone, sessionCounts, planStudy, studyTaskId, taskFromQueue } from ${src('plan')};`,
+    `export { applyProposal } from ${src('proposal')};`, `export { OLD_LEARNING_STARTERS, SEED } from ${src('normalize')};`,
+    `export { tidyCandidates, letGoOf, undoLetGo, oldStarters, removeOldStarters, restoreOldStarters } from ${src('tidy')};`,
     `export { howYouWork } from ${JSON.stringify(path.join(ROOT, 'app/src/ai/askContext'))};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -599,6 +603,274 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   d = fresh();
   for (let i = 1; i <= 3; i++) K.noteBlocker(d, K.addTask(d.tasks, { title: 'Newer ' + i }), 'other', before(i), 'later-kind');
   check('an answer with an unknown kind counts as "Something else", which isn\'t counted → no pattern', !find(d, 'blocker'));
+
+  // ---------- Today's learning follows Study (specs/today-learning-and-tidy.md §2) ----------
+  // The four items MyDay used to seed, as the user's own (other ids, so they're kept), and a Study step to pick.
+  const ownList = () => K.OLD_LEARNING_STARTERS.map((x, i) => ({ ...x, id: 'lt' + (i + 1) }));
+  const arabicPick = { subject: 'arabic', title: 'Arabic Fuṣḥā — your next lesson', minutes: 25 };
+  const withLists = () => { const x = fresh(); x.lists.learning = ownList(); x.lists.admin = [{ id: 'a1', title: 'Laundry', minutes: 15 }]; x.lists.health = [{ id: 'h1', title: 'Walk', minutes: 30 }]; return x; };
+  const studyEntry = (subject, extra = {}, title = 'Study step') => K.makeTask({ id: K.studyTaskId({ subject, ...extra }), title, minutes: 20 }, 'learning', null);
+  const onDay = (x, date, tasks) => { x.days[date] = { energy: 3, rest: false, builtAt: date + 'T08:00', checkedIn: false, tasks }; return x.days[date]; };
+
+  console.log('\n[11] Today\'s learning task is Study\'s next step; your own list only when Study has nothing next');
+  {
+    const x = withLists(), learn = ts => ts.find(t => t.category === 'learning');
+    const L = learn(K.chooseTasks(x, k, 5, arabicPick));
+    check('with a Study step, the learning task has its title and minutes, and is marked as Study\'s by its task id (study:arabic)', L.title === 'Arabic Fuṣḥā — your next lesson' && L.minutes === 25 && L.baseMinutes === 25 && L.taskId === 'study:arabic' && eq(K.planStudy(L), { subject: 'arabic' }), L);
+    check('…and a Study step for a course carries the course too', (() => { const r = learn(K.chooseTasks(x, k, 5, { subject: 'roadmap', courseId: 'c9', title: 'My course — your next step', minutes: 30 })); return r.taskId === 'study:roadmap:c9' && eq(K.planStudy(r), { subject: 'roadmap', courseId: 'c9' }); })());
+    const noPick = learn(K.chooseTasks(x, k, 5));
+    check('without a Study step (Study has nothing next) the first list item is used, with no Study mark', noPick.taskId === 'lt1' && noPick.title === K.OLD_LEARNING_STARTERS[0].title && !K.planStudy(noPick), noPick);
+    x.queue.push({ qid: 'q1', taskId: 'lt2', category: 'learning', title: K.OLD_LEARNING_STARTERS[1].title, minutes: 20, queuedOn: before(1), sourceUid: null });
+    const queued = learn(K.chooseTasks(x, k, 5, arabicPick));
+    check('a learning task carried over from yesterday still comes first, ahead of the Study step', queued.taskId === 'lt2' && !K.planStudy(queued), queued);
+    check('…and with it taken, there is no second learning task from Study', K.chooseTasks(x, k, 5, arabicPick).filter(t => t.category === 'learning').length === 1);
+    check('a plan built with a Study step has it as the first of its three tasks', K.chooseTasks(withLists(), k, 5, arabicPick).map(t => t.category).join() === 'learning,admin,health');
+  }
+
+  console.log('\n[11b] Low energy: the Study step competes by minutes; a shrink day gives it 15');
+  {
+    const x = withLists();
+    const short = K.chooseTasks(x, k, 1, { ...arabicPick, minutes: 10 }), long = K.chooseTasks(x, k, 2, { ...arabicPick, minutes: 20 });
+    check('energy 1 with a 10-minute Study step against 15 and 30 minute tasks: the Study step is the one task', short.length === 1 && !!K.planStudy(short[0]) && short[0].minutes === 10, short);
+    check('energy 2 with a 20-minute Study step against a 15-minute task: the shorter task wins and there is no Study entry', long.length === 1 && long[0].title === 'Laundry' && !K.planStudy(long[0]), long);
+    x.nudge.shrinkOn = k;
+    const shrunk = K.chooseTasks(x, k, 1, { ...arabicPick, minutes: 40 });
+    check('on a shrink day the Study step is the one task, at 15 minutes (shortened from its own length)', shrunk.length === 1 && !!K.planStudy(shrunk[0]) && shrunk[0].minutes === 15 && shrunk[0].baseMinutes === 40 && shrunk[0].shrunk, shrunk);
+  }
+
+  console.log('\n[11c] Adding and swapping in learning never makes a second Study entry');
+  {
+    const x = withLists(), have = studyEntry('arabic');
+    const more = K.chooseAdditional(x, k, [have], 3, arabicPick);
+    check('with a Study entry already on the plan, extra tasks are admin and health, not another Study entry', more.map(t => t.category).join() === 'admin,health' && !more.some(t => K.planStudy(t)), more.map(t => [t.category, t.title]));
+    const adminOnly = K.makeTask({ id: 'a1', title: 'Laundry', minutes: 15 }, 'admin', null);
+    const add = K.chooseAdditional(x, k, [adminOnly], 1, arabicPick);
+    check('with no learning on the plan, the extra learning task is the Study step', add.length === 1 && K.planStudy(add[0])?.subject === 'arabic' && add[0].taskId === 'study:arabic', add);
+    const day = onDay(x, k, [adminOnly]);
+    const swap = K.learningForToday(x, k, day, arabicPick);
+    check('swapping learning in gives the Study step when nothing is queued', K.planStudy(swap)?.subject === 'arabic' && swap.title === arabicPick.title, swap);
+    x.queue.push({ qid: 'q1', taskId: 'lt3', category: 'learning', title: K.OLD_LEARNING_STARTERS[2].title, minutes: 30, queuedOn: before(1), sourceUid: null });
+    const fromQueue = K.learningForToday(x, k, day, arabicPick);
+    check('…a queued learning item comes first, and leaves the queue', fromQueue.taskId === 'lt3' && !K.planStudy(fromQueue) && x.queue.length === 0, fromQueue);
+    const second = K.learningForToday(x, k, onDay(withLists(), k, [have]), arabicPick);
+    check('…and with a Study entry already there, no second Study entry is given', !(second && K.planStudy(second)), second);
+  }
+
+  console.log('\n[11d] A Study entry never waits in the queue');
+  {
+    const x = withLists(), e = studyEntry('cybersecurity');
+    K.queueTask(x, e, k);
+    check('queueing a Study entry does nothing', x.queue.length === 0, x.queue);
+    K.queueTask(x, K.makeTask({ id: 'lt1', title: 'Pre-Security', minutes: 30 }, 'learning', null), k);
+    check('…while an ordinary learning task is queued as before', x.queue.length === 1 && x.queue[0].taskId === 'lt1');
+    const b = withLists(), p = K.proposeBuild(b, today, 5, arabicPick);
+    p.items.find(i => K.planStudy(i.task)).status = 'later';
+    const r = K.applyProposal(b, p);
+    check('a build whose Study item is set to "later" leaves it off the plan and out of the queue', r.changed && !b.days[today].tasks.some(t => K.planStudy(t)) && b.queue.length === 0 && b.days[today].tasks.length === 2, [b.queue, b.days[today].tasks.map(t => t.title)]);
+    const c = withLists(), built = K.proposeBuild(c, today, 5, arabicPick); K.applyProposal(c, built);
+    check('setup: the applied plan has its Study entry', c.days[today].tasks.some(t => K.planStudy(t)));
+    const rv = K.proposeReview(c, today, arabicPick);
+    rv.items.find(i => K.planStudy(i.task) && !i.isNew).status = 'later';
+    K.applyProposal(c, rv);
+    check('a review "later" on an existing Study entry removes it from the plan and does not queue it', !c.days[today].tasks.some(t => K.planStudy(t)) && c.queue.length === 0, [c.queue, c.days[today].tasks.map(t => t.title)]);
+    const d3 = withLists(), entry = studyEntry('arabic'); onDay(d3, k, [entry]);
+    K.toggleRoll(d3, k, entry);
+    check('"Roll to tomorrow" on a Study entry does nothing', d3.queue.length === 0 && entry.rolledQid === null, [d3.queue, entry.rolledQid]);
+    const plain = K.makeTask({ id: 'lt1', title: 'Pre-Security', minutes: 30 }, 'learning', null); onDay(d3, k, [plain]);
+    K.toggleRoll(d3, k, plain);
+    check('…while an ordinary task still rolls', d3.queue.length === 1 && plain.rolledQid === d3.queue[0].qid);
+  }
+
+  console.log('\n[11e] The list rotation ignores Study entries');
+  {
+    const x = withLists();
+    onDay(x, before(2), [Object.assign(K.makeTask({ id: 'lt2', title: K.OLD_LEARNING_STARTERS[1].title, minutes: 20 }, 'learning', null), { done: true })]);
+    onDay(x, before(1), [Object.assign(studyEntry('arabic'), { done: true })]);
+    const next = K.chooseTasks(x, k, 3).find(t => t.category === 'learning');
+    check('after a day whose only done learning entry is a Study one, the list continues from the last done list item (lt2, so lt3)', next.taskId === 'lt3', next);
+    const y = withLists();
+    onDay(y, before(1), [Object.assign(studyEntry('arabic'), { done: true })]);
+    check('…and with no list item ever done it starts at the first', K.chooseTasks(y, k, 3).find(t => t.category === 'learning').taskId === 'lt1');
+  }
+
+  console.log('\n[11f] Your own Learning list (when Study has nothing next) still moves on, repeats and cycles');
+  {
+    const x = withLists(), titles = K.OLD_LEARNING_STARTERS.map(o => o.title);
+    // Build each day's plan without a Study step, tick (or not) its learning task, and say which list item it was.
+    const play = (n, tick) => {
+      const date = before(n), ts = K.chooseTasks(x, date, 3), L = ts.find(t => t.category === 'learning');
+      onDay(x, date, ts); L.done = tick; return L.taskId;
+    };
+    const seq = [play(9, true), play(8, false), play(7, true), play(6, true), play(5, true), play(4, true), play(3, false)];
+    check('learning moves to the next session after one was done, repeats because it was not completed, then goes on', eq(seq, ['lt1', 'lt2', 'lt2', 'lt3', 'lt4', 'lt1', 'lt2']), seq);
+    check('learning order is the list\'s own, then cycles back to the first', eq(seq.slice(2, 6), ['lt2', 'lt3', 'lt4', 'lt1']) && x.days[before(3)].tasks.find(t => t.category === 'learning').title === titles[1]);
+    const c = K.sessionCounts(x);
+    check('session counts are tracked per list item (2, 1, 1, 1)', eq(['lt1', 'lt2', 'lt3', 'lt4'].map(i => c[i] || 0), [2, 1, 1, 1]), c);
+  }
+
+  console.log('\n[12] Ticking a Study entry when you study, and the name it keeps');
+  {
+    check('a ticked Arabic entry is named "Arabic Fuṣḥā: <lesson>"', K.studiedTitle('arabic', 'X') === 'Arabic Fuṣḥā: X', K.studiedTitle('arabic', 'X'));
+    check('a ticked Cybersecurity entry is named "Cybersecurity: <lesson>"', K.studiedTitle('cybersecurity', 'X') === 'Cybersecurity: X', K.studiedTitle('cybersecurity', 'X'));
+    const x = withLists();
+    const doneAr = Object.assign(studyEntry('arabic', {}, 'Already done'), { done: true }), ar = studyEntry('arabic', {}, 'Arabic first'), ar2 = studyEntry('arabic', {}, 'Arabic second'), cy = studyEntry('cybersecurity');
+    const plain = K.makeTask({ id: 'lt1', title: 'Pre-Security', minutes: 30 }, 'learning', null);
+    const yest = studyEntry('arabic', {}, 'Yesterday'); onDay(x, before(1), [yest]);
+    onDay(x, k, [doneAr, ar, ar2, cy, plain]);
+    check('studying Arabic ticks today\'s first undone Arabic entry, with the lesson\'s name (trimmed), still marked as Study\'s', K.tickStudyOnPlan(x, k, 'arabic', { title: '  Arabic Fuṣḥā: The register  ' }) && ar.done && ar.title === 'Arabic Fuṣḥā: The register' && ar.taskId === 'study:arabic', ar);
+    check('…leaving the done entry, the second Arabic entry, other subjects, plain learning tasks and other days alone', doneAr.title === 'Already done' && !ar2.done && !cy.done && !plain.done && !yest.done);
+    check('a long lesson name is cut to 200 characters', K.tickStudyOnPlan(x, k, 'arabic', { title: 'y'.repeat(250) }) && ar2.done && ar2.title.length === 200, ar2.title.length);
+    check('with no undone Arabic entry left today it returns false and changes nothing (yesterday\'s stays undone)', K.tickStudyOnPlan(x, k, 'arabic', { title: 'More' }) === false && !yest.done);
+    check('Cybersecurity is ticked on its own, without a name when none is given', K.tickStudyOnPlan(x, k, 'cybersecurity') && cy.done && cy.title === 'Study step');
+    check('a day with no plan has nothing to tick', K.tickStudyOnPlan(x, K.shift(k, 5), 'arabic') === false);
+    const y = withLists(), r1 = studyEntry('roadmap', { courseId: 'c1' }), r2 = studyEntry('roadmap', { courseId: 'c2' });
+    onDay(y, k, [r1, r2]);
+    check('for a course, only its own entry is ticked', K.tickStudyOnPlan(y, k, 'roadmap', { courseId: 'c2' }) && r2.done && !r1.done);
+    check('…a course with no entry ticks nothing', K.tickStudyOnPlan(y, k, 'roadmap', { courseId: 'c3' }) === false && !r1.done);
+    check('…and with no course given, any undone course entry is ticked', K.tickStudyOnPlan(y, k, 'roadmap') && r1.done);
+    const z = withLists(), id = K.addTask(z.tasks, { title: 'Read the chapter', category: 'learning' }), item = z.tasks.items.find(t => t.id === id);
+    const linked = studyEntry('roadmap', { courseId: 'c1' }); onDay(z, k, [linked]);
+    item.plannedOn = k; item.planUid = linked.uid;
+    check('a task copied to the plan is ticked with its entry, dated that day, as ticking it by hand does', K.tickStudyOnPlan(z, k, 'roadmap', { courseId: 'c1' }) && linked.done && item.done && item.doneOn === k, item);
+  }
+
+  console.log('\n[13] Saved: a Study entry is marked by its task id, and the four old starters are kept');
+  {
+    const norm = mut => { const x = fresh(); mut(x); return K.normalize(JSON.parse(JSON.stringify(x))); };
+    const mark = (taskId, category = 'learning') => K.planStudy({ taskId, category });
+    check('"study:arabic" and "study:cybersecurity" on a learning entry are Study\'s, by subject', eq(mark('study:arabic'), { subject: 'arabic' }) && eq(mark('study:cybersecurity'), { subject: 'cybersecurity' }));
+    check('"study:roadmap:<course>" carries the course (a course id may hold a colon), and a bare roadmap has none', eq(mark('study:roadmap:c1'), { subject: 'roadmap', courseId: 'c1' }) && eq(mark('study:roadmap:cyber:1:x'), { subject: 'roadmap', courseId: 'cyber:1:x' }) && eq(mark('study:roadmap:'), { subject: 'roadmap' }));
+    check('an unknown subject, a task that is not learning, a list item id and no id are not Study\'s', mark('study:french') === null && mark('study:arabic', 'admin') === null && mark('lt1') === null && mark(null) === null && mark('study') === null);
+    check('studyTaskId makes the id back (round trip for all three subjects)', K.studyTaskId({ subject: 'arabic' }) === 'study:arabic' && K.studyTaskId({ subject: 'cybersecurity' }) === 'study:cybersecurity' && K.studyTaskId({ subject: 'roadmap', courseId: 'c1' }) === 'study:roadmap:c1' && eq(mark(K.studyTaskId({ subject: 'roadmap', courseId: 'c1' })), { subject: 'roadmap', courseId: 'c1' }));
+    const entry = studyEntry('arabic', {}, 'Arabic Fuṣḥā — your next lesson');
+    const read = norm(x => { x.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [entry] }; }).days[k].tasks[0];
+    check('a Study entry survives reading saved data unchanged (nothing new is saved on it)', eq(read, entry) && !('study' in read), read);
+    const carried = { qid: 'q9', taskId: 'study:arabic', category: 'learning', title: 'Arabic Fuṣḥā — your next lesson', minutes: 25, queuedOn: before(1), sourceUid: null };
+    const kept = norm(x => { x.queue = [carried]; }).queue[0], back = K.taskFromQueue(kept);
+    check('a queued item with a Study task id (as an older version carries it over) comes back onto the plan as a Study entry', eq(kept, carried) && !!K.planStudy(back) && back.taskId === 'study:arabic' && back.category === 'learning', back);
+
+    const old = K.OLD_LEARNING_STARTERS, qOf = (x, taskId, title = x.title) => ({ qid: 'q' + taskId, taskId, category: 'learning', title, minutes: x.minutes, queuedOn: k, sourceUid: null });
+    const starters = norm(x => { x.lists.learning = [...old.map(o => ({ ...o })), { id: 'mine', title: 'My own', minutes: 20 }]; x.queue = old.map(o => qOf(o, o.id)); });
+    check('the four old starters are kept exactly on reading (nothing is removed on load), with their queued copies', eq(starters.lists.learning.map(i => i.id), ['l1', 'l2', 'l3', 'l4', 'mine']) && eq(starters.queue.map(q => q.taskId), ['l1', 'l2', 'l3', 'l4']), [starters.lists.learning, starters.queue]);
+    check('a new MyDay starts with an empty Learning list, and the seed has none', eq(K.freshState().lists.learning, []) && eq(K.SEED.learning, []) && eq(K.normalize({ schemaVersion: 5 }).lists.learning, []));
+    check('the other two lists are still seeded', K.freshState().lists.admin.length === 4 && K.freshState().lists.health.length > 0);
+    check('the starters are exactly the four old ones (ids l1 to l4)', eq(old.map(o => o.id), ['l1', 'l2', 'l3', 'l4']));
+
+    console.log('\n[13b] Tidy up offers the starters: exactly as MyDay added them, not linked to a course, removed and restored in place');
+    const sd = fresh(); sd.lists.learning = [{ id: 'mine', title: 'My own', minutes: 20 }, ...old.map(o => ({ ...o }))]; sd.lists.learning.splice(3, 0, { id: 'mine2', title: 'Another', minutes: 10 });
+    check('all four exact starters are offered', eq(K.oldStarters(sd).map(i => i.id), ['l1', 'l2', 'l3', 'l4']), K.oldStarters(sd).map(i => i.id));
+    const odd = fresh(); odd.lists.learning = [{ ...old[0], title: old[0].title + ' (mine)' }, { ...old[1], minutes: 25 }, { ...old[2] }, { id: 'lt4', title: old[3].title, minutes: old[3].minutes }];
+    check('one with a changed title or minutes, or under another id, is not a starter', eq(K.oldStarters(odd).map(i => i.id), ['l3']), K.oldStarters(odd).map(i => i.id));
+    const lk = fresh(); lk.lists.learning = old.map(o => ({ ...o })); lk.study.stages = [{ id: 's1', title: 'Stage', courses: [{ id: 'c1', title: 'Pre-Security', url: '', minutes: 30, listId: 'l2', archived: false, modules: [] }] }];
+    check('one that a Study course is linked to is not offered', eq(K.oldStarters(lk).map(i => i.id), ['l1', 'l3', 'l4']));
+    const before3 = JSON.stringify(sd.lists.learning), removed = K.removeOldStarters(sd);
+    check('removing them takes only the starters, returns each with where it was, and leaves your own items and the queue', eq(sd.lists.learning.map(i => i.id), ['mine', 'mine2']) && eq(removed.map(r => [r.item.id, r.at]), [['l1', 1], ['l2', 2], ['l3', 4], ['l4', 5]]), [sd.lists.learning, removed.map(r => [r.item.id, r.at])]);
+    check('Undo puts them back in their places', K.restoreOldStarters(sd, removed) && JSON.stringify(sd.lists.learning) === before3, sd.lists.learning.map(i => i.id));
+    K.removeOldStarters(sd); sd.lists.learning.push({ id: 'l2', title: 'Added again', minutes: 5 });
+    check('Undo skips an item whose id is there again, restoring the rest', K.restoreOldStarters(sd, removed) && sd.lists.learning.filter(i => i.id === 'l2').length === 1 && sd.lists.learning.find(i => i.id === 'l2').title === 'Added again' && sd.lists.learning.some(i => i.id === 'l1'), sd.lists.learning.map(i => i.id));
+    check('nothing to restore changes nothing', K.restoreOldStarters(sd, []) === false);
+  }
+
+  console.log('\n[14] Tidy up: what looks old or unrelated, and why');
+  {
+    const day0 = k; // a Thursday
+    const mk = (x, title, extra = {}) => { const id = K.addTask(x.tasks, { title, due: extra.due ?? null }); Object.assign(x.tasks.items.find(t => t.id === id), extra); return id; };
+    const cand = (x, kept) => K.tidyCandidates(x, day0, kept);
+    const one = (x, id) => cand(x).find(i => i.id === id);
+    const proj = (id, status = 'active') => ({ id, title: 'Garden fence', status });
+    const base = () => { const x = fresh(); x.software = { items: [] }; x.career = { items: [] }; return x; };
+    const bug = (state, taskId) => ({ id: 'bg1', projectId: 'p1', type: 'bug', title: 'Bug', state, taskId, createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00' });
+    const app = (stage, extra = {}) => ({ id: 'ap1', projectId: 'p1', type: 'application', company: 'Acme', stage, createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00', ...extra });
+
+    let x = base(); let t = mk(x, 'Fix: the login bug'); x.software.items.push(bug('fixed', t));
+    check('a Fix task whose bug is fixed is "gone": Its bug is fixed', eq([one(x, t)?.group, one(x, t)?.why], ['gone', 'Its bug is fixed']), one(x, t));
+    x.software.items[0].state = 'wontfix';
+    check('…marked won’t fix: "Its bug is marked won’t fix"', one(x, t)?.why === 'Its bug is marked won’t fix' && one(x, t).group === 'gone', one(x, t));
+    x.software.items[0].state = 'open';
+    check('…still open: not offered', !one(x, t));
+    x.software.items = [];
+    const oldFix = mk(x, 'Fix: a removed bug', { due: K.shift(day0, -20) });
+    check('a Fix task whose bug was removed is never "gone": only the age rule applies', one(x, oldFix)?.group === 'old', one(x, oldFix));
+    const fresh2 = mk(x, 'Fix: another removed bug');
+    check('…and with no old date nothing is offered', !one(x, fresh2));
+
+    x = base(); t = mk(x, 'Follow up with Acme'); x.career.items.push(app('applied', { followTaskId: t }));
+    check('a Follow up task whose application is still Applied is not gone', !one(x, t));
+    x.career.items[0].stage = 'interested';
+    check('a Follow up task whose application is only Interested is not gone', !one(x, t));
+    for (const [stage, why] of [['interviewing', 'The application has moved on'], ['offer', 'The application has moved on'], ['closed', 'The application is closed']]) {
+      x.career.items[0].stage = stage;
+      check(`…at "${stage}": ${why}`, eq([one(x, t)?.group, one(x, t)?.why], ['gone', why]), one(x, t));
+    }
+
+    x = base(); t = mk(x, 'Prepare for the Acme interview');
+    x.career.items.push(app('interviewing', { interviews: [{ id: 'iv1', on: K.shift(day0, -3), taskId: t }] }));
+    check('a Prepare task whose interview day was before today says when it was', eq([one(x, t)?.group, one(x, t)?.why], ['gone', 'The interview was on ' + K.shortDate(K.shift(day0, -3))]), one(x, t));
+    x.career.items[0].interviews[0].on = K.shift(day0, 4);
+    check('…with an upcoming interview it is not gone', !one(x, t));
+    x.career.items[0].stage = 'closed';
+    check('…and with the application closed: "The application is closed"', one(x, t)?.why === 'The application is closed' && one(x, t).group === 'gone', one(x, t));
+    x.career.items[0].stage = 'interviewing'; x.career.items[0].interviews[0].on = day0;
+    check('…an interview today has not gone yet', !one(x, t));
+
+    x = base(); x.projects.items.push(proj('p1'));
+    const chased = mk(x, 'Send the form', { projectId: 'p1' }), chase = mk(x, 'Chase: Send the form', { projectId: 'p1' });
+    check('"Chase: <task>" in the same project, with that task no longer waiting and nothing pointing at the chase: Its wait has ended', eq([one(x, chase)?.group, one(x, chase)?.why], ['gone', 'Its wait has ended']), one(x, chase));
+    const T5 = id => x.tasks.items.find(i => i.id === id);
+    T5(chased).waiting = { on: 'Sam', since: day0, until: null };
+    check('…while that task is still waiting it is not gone', !one(x, chase));
+    T5(chased).waiting = { on: 'Sam', since: day0, until: null, chaseTaskId: chase };
+    check('…and a wait that points at the chase keeps it', !one(x, chase));
+    T5(chased).waiting = undefined; T5(chase).projectId = undefined;
+    check('…a chase outside that task\'s project is not matched to it', !one(x, chase));
+    const own = mk(x, 'Chase: invoice from Sam');
+    check('a "Chase: …" you wrote yourself, naming no task or project, is not gone', !one(x, own));
+    x.projects.items[0].title = 'Garden fence'; const pchase = mk(x, 'Chase: Garden fence', { projectId: 'p1' });
+    check('"Chase: <project>" for a project that is no longer waiting: The project’s wait has ended', eq([one(x, pchase)?.group, one(x, pchase)?.why], ['gone', 'The project’s wait has ended']), one(x, pchase));
+    x.projects.items[0].waiting = { on: 'Sam', since: day0, until: null };
+    check('…while the project is waiting it is not gone', !one(x, pchase));
+    x.projects.items[0].waiting = { on: 'Sam', since: day0, until: null, chaseTaskId: pchase };
+    check('…and a project wait that points at it keeps it', !one(x, pchase));
+    check('a task that only looks like a chase (no "Chase: " start) is left alone', !one(x, mk(x, 'Chase the plumber')));
+
+    x = base(); x.projects.items.push(proj('p1', 'done'), proj('p2', 'active'));
+    const inDone = mk(x, 'Paint the fence', { projectId: 'p1' }), inActive = mk(x, 'Buy posts', { projectId: 'p2' });
+    check('a task of a finished project: group "finished", "<project> is finished"', eq([one(x, inDone)?.group, one(x, inDone)?.why], ['finished', 'Garden fence is finished']), one(x, inDone));
+    check('…a task of an active project with no old date is not offered', !one(x, inActive));
+
+    x = base(); x.projects.items.push(proj('p1'), proj('p2', 'done'));
+    const old15 = mk(x, 'Old, no project', { due: K.shift(day0, -15) }), old14 = mk(x, 'Exactly 14 days', { due: K.shift(day0, -14) }), oldIn = mk(x, 'Old in a project', { due: K.shift(day0, -15), projectId: 'p1' }), oldDoneProj = mk(x, 'Old in a finished project', { due: K.shift(day0, -40), projectId: 'p2' });
+    check('due more than 14 days ago with no project: group "old", "From <date>"', eq([one(x, old15)?.group, one(x, old15)?.why], ['old', 'From ' + K.shortDate(K.shift(day0, -15))]), one(x, old15));
+    check('…exactly 14 days ago is not old', !one(x, old14));
+    check('…in a project that is not finished: "old-in-project"', one(x, oldIn)?.group === 'old-in-project', one(x, oldIn));
+    x.projects.items.push(proj('p3', 'paused')); const oldPaused = mk(x, 'Old in a paused project', { due: K.shift(day0, -15), projectId: 'p3' });
+    check('…a paused project counts as not finished too', one(x, oldPaused)?.group === 'old-in-project', one(x, oldPaused));
+    check('…in a finished project the finished-project reason comes first', one(x, oldDoneProj)?.group === 'finished', one(x, oldDoneProj));
+
+    x = base();
+    const ex = ['done', 'letgo', 'plan', 'queue', 'kept'].map(n => [n, mk(x, 'Excluded ' + n, { due: K.shift(day0, -30) })]), exId = Object.fromEntries(ex), item = id => x.tasks.items.find(i => i.id === id);
+    item(exId.done).done = true; item(exId.letgo).letGoOn = K.shift(day0, -1);
+    const planned = K.makeTask({ id: null, title: 'Excluded plan', minutes: 15 }, 'admin', null); onDay(x, day0, [planned]); item(exId.plan).plannedOn = day0; item(exId.plan).planUid = planned.uid;
+    const rolled = K.makeTask({ id: null, title: 'Excluded queue', minutes: 15 }, 'admin', null); rolled.rolledQid = 'qq'; onDay(x, K.shift(day0, -1), [rolled]);
+    item(exId.queue).plannedOn = K.shift(day0, -1); item(exId.queue).planUid = rolled.uid; x.queue.push({ qid: 'qq', taskId: null, category: 'admin', title: 'Excluded queue', minutes: 15, queuedOn: day0, sourceUid: rolled.uid });
+    const shown = cand(x, new Set([exId.kept])).map(i => i.id);
+    check('done, let go, on today\'s plan, in the queue and kept tasks are not offered, though old', shown.length === 0, shown);
+    check('…without the "kept" set the kept one is offered again', cand(x).map(i => i.id).join() === exId.kept);
+
+    const bare = fresh(); delete bare.software; delete bare.career;
+    const oldOne = mk(bare, 'Old with nothing else', { due: K.shift(day0, -20) });
+    let threw = null, got = null; try { got = K.tidyCandidates(bare, day0); } catch (e) { threw = e; }
+    check('a MyDay with no Software or Career sections does not throw, and still offers old tasks', !threw && got.length === 1 && got[0].id === oldOne, String(threw));
+
+    x = base(); const a1 = mk(x, 'One'), a2 = mk(x, 'Two'), a3 = mk(x, 'Three'), a4 = mk(x, 'Four');
+    x.tasks.items.find(i => i.id === a2).done = true; x.tasks.items.find(i => i.id === a3).letGoOn = K.shift(day0, -2);
+    const gone = K.letGoOf(x, [a1, a2, a3, 'nope'], day0);
+    const T4 = id => x.tasks.items.find(i => i.id === id);
+    check('letting go marks only unfinished, not-let-go tasks with today, and returns just those', eq(gone, [a1]) && T4(a1).letGoOn === day0 && !T4(a2).letGoOn && T4(a3).letGoOn === K.shift(day0, -2) && !T4(a4).letGoOn, [gone, T4(a2).letGoOn, T4(a3).letGoOn]);
+    T4(a4).letGoOn = K.shift(day0, -1);
+    check('undo clears only those let go today', K.undoLetGo(x, [a1, a3, a4], day0) && T4(a1).letGoOn === null && T4(a3).letGoOn === K.shift(day0, -2) && T4(a4).letGoOn === K.shift(day0, -1));
+    check('…and says nothing changed when nothing was let go today', K.undoLetGo(x, [a3, a4], day0) === false);
+  }
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

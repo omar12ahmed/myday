@@ -148,8 +148,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await setEnergy(5); await click('[data-action=build]'); await click('[data-action=prop-apply]'); await sleep(150);
   await ev(`document.querySelectorAll('#app .task input')[1].click()`); await sleep(150);
   const newAppTitles = await titles();
+  // The new app shows a Study entry by the lesson it is now; what is saved (and what the current MyDay shows) is its subject's title.
+  const savedTitles = Object.values((await D()).days)[0].tasks.map(t => t.title);
+  check('(the new app shows today\'s learning task by the lesson it is, and has saved it under its subject\'s title)', newAppTitles[0] === 'Cybersecurity · Learning through evidence' && savedTitles[0] === 'Cybersecurity — your next lesson' && eq(newAppTitles.slice(1), savedTitles.slice(1)), [newAppTitles, savedTitles]);
   await go(10, 'index.html');
-  check('a plan built in the new app opens in the current MyDay, unchanged', eq(await ev(`[...document.querySelectorAll('#app .task .title')].map(e => e.textContent)`), newAppTitles));
+  check('a plan built in the new app opens in the current MyDay, unchanged (its saved titles: the Study entry under its subject\'s title)', eq(await ev(`[...document.querySelectorAll('#app .task .title')].map(e => e.textContent)`), savedTitles));
   check('…including what was ticked off', eq(await ev(`[...document.querySelectorAll('#app .task input')].map(i => i.checked)`), [false, true, false]));
   await ev(`document.querySelectorAll('#app .task input')[0].click()`); await sleep(200);
   await click('[data-action=edit]'); await click('[data-action=add][data-cat=health]'); await sleep(150); await click('[data-action=back]'); await sleep(150);
@@ -159,8 +162,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await addIframe('../../index.html#today'); await sleep(1500);
   await inFrame(`document.querySelectorAll('#app .task input')[2].click()`); await sleep(500);
   check('the current MyDay saving in another tab → the new app updates by itself', (await text('#toast')).includes('Updated with changes from another tab') && (await ev(`document.querySelectorAll('#app .task input:checked').length`)) === 3, await text('#toast'));
+  const learningBefore = (await D()).lists.learning.length; // (none: a new MyDay is not seeded with learning items)
   await click('[data-action=edit]'); await click('[data-action=add][data-cat=learning]'); await sleep(400);
-  check('…and the current MyDay picks up the new app\'s save too (no data lost either way)', (await inFrame(`document.querySelector('#toast').textContent`)).includes('another tab') && (await D()).lists.learning.length === 5);
+  check('…and the current MyDay picks up the new app\'s save too (no data lost either way)', (await inFrame(`document.querySelector('#toast').textContent`)).includes('another tab') && (await D()).lists.learning.length === learningBefore + 1);
   await ev(`document.getElementById('b').remove()`);
 
   console.log('\n[9] Half a character (text cut in the middle of an emoji) is never saved');

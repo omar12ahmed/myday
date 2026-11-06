@@ -7,8 +7,13 @@ const T = require('./cdp.js');
 T.setUrl('app/dist/index.html');
 const { openAt, ev, click, exists, text, data, setFile, check, sleep, S } = T;
 const noSaves = t => { const o = typeof t === 'string' ? JSON.parse(t) : JSON.parse(JSON.stringify(t)); delete o.saves; return JSON.stringify(o); };
-const THM = 'TryHackMe: Pre-Security path — one section', BANDIT = 'OverTheWire Bandit — one level',
-  NET = 'HTB Academy: Networking module — one section', WEB = 'HTB Academy: Web Requests module — one section';
+// Today's learning task is Study's next step (specs/today-learning-and-tidy.md §2). In the browser Study always has one:
+// the default subject is Cybersecurity and its first lesson is "Learning through evidence". Today's row shows the lesson
+// live; the plan saves the entry under its subject's title ("Cybersecurity — your next lesson").
+const CYB = 'Cybersecurity · Learning through evidence', CYB_SAVED = 'Cybersecurity — your next lesson', CYB_DONE = 'Cybersecurity: Learning through evidence';
+// The four starters MyDay used to seed, as the user's own (other ids, so they are kept) for the checks that need list items.
+const MY_LEARNING = [{ id: 'lt1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 }, { id: 'lt2', title: 'OverTheWire Bandit — one level', minutes: 20 },
+  { id: 'lt3', title: 'HTB Academy: Networking module — one section', minutes: 30 }, { id: 'lt4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 }];
 const KEY = 'myday.data.v4';
 const reset = () => ev('localStorage.clear()');
 const planTitles = () => ev(`[...document.querySelectorAll('#app .task .title')].map(e => e.textContent)`);
@@ -40,6 +45,8 @@ async function addCommitment(kind, title, start, end) {
   await click('[data-action=commit-save]');
 }
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// Waits (up to 5 s) for something the page works out a moment after it draws, such as the lesson a Study row shows.
+const until = async (predicate, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return true; await sleep(100); } return false; };
 const importFile = async (path, yes = true) => { await setFile(path); await sleep(200); if (await exists('dialog[open]')) await answer(yes); };
 
 (async () => {
@@ -53,10 +60,12 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('"Build my day" shows a proposal, saves nothing yet', (await exists('#proposalCard')) && !(await data()).days['2026-10-02']);
   await click('[data-action=prop-apply]');
   const p1 = await planTitles();
-  check('after "Apply": energy 5 → 3 tasks (learning, admin, health)', eq(p1, [THM, 'Laundry', 'Gym']), p1);
+  check('after "Apply": energy 5 → 3 tasks (Study\'s next step, admin, health)', eq(p1, [CYB, 'Laundry', 'Gym']), p1);
+  check('…the learning row is Study\'s step: it says why, and the saved entry is marked as Study\'s by its task id', (await text('#app .task [data-s=plan-study-detail]')) === 'The first lesson in your course' && (await data()).days['2026-10-02'].tasks[0].title === CYB_SAVED && (await data()).days['2026-10-02'].tasks[0].taskId === 'study:cybersecurity', (await data()).days['2026-10-02'].tasks[0]);
   const uids1 = (await data()).days['2026-10-02'].tasks.map(t => t.uid);
   await openAt(2026, 10, 2, 15);
-  check('refresh shows the same plan', eq(await planTitles(), p1));
+  await until(async () => eq(await planTitles(), p1));
+  check('refresh shows the same plan', eq(await planTitles(), p1), await planTitles());
   check('same task records (uids) after refresh', eq((await data()).days['2026-10-02'].tasks.map(t => t.uid), uids1));
   check('no "Build my day" button once a plan exists', !(await exists('[data-action=build]')));
   await tick(0); await tick(2);
@@ -68,7 +77,9 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await openAt(2026, 10, 2, 20, 30);
   check('UTC date is already the 3rd at 20:30 Los Angeles', (await ev('new Date().toISOString().slice(0,10)')) === '2026-10-03');
   check('…but the app still shows Friday 2 October', (await text('#date')) === 'Friday 2 October');
-  check('…and still shows the 2 October plan', eq(await planTitles(), p1));
+  const p1Later = [CYB_DONE, 'Laundry', 'Gym']; // (the learning entry was ticked by hand, so it keeps the lesson\'s name)
+  await until(async () => eq(await planTitles(), p1Later));
+  check('…and still shows the 2 October plan', eq(await planTitles(), p1Later), await planTitles());
   await ev('__setNow(2026, 10, 2, 23, 59, 50)'); await ev(`document.dispatchEvent(new Event('visibilitychange'))`); await sleep(100);
   check('23:59:50 still the 2nd', (await text('#date')) === 'Friday 2 October');
   await ev('__setNow(2026, 10, 3, 0, 0, 5)');
@@ -76,43 +87,46 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('after midnight (no reload) the header rolls to Saturday 3 October', (await text('#date')) === 'Saturday 3 October', await text('#date'));
   check('…and the morning screen appears for the new day', await exists('[data-action=build]'));
 
-  console.log('\n[3] Yesterday\'s completions are never re-selected; learning cycles in order');
+  console.log('\n[3] Yesterday\'s completions are never re-selected; learning is Study\'s next step, the same one until you move on');
   await editStorage(`s => { s.lists.health = [{ id: 'h1', title: 'Gym', minutes: 60 }]; }`);
   const p3 = await buildAt(2026, 10, 3, 5);
   check('3 Oct: Gym (done on the 2nd, only health item) is skipped', !p3.includes('Gym'), p3);
-  check('3 Oct: learning moves to the next session (Bandit)', p3[0] === BANDIT, p3);
+  check('3 Oct: learning is Study\'s step, the same as on the 2nd (ticking it by hand does not move Study on)', p3[0] === CYB, p3);
   const p4 = await buildAt(2026, 10, 4, 5);
   check('4 Oct: Gym is allowed again (not done yesterday)', p4.includes('Gym'), p4);
-  check('4 Oct: Bandit repeats because it was not completed', p4[0] === BANDIT, p4);
+  check('4 Oct: learning is the same step, because you have not moved on in Study', p4[0] === CYB, p4);
   await tick(0);
   const seq = [];
   for (const d of [5, 6, 7]) { const p = await buildAt(2026, 10, d, 3); seq.push(p[0]); await tick(0); }
   seq.push((await buildAt(2026, 10, 8, 3))[0]);
-  check('learning order: Networking, Web Requests, then cycles to THM, Bandit', eq(seq, [NET, WEB, THM, BANDIT]), seq);
+  check('day after day, ticked by hand or not, the learning row stays on Study\'s step until you move on in Study', eq(seq, [CYB, CYB, CYB, CYB]), seq);
+  const saved8 = (await data()).days['2026-10-07'].tasks[0];
+  check('…and a Study entry ticked by hand keeps the lesson\'s name', saved8.done && saved8.title === CYB_DONE && saved8.taskId === 'study:cybersecurity', saved8);
   await click('[data-action=edit]');
-  const counts = await ev(`[...document.querySelectorAll('.edit-row[data-cat=learning] .count')].map(e => e.textContent)`);
-  check('session counts tracked per activity (2, 1, 1, 1)', eq(counts, ['Sessions completed: 2', 'Sessions completed: 1', 'Sessions completed: 1', 'Sessions completed: 1']), counts);
+  check('a new MyDay has no list items to edit under Learning (a new MyDay is not seeded with any)', (await ev(`document.querySelectorAll('.edit-row[data-cat=learning]').length`)) === 0);
 
-  console.log('\n[4] Roll to tomorrow: queued once, energy limit respected, remainder kept');
+  console.log('\n[4] Roll to tomorrow: queued once, energy limit respected, remainder kept (a Study entry is never rolled)');
   await openAt(2026, 10, 10); await reset();
   await buildAt(2026, 10, 10, 5);
   await click('[data-action=evening]');
-  await rollBtn(0); await rollBtn(1); await rollBtn(2);
-  await rollBtn(2); await rollBtn(2); await rollBtn(1); await rollBtn(1);
+  check('the evening view has "Roll to tomorrow" on the two ordinary tasks only', (await ev(`document.querySelectorAll('#app .roll button').length`)) === 2);
+  check('…and the Study entry says tomorrow\'s plan picks up where you are in Study, instead', (await ev(`document.querySelectorAll('[data-s=study-no-roll]').length`)) === 1 && (await text('[data-s=study-no-roll]')).includes('picks up where you are in Study'), await text('[data-s=study-no-roll]'));
+  await rollBtn(0); await rollBtn(1);
+  await rollBtn(1); await rollBtn(1); await rollBtn(0); await rollBtn(0);
   let q = (await data()).queue;
-  check('three tasks rolled (some toggled twice) → exactly 3 queue entries', q.length === 3, q.map(x => x.title));
-  check('no duplicate activities in the queue', new Set(q.map(x => x.taskId)).size === 3);
+  check('two tasks rolled (some toggled more than once) → exactly 2 queue entries, none for Study', q.length === 2 && !q.some(x => /Cybersecurity/.test(x.title)), q.map(x => x.title));
+  check('no duplicate activities in the queue', new Set(q.map(x => x.taskId)).size === 2);
   check('evening summary is friendly', (await text('.summary')).startsWith('0 of 3 done — some days are like that.'), await text('.summary'));
   await click('[data-action=finish-evening]');
   await openAt(2026, 10, 10, 21);
-  check('queue survives refresh', (await data()).queue.length === 3);
+  check('queue survives refresh', (await data()).queue.length === 2);
   const r2 = await buildAt(2026, 10, 11, 2);
   check('11 Oct energy 2 → exactly 1 task, the smallest (Laundry, carried over)', eq(r2, ['Laundry']), r2);
   q = (await data()).queue;
-  check('the other 2 stay queued (THM, Gym)', eq(q.map(x => x.title), [THM, 'Gym']), q.map(x => x.title));
+  check('the other one stays queued (Gym); Study\'s step was never in the queue', eq(q.map(x => x.title), ['Gym']), q.map(x => x.title));
   await click('[data-action=evening]'); await rollBtn(0); await click('[data-action=finish-evening]');
   const r3 = await buildAt(2026, 10, 12, 3);
-  check('12 Oct energy 3 → 2 tasks: THM + oldest waiting (Gym)', eq(r3, [THM, 'Gym']), r3);
+  check('12 Oct energy 3 → 2 tasks: Study\'s step + oldest waiting (Gym)', eq(r3, [CYB, 'Gym']), r3);
   check('Laundry still waiting for a later day', eq((await data()).queue.map(x => x.title), ['Laundry']));
   await tick(0);
 
@@ -140,7 +154,9 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('the count never says "streak" or "reset"', !/streak|reset to 0|start over/i.test(await text('#streak h2')));
 
   console.log('\n[7] Nudge');
-  await openAt(2026, 12, 1); await reset();
+  await openAt(2026, 12, 1); await reset(); await openAt(2026, 12, 1);
+  // A 5-minute task of your own, so the shortest task at low energy is not Study's step (which is never under 10 minutes).
+  await editStorage(`s => { s.lists.admin = [{ id: 'a9', title: 'Post a letter', minutes: 5 }]; }`);
   const shownDays = [];
   for (const d of [1, 2, 3]) { await openAt(2026, 12, d); shownDays.push(await nudgeShown()); await build(1); }
   check('not shown on a new user\'s first three days', eq(shownDays, [false, false, false]), shownDays);
@@ -148,18 +164,17 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('shown after three full days with no learning', await nudgeShown());
   await openAt(2026, 12, 4, 12);
   check('not shown again the same day after refresh', !(await nudgeShown()));
-  await editStorage(`s => { s.lists.learning.forEach(l => l.minutes = 90); }`);
   await openAt(2026, 12, 5);
   check('shown again the next day', await nudgeShown());
   await build(1);
   const low = await planTitles();
-  check('energy 1 picks one non-learning task', low.length === 1 && ![THM, BANDIT, NET, WEB].includes(low[0]), low);
+  check('energy 1 picks one non-learning task (the shortest)', eq(low, ['Post a letter']), low);
   await click('[data-action=shrink]');
   check('no learning in plan → offers to swap an optional task', await exists('[data-action=swap-learning]'));
   check('no "add" option when the plan is at its limit', !(await exists('[data-action=add-learning]')));
   await click('[data-action=swap-learning]');
   const swapped = (await data()).days['2026-12-05'].tasks;
-  check('swap keeps the 1-task limit with one 15-min learning session in the same time slot', swapped.length === 1 && swapped[0].category === 'learning' && swapped[0].minutes === 15 && swapped[0].scheduledStart === '2026-12-05T09:00' && swapped[0].scheduledEnd === '2026-12-05T09:15', swapped);
+  check('swap keeps the 1-task limit with Study\'s next step as a 15-min learning session in the same time slot', swapped.length === 1 && swapped[0].category === 'learning' && swapped[0].taskId === 'study:cybersecurity' && swapped[0].title === CYB_SAVED && swapped[0].minutes === 15 && swapped[0].scheduledStart === '2026-12-05T09:00' && swapped[0].scheduledEnd === '2026-12-05T09:15', swapped);
   await openAt(2026, 12, 6);
   check('shown on 6 Dec (planned learning wasn\'t completed)', await nudgeShown());
   await click('[data-action=skip]');
@@ -227,14 +242,14 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('partly broken data loads without crashing', await exists('[data-action=build]'));
   await build(3);
   const fx = await data();
-  check('…lists repaired (learning reseeded, bad admin dropped, minutes defaulted)', fx.lists.learning.length === 4 && fx.lists.admin.length === 1 && fx.lists.admin[0].minutes === 20);
+  check('…lists repaired (learning back to its default, which is now empty; bad admin dropped, minutes defaulted)', Array.isArray(fx.lists.learning) && fx.lists.learning.length === 0 && fx.lists.admin.length === 1 && fx.lists.admin[0].minutes === 20);
   check('…days repaired (bad date and bad task dropped, bad time cleared)', !fx.days['2026-13-45'] && fx.days['2026-12-08'].tasks.length === 1 && fx.days['2026-12-08'].tasks[0].scheduledStart === null);
   check('…settings fall back to defaults', eq(fx.settings, { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'light', motion: 'auto' }), fx.settings);
   check('…invalid commitments dropped, the valid night shift kept', fx.commitments.length === 1 && fx.commitments[0].title === 'Night');
   check('…context cleaned (bad energy/estimate removed, valid wake time kept)', fx.context['2026-12-09'].sleep.end === '2026-12-09T07:00' && fx.context['2026-12-09'].sleep.estimatedHours === null && !fx.context.junk);
   await reset();
   await openAt(2026, 12, 9, 12);
-  check('missing data → fresh start with seed lists and default settings', (await data()).lists.learning.length === 4 && (await data()).settings.bufferMinutes === 30);
+  check('missing data → fresh start with seed lists (no learning items now: Study gives the learning task) and default settings', (await data()).lists.learning.length === 0 && (await data()).lists.admin.length === 4 && (await data()).settings.bufferMinutes === 30);
   await ev(`localStorage.clear(); localStorage.setItem('myday.tasks', JSON.stringify({ learning: [{ id: 'l1', title: 'Old learning', minutes: 30 }], admin: [], health: [] }));
     localStorage.setItem('myday.meta', JSON.stringify({ version: 1, firstUsed: '2026-12-01' }));`);
   const v1keys = await mydayKeys();
@@ -291,7 +306,10 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   console.log('\n[12] Proposed plan: times, saving only on confirm, edit');
   await click('[data-action=build]');
   const pp = await props();
-  check('proposal fits around work, dentist and prep/travel', eq(pp, ['08:00–08:30 | ' + THM, '08:40–08:55 | Laundry', '16:30–17:30 | Gym']), pp);
+  const rng = row => row.split(' | ')[0], toMin = hm => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5)), [studyRange, laundryRange] = [rng(pp[0] ?? ''), rng(pp[1] ?? '')];
+  const studyEnd = studyRange.split('–')[1] ?? '';
+  check('proposal fits around work, dentist and prep/travel: Study\'s step first from 08:00 (saved under its subject\'s title), Laundry 10 minutes after it for 15, Gym after the dentist', pp.length === 3 && pp[0].endsWith(' | ' + CYB_SAVED) && studyRange.startsWith('08:00–') && toMin(studyEnd) <= 10 * 60 - 30 - 10
+    && pp[1].endsWith(' | Laundry') && toMin(laundryRange.slice(0, 5)) === toMin(studyEnd) + 10 && toMin(laundryRange.slice(6)) - toMin(laundryRange.slice(0, 5)) === 15 && pp[2] === '16:30–17:30 | Gym', pp);
   check('timeline shows the proposed tasks', (await glance()).includes('16:30–17:30 | Gym'));
   check('nothing saved before "Apply"', !(await data()).days['2027-02-01']);
   await openAt(2027, 2, 1, 7, 5);
@@ -308,13 +326,13 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await click('[data-action=prop-apply]');
   const day1 = (await data()).days['2027-02-01'];
   check('"Apply" saves the edited times', eq(day1.tasks.map(t => [t.title, t.scheduledStart, t.scheduledEnd]),
-    [[THM, '2027-02-01T08:00', '2027-02-01T08:30'], ['Laundry', '2027-02-01T08:40', '2027-02-01T08:55'], ['Gym', '2027-02-01T15:30', '2027-02-01T16:30']]), day1.tasks.map(t => [t.title, t.scheduledStart]));
+    [[CYB_SAVED, '2027-02-01T08:00', '2027-02-01T' + studyEnd], ['Laundry', '2027-02-01T' + laundryRange.slice(0, 5), '2027-02-01T' + laundryRange.slice(6)], ['Gym', '2027-02-01T15:30', '2027-02-01T16:30']]), day1.tasks.map(t => [t.title, t.scheduledStart]));
   check('plan shows times and flags the overlap', (await text('#slot-plan')).includes('15:30–16:30') && (await text('#slot-plan .warn')).includes('Overlaps Dentist'));
 
   console.log('\n[13] Review my plan');
   await click('[data-action=review]');
   const rv = await ev(`[...document.querySelectorAll('.prop-item')].map(li => li.querySelector('.title').textContent + ' | ' + li.querySelector('.prop-when').textContent + ' | ' + ((li.querySelector('.change') || {}).textContent || ''))`);
-  check('review moves only Gym, others unchanged', eq(rv, [THM + ' | 08:00–08:30 | No change.', 'Laundry | 08:40–08:55 | No change.', 'Gym | 16:30–17:30 | Was 15:30–16:30.']), rv);
+  check('review moves only Gym, others unchanged', eq(rv, [CYB_SAVED + ' | ' + studyRange + ' | No change.', 'Laundry | ' + laundryRange + ' | No change.', 'Gym | 16:30–17:30 | Was 15:30–16:30.']), rv);
   const beforeCancel = await raw();
   await click('[data-action=prop-cancel]');
   check('"Cancel" changes nothing', (await raw()) === beforeCancel);
@@ -326,10 +344,10 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('energy change is noticed, but the plan isn\'t changed automatically', (await text('#reviewHint')).includes('energy is now 2') && (await data()).days['2027-02-01'].tasks.length === 3, await text('#reviewHint'));
   await click('[data-action=review]');
   const rv2 = await ev(`[...document.querySelectorAll('.prop-item')].map(li => li.querySelector('.title').textContent + ' | ' + li.querySelector('.prop-when').textContent)`);
-  check('energy 2 with THM done → THM kept, Laundry and Gym proposed for later', eq(rv2, [THM + ' | 08:00–08:30', 'Laundry | Later', 'Gym | Later']), rv2);
+  check('energy 2 with the Study entry done → it is kept (named for the lesson, as ticked by hand), Laundry and Gym proposed for later', eq(rv2, [JSON.parse(thmBefore).title + ' | ' + studyRange, 'Laundry | Later', 'Gym | Later']) && JSON.parse(thmBefore).title === CYB_DONE, rv2);
   await click('[data-action=prop-apply]');
   const d2 = (await data()).days['2027-02-01'];
-  check('completed THM untouched (same record, still done, same time)', JSON.stringify(d2.tasks[0]) === thmBefore && d2.tasks.length === 1);
+  check('completed Study entry untouched (same record, still done, same time)', JSON.stringify(d2.tasks[0]) === thmBefore && d2.tasks.length === 1);
   check('Laundry and Gym now wait in the queue', eq((await data()).queue.map(x => x.title).sort(), ['Gym', 'Laundry']));
   check('learning count keeps the completed session', (await count()) === 1);
   await setEnergyCommitted(5);
@@ -337,7 +355,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const rv3 = await ev(`[...document.querySelectorAll('.prop-item')].map(li => li.querySelector('.title').textContent + ' | ' + ((li.querySelector('.change') || {}).textContent || ''))`);
   check('energy back to 5 → proposes adding two tasks back from the queue', rv3.length === 3 && rv3.filter(x => x.includes('New —')).length === 2, rv3);
   await click('[data-action=prop-apply]');
-  check('…applied: 3 tasks, queue empty, THM still done', (await data()).days['2027-02-01'].tasks.length === 3 && (await data()).queue.length === 0 && (await data()).days['2027-02-01'].tasks[0].done);
+  check('…applied: 3 tasks, queue empty, the Study entry still done', (await data()).days['2027-02-01'].tasks.length === 3 && (await data()).queue.length === 0 && (await data()).days['2027-02-01'].tasks[0].done);
 
   console.log('\n[14] Tasks that can\'t fit: shorten, or leave for later');
   await openAt(2027, 2, 3, 7);
@@ -345,13 +363,13 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await setEnergyCommitted(3);
   await click('[data-action=build]');
   const un = await ev(`[...document.querySelectorAll('.prop-item')].map(li => li.querySelector('.prop-when').textContent + ' | ' + li.querySelector('.title').textContent + ' | ' + ((li.querySelector('.why') || {}).textContent || ''))`);
-  check('second task is unscheduled with a clear reason', un.length === 2 && un[1].startsWith('No time yet | Bulk cook 2 meals | Unscheduled: It needs 1 h, but the longest free stretch left is 20 min (08:30–08:50).'), un);
-  check('offers "Shorten to 20 min" and "Leave for later"', (await text('[data-action=prop-shorten]')) === 'Shorten to 20 min' && (await exists('[data-action=prop-later]')));
+  check('with Study\'s step (15 min) taking the first slot, the second task is unscheduled with a clear reason', un.length === 2 && un[0].startsWith('08:00–08:15 | Cybersecurity — your next lesson') && un[1].startsWith('No time yet | Bulk cook 2 meals | Unscheduled: It needs 1 h, but the longest free stretch left is 25 min (08:25–08:50).'), un);
+  check('offers "Shorten to 25 min" and "Leave for later"', (await text('[data-action=prop-shorten]')) === 'Shorten to 25 min' && (await exists('[data-action=prop-later]')));
   await click('[data-action=prop-shorten]');
-  check('shortened task now fits at 08:30–08:50', (await props()).includes('08:30–08:50 | Bulk cook 2 meals'), await props());
+  check('shortened task now fits at 08:25–08:50', (await props()).includes('08:25–08:50 | Bulk cook 2 meals'), await props());
   await click('[data-action=prop-apply]');
   const sh = (await data()).days['2027-02-03'].tasks.find(t => t.title === 'Bulk cook 2 meals');
-  check('saved as 20 min, original 60 kept', sh.minutes === 20 && sh.baseMinutes === 60 && (await text('#slot-plan')).includes('20 min (shortened from 60)'));
+  check('saved as 25 min, original 60 kept', sh.minutes === 25 && sh.baseMinutes === 60 && (await text('#slot-plan')).includes('25 min (shortened from 60)'));
   await openAt(2027, 2, 4, 7);
   await addCommitment('work', null, '2027-02-04T08:00', '2027-02-04T20:30');
   await setEnergyCommitted(2);
@@ -488,12 +506,13 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('…but not again on every edit', (await ev(`document.querySelectorAll('.prop-item.stagger').length`)) === 0);
   await click('[data-action=prop-done-edit]'); await click('[data-action=prop-apply]');
   check('moving to the plan keeps the working cards immediately visible', await ev(`!!document.querySelector('#slot-plan') && [...document.querySelectorAll('#app .enter')].every(el => getComputedStyle(el).animationName === 'none' && getComputedStyle(el).opacity === '1')`));
-  check('"Just start" is highlighted only on the next task', (await ev(`[...document.querySelectorAll('[data-action=timer-start]')].map(b => b.dataset.variant === 'ghost')`)).join() === 'false,true,true');
+  await until(() => exists('[data-action=plan-study]'));
+  check('the next task is Study\'s step, whose own action (the link to the lesson) takes the highlight: no "Just start" is filled', (await ev(`[...document.querySelectorAll('[data-action=timer-start]')].map(b => b.dataset.variant === 'ghost')`)).join() === 'true,true,true');
   check('task actions keep readable 14 px text and 44 px targets', await ev(`[...document.querySelectorAll('.task-actions button')].every(b => parseFloat(getComputedStyle(b).fontSize) >= 14 && b.getBoundingClientRect().height >= 44)`));
-  check('the next Just start action has a visible fill, and the other timer actions retain outlines', await ev(`(() => {
+  check('the next task\'s own action (the lesson link) has a visible fill, and the timer actions retain outlines', await ev(`(() => {
     const buttons = [...document.querySelectorAll('.task-actions button')];
-    const next = document.querySelector('.task.next + .task-actions [data-action=timer-start]');
-    return !!next && getComputedStyle(next).backgroundColor !== 'rgba(0, 0, 0, 0)' && buttons.filter(b => b !== next).every(b => {
+    const next = document.querySelector('.task.next + .task-actions [data-action=plan-study]');
+    return !!next && getComputedStyle(next).backgroundColor !== 'rgba(0, 0, 0, 0)' && buttons.every(b => {
       const s = getComputedStyle(b); return parseFloat(s.borderTopWidth) >= 1 && s.borderTopColor !== 'rgba(0, 0, 0, 0)';
     });
   })()`));
@@ -980,6 +999,93 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
     check('…but a stuck learning task still does: "You’ve moved “Read the chapter” twice. Want an easier way in?"', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Read the chapter” twice. Want an easier way in?', await text('#startOffer'));
     await scene([...EASY.slice(0, 4), OT('tkStuckAdmin', 'Renew the licence', { postponed: 3 })]);
     check('…and with only 4 such admin tasks done, a stuck admin task is offered as usual', (await text('#startOffer [data-s=start-offer]')) === 'You’ve moved “Renew the licence” 3 times. Want an easier way in?', await text('#startOffer'));
+  }
+
+
+  console.log('\n[26] Today\'s Study entry (Arabic): the lesson it is now, a link to it, and ticking when you finish a session');
+  {
+    const nav = async h => { await ev(`location.hash = ${JSON.stringify(h)}`); await sleep(300); };
+    const rowTitle = () => ev(`(document.querySelector('#app .task .title') || {}).textContent || ''`);
+    const focusId = () => ev(`document.activeElement && document.activeElement.id`);
+    await openAt(2027, 3, 1); await reset(); await openAt(2027, 3, 1);
+    await editStorage(`s => { s.study.settings.primarySubject = 'arabic'; }`);
+    await openAt(2027, 3, 1);
+    await build(3);
+    await until(() => exists('[data-action=plan-study]'));
+    const title1 = await rowTitle(), lesson1 = title1.split(' · ')[1], saved1 = (await data()).days['2027-03-01'].tasks[0];
+    check('Build my day with Arabic as your focus: the learning row names the lesson it is now, "Arabic Fuṣḥā · <lesson>", and says why', title1.startsWith('Arabic Fuṣḥā · ') && !!lesson1 && (await text('#app .task [data-s=plan-study-detail]')) === 'The first lesson in your course', title1);
+    check('…while the saved entry has its subject\'s title, is marked by its task id and is not ticked', saved1.title === 'Arabic Fuṣḥā — your next lesson' && saved1.taskId === 'study:arabic' && saved1.done === false && !('study' in saved1), saved1);
+    const href1 = await ev(`document.querySelector('[data-action=plan-study]').getAttribute('href')`);
+    check('its link goes to that lesson', /^#study\/arabic\/lesson\./.test(href1), href1);
+    await click('[data-action=plan-study]'); await sleep(400);
+    check('…and following it opens the lesson', (await ev('location.hash')) === href1 && (await text('#app')).includes(lesson1), await ev('location.hash'));
+    await until(() => exists('[data-action="ar-begin"]')); await click('[data-action="ar-begin"]');
+    await until(() => exists('[data-action="ar-finish"]')); await click('[data-action="ar-finish"]'); await sleep(400);
+    check('finishing the session leaves the entry ticked (the Study action wrote it)', (await data()).days['2027-03-01'].tasks[0].done === true, (await data()).days['2027-03-01'].tasks[0]);
+    await nav('today');
+    const done1 = (await data()).days['2027-03-01'].tasks[0];
+    check('…and it keeps the lesson\'s name for your history: "Arabic Fuṣḥā: <lesson>", still marked as Study\'s', done1.title === 'Arabic Fuṣḥā: ' + lesson1 && done1.taskId === 'study:arabic', done1);
+    check('…Today shows the row ticked, with that name', (await ev(`document.querySelector('#app .task input').checked`)) === true && (await rowTitle()) === 'Arabic Fuṣḥā: ' + lesson1, await rowTitle());
+
+    console.log('\n[27] Ready — next lesson, from Today\'s Study card: the card and the row move on, and the row stays to do');
+    await openAt(2027, 3, 2);
+    await build(3);
+    await until(() => exists('[data-action=plan-study]'));
+    check('the next day the step is still that lesson, now practised (Study moves on only when you say it has clicked)', (await rowTitle()) === 'Arabic Fuṣḥā · ' + lesson1 && (await text('#app .task [data-s=plan-study-detail]')) === 'Practised — mark it ready when it clicks', await rowTitle());
+    check('…and Today\'s Study card offers "Ready — next lesson"', (await exists('[data-action=today-ready]')) && (await text('[data-action=today-ready]')).includes('Ready — next lesson'));
+    await click('[data-action=today-ready]');
+    await until(async () => !(await exists('[data-action=today-ready]')));
+    await until(async () => (await rowTitle()) !== 'Arabic Fuṣḥā · ' + lesson1);
+    const title2 = await rowTitle(), lesson2 = title2.split(' · ')[1];
+    check('tapping it marks the lesson ready (as the lesson page does)', (await data()).arabic.lessons.some(l => l.id === decodeURIComponent(href1.split('/').pop()) && l.readyOn === '2027-03-02'), (await data()).arabic.lessons);
+    check('the plan\'s Study row moves to the next lesson, with the next-lesson line', !!lesson2 && lesson2 !== lesson1 && (await text('#app .task [data-s=plan-study-detail]')) === 'Next in your course', title2);
+    check('…and Today\'s card shows that same lesson, with no Ready button', (await text('[data-s=study-next-lessons] [data-subject=arabic] .font-semibold')) === lesson2 && !(await exists('[data-action=today-ready]')), await text('[data-s=study-next-lessons] [data-subject=arabic] .font-semibold'));
+    const e2 = (await data()).days['2027-03-02'].tasks[0];
+    check('the row stays to do: not ticked, still saved under its subject\'s title', e2.done === false && e2.title === 'Arabic Fuṣḥā — your next lesson' && e2.taskId === 'study:arabic', e2);
+    await until(async () => (await focusId()) === 'study-card-h', 2000);
+    check('focus goes to the card\'s heading, since the button it was on has gone', (await focusId()) === 'study-card-h', await focusId());
+
+    console.log('\n[28] A session left open more than 7 days: Today\'s card offers Resume or Let it go (asked first)');
+    await openAt(2027, 3, 10);
+    // (by then the lesson marked ready has its checks back in revision, so the card may say "Go to the lesson" rather than "Continue")
+    const lessonLink = '[data-s=study-next-lessons] [data-subject=arabic] a[data-action=continue-learning], [data-s=study-next-lessons] [data-subject=arabic] a[data-action=option-lesson]';
+    await until(() => exists(lessonLink));
+    const href3 = await ev(`document.querySelector(${JSON.stringify(lessonLink)}).getAttribute('href')`);
+    await nav(href3.slice(1));
+    await until(() => exists('[data-action="ar-begin"]')); await click('[data-action="ar-begin"]'); await sleep(300);
+    await editStorage(`s => { const a = s.arabic.attempts.find(x => !x.finishedAt); a.startedAt = '2027-03-02T20:00:00.000Z';
+      let l = (s.arabic.lessons ||= []).find(x => x.id === a.lessonId); if (!l) { l = { id: a.lessonId }; s.arabic.lessons.push(l); } l.marks = { q1: { outcome: 'right', support: 'independent', on: '2027-03-02', attemptId: a.id } };
+      (s.arabic.practice ||= []).push({ id: a.lessonId, open: { attemptId: a.id, did: ['try'] } }); }`);
+    await openAt(2027, 3, 10, 9, 5);
+    const seeded = await data(), att = seeded.arabic.attempts.find(x => !x.finishedAt);
+    check('setup: an unfinished session started on 2 March, with a mark and a tick in it', !!att && att.startedAt === '2027-03-02T20:00:00.000Z' && !!seeded.arabic.lessons.find(l => l.id === att.lessonId)?.marks?.q1 && !!seeded.arabic.practice.find(p => p.id === att.lessonId)?.open, att);
+    await until(() => exists('[data-s=today-left-open]'));
+    const leftText = await text('[data-s=today-left-open]'), leftTitle = (await text('[data-s=study-next-lessons] [data-subject=arabic] .font-semibold'));
+    check('Today\'s card says what was left open and when, instead of holding the step on it', leftText.includes('You left “' + leftTitle + '” open on Tue 2 Mar.') && !(await exists('[data-action=today-ready]')), leftText);
+    check('…with Resume, going to that lesson', (await text('[data-s=today-left-open] a')).trim() === 'Resume' && (await ev(`document.querySelector('[data-s=today-left-open] a').getAttribute('href')`)) === '#study/arabic/' + att.lessonId);
+    await click('[data-action=today-let-go]');
+    await sleep(200);
+    check('Let it go asks first, saying what goes', (await dialogText()).includes('Let this session go?') && (await dialogText()).includes('answers, marks and note'), await dialogText());
+    await answer(false);
+    const kept = await data();
+    check('"Keep it" leaves everything: the session, its mark and its tick', kept.arabic.attempts.some(x => x.id === att.id && !x.finishedAt) && !!kept.arabic.lessons.find(l => l.id === att.lessonId)?.marks && !!kept.arabic.practice.find(p => p.id === att.lessonId)?.open && (await exists('[data-s=today-left-open]')));
+    await click('[data-action=today-let-go]'); await answer(true);
+    await until(async () => !(await exists('[data-s=today-left-open]')));
+    const gone = await data();
+    check('"Let it go" removes the session, its marks and its ticks, and the line goes', !gone.arabic.attempts.some(x => x.id === att.id) && !gone.arabic.lessons.find(l => l.id === att.lessonId)?.marks && !gone.arabic.practice.find(p => p.id === att.lessonId)?.open && !(await exists('[data-s=today-left-open]')), gone.arabic);
+    await until(async () => (await focusId()) === 'study-card-h', 2000);
+    check('focus goes to the card\'s heading', (await focusId()) === 'study-card-h', await focusId());
+
+    console.log('\n[29] A Cybersecurity notebook draft left more than 7 days: "Open it", and nothing to let go of');
+    await reset(); await openAt(2027, 3, 10);
+    await nav('study/cybersecurity/assessment.learning-evidence-check');
+    await until(() => exists('[data-action=cyber-begin]')); await click('[data-action=cyber-begin]'); await sleep(300);
+    await editStorage(`s => { s.cybersecurity.attempts[0].startedAt = '2027-03-02T20:00:00.000Z'; }`);
+    await openAt(2027, 3, 10, 9, 5);
+    await until(() => exists('[data-s=today-left-open]'));
+    const dText = await text('[data-s=today-left-open]');
+    check('Today\'s card says you have a notebook draft from 2 March, that it stays in your notebook, and offers Open it', dText.includes('notebook draft') && dText.includes('from Tue 2 Mar') && dText.includes('stays in your notebook') && (await text('[data-s=today-left-open] a')).trim() === 'Open it', dText);
+    check('…and there is no Let it go: the draft holds your notebook work', !(await exists('[data-action=today-let-go]')));
   }
 
 

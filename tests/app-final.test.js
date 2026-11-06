@@ -79,7 +79,10 @@ const FOOD = { prefs: { exclude: ['pork'], dislikes: ['olives'], maxMinutes: 40,
   favourites: ['rOwn'], want: [{ id: 'wa1', recipeId: 'rOwn', servings: 4, addedOn: '2026-11-01' }], cooked: [{ id: 'c1', recipeId: 'rOwn', title: 'Lentil soup', date: '2026-10-25', servings: 4 }],
   shopping: [{ id: 'sh1', name: 'red lentils', family: 'g', amount: 250, unit: '', text: '', category: 'Cupboard', checked: false, recipes: ['Lentil soup'], manual: false }, { id: 'sh2', name: 'garlic', family: null, amount: null, unit: '', text: '1-2 cloves', category: 'Fruit & veg', checked: true, recipes: [], manual: true }],
   cooking: { recipeId: 'rOwn', step: 1, servings: 4, startedAt: '2026-11-02T08:00', timer: null } };
-const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minutes: 15 });
+// The classic MyDay still starts with four learning items; a new MyDay has none (Today's learning comes from Study). So the data
+// both start from has the user's own, with the four titles it used to seed: what the two apps are compared on is then the same.
+const TODAY_PARTS = `s.lists.learning = [{ id: 'lt1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 }, { id: 'lt2', title: 'OverTheWire Bandit — one level', minutes: 20 }, { id: 'lt3', title: 'HTB Academy: Networking module — one section', minutes: 30 }, { id: 'lt4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 }];
+  s.lists.admin.push({ id: 'a9', title: 'Post office', minutes: 15 });
   s.days['2026-11-01'] = { energy: 3, rest: false, builtAt: '2026-11-01T08:00', checkedIn: true, tasks: [{ uid: 'u1', taskId: 'l1', category: 'learning', title: 'Learning', minutes: 30, baseMinutes: 30, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
   s.queue = [{ qid: 'q1', taskId: 'a1', category: 'admin', title: 'Laundry', minutes: 15, fromDate: '2026-11-01', sourceUid: 'u2' }];
   s.commitments = [{ id: 'c1', kind: 'appointment', title: 'Dentist', start: '2026-11-04T10:00', end: '2026-11-04T10:30', prepMinutes: 15 }];

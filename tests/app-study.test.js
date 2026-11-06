@@ -93,7 +93,10 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   // ------------------------------------------------------------------
   console.log('\n[40] Study tab and first-time setup');
   await go('today'); await reset(); await go('today');
-  await editStorage(`s => { s.lists.admin.push({ id: 'a9', title: 'Post office', minutes: 15 }); delete s.study; }`);
+  // A new MyDay has no learning items (Today's learning comes from Study), so these are the user's own, with the four titles MyDay used to seed.
+  await editStorage(`s => { s.lists.admin.push({ id: 'a9', title: 'Post office', minutes: 15 }); delete s.study;
+    s.lists.learning = [{ id: 'lt1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 }, { id: 'lt2', title: 'OverTheWire Bandit — one level', minutes: 20 },
+      { id: 'lt3', title: 'HTB Academy: Networking module — one section', minutes: 30 }, { id: 'lt4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 }]; }`);
   const before = await D();
   await go('study');
   check('navigation shows Study as moved to the new app (no "not in the new app yet")', eq(await texts('#nav .nav-item'), ['Today', 'Calendar', 'Projects', 'Finance', 'Health', 'Study']) && (await text('#nav [aria-current=page]')).trim() === 'Study' && (await ev(`document.querySelector('#nav a[href="#study"]').getAttribute('aria-label')`)) === 'Study');
@@ -114,7 +117,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   let st = await SD();
   check('creates the four starter stages, in order', eq(st.stages.map(s => s.title), ['Foundations', 'Web', 'Security Fundamentals', 'Practical Development']));
   check('…with your choices: Bandit moved to Security Fundamentals, Networking left out', eq(st.stages.map(s => s.courses.map(c => c.title)), [['TryHackMe: Pre-Security path'], ['HTB Academy: Web Requests module'], ['OverTheWire Bandit'], []]));
-  check('courses keep a link to the list item and its minutes; no modules or tasks are invented', course(st, 'OverTheWire Bandit').listId === 'l2' && course(st, 'OverTheWire Bandit').minutes === 20 && allTasks(st).length === 0 && st.stages.every(s => s.courses.every(c => c.modules.length === 0)));
+  check('courses keep a link to the list item and its minutes; no modules or tasks are invented', course(st, 'OverTheWire Bandit').listId === 'lt2' && course(st, 'OverTheWire Bandit').minutes === 20 && allTasks(st).length === 0 && st.stages.every(s => s.courses.every(c => c.modules.length === 0)));
   check('the friendly message is shown', (await text('#toast')).includes('Your roadmap is ready'));
   const after = await D();
   const others = o => { const c = JSON.parse(JSON.stringify(o)); delete c.study; delete c.saves; return c; };

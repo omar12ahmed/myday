@@ -387,6 +387,109 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   await shot('task-steps-phone-360');
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+
+  console.log('\n[9] Tidy up: tasks that look old or unrelated, let go one at a time or all together; the old starters offered');
+  {
+    const day0 = '2026-10-15', mkTd = (id, title, extra = {}) => mkT(id, title, { createdAt: '2026-08-01T10:00', ...extra });
+    const bugOf = (id, taskId, state) => ({ id, projectId: 'pjLive', type: 'bug', title: 'The login bug', state, taskId, createdAt: '2026-10-10T09:00', updatedAt: '2026-10-10T09:00' });
+    const seed = (items, extra = '') => editStorage(`s => { s.tasks = { lists: [], items: ${JSON.stringify(items)} }; s.projects.items.push(${JSON.stringify({ ...mkP('pjDone', 'Garden fence'), status: 'done' })}, ${JSON.stringify(mkP('pjLive', 'Allotment'))});
+      s.software = { items: [${JSON.stringify(bugOf('bgOne', 'tdFix', 'fixed'))}] }; ${extra} }`);
+    const fresh9 = async (h = 10) => { await go('today/tasks', 2026, 10, 15, h); await reset(); await go('today/tasks', 2026, 10, 15, h); await click('#themeBtn'); await sleep(300); };
+    const prefs = () => ev(`JSON.parse(localStorage.getItem('myday.tidy') || '{}')`);
+    const focusIs = async f => { await until(`(${f})(document.activeElement)`, 2000); return ev(`(${f})(document.activeElement)`); };
+    const ids = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].map(e => e.dataset.id)`);
+    const T9 = id => tasks().then(t => t.items.find(x => x.id === id));
+    const items9 = [mkTd('tdFix', 'Fix: the login bug'), mkTd('tdOld1', 'Renew car tax', { due: '2026-09-20' }), mkTd('tdOld2', 'Book the dentist', { due: '2026-09-25' }), mkTd('tdFin', 'Paint the fence', { projectId: 'pjDone' }),
+      mkTd('tdLive', 'Buy fence posts', { projectId: 'pjLive', due: '2026-09-01' }), mkTd('tdEdge', 'Exactly two weeks ago', { due: '2026-10-01' }), mkTd('tdNew', 'Due today', { due: day0 })];
+    await fresh9();
+    await seed(items9);
+    await go('today/tasks', 2026, 10, 15, 10, 5);
+    await until(`!!document.querySelector('[data-s=tidy]')`);
+    check('Tasks opens with a "Tidy up" card at the top when something looks old or unrelated', (await exists('[data-s=tidy]')) && (await text('#tidy-h')) === 'Tidy up');
+    check('it lists the items by reason: its reason has gone, from a finished project, from more than 2 weeks ago — in that order', eq(await ev(`[...document.querySelectorAll('[data-s=tidy-group]')].map(g => g.dataset.group)`), ['gone', 'finished', 'old']));
+    check('…each group with its items: the fixed bug\'s task, the finished project\'s, then the two old ones oldest first', eq(await ids('[data-group=gone] [data-s=tidy-item]'), ['tdFix']) && eq(await ids('[data-group=finished] [data-s=tidy-item]'), ['tdFin']) && eq(await ids('[data-group=old] [data-s=tidy-item]'), ['tdOld1', 'tdOld2']), await ids('[data-s=tidy-item]'));
+    check('…each says why', (await text('[data-id=tdFix] p')) === 'Its bug is fixed' && (await text('[data-id=tdFin] p')) === 'Garden fence is finished' && (await text('[data-id=tdOld1] p')) === 'From Sun 20 Sept', [await text('[data-id=tdFix] p'), await text('[data-id=tdFin] p'), await text('[data-id=tdOld1] p')]);
+    check('a task due exactly 14 days ago, and one due today, are not listed', !(await exists('[data-s=tidy] [data-id=tdEdge]')) && !(await exists('[data-s=tidy] [data-id=tdNew]')));
+    check('a task of a project you haven\'t finished is in a folded group of its own, "In projects you haven’t finished", left to you', (await ev(`document.querySelector('[data-s=tidy-in-projects]').open`)) === false && (await text('[data-s=tidy-in-projects] summary')).includes('In projects you haven’t finished (1)')
+      && eq(await ids('[data-s=tidy-in-projects] [data-s=tidy-item]'), ['tdLive']) && !(await exists('[data-s=tidy-group] [data-id=tdLive]')));
+    check('"Let go of all these" counts only the main groups (4), not the folded one', (await text('[data-action=tidy-all]')) === 'Let go of all these (4)');
+
+    await click('[data-id=tdOld2] [data-action=tidy-let-go]'); await sleep(300);
+    check('Let go marks the task let go today and its row goes; the others are untouched', (await T9('tdOld2')).letGoOn === day0 && !(await exists('[data-s=tidy] [data-id=tdOld2]')) && (await T9('tdOld1')).letGoOn === null && (await T9('tdFix')).letGoOn === null);
+    check('…it says so, and focus goes to the card\'s heading', (await text('#toast')).includes('Let go. It’s kept under Done.') && await focusIs(`e => e && e.id === 'tidy-h'`));
+    await click('[data-id=tdFix] [data-action=tidy-keep]'); await sleep(300);
+    check('Keep hides one, on this device only: remembered in "myday.tidy", the task itself not changed', !(await exists('[data-s=tidy] [data-id=tdFix]')) && eq((await prefs()).kept, ['tdFix']) && (await T9('tdFix')).letGoOn === null);
+    check('…and focus goes to the card\'s heading', await focusIs(`e => e && e.id === 'tidy-h'`));
+    await go('today/tasks', 2026, 10, 15, 10, 10); await until(`!!document.querySelector('[data-s=tidy]')`);
+    check('…it stays hidden after reopening', !(await exists('[data-s=tidy] [data-id=tdFix]')) && (await exists('[data-s=tidy] [data-id=tdOld1]')));
+
+    await ev(`__setNow(2026, 10, 15, 23, 59, 50)`);
+    check('"Let go of all these" now offers the two left in the main groups', (await text('[data-action=tidy-all]')) === 'Let go of all these (2)');
+    await click('[data-action=tidy-all]'); await sleep(300);
+    check('letting go of all marks the main groups only: "In projects you haven’t finished" is never touched', (await T9('tdOld1')).letGoOn === day0 && (await T9('tdFin')).letGoOn === day0 && (await T9('tdLive')).letGoOn === null && (await T9('tdFix')).letGoOn === null);
+    check('…and says what happened with Undo, which has focus', (await exists('[data-s=tidy-undo]')) && (await text('[data-s=tidy-undo] p')) === '2 tasks let go — they’re kept under Done.' && await focusIs(`e => e && e.dataset.action === 'tidy-undo'`), await text('[data-s=tidy-undo]'));
+    await ev(`__setNow(2026, 10, 16, 0, 0, 20)`);
+    await click('[data-action=tidy-undo]'); await sleep(300);
+    check('Undo works even after midnight: both are back as they were (it remembers the day it let go)', (await T9('tdOld1')).letGoOn === null && (await T9('tdFin')).letGoOn === null && (await exists('[data-s=tidy]')) && !(await exists('[data-s=tidy-undo]')));
+    check('…and focus goes back to the card\'s heading', await focusIs(`e => e && e.id === 'tidy-h'`));
+    await go('today/tasks', 2026, 10, 15, 10, 20); await until(`!!document.querySelector('[data-s=tidy]')`);
+
+    await click('[data-action=tidy-not-now]'); await sleep(300);
+    check('Not now hides the card, saves the day on this device, and focus goes to the Tasks heading', !(await exists('[data-s=tidy]')) && (await prefs()).notNowOn === day0 && await focusIs(`e => e && e.id === 'tasks-h'`), await prefs());
+    await go('today/tasks', 2026, 10, 21, 10);
+    check('…it is still hidden 6 days later', !(await exists('[data-s=tidy]')));
+    await go('today/tasks', 2026, 10, 23, 10);
+    await until(`!!document.querySelector('[data-s=tidy]')`);
+    check('…and back on the 8th day', await exists('[data-s=tidy]'));
+
+    // Only the folded group: no card.
+    await fresh9();
+    await seed([mkTd('tdLive', 'Buy fence posts', { projectId: 'pjLive', due: '2026-09-01' })], `s.software = { items: [] };`);
+    await go('today/tasks', 2026, 10, 15, 10, 5); await sleep(400);
+    check('with only "In projects you haven’t finished" items, the card doesn\'t show', !(await exists('[data-s=tidy]')) && (await exists('#tasks-h')));
+
+    // The old starters.
+    const STARTERS = [{ id: 'l1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 }, { id: 'l2', title: 'OverTheWire Bandit — one level', minutes: 20 }, { id: 'l3', title: 'HTB Academy: Networking module — one section', minutes: 30 }, { id: 'l4', title: 'HTB Academy: Web Requests module — one section', minutes: 30 }];
+    await fresh9();
+    await editStorage(`s => { s.lists.learning = ${JSON.stringify([...STARTERS, { id: 'lt9', title: 'My own reading', minutes: 15 }])}; }`);
+    await go('today/tasks', 2026, 10, 15, 10, 5);
+    await until(`!!document.querySelector('[data-s=tidy-starters]')`);
+    check('the card shows with no old tasks at all when only the four starters MyDay added are left in Learning, naming them', (await exists('[data-s=tidy]')) && (await text('[data-s=tidy-starters]')).includes('Your Learning list still has 4 items MyDay added'), await text('[data-s=tidy-starters]'));
+    check('…each starter is named, and your own item is not', await ev(`(() => { const t = document.querySelector('[data-s=tidy-starters]').textContent; return ${JSON.stringify(STARTERS.map(x => x.title))}.every(x => t.includes(x)) && !t.includes('My own reading'); })()`));
+    check('nothing was removed on loading: the Learning list still has all five', (await data()).lists.learning.length === 5);
+    await click('[data-action=tidy-starters-remove]'); await sleep(300);
+    check('Remove takes the four and keeps yours, and says so, with Undo having focus', eq((await data()).lists.learning.map(i => i.id), ['lt9']) && (await text('[data-s=tidy-undo] p')) === '4 starter items removed from your Learning list.' && await focusIs(`e => e && e.dataset.action === 'tidy-undo'`), (await data()).lists.learning);
+    await click('[data-action=tidy-undo]'); await sleep(300);
+    check('Undo puts them back where they were', eq((await data()).lists.learning, [...STARTERS, { id: 'lt9', title: 'My own reading', minutes: 15 }]) && (await exists('[data-s=tidy-starters]')), (await data()).lists.learning.map(i => i.id));
+    await click('[data-action=tidy-starters-keep]'); await sleep(300);
+    check('Keep leaves them, hides the card, and is remembered on this device (keptStarters)', (await data()).lists.learning.length === 5 && !(await exists('[data-s=tidy]')) && (await prefs()).keptStarters === true, await prefs());
+    await go('today/tasks', 2026, 10, 15, 10, 15); await sleep(300);
+    check('…and it stays hidden after reopening', !(await exists('[data-s=tidy-starters]')));
+
+    // Due today's line.
+    await fresh9();
+    await seed([mkTd('tdA', 'Renew car tax', { due: '2026-09-30' }), mkTd('tdB', 'Book the dentist', { due: '2026-09-20' }), mkTd('tdLive', 'Buy fence posts', { projectId: 'pjLive', due: '2026-09-01' }), mkTd('tdNew', 'Due today', { due: day0 }), mkTd('tdUndue', 'No date')], `s.software = { items: [] };`);
+    await go('today', 2026, 10, 15, 10, 5); await until(`!!document.querySelector('#dueToday')`);
+    check('Due today counts how many of its tasks look old or unrelated, leaving out those in projects you haven\'t finished, and links to Tasks', (await text('[data-s=due-tidy]')).startsWith('2 of these look old or unrelated.') && (await ev(`document.querySelector('[data-action=due-tidy]').getAttribute('href')`)) === '#today/tasks', await text('[data-s=due-tidy]'));
+    await click('[data-action=due-tidy]'); await sleep(400);
+    check('…its link opens Tasks, where the Tidy up card is', (await hash()) === '#today/tasks' && (await exists('[data-s=tidy]')));
+    await click('[data-action=tidy-not-now]'); await go('today', 2026, 10, 16, 10); await until(`!!document.querySelector('#dueToday')`);
+    check('after Not now the line is not shown, while Due today still lists the tasks', !(await exists('[data-s=due-tidy]')) && (await exists('#dueToday')));
+
+    // On a phone.
+    await fresh9();
+    await seed(items9, `s.lists.learning = ${JSON.stringify(STARTERS)};`);
+    await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 2, mobile: true });
+    await go('today/tasks', 2026, 10, 15, 10, 5);
+    await until(`!!document.querySelector('[data-s=tidy]')`);
+    await ev(`document.querySelector('[data-s=tidy-in-projects]').open = true`); await sleep(200);
+    check('phone 390 px: Tidy up (all groups, the folded one open, the starters) does not scroll sideways', await ev('document.documentElement.scrollWidth <= innerWidth'), await ev('[document.documentElement.scrollWidth, innerWidth]'));
+    check('…and every button in the card is at least 44 px tall', await ev(`[...document.querySelectorAll('[data-s=tidy] button')].every(b => b.getBoundingClientRect().height >= 44)`), await ev(`[...document.querySelectorAll('[data-s=tidy] button')].map(b => Math.round(b.getBoundingClientRect().height))`));
+    await go('today', 2026, 10, 15, 10, 10); await until(`!!document.querySelector('[data-s=due-tidy]')`);
+    check('phone 390 px: Today with the Due today line does not scroll sideways either', await ev('document.documentElement.scrollWidth <= innerWidth'), await ev('[document.documentElement.scrollWidth, innerWidth]'));
+    await T.send('Emulation.clearDeviceMetricsOverride');
+  }
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

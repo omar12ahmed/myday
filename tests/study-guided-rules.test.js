@@ -27,7 +27,12 @@ function check(label, ok) {
       'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
       'export { markReady, flagRevisit } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
       'export { arabicPlan, arabicProgress, arabicRoute, arabicSkills, arabicState, checksOf, journeyFor, lengthOn, pathLessons, stepTowards, towardsText, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
-      'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
+      'export { todayKey, shift } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
+      // Study's next step, for Today's learning task (specs/today-learning-and-tidy.md §2, §3).
+      'export { leftSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
+      'export { openLesson, leftDraft } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/plan')) + ';',
+      'export * as nextLearning from ' + JSON.stringify(path.join(ROOT, 'app/src/study/nextLearning')) + ';',
+      'export { studyPick, studyNow, studyDoneAs } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/todayStudy')) + ';',
     ].join('\n'));
     const rule = await import(pathToFileURL(await bundle(path.join(dir, 'entry.ts'), path.join(dir, 'out'))).href);
     const task = (id, done) => ({ id, title: id, minutes: 20, done, doneOn: done ? '2026-10-01' : null, kind: 'learn', url: '', note: '' });
@@ -576,6 +581,115 @@ function check(label, ok) {
     check('Reset leaves every unrelated top-level section and timer byte-for-byte unchanged', without(rich, ['study', 'arabic', 'cybersecurity']) === without(beforeRich, ['study', 'arabic', 'cybersecurity']));
     const onceReset = JSON.stringify(rich); rule.resetLearningProgress(rich);
     check('Resetting already reset learning progress makes no further changes', JSON.stringify(rich) === onceReset);
+
+    console.log('\n[Left open] A session or draft left more than 7 days no longer holds the step; Today offers to resume it');
+    {
+      const cat = rule.arabicCatalogue, K0 = rule.todayKey(), at = days => `${rule.shift(K0, -days)}T12:00:00`;
+      const staleArabic = (d, id, days) => { const sid = rule.beginSession(d, id, 'short'); d.arabic.attempts.find(a => a.id === sid).startedAt = at(days); return sid; };
+      const stageOf = id => { const m = cat.moduleList.find(x => x.id === cat.lessonIndex[id].module_id); return m.path_class === 'core' ? m.stage_target : 'branch'; };
+      const here = d => rule.arabicRoute(d).stages.find(x => x.state === 'here')?.key;
+      const readyAll = (d, ids) => ids.forEach(id => rule.markReady(d, id, rule.checksOf(id), K0));
+      const required = pathId => { const p = cat.paths.get(pathId); return cat.moduleList.filter(m => p.required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence).flatMap(m => m.lesson_ids.filter(id => !cat.lessonIndex[id].optional)); };
+
+      // Arabic: eight days is too long to hold the step; seven still resumes.
+      const a8 = fresh(); a8.arabic.pathId = 'path.arabic-start';
+      const apath = rule.pathLessons(a8.arabic.pathId), sid8 = staleArabic(a8, apath[2], 8);
+      const plan8 = rule.arabicPlan(a8);
+      check('an unfinished Arabic session started 8 days ago no longer makes the step "resume": it is the path\'s next lesson', plan8.step.kind !== 'resume' && plan8.step.lessonId === apath[0], plan8.step);
+      check('…and leftSession names that lesson, the day it was started and the attempt', JSON.stringify(rule.leftSession(a8, K0)) === JSON.stringify({ lessonId: apath[2], on: rule.shift(K0, -8), attemptId: sid8 }), rule.leftSession(a8, K0));
+      const a7 = fresh(); a7.arabic.pathId = 'path.arabic-start'; staleArabic(a7, apath[2], 7);
+      check('one started exactly 7 days ago still resumes', rule.arabicPlan(a7).step.kind === 'resume' && rule.arabicPlan(a7).step.lessonId === apath[2], rule.arabicPlan(a7).step);
+      check('…and then there is nothing "left open": leftSession is null', rule.leftSession(a7, K0) === null, rule.leftSession(a7, K0));
+      const finished = fresh(); finished.arabic.pathId = 'path.arabic-start'; rule.finishSession(finished, staleArabic(finished, apath[2], 9));
+      check('a session that was finished is never "left open"', rule.leftSession(finished, K0) === null);
+      const newer = fresh(); newer.arabic.pathId = 'path.arabic-start'; staleArabic(newer, apath[2], 9); rule.beginSession(newer, apath[3], 'short');
+      check('with a newer session open (being resumed), an older stale one is not offered', rule.leftSession(newer, K0) === null && rule.arabicPlan(newer).step.lessonId === apath[3]);
+
+      // myday-5a's point: the route's "here" follows the plan's step, in both cases, even when the stale lesson is in an earlier stage.
+      const core = fresh(); core.arabic.pathId = 'path.arabic-core-b2';
+      const coreReq = required('path.arabic-core-b2'), startIds = coreReq.filter(id => stageOf(id) === 'Pre-A1');
+      readyAll(core, startIds);
+      const stale = JSON.parse(JSON.stringify(core)); staleArabic(stale, startIds[3], 8);
+      const sp = rule.arabicPlan(stale).step;
+      check('a stale session in the Start stage, with Start all ready: the step is the first A1 lesson, not that session', sp.kind !== 'resume' && stageOf(sp.lessonId) === 'A1', sp);
+      check('…and the route\'s "here" is the plan\'s next lesson\'s stage (A1), not the stale session\'s stage (Pre-A1)', here(stale) === stageOf(sp.lessonId) && here(stale) === 'A1' && stageOf(startIds[3]) === 'Pre-A1', here(stale));
+      const fresher = JSON.parse(JSON.stringify(core)); staleArabic(fresher, startIds[3], 7);
+      const fp = rule.arabicPlan(fresher).step;
+      check('the same session started 7 days ago is resumed, and "here" is its stage (Pre-A1), the plan\'s lesson\'s stage', fp.kind === 'resume' && fp.lessonId === startIds[3] && here(fresher) === stageOf(fp.lessonId) && here(fresher) === 'Pre-A1', [fp, here(fresher)]);
+
+      // Study home's "towards" line only while the step is resuming.
+      const allReady = fresh(); allReady.arabic.pathId = 'path.arabic-start'; const req = required('path.arabic-start');
+      readyAll(allReady, req);
+      const readyStale = JSON.parse(JSON.stringify(allReady)); staleArabic(readyStale, req[2], 8);
+      check('an all-ready path with a stale session has no "towards" line (it is not resuming)', rule.learningGlance(readyStale).arabic.towards === null && rule.learningOptions(readyStale).find(o => o.subject === 'arabic').allComplete && !rule.learningOptions(readyStale).find(o => o.subject === 'arabic').resume, rule.learningGlance(readyStale).arabic.towards);
+      const readyToday = JSON.parse(JSON.stringify(allReady)); rule.beginSession(readyToday, req[2], 'short');
+      const tw = rule.learningGlance(readyToday).arabic.towards;
+      check('the same path with a session started today does have one (it is resuming)', !!tw && typeof tw.stage === 'string' && tw.at >= 1, tw);
+
+      // Cybersecurity: a draft left more than 7 days.
+      const cy = fresh(); rule.importPath(cy, 'path.appsec');
+      const ids = rule.cyberPathIds(cy), aid = rule.beginAttempt(cy, 'exercise.learning-evidence'), draft = cy.cybersecurity.attempts.find(a => a.id === aid);
+      draft.startedAt = at(8);
+      const lid = rule.openLesson(cy, ids);
+      check('openLesson ignores a draft started 8 days before the day given (and finds it when no day is given)', lid === 'lesson.learning-evidence' && rule.openLesson(cy, ids, K0) === null, [lid, rule.openLesson(cy, ids, K0)]);
+      check('…so the Cybersecurity step is not "resume", and leftDraft names the lesson and the day it was started', rule.cyberPlan(cy, K0).step.kind !== 'resume' && JSON.stringify(rule.leftDraft(cy, K0)) === JSON.stringify({ lessonId: lid, on: rule.shift(K0, -8) }), [rule.cyberPlan(cy, K0).step, rule.leftDraft(cy, K0)]);
+      draft.startedAt = at(7);
+      check('a draft started exactly 7 days ago still holds the step, and leftDraft is null', rule.openLesson(cy, ids, K0) === lid && rule.cyberPlan(cy, K0).step.kind === 'resume' && rule.leftDraft(cy, K0) === null);
+
+      // What Today's option carries.
+      const opt = (d, subject) => rule.learningOptions(d).find(o => o.subject === subject);
+      const oa = opt(a8, 'arabic'), oc = (() => { const c = fresh(); const i = rule.beginAttempt(c, 'exercise.learning-evidence'); c.cybersecurity.attempts.find(a => a.id === i).startedAt = at(8); return opt(c, 'cybersecurity'); })();
+      check('Arabic\'s option carries the session left open: its lesson, title, link, day and attempt', !oa.resume && oa.left?.lessonId === apath[2] && oa.left.title === cat.lessonIndex[apath[2]].title && oa.left.href === arHref(apath[2]) && oa.left.on === rule.shift(K0, -8) && oa.left.attemptId === sid8, oa.left);
+      check('Cybersecurity\'s option carries the draft left open: its lesson, title, link and day (no attempt to discard)', !oc.resume && oc.left?.lessonId === 'lesson.learning-evidence' && oc.left.title === rule.cyberCatalogue.lessons.get('lesson.learning-evidence').title && oc.left.href === cyHref('lesson.learning-evidence') && oc.left.on === rule.shift(K0, -8) && !('attemptId' in oc.left), oc.left);
+      check('an option with nothing left open has no "left"', !('left' in opt(fresh(), 'arabic')) && !('left' in opt(readyToday, 'arabic')));
+      const pr = fresh(); pr.arabic.pathId = 'path.arabic-start'; const first = rule.pathLessons(pr.arabic.pathId)[0];
+      check('a new lesson is not "practised"', !opt(pr, 'arabic').practised);
+      rule.finishSession(pr, rule.beginSession(pr, first, 'standard'));
+      check('with the step on a lesson you have practised, the option says practised: true', opt(pr, 'arabic').practised === true && opt(pr, 'arabic').lessonId === first, opt(pr, 'arabic'));
+      rule.markReady(pr, first, rule.checksOf(first), K0);
+      check('…and once it is marked ready the step moves on and is not practised', !opt(pr, 'arabic').practised && opt(pr, 'arabic').lessonId !== first);
+      const cp = fresh(); const cpId = rule.beginAttempt(cp, 'exercise.learning-evidence');
+      Object.assign(cp.cybersecurity.attempts.find(a => a.id === cpId), { submittedAt: K0 + 'T11:00:00Z', evidence: 'Observed a result.', criticalPassed: true, rubricScores: [100, 100, 100, 100] });
+      check('the same for Cybersecurity: a practised lesson at the step is practised: true', rule.cyberPlan(cp).step.state === 'practised' && opt(cp, 'cybersecurity').practised === true && !opt(fresh(), 'cybersecurity').practised, [rule.cyberPlan(cp).step, opt(cp, 'cybersecurity').practised]);
+    }
+
+    console.log('\n[Today\'s Study entry] What it is called, and what it shows now');
+    {
+      const K0 = rule.todayKey(), cat = rule.arabicCatalogue, pick = d => rule.studyPick(rule.nextLearning, d);
+      const ready = (d, ids) => ids.forEach(id => rule.markReady(d, id, rule.checksOf(id), K0));
+      const d0 = fresh(), cy = pick(d0);
+      check('a new learner\'s pick is Cybersecurity: its title, that subject, and the option\'s minutes', cy.subject === 'cybersecurity' && cy.title === 'Cybersecurity — your next lesson' && cy.minutes === rule.learningOptions(d0)[0].minutes && !('courseId' in cy), cy);
+      const d1 = fresh(); d1.study.settings.primarySubject = 'arabic';
+      const ar = pick(d1);
+      check('with Arabic as your focus it is "Arabic Fuṣḥā — your next lesson"', ar.subject === 'arabic' && ar.title === 'Arabic Fuṣḥā — your next lesson' && ar.minutes === rule.learningOptions(d1)[0].minutes, ar);
+      const d2 = fresh(); d2.study.settings.primarySubject = 'roadmap';
+      d2.study.stages = [{ id: 's1', title: 'Stage', courses: [course('empty-course', []), course('my-course', [task('t1', false)])] }]; d2.study.focusCourseId = 'my-course';
+      const rm = pick(d2);
+      check('for one of your courses with a task to do it is "<course> — your next step" with its id', rm.subject === 'roadmap' && rm.title === 'my-course — your next step' && rm.courseId === 'my-course', rm);
+      d2.study.focusCourseId = 'empty-course';
+      check('…a course with no tasks yet is named by its own title', pick(d2).title === 'empty-course — your next step' && pick(d2).courseId === 'empty-course', pick(d2));
+      const done = fresh(); done.arabic.pathId = 'path.arabic-start'; done.study.settings.primarySubject = 'arabic';
+      ready(done, rule.pathLessons('path.arabic-start'));
+      check('when the first option is a path complete with nothing to resume or revise there is no pick (your own list is used)', pick(done) === null && rule.learningOptions(done)[0].allComplete, pick(done));
+      const due = JSON.parse(JSON.stringify(done)); due.arabic.cards.push({ id: 'lexeme.arabic-seed-001:recognise', addedOn: K0, review: { reps: 0, interval: 0, lapses: 0, due: K0 } });
+      check('…but with revision due there is a pick again', pick(due)?.subject === 'arabic' && pick(due).title === 'Arabic Fuṣḥā — your next lesson', pick(due));
+      const open = JSON.parse(JSON.stringify(done)); rule.beginSession(open, rule.pathLessons('path.arabic-start')[2], 'short');
+      check('…and with a session to resume there is a pick', pick(open)?.subject === 'arabic', pick(open));
+
+      const S = (taskId, done = false) => ({ taskId, category: 'learning', done }), lessonTitle = id => cat.lessonIndex[id].title, opts = rule.learningOptions(d1), oa = opts.find(o => o.subject === 'arabic');
+      const now = rule.studyNow(opts, S('study:arabic'));
+      check('a Study entry shows "<subject> · <lesson>" with the option\'s own detail', now.title === 'Arabic Fuṣḥā · ' + lessonTitle(oa.lessonId) && now.detail === oa.detail && now.detail === 'The first lesson in your course' && now.option === oa, now);
+      const cyNow = rule.studyNow(opts, S('study:cybersecurity'));
+      check('…Cybersecurity the same way', cyNow.title === 'Cybersecurity · Learning through evidence' && cyNow.detail === 'The first lesson in your course', cyNow);
+      check('a done entry, an ordinary learning task, a non-learning task and a missing option show nothing', rule.studyNow(opts, S('study:arabic', true)) === null && rule.studyNow(opts, { taskId: 'lt1', category: 'learning', done: false }) === null && rule.studyNow(opts, { taskId: 'study:arabic', category: 'admin', done: false }) === null && rule.studyNow(null, S('study:arabic')) === null && rule.studyNow(undefined, S('study:arabic')) === null && rule.studyNow(opts, S('study:roadmap:nope')) === null);
+      const rOpts = rule.learningOptions(d2), rNow = rule.studyNow(rOpts, S('study:roadmap:my-course'));
+      d2.study.focusCourseId = 'my-course';
+      const rNow2 = rule.studyNow(rule.learningOptions(d2), S('study:roadmap:my-course'));
+      check('one of your courses shows "<course> · <task>" and says "Next in your course"', rNow2.title === 'my-course · t1' && rNow2.detail === 'Next in your course', rNow2);
+      check('…and a course that is not your current one shows nothing', rNow === null || rNow.option.courseId === 'my-course');
+      check('a ticked entry keeps the name with " · " turned into ": "', rule.studyDoneAs(now) === 'Arabic Fuṣḥā: ' + lessonTitle(oa.lessonId) && rule.studyDoneAs(cyNow) === 'Cybersecurity: Learning through evidence', [rule.studyDoneAs(now), rule.studyDoneAs(cyNow)]);
+      check('…and for a course it is "<course>: <task>"', rule.studyDoneAs(rNow2) === 'my-course: t1', rule.studyDoneAs(rNow2));
+    }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed ? 1 : 0);

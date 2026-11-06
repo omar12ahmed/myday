@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const dir = path.join(os.tmpdir(), `myday-sync-records-${process.pid}`);
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src', p));
-  fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize } from ${src('data/normalize')};`, `export { shortDate } from ${src('data/dates')};`, `export { monthText } from ${src('data/businessMoney')};`, `export { projectPartId } from ${src('data/projectRecords')};`].join('\n'));
+  fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize, OLD_LEARNING_STARTERS } from ${src('data/normalize')};`, `export { shortDate } from ${src('data/dates')};`, `export { monthText } from ${src('data/businessMoney')};`, `export { projectPartId } from ${src('data/projectRecords')};`].join('\n'));
   const R = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
 
   const project = (records, id, clean = false) => {
@@ -466,6 +466,22 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('everything in a new MyDay counts as a starter version', notStarter.length === 0, notStarter);
   check('your own versions don\'t', !R.isStarter('finance:finance', recs.get('finance:finance')) && !R.isStarter('study:roadmap', recs.get('study:roadmap')) && !R.isStarter('rota:rota', recs.get('rota:rota')) && !R.isStarter('tasks:lists', recs.get('tasks:lists')));
   check('starter note collections are recognised by their names (each device makes its own ids)', R.isStarter('notes:collections', { categories: fresh.get('notes:collections').categories.map((c, i) => ({ ...c, id: 'other' + i })) }));
+
+  // The four starters every MyDay had before 1.130.0 are a starter Learning list; anything else in it is yours.
+  const learnList = items => ({ items });
+  check('a Learning list of exactly the four old starters counts as a starter version, and so does an empty one', R.isStarter('list:learning', learnList(R.OLD_LEARNING_STARTERS.map(x => ({ ...x })))) && R.isStarter('list:learning', learnList([])));
+  check('…but a changed title or minutes, a missing starter or an item of your own makes it yours', !R.isStarter('list:learning', learnList(R.OLD_LEARNING_STARTERS.map((x, i) => (i === 1 ? { ...x, title: x.title + ' (mine)' } : { ...x }))))
+    && !R.isStarter('list:learning', learnList(R.OLD_LEARNING_STARTERS.map((x, i) => (i === 2 ? { ...x, minutes: 45 } : { ...x }))))
+    && !R.isStarter('list:learning', learnList(R.OLD_LEARNING_STARTERS.slice(0, 3).map(x => ({ ...x })))) && !R.isStarter('list:learning', learnList([...R.OLD_LEARNING_STARTERS.map(x => ({ ...x })), { id: 'lt9', title: 'Mine', minutes: 10 }])));
+  check('the old starters are not a starter Admin list (only Learning has this exception)', !R.isStarter('list:admin', learnList(R.OLD_LEARNING_STARTERS.map(x => ({ ...x })))));
+  // A Study entry is an ordinary plan entry (its task id says so), so it syncs in its day record unchanged.
+  {
+    const withStudy = R.normalize(clone(R.freshState())), studyDay = '2026-10-07';
+    withStudy.days[studyDay] = { energy: 3, rest: false, builtAt: studyDay + 'T08:00', checkedIn: false, tasks: [{ uid: 'tuStudy1', taskId: 'study:arabic', category: 'learning', title: 'Arabic Fuṣḥā: The register', minutes: 25, baseMinutes: 25, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+    const rows = [...R.localRecords(withStudy)].filter(([k]) => k === 'day:' + studyDay), target = R.freshState();
+    R.putRecords(target, rows.map(([k, c]) => [k, clone(c)]));
+    check('a day with a Study entry (task id "study:arabic") survives the trip through its day record unchanged', rows.length === 1 && eq(target.days[studyDay], withStudy.days[studyDay]) && R.normalize(clone(target)).days[studyDay].tasks[0].taskId === 'study:arabic', [rows.length, target.days[studyDay]]);
+  }
 
   console.log('\n[7] Words for the review');
   check('every record has a name in words', [...recs.keys()].every(k => R.recordLabel(k) && R.recordLabel(k) !== k));
