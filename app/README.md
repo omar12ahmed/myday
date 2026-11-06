@@ -1,5 +1,38 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.132.0 — Today's learning follows Study, and Tidy up for old tasks:** (`specs/today-learning-and-tidy.md`, the
+owner's choices of 1 Nov 2026).
+- **Today's learning task is Study's next step.**
+  - It's the same lesson as the Study card, from lesson 1, with revision first when it's due. On Today it shows the
+    lesson it is now, so moving on in Study moves it, with a button that opens it (or starts the revision).
+  - It ticks itself when you study that subject that day: finishing a session, handing in a notebook, finishing a
+    revision round in it, finishing a study session, or ticking one of your own course's tasks. It keeps the lesson's
+    name for your history.
+  - Marking a lesson ready moves it to the next lesson instead, still to do.
+  - It's never carried over: tomorrow's plan picks up where you are in Study.
+  - Your own Learning list is used only when Study has nothing next.
+- **Moving on from Today's Study card.**
+  - "Ready — next lesson" for a lesson you've practised does what the lesson page's Ready to move on does.
+  - A session left open more than 7 days no longer holds the card. It says "You left … open on …", with Resume or
+    Let it go for Arabic (asked first), or Open it for a Cybersecurity notebook draft, which stays in your notebook.
+- **Tidy up, at the top of Tasks.**
+  - It lists your unfinished tasks that look old or unrelated, by reason:
+    - its reason has gone (a bug fixed, an application moved on or closed, an interview passed, a chase whose wait
+      ended);
+    - from a finished project;
+    - from more than 2 weeks ago.
+  - Tasks in projects you haven't finished are folded apart and left to you.
+  - You can let go of each, or of all (with Undo), keep one, or say Not now for 7 days. Nothing is deleted.
+  - Due today says how many of its tasks look old, with a link.
+- **The four starter learning items** (TryHackMe, OverTheWire, HTB ×2) are no longer added to a new MyDay. Tidy up
+  offers to remove them if you never changed them and didn't make them a Study course.
+
+A Study entry is marked by its plan entry's existing `taskId` ('study:arabic', 'study:cybersecurity' or
+'study:roadmap:<course>'): no new saved field and no schema change. Older versions keep it and show it as a plain
+learning task, so going back to 1.131.0 is safe. The one effect there: 1.131.0's own Learning list rotation starts
+again from its first item after a day whose learning was a Study entry. The learning nudge no longer needs a Learning
+list. An independent (Fable) review's fixes are in. App only: no server or database change.
+
 **1.131.0 — Dictionary words for modules 8–13:** 45 more words in the **Dictionary**: words modules 8–13 already use,
 in their examples, explanations and reading texts, that had no entry yet. Among them are مُنْذُ, شَهْر, يَوْم, دَائِمًا,
 بِدَايَة, نِهَايَة, مَطْبَخ, شَرِكَة, مُدِير, مَعْلُومَات and لَا النَّاهِيَةُ; each is fully vowelled, with its meaning, root, an
@@ -2277,9 +2310,9 @@ pay rules) and its settings card are gone from the screen; the rules behind them
   4 days; then × 1.2 or × 2.5, at least a day longer, at most 180 days), rounds are still 5 questions, and an answer is
   only saved when you choose when it comes back. The checks compare the two apps side by side: the saved Study data
   (including messy data), the dashboard, revision preview, concept labels, progress and Today's learning count.
-- Study only ever *suggests* a session length. It never adds tasks to Today or changes shifts and appointments; the
-  one thing it changes on Today is ticking the matching learning task, and only when you press "Also tick … on today's
-  plan" in the check-in.
+- Study only ever *suggests* a session length. It never adds tasks to Today or changes shifts and appointments. On
+  Today it changes only learning: from 1.131.0 Today's learning task is Study's next step, and studying that subject
+  ticks it; "Also tick … on today's plan" in the check-in still ticks a matching learning task when you press it.
 - On wide screens the dashboard has two columns (what to start on the left; revision and links on the right).
 - "Are you sure?" questions (removing part of the roadmap or a concept, discarding a session) are asked in the page.
 - The check-in shows an "Open in Obsidian" link under its note path (the current MyDay only stores the path). The
@@ -2651,7 +2684,8 @@ shown as one topic ("Cybersecurity" when it's built from the starter stages) —
 - Adding the first topic makes your roadmap the first topic: its stages get that topic's id; their contents are
   untouched. A new topic starts with a stage, "Start here", so you can add a course straight away.
 - "Add a course" asks for its name, a usual session and **Also suggest it on Today** (ticked): then it's also added
-  to the end of your Learning list ("<course> — one section"), linked to the course like the ones you set up first.
+  to the end of your Learning list ("<course> — one section"), linked to the course like the ones you set up first
+  (from 1.131.0 Today uses that list only when Study has nothing next).
 - In Edit: rename, move or remove the chosen topic (removing says what goes with it, and the only topic can't be
   removed; its Learning list entries stay); "Add a stage" adds to the chosen topic; moving a stage stays within its
   topic.
@@ -2916,6 +2950,20 @@ that list is still empty and has its name. No saved-data change: Tasks has had i
 there's no migration and no database change. The server's instructions are `myday-tasks-v2` (contract version 2); an
 older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply read
 (`ai-eval/reviews/2026-10-20-tasks-lists-quality.md`, about US$0.007).
+
+**Today's learning from Study (1.131.0; `specs/today-learning-and-tidy.md`):** the screen works out the pick,
+`studyPick` in `src/study/todayStudy.ts` (from the lazily loaded `nextLearning.ts`). `TodayScreen`'s `withStudy` waits
+for it before building. The builders in `src/data/plan.ts` take it (`StudyPick`): a queued learning item, then the
+pick, then your own list. `planStudy` and `studyTaskId` read and make the Study marker from its `taskId`.
+Study entries are never carried over: `queueTask` and `toggleRoll` refuse them. `tickStudyOnPlan` is called by the
+Study actions themselves (ArabicScreen's finish, Cybersecurity's Notebook and Practice hand-in, RevisionView's last
+answer, and `study/actions.ts`'s session finish and course-task tick), never by Ready. `PlanCard` and `TaskList`
+show the live step (`studyNow`), with `StudyEntryAction` as its button. `OPEN_HOLDS_DAYS` and `stillOpen` live in
+`src/data/study/mastery.ts`, with `leftSession` (Arabic) and `leftDraft` (Cybersecurity).
+`StudyTodayCard`'s Ready and Let it go are loaded on demand (`todayCardActions.ts`). Tidy up is `src/data/tidy.ts`
+(`tidyCandidates`, `letGoOf`/`undoLetGo`, `oldStarters`/`removeOldStarters`/`restoreOldStarters`) and
+`src/tasks/TidyCard.tsx`. Keep, Not now and keep-the-starters are device-local under `myday.tidy`. `SEED.learning`
+is empty; `OLD_LEARNING_STARTERS` is in `normalize.ts`, and sync's `isStarter` still treats that list as a starter list.
 
 ## Milestones
 
