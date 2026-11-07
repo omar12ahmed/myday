@@ -1075,5 +1075,68 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await go('study/arabic/' + NONE, 2026, 11, 2, 9); await until(() => exists('[data-ar-session="open"]'), 'Reflect on a lesson that asks for none');
   check('Reflect on a lesson that asks for none of the four has no “This lesson asks for” line', !(await exists('[data-ar-asks]')) && !(await text('[data-ar-session="open"]')).includes('This lesson asks for'), await text('[data-ar-session="open"]'));
 
+  console.log('\n[58] Studying ticks Today\'s Study entry: a course task ticked, a study session finished, a notebook handed in, a revision round finished');
+  {
+    const K58 = '2026-11-02';
+    const entry = (taskId, title) => ({ uid: 'u58', taskId, category: 'learning', title, minutes: 30, baseMinutes: 30, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
+    const plan = (...tasks) => `s.days['${K58}'] = { energy: 3, rest: false, builtAt: '${K58}T08:00', checkedIn: false, tasks: ${JSON.stringify(tasks)} }; s.context = { '${K58}': { energy: 3, sleep: { start: null, end: null, estimatedHours: null } } };`;
+    const entryNow = async () => (await D()).days[K58].tasks[0];
+    const rowTitle = () => ev(`(document.querySelector('#app .task .title') || {}).textContent || ''`);
+    const COURSE = 'TryHackMe: Pre-Security path', mine = entry('study:roadmap:coP', COURSE + ' — your next step');
+
+    await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+    await editStorage(`s => { s.study = ${JSON.stringify({ ...roadmap, settings: OWN, focusCourseId: 'coP' })}; ${plan(mine)} }`);
+    await go('today', 2026, 11, 2, 9);
+    await until(async () => (await rowTitle()).includes(' · '), 'the Study row');
+    check('Today\'s row for one of your own courses is its next task, "<course> · <task>", while the saved entry keeps "<course> — your next step"', (await rowTitle()) === COURSE + ' · DNS in detail' && (await text('#app .task [data-s=plan-study-detail]')) === 'Next in your course' && (await entryNow()).title === COURSE + ' — your next step', [await rowTitle(), await entryNow()]);
+    await nav('study/roadmap');
+    await click('input[data-s=task-done][data-id="tkD"]'); await sleep(250);
+    let e = await entryNow();
+    check('ticking that course\'s task ticks today\'s entry, named "<course>: <task>", still marked as Study\'s', e.done === true && e.title === COURSE + ': DNS in detail' && e.taskId === 'study:roadmap:coP', e);
+
+    await editStorage(`s => { ${plan(mine)} const t = s.study.stages[0].courses[0].modules[0].sections[0].tasks[0]; t.done = false; t.doneOn = null; }`);
+    await go('study', 2026, 11, 2, 9);
+    await until(() => exists('#stFocus [data-action=s-start]:not([data-short])'), 'the Start button');
+    await click('#stFocus [data-action=s-start]:not([data-short])'); await sleep(250);
+    check('setup: a session on that course is running and the entry is still to do', (await SD()).sessions.some(x => x.status === 'active' && x.courseId === 'coP') && (await entryNow()).done === false);
+    await click('[data-action=s-finish]'); await sleep(300);
+    e = await entryNow();
+    check('finishing the study session ticks today\'s entry for that course, named "<course>: <task>"', e.done === true && e.title === COURSE + ': DNS in detail' && e.taskId === 'study:roadmap:coP', e);
+
+    await editStorage(`s => { ${plan(entry('study:roadmap:coP', COURSE + ' — your next step'), { ...entry('study:arabic', 'Arabic Fuṣḥā — your next lesson'), uid: 'u58b' })} }`);
+    await editStorage(`s => { const t = s.study.stages[0].courses[0].modules[0].sections[0].tasks[1]; t.done = false; t.doneOn = null; }`);
+    await go('study/roadmap', 2026, 11, 2, 9);
+    await click('input[data-s=task-done][data-id="tkH"]'); await sleep(250);
+    const two = (await D()).days[K58].tasks;
+    check('ticking a task of your course leaves another subject\'s Study entry alone', two[0].done === true && two[1].done === false && two[1].title === 'Arabic Fuṣḥā — your next lesson', two);
+
+    // Cybersecurity: a notebook handed in.
+    await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+    await editStorage(`s => { ${plan(entry('study:cybersecurity', 'Cybersecurity — your next lesson'))} }`);
+    await go('study/cybersecurity/assessment.learning-evidence-check', 2026, 11, 2, 9);
+    await until(() => exists('[data-action=cyber-begin]'), 'the notebook'); await click('[data-action=cyber-begin]'); await sleep(200);
+    check('setup: a draft is open and the entry is still to do', (await D()).cybersecurity.attempts.length === 1 && (await entryNow()).done === false);
+    await setVal('#cyberVariant', 'First independent recall');
+    for (const id of await ev('[...document.querySelectorAll("textarea[id^=assessment]")].map(e => e.id)')) await setVal(`[id="${id}"]`, 'My own answer before the guide.');
+    await setVal('#cyberEvidence', 'I explained the difference between reading and observable output.'); await setVal('#cyberResume', 'Try a fresh example tomorrow.'); await setVal('#cyberCritical', 'true');
+    await sleep(150);
+    await click('[data-action=cyber-submit]'); await sleep(300);
+    e = await entryNow();
+    check('handing in the notebook ticks today\'s Cybersecurity entry, named "Cybersecurity: <lesson>"', !!(await D()).cybersecurity.attempts[0].submittedAt && e.done === true && e.title === 'Cybersecurity: Learning through evidence' && e.taskId === 'study:cybersecurity', e);
+
+    // Arabic: the last answer of a revision round.
+    await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+    await editStorage(`s => { s.arabic.cards = [{ id: 'lexeme.arabic-seed-001:recognise', addedOn: '2026-10-20', review: { reps: 0, interval: 0, lapses: 0, due: '2026-11-02' } }]; ${plan(entry('study:arabic', 'Arabic Fuṣḥā — your next lesson'))} }`);
+    await go('study/arabic', 2026, 11, 2, 9);
+    await until(() => exists('[data-action="ar-revise"]'), 'Revise Arabic'); await click('[data-action="ar-revise"]');
+    await until(() => exists('[data-action="s-rev-show"]'), 'the question'); await click('[data-action="s-rev-show"]'); await sleep(150);
+    check('setup: a round of one question is open and the entry is still to do', (await text('.st-q')).includes('Question 1 of 1') && (await entryNow()).done === false, await text('.st-q'));
+    await click('[data-action="s-rev-self"][data-v="right"]'); await sleep(100);
+    check('before the last answer is rated, the entry is still to do', (await entryNow()).done === false);
+    await click('[data-action="s-rev-rate"][data-v="good"]'); await sleep(300);
+    e = await entryNow();
+    check('rating the last answer of an Arabic revision round ticks today\'s Arabic entry, named "Arabic Fuṣḥā: revision"', e.done === true && e.title === 'Arabic Fuṣḥā: revision' && e.taskId === 'study:arabic', e);
+  }
+
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

@@ -686,7 +686,7 @@ function check(label, ok) {
       d2.study.focusCourseId = 'my-course';
       const rNow2 = rule.studyNow(rule.learningOptions(d2), S('study:roadmap:my-course'));
       check('one of your courses shows "<course> · <task>" and says "Next in your course"', rNow2.title === 'my-course · t1' && rNow2.detail === 'Next in your course', rNow2);
-      check('…and a course that is not your current one shows nothing', rNow === null || rNow.option.courseId === 'my-course');
+      check('…and a course that is not your current one shows nothing', rNow === null, rNow);
       check('a ticked entry keeps the name with " · " turned into ": "', rule.studyDoneAs(now) === 'Arabic Fuṣḥā: ' + lessonTitle(oa.lessonId) && rule.studyDoneAs(cyNow) === 'Cybersecurity: Learning through evidence', [rule.studyDoneAs(now), rule.studyDoneAs(cyNow)]);
       check('…and for a course it is "<course>: <task>"', rule.studyDoneAs(rNow2) === 'my-course: t1', rule.studyDoneAs(rNow2));
     }

@@ -521,6 +521,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('ticking plays a pop + glow on that card', (await anim('.task.just-done')) === 'glow' && (await anim('.task.just-done .box')) === 'pop');
   check("today's tile in the 7-day row pops", await exists('.wd.today.on.just'));
   check('a gentle "1 done so far" note (no score before anything is ticked)', (await text('#slot-plan')).includes('1 done so far'));
+  check('with an ordinary task up next, its "Just start" is the one filled, and the other is outlined', (await ev(`[...document.querySelectorAll('[data-action=timer-start]')].map(b => b.dataset.variant === 'ghost')`)).join() === 'false,true', await ev(`[...document.querySelectorAll('[data-action=timer-start]')].map(b => b.dataset.variant)`));
   await openAt(2027, 5, 3, 7, 1);
   check('animations play once, not on every refresh', !(await exists('.task.just-done')));
 
@@ -1086,6 +1087,25 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
     const dText = await text('[data-s=today-left-open]');
     check('Today\'s card says you have a notebook draft from 2 March, that it stays in your notebook, and offers Open it', dText.includes('notebook draft') && dText.includes('from Tue 2 Mar') && dText.includes('stays in your notebook') && (await text('[data-s=today-left-open] a')).trim() === 'Open it', dText);
     check('…and there is no Let it go: the draft holds your notebook work', !(await exists('[data-action=today-let-go]')));
+  }
+
+  console.log('\n[30] "Leave for later" on Study\'s step: it is not queued, and the proposal says tomorrow picks up where you are in Study');
+  {
+    await openAt(2027, 4, 1); await reset(); await openAt(2027, 4, 1);
+    await setEnergy(5); await click('[data-action=build]');
+    await click('[data-action=prop-edit]');
+    // (an item set to Later moves down the list, so each is found by its title)
+    const itemOf = title => `[...document.querySelectorAll('.prop-item')].find(li => li.querySelector('.title').textContent === ${JSON.stringify(title)})`;
+    const itemText = title => ev(`${itemOf(title)}.textContent`);
+    check('setup: the proposal is Study\'s step, Laundry and Gym', eq(await ev(`[...document.querySelectorAll('.prop-item .title')].map(e => e.textContent)`), [CYB_SAVED, 'Laundry', 'Gym']));
+    await ev(`${itemOf(CYB_SAVED)}.querySelector('[data-action=prop-later]').click()`); await sleep(150);
+    await ev(`${itemOf('Laundry')}.querySelector('[data-action=prop-later]').click()`); await sleep(150);
+    const studyLater = await itemText(CYB_SAVED), laundryLater = await itemText('Laundry');
+    check('Study\'s step set to Later says "Tomorrow’s plan picks up where you are in Study."', studyLater.includes('Tomorrow’s plan picks up where you are in Study.') && !studyLater.includes('queue'), studyLater);
+    check('…while an ordinary task set to Later says it will wait in the queue', laundryLater.includes('wait in your queue for another day') && !laundryLater.includes('picks up where you are'), laundryLater);
+    await click('[data-action=prop-done-edit]'); await click('[data-action=prop-apply]');
+    const later = await data();
+    check('applying leaves only Gym on the plan, queues only Laundry, and queues nothing for Study', eq(later.days['2027-04-01'].tasks.map(t => t.title), ['Gym']) && eq(later.queue.map(q => q.title), ['Laundry']), [later.days['2027-04-01'].tasks.map(t => t.title), later.queue.map(q => q.title)]);
   }
 
 
