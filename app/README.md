@@ -2311,7 +2311,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
   only saved when you choose when it comes back. The checks compare the two apps side by side: the saved Study data
   (including messy data), the dashboard, revision preview, concept labels, progress and Today's learning count.
 - Study only ever *suggests* a session length. It never adds tasks to Today or changes shifts and appointments. On
-  Today it changes only learning: from 1.131.0 Today's learning task is Study's next step, and studying that subject
+  Today it changes only learning: from 1.132.0 Today's learning task is Study's next step, and studying that subject
   ticks it; "Also tick … on today's plan" in the check-in still ticks a matching learning task when you press it.
 - On wide screens the dashboard has two columns (what to start on the left; revision and links on the right).
 - "Are you sure?" questions (removing part of the roadmap or a concept, discarding a session) are asked in the page.
@@ -2685,7 +2685,7 @@ shown as one topic ("Cybersecurity" when it's built from the starter stages) —
   untouched. A new topic starts with a stage, "Start here", so you can add a course straight away.
 - "Add a course" asks for its name, a usual session and **Also suggest it on Today** (ticked): then it's also added
   to the end of your Learning list ("<course> — one section"), linked to the course like the ones you set up first
-  (from 1.131.0 Today uses that list only when Study has nothing next).
+  (from 1.132.0 Today uses that list only when Study has nothing next).
 - In Edit: rename, move or remove the chosen topic (removing says what goes with it, and the only topic can't be
   removed; its Learning list entries stay); "Add a stage" adds to the chosen topic; moving a stage stays within its
   topic.
@@ -2951,7 +2951,7 @@ there's no migration and no database change. The server's instructions are `myda
 older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply read
 (`ai-eval/reviews/2026-10-20-tasks-lists-quality.md`, about US$0.007).
 
-**Today's learning from Study (1.131.0; `specs/today-learning-and-tidy.md`):** the screen works out the pick,
+**Today's learning from Study (1.132.0; `specs/today-learning-and-tidy.md`):** the screen works out the pick,
 `studyPick` in `src/study/todayStudy.ts` (from the lazily loaded `nextLearning.ts`). `TodayScreen`'s `withStudy` waits
 for it before building. The builders in `src/data/plan.ts` take it (`StudyPick`): a queued learning item, then the
 pick, then your own list. `planStudy` and `studyTaskId` read and make the Study marker from its `taskId`.

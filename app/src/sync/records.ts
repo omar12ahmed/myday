@@ -564,7 +564,7 @@ export function recordLines(key: string, content: Content | null): string[] {
 export function isStarter(key: string, content: Content | null): boolean {
   if (!content) return true;
   const { kind, id } = splitKey(key);
-  // (A Learning list of the old starters, as every MyDay had before 1.131.0, is a starter list too.)
+  // (A Learning list of the old starters, as every MyDay had before 1.132.0, is a starter list too.)
   if (kind === 'list') return fingerprint(content) === fingerprint({ items: SEED[id as Category] }) || (id === 'learning' && fingerprint(content) === fingerprint({ items: OLD_LEARNING_STARTERS }));
   if (kind === 'queue') return (content.items as QueueItem[]).length === 0;
   const one = oneOf(kind, id);
