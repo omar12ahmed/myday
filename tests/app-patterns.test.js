@@ -29,7 +29,9 @@ for (let i = 1; i <= 16; i++) {
 }
 for (let i = 1; i <= 6; i++) history.context[before(i)] = { energy: i <= 3 ? 2 : 4, sleep: { start: null, end: null, estimatedHours: i <= 3 ? 5 : 8 } };
 const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days, h.days); Object.assign(s.context, h.context);
-  s.lists.learning = [{ id: 'L1', title: 'Pharmacology', minutes: 60 }]; s.lists.admin = [{ id: 'A1', title: 'Emails', minutes: 15 }]; s.lists.health = [{ id: 'H1', title: 'Walk', minutes: 30 }]; }`;
+  s.lists.learning = [{ id: 'L1', title: 'Pharmacology', minutes: 60 }]; s.lists.admin = [{ id: 'A1', title: 'Emails', minutes: 15 }]; s.lists.health = [{ id: 'H1', title: 'Walk', minutes: 30 }];
+  // Carried over from yesterday: a queued learning task comes before Study's next step (1.132.0), so it is the day's learning task.
+  s.queue = [{ qid: 'qP', taskId: 'L1', category: 'learning', title: 'Pharmacology', minutes: 60, queuedOn: '${before(1)}', sourceUid: null }]; }`;
 
 (async () => {
   await T.connect();
